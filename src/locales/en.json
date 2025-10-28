@@ -1,0 +1,36 @@
+{
+  "nav.contact": "Contact",
+  "nav.help": "Help",
+  "nav.reseller": "Reseller",
+  "nav.about": "About Us",
+
+  "auth.welcomeBack": "Welcome back",
+  "auth.loginPrompt": "Log in to access your account",
+  "auth.identifier": "Email, CPF or CNPJ",
+  "auth.identifier.placeholder": "Enter your email, CPF or CNPJ",
+  "auth.required": "Required field",
+  "auth.password": "Password",
+  "auth.password.placeholder": "Enter your password",
+  "auth.deviceType": "Device Type",
+  "auth.webBrowser": "Web Browser",
+  "auth.rememberMe": "Remember me",
+  "auth.forgotPassword": "Forgot password?",
+  "auth.continueWith": "...or continue with",
+
+  "register.companyName": "Company Name",
+  "register.cnpjCpf": "CNPJ or CPF",
+  "register.contact": "Contact",
+  "register.email": "Email",
+  "register.serverType": "Which server type?",
+  "register.cloud": "Cloud Server",
+  "register.local": "Local",
+  "register.hd": "HD Server",
+
+  "general.darkMode": "Dark Mode",
+  "general.lightMode": "Light Mode",
+
+  "actions.login": "Log In",
+  "actions.signup": "Sign Up",
+  "actions.alreadyHaveAccount": "Already have an account? Log in",
+  "actions.dontHaveAccount": "Don't have an account? Sign up"
+}

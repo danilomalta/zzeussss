@@ -1,0 +1,39 @@
+@import './variables.css';
+@import './themes.css';
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app-root { display: flex; min-height: 100%; flex-direction: column; }
+main { flex: 1; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 var(--space-6); }
+
+.header {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: saturate(1.4) blur(8px);
+  background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+
+.header-inner { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) 0; }
+
+.icon-button { background: none; border: none; padding: var(--space-2); cursor: pointer; border-radius: 999px; color: var(--color-text); }
+.icon-button:hover { background: color-mix(in srgb, var(--color-text) 8%, transparent); }
+
+.side-drawer {
+  position: fixed; inset: 0 auto 0 0; width: 300px; background: var(--color-surface);
+  transform: translateX(-100%); transition: transform 300ms ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+.side-drawer.open { transform: translateX(0); }
+.side-drawer nav a { display: block; padding: 14px 18px; color: var(--color-text); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); }
+.side-drawer nav a:hover { background: color-mix(in srgb, var(--color-text) 8%, transparent); }
+
+.footer { border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); padding: var(--space-4) 0; color: var(--color-muted); }

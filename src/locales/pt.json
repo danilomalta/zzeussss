@@ -1,0 +1,36 @@
+{
+  "nav.contact": "Contato",
+  "nav.help": "Ajuda",
+  "nav.reseller": "Revenda",
+  "nav.about": "Sobre Nós",
+
+  "auth.welcomeBack": "Bem-vindo de volta",
+  "auth.loginPrompt": "Faça login para acessar sua conta",
+  "auth.identifier": "E-mail, CPF ou CNPJ",
+  "auth.identifier.placeholder": "Digite seu e-mail, CPF ou CNPJ",
+  "auth.required": "Campo obrigatório",
+  "auth.password": "Senha",
+  "auth.password.placeholder": "Digite sua senha",
+  "auth.deviceType": "Tipo de Dispositivo",
+  "auth.webBrowser": "Web Browser",
+  "auth.rememberMe": "Lembrar de mim",
+  "auth.forgotPassword": "Esqueceu a senha?",
+  "auth.continueWith": "...ou continue com",
+
+  "register.companyName": "Nome da empresa",
+  "register.cnpjCpf": "CNPJ ou CPF",
+  "register.contact": "Contato",
+  "register.email": "Email",
+  "register.serverType": "Qual tipo de servidor?",
+  "register.cloud": "Servidor Nuvem",
+  "register.local": "Local",
+  "register.hd": "Servidor HD",
+
+  "general.darkMode": "Modo Escuro",
+  "general.lightMode": "Modo Claro",
+
+  "actions.login": "Entrar",
+  "actions.signup": "Cadastrar",
+  "actions.alreadyHaveAccount": "Já tem uma conta? Faça login",
+  "actions.dontHaveAccount": "Não tem uma conta? Cadastre-se"
+}

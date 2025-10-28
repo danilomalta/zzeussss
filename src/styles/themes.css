@@ -1,0 +1,9 @@
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.button-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
