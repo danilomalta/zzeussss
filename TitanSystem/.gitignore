@@ -1,0 +1,20 @@
+# Dependências do Node (Frontend)
+node_modules/
+dist/
+build/
+.env
+
+# Dependências e Binários do Go (Backend)
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+vendor/
+titan.db
+titan.db-journal
+
+# Arquivos de Sistema
+.DS_Store
+Thumbs.db
+.vscode/
