@@ -18,7 +18,15 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Check for new token in headers (Sliding Window Auth)
+        const newToken = response.headers['x-new-token'];
+        if (newToken) {
+            localStorage.setItem('token', newToken);
+            api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+        }
+        return response;
+    },
     (error) => {
         if (error.response && error.response.status === 401) {
             // Auto logout on 401

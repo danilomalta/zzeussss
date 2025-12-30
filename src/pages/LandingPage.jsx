@@ -62,9 +62,7 @@ export default function LandingPage() {
       </div>
       <aside className="landing-right-column">
         <div className="auth-form-wrapper">
-          <AuthForm onRegistered={() => {
-            alert('Cadastro realizado! (WIP: Redirecionar para onboarding)')
-          }} />
+          <AuthForm />
         </div>
       </aside>
     </div>

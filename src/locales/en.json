@@ -26,6 +26,13 @@
   "register.local": "Local",
   "register.hd": "HD Server",
 
+  "landing.title": "Welcome to ZZeus",
+  "landing.subtitle": "Your complete business management platform",
+
+  "story.title": "Our Story",
+  "story.slide1": "Founded with the mission to simplify business management, we offer innovative solutions for companies of all sizes.",
+  "story.slide2": "With cutting-edge technology and dedicated support, we help you transform your business and reach new levels of success.",
+
   "general.darkMode": "Dark Mode",
   "general.lightMode": "Light Mode",
 

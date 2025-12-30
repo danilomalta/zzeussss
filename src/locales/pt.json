@@ -26,6 +26,13 @@
   "register.local": "Local",
   "register.hd": "Servidor HD",
 
+  "landing.title": "Bem-vindo ao ZZeus",
+  "landing.subtitle": "Sua plataforma completa de gestão empresarial",
+
+  "story.title": "Nossa História",
+  "story.slide1": "Fundada com a missão de simplificar a gestão empresarial, oferecemos soluções inovadoras para empresas de todos os tamanhos.",
+  "story.slide2": "Com tecnologia de ponta e suporte dedicado, ajudamos você a transformar sua empresa e alcançar novos patamares de sucesso.",
+
   "general.darkMode": "Modo Escuro",
   "general.lightMode": "Modo Claro",
 
