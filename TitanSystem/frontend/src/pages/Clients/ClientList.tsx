@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
-import Sidebar from '../../components/Layout/Sidebar';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Client {
@@ -37,61 +36,58 @@ const ClientList: React.FC = () => {
     }, [page]);
 
     return (
-        <div className="dashboard-layout">
-            <Sidebar isOpen={true} />
-            <div className="dashboard-content">
-                <header style={{ marginBottom: '40px' }}>
-                    <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Clients</h1>
-                    <p style={{ color: 'var(--text-secondary)' }}>Manage your client base efficiently.</p>
-                </header>
+        <div>
+            <header style={{ marginBottom: '40px' }}>
+                <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Clients</h1>
+                <p style={{ color: 'var(--text-secondary)' }}>Manage your client base efficiently.</p>
+            </header>
 
-                <div className="glass dashboard-card">
-                    {loading ? (
-                        <p>Loading...</p>
-                    ) : (
-                        <>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
+            <div className="glass dashboard-card">
+                {loading ? (
+                    <p>Loading...</p>
+                ) : (
+                    <>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {clients.map(client => (
+                                    <tr key={client.ID}>
+                                        <td>{client.name}</td>
+                                        <td>{client.email}</td>
+                                        <td>{client.phone}</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {clients.map(client => (
-                                        <tr key={client.ID}>
-                                            <td>{client.name}</td>
-                                            <td>{client.email}</td>
-                                            <td>{client.phone}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                ))}
+                            </tbody>
+                        </table>
 
-                            {/* Pagination Controls */}
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', marginTop: '20px' }}>
-                                <button
-                                    className="glass-button"
-                                    disabled={page === 1}
-                                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                                    style={{ padding: '10px', borderRadius: '50%', opacity: page === 1 ? 0.5 : 1 }}
-                                >
-                                    <ChevronLeft size={20} />
-                                </button>
-                                <span>Page {page} of {totalPages || 1}</span>
-                                <button
-                                    className="glass-button"
-                                    disabled={page >= totalPages}
-                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                    style={{ padding: '10px', borderRadius: '50%', opacity: page >= totalPages ? 0.5 : 1 }}
-                                >
-                                    <ChevronRight size={20} />
-                                </button>
-                            </div>
-                        </>
-                    )}
-                </div>
+                        {/* Pagination Controls */}
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', marginTop: '20px' }}>
+                            <button
+                                className="glass-button"
+                                disabled={page === 1}
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                style={{ padding: '10px', borderRadius: '50%', opacity: page === 1 ? 0.5 : 1 }}
+                            >
+                                <ChevronLeft size={20} />
+                            </button>
+                            <span>Page {page} of {totalPages || 1}</span>
+                            <button
+                                className="glass-button"
+                                disabled={page >= totalPages}
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                style={{ padding: '10px', borderRadius: '50%', opacity: page >= totalPages ? 0.5 : 1 }}
+                            >
+                                <ChevronRight size={20} />
+                            </button>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

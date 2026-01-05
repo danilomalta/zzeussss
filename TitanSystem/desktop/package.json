@@ -1,0 +1,15 @@
+{
+    "name": "titan-desktop",
+    "version": "1.0.0",
+    "description": "Titan System Secure Desktop Client",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron ."
+    },
+    "keywords": [],
+    "author": "Titan System",
+    "license": "ISC",
+    "devDependencies": {
+        "electron": "^28.0.0"
+    }
+}
