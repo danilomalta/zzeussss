@@ -1,625 +1,212 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '../../context/LanguageContext';
-import LanguageSwitcher from '../../components/features/LanguageSwitcher';
+import { CreditCard, Server, Building, CheckCircle } from 'lucide-react';
 import api from '../../services/api';
 
-// Função para máscara de telefone
-const formatPhone = (value: string): string => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 10) {
-        return numbers.replace(/(\d{2})(\d{4})(\d{0,4})/, (_, d1, d2, d3) => {
-            if (d3) return `(${d1}) ${d2}-${d3}`;
-            if (d2) return `(${d1}) ${d2}`;
-            if (d1) return `(${d1}`;
-            return '';
-        });
-    }
-    return numbers.replace(/(\d{2})(\d{5})(\d{0,4})/, (_, d1, d2, d3) => {
-        if (d3) return `(${d1}) ${d2}-${d3}`;
-        if (d2) return `(${d1}) ${d2}`;
-        if (d1) return `(${d1}`;
-        return '';
-    });
-};
-
 const RegisterWizard = () => {
+    const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { lang } = useLanguage();
-    
     const [formData, setFormData] = useState({
-        plan: '',
-        cnpj: '',
-        cpf: '',
-        email: '',
+        // Step 1: Plan
+        plan: 'pro',
+        // Step 2: Company & User
         companyName: '',
-        contact: '',
-        serverType: '',
-        size: '',
-        sector: '',
-        infra: '',
+        email: '',
+        password: '',
+        cnpj: '',
+        whatsapp: '',
+        businessSize: 'small',
+        sector: 'retail',
+        // Step 3: Infrastructure
+        storageType: 'cloud',
+        // Step 4: Payment
+        cardNumber: '',
+        cardExpiry: '',
+        cardCvc: ''
     });
 
-    const nextStep = () => {
-        if (step < 4) setStep(s => s + 1);
+    const handleChange = (e: any) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const prevStep = () => {
-        if (step > 1) setStep(s => s - 1);
-    };
-
-    const handlePlanSelect = (plan: string) => {
-        setFormData({ ...formData, plan });
-    };
-
-    const handleInfraSelect = (infra: string) => {
-        setFormData({ ...formData, infra });
-    };
-
-    const handleInputChange = (field: string, value: string) => {
-        if (field === 'contact') {
-            const formatted = formatPhone(value);
-            setFormData({ ...formData, [field]: formatted });
-        } else {
-            setFormData({ ...formData, [field]: value });
-        }
-    };
-
-    const handleFinalize = async () => {
+    const handleFinish = async () => {
         setLoading(true);
         try {
-            const payload = {
-                plan: formData.plan,
-                company: {
-                    cnpj: formData.cnpj || formData.cpf,
-                    name: formData.companyName,
-                    email: formData.email,
-                    contact: formData.contact.replace(/\D/g, ''),
-                    size: formData.size,
-                    sector: formData.sector,
-                },
-                infrastructure: {
-                    type: formData.infra,
-                    serverType: formData.serverType,
-                },
-            };
-
-            const response = await api.post('/auth/register', payload);
-            
-            if (response.data.success) {
-                alert('Cadastro realizado com sucesso! Redirecionando...');
-                const isElectron = navigator.userAgent.toLowerCase().indexOf(' electron/') > -1;
-                navigate(isElectron ? '/dashboard' : '/web-panel');
-            }
-        } catch (error: any) {
-            alert('Erro ao finalizar cadastro: ' + (error.response?.data?.error || 'Erro desconhecido'));
+            await api.post('/auth/register', formData);
+            alert('Cadastro realizado com sucesso! Faça login.');
+            navigate('/');
+        } catch (err: any) {
+            alert('Erro ao cadastrar: ' + (err.response?.data?.error || 'Erro desconhecido'));
         } finally {
             setLoading(false);
         }
     };
 
-    const plans = [
-        { id: 'start', name: 'Start', description: 'Recursos essenciais para pequenos negócios' },
-        { id: 'pro', name: 'Pro', description: 'Ideal para empresas em crescimento' },
-        { id: 'corp', name: 'Corp', description: 'Soluções corporativas completas' },
-        { id: 'titan', name: 'Titan', description: 'Máxima performance e recursos' },
-        { id: 'elite', name: 'Elite', description: 'Solução premium personalizada' },
-    ];
-
-    const companySizes = [
-        { value: 'micro', label: 'Microempresa (1-9 funcionários)' },
-        { value: 'small', label: 'Pequena (10-49 funcionários)' },
-        { value: 'medium', label: 'Média (50-249 funcionários)' },
-        { value: 'large', label: 'Grande (250+ funcionários)' },
-    ];
-
-    const sectors = [
-        { value: 'retail', label: 'Varejo' },
-        { value: 'services', label: 'Serviços' },
-        { value: 'industry', label: 'Indústria' },
-        { value: 'food', label: 'Alimentação' },
-        { value: 'health', label: 'Saúde' },
-        { value: 'education', label: 'Educação' },
-        { value: 'other', label: 'Outro' },
-    ];
-
-    const infraOptions = [
-        { id: 'cloud', label: 'Nuvem Titan', icon: '☁️', description: 'Hospedagem gerenciada na nuvem' },
-        { id: 'local', label: 'Servidor Local', icon: '🖥️', description: 'Instalação no seu servidor' },
-        { id: 'hd', label: 'HD Próprio', icon: '💾', description: 'Armazenamento próprio' },
-    ];
-
-    // PASSO 1: PLANOS
-    const renderStep1 = () => (
-        <div className="wizard-content">
-            <h2 className="holographic-text" style={{ textAlign: 'center', marginBottom: '40px', fontSize: '2rem' }}>
-                Escolha seu Plano
-            </h2>
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(5, 1fr)', 
-                gap: '20px',
-                marginBottom: '40px'
-            }}>
-                {plans.map((plan) => (
-                    <div
-                        key={plan.id}
-                        className={`holo-card ${formData.plan === plan.id ? 'selected' : ''}`}
-                        onClick={() => handlePlanSelect(plan.id)}
-                    >
-                        <h3 style={{ 
-                            color: formData.plan === plan.id ? 'var(--accent-color)' : 'var(--text-primary)', 
-                            marginBottom: '10px',
-                            fontSize: '1.2rem'
-                        }}>
-                            {plan.name}
-                        </h3>
-                        <p style={{ 
-                            fontSize: '0.85rem', 
-                            color: 'var(--text-secondary)',
-                            lineHeight: '1.4'
-                        }}>
-                            {plan.description}
-                        </p>
-                    </div>
-                ))}
-            </div>
-            <div style={{ textAlign: 'center' }}>
-                <button 
-                    className="titan-btn" 
-                    onClick={nextStep} 
-                    disabled={!formData.plan}
-                    style={{ 
-                        opacity: formData.plan ? 1 : 0.4,
-                        width: '100%',
-                        height: '48px',
-                        borderRadius: '12px'
-                    }}
-                >
-                    Continuar
-                </button>
-            </div>
-        </div>
-    );
-
-    // PASSO 2: DADOS
-    const renderStep2 = () => (
-        <div className="wizard-content" style={{ maxWidth: '600px', margin: '0 auto' }}>
-            <h2 className="holographic-text" style={{ textAlign: 'center', marginBottom: '40px', fontSize: '2rem' }}>
-                Dados da Empresa
-            </h2>
-            <div className="wizard-scrollable">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div>
-                    <label style={{ 
-                        display: 'block', 
-                        marginBottom: '8px', 
-                        color: 'var(--text-secondary)',
-                        fontSize: '0.9rem'
-                    }}>
-                        CNPJ ou CPF
-                    </label>
-                    <input
-                        type="text"
-                        placeholder="CNPJ/CPF (Busca Automática)"
-                        className="titan-input"
-                        value={formData.cnpj || formData.cpf}
-                        onChange={(e) => {
-                            const value = e.target.value;
-                            if (value.length <= 14) {
-                                handleInputChange('cpf', value);
-                                handleInputChange('cnpj', '');
-                            } else {
-                                handleInputChange('cnpj', value);
-                                handleInputChange('cpf', '');
-                            }
-                        }}
-                    />
-                </div>
-                <div>
-                    <label style={{ 
-                        display: 'block', 
-                        marginBottom: '8px', 
-                        color: 'var(--text-secondary)',
-                        fontSize: '0.9rem'
-                    }}>
-                        Nome da Empresa
-                    </label>
-                    <input
-                        type="text"
-                        placeholder="Nome da Empresa"
-                        className="titan-input"
-                        value={formData.companyName}
-                        onChange={(e) => handleInputChange('companyName', e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label style={{ 
-                        display: 'block', 
-                        marginBottom: '8px', 
-                        color: 'var(--text-secondary)',
-                        fontSize: '0.9rem'
-                    }}>
-                        Email
-                    </label>
-                    <input
-                        type="email"
-                        placeholder="email@empresa.com"
-                        className="titan-input"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label style={{ 
-                        display: 'block', 
-                        marginBottom: '8px', 
-                        color: 'var(--text-secondary)',
-                        fontSize: '0.9rem'
-                    }}>
-                        Tamanho da Empresa
-                    </label>
-                    <select
-                        className="titan-input"
-                        value={formData.size}
-                        onChange={(e) => handleInputChange('size', e.target.value)}
-                    >
-                        <option value="">Selecione o Tamanho</option>
-                        {companySizes.map((size) => (
-                            <option key={size.value} value={size.value}>
-                                {size.label}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label style={{ 
-                        display: 'block', 
-                        marginBottom: '8px', 
-                        color: 'var(--text-secondary)',
-                        fontSize: '0.9rem'
-                    }}>
-                        Setor
-                    </label>
-                    <select
-                        className="titan-input"
-                        value={formData.sector}
-                        onChange={(e) => handleInputChange('sector', e.target.value)}
-                    >
-                        <option value="">Selecione o Setor</option>
-                        {sectors.map((sector) => (
-                            <option key={sector.value} value={sector.value}>
-                                {sector.label}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label style={{ 
-                        display: 'block', 
-                        marginBottom: '8px', 
-                        color: 'var(--text-secondary)',
-                        fontSize: '0.9rem'
-                    }}>
-                        Contato/WhatsApp *
-                    </label>
-                    <input
-                        type="tel"
-                        placeholder="(00) 00000-0000"
-                        className="titan-input"
-                        value={formData.contact}
-                        onChange={(e) => handleInputChange('contact', e.target.value)}
-                        maxLength={15}
-                    />
-                </div>
-                <div>
-                    <label style={{ 
-                        display: 'block', 
-                        marginBottom: '8px', 
-                        color: 'var(--text-secondary)',
-                        fontSize: '0.9rem'
-                    }}>
-                        Tipo de Servidor *
-                    </label>
-                    <select
-                        className="titan-input"
-                        value={formData.serverType}
-                        onChange={(e) => handleInputChange('serverType', e.target.value)}
-                    >
-                        <option value="">Selecione o Tipo</option>
-                        <option value="cloud">Nuvem Titan</option>
-                        <option value="local">Servidor Local</option>
-                        <option value="hybrid">Híbrido</option>
-                    </select>
-                </div>
-                </div>
-            </div>
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                marginTop: '24px',
-                gap: '20px'
-            }}>
-                <button 
-                    className="titan-btn" 
-                    style={{ 
-                        background: 'transparent', 
-                        border: '1px solid var(--glass-border)', 
-                        color: 'white',
-                        flex: 1
-                    }} 
-                    onClick={prevStep}
-                >
-                    Voltar
-                </button>
-                <button 
-                    className="titan-btn" 
-                    onClick={nextStep}
-                    style={{ flex: 1, height: '48px', borderRadius: '12px' }}
-                    disabled={!formData.companyName || !formData.email || !formData.size || !formData.sector || !formData.contact || !formData.serverType}
-                >
-                    Continuar
-                </button>
-            </div>
-        </div>
-    );
-
-    // PASSO 3: INFRAESTRUTURA
-    const renderStep3 = () => (
-        <div className="wizard-content">
-            <h2 className="holographic-text" style={{ textAlign: 'center', marginBottom: '40px', fontSize: '2rem' }}>
-                Infraestrutura
-            </h2>
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(3, 1fr)', 
-                gap: '30px',
-                marginBottom: '40px'
-            }}>
-                {infraOptions.map((infra) => (
-                    <div
-                        key={infra.id}
-                        className={`holo-card ${formData.infra === infra.id ? 'selected' : ''}`}
-                        onClick={() => handleInfraSelect(infra.id)}
-                        style={{ 
-                            textAlign: 'center', 
-                            padding: '40px',
-                            minHeight: '250px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        <div style={{ fontSize: '4rem', marginBottom: '20px' }}>{infra.icon}</div>
-                        <h3 style={{ 
-                            color: formData.infra === infra.id ? 'var(--accent-color)' : 'var(--text-primary)',
-                            marginBottom: '10px',
-                            fontSize: '1.3rem'
-                        }}>
-                            {infra.label}
-                        </h3>
-                        <p style={{ 
-                            color: 'var(--text-secondary)',
-                            fontSize: '0.9rem',
-                            marginTop: '10px'
-                        }}>
-                            {infra.description}
-                        </p>
-                    </div>
-                ))}
-            </div>
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                gap: '20px'
-            }}>
-                <button 
-                    className="titan-btn" 
-                    style={{ 
-                        background: 'transparent', 
-                        border: '1px solid var(--glass-border)', 
-                        color: 'white',
-                        flex: 1
-                    }} 
-                    onClick={prevStep}
-                >
-                    Voltar
-                </button>
-                <button 
-                    className="titan-btn" 
-                    onClick={nextStep} 
-                    disabled={!formData.infra}
-                    style={{ 
-                        opacity: formData.infra ? 1 : 0.4,
-                        flex: 1,
-                        height: '48px',
-                        borderRadius: '12px'
-                    }}
-                >
-                    Continuar
-                </button>
-            </div>
-        </div>
-    );
-
-    // PASSO 4: PAGAMENTO
-    const renderStep4 = () => {
-        const planPrices: { [key: string]: number } = {
-            start: 99.90,
-            pro: 199.90,
-            corp: 399.90,
-            titan: 799.90,
-            elite: 1499.90,
-        };
-
-        const infraPrices: { [key: string]: number } = {
-            cloud: 50.00,
-            local: 0,
-            hd: 0,
-        };
-
-        const planPrice = planPrices[formData.plan] || 0;
-        const infraPrice = infraPrices[formData.infra] || 0;
-        const total = planPrice + infraPrice;
-
-        return (
-            <div className="wizard-content" style={{ maxWidth: '500px', margin: '0 auto' }}>
-                <h2 className="holographic-text" style={{ textAlign: 'center', marginBottom: '40px', fontSize: '2rem' }}>
-                    Pagamento
-                </h2>
-                <div className="glass-panel" style={{ padding: '30px', marginBottom: '30px' }}>
-                    <h3 style={{ 
-                        color: 'var(--accent-color)', 
-                        marginBottom: '20px',
-                        fontSize: '1.2rem'
-                    }}>
-                        Resumo da Assinatura
-                    </h3>
-                    <div style={{ 
-                        marginBottom: '20px', 
-                        borderBottom: '1px solid var(--glass-border)', 
-                        paddingBottom: '20px' 
-                    }}>
-                        <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            marginBottom: '10px' 
-                        }}>
-                            <span style={{ color: 'var(--text-secondary)' }}>Plano {formData.plan.toUpperCase()}</span>
-                            <span style={{ fontWeight: 'bold' }}>R$ {planPrice.toFixed(2)}/mês</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: 'var(--text-secondary)' }}>
-                                Infraestrutura: {infraOptions.find(i => i.id === formData.infra)?.label}
-                            </span>
-                            <span style={{ fontWeight: 'bold' }}>
-                                {infraPrice > 0 ? `R$ ${infraPrice.toFixed(2)}/mês` : 'Incluído'}
-                            </span>
-                        </div>
-                    </div>
-                    <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        fontSize: '1.3rem', 
-                        fontWeight: 'bold',
-                        marginBottom: '30px',
-                        paddingTop: '20px',
-                        borderTop: '1px solid var(--glass-border)'
-                    }}>
-                        <span>Total</span>
-                        <span style={{ color: 'var(--accent-color)' }}>R$ {total.toFixed(2)}/mês</span>
-                    </div>
-
-                    <h4 style={{ 
-                        color: 'var(--text-primary)', 
-                        marginBottom: '15px',
-                        fontSize: '1rem'
-                    }}>
-                        Dados do Cartão
-                    </h4>
-                    <input 
-                        type="text" 
-                        placeholder="Número do Cartão" 
-                        className="titan-input" 
-                        style={{ marginBottom: '15px' }} 
-                    />
-                    <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
-                        <input 
-                            type="text" 
-                            placeholder="Validade (MM/AA)" 
-                            className="titan-input" 
-                        />
-                        <input 
-                            type="text" 
-                            placeholder="CVV" 
-                            className="titan-input" 
-                        />
-                    </div>
-                    <input 
-                        type="text" 
-                        placeholder="Nome no Cartão" 
-                        className="titan-input" 
-                        style={{ marginBottom: '30px' }} 
-                    />
-
-                    <button 
-                        className="titan-btn final-btn" 
-                        style={{ width: '100%', height: '48px', borderRadius: '12px' }} 
-                        onClick={handleFinalize}
-                        disabled={loading}
-                    >
-                        {loading ? 'Processando...' : 'FINALIZAR CADASTRO'}
-                    </button>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                    <button 
-                        className="titan-btn" 
-                        style={{ 
-                            background: 'transparent', 
-                            border: '1px solid var(--glass-border)', 
-                            color: 'white' 
-                        }} 
-                        onClick={prevStep}
-                    >
-                        Voltar
-                    </button>
-                </div>
-            </div>
-        );
-    };
-
     return (
-        <div style={{ 
-            position: 'relative', 
-            width: '100vw', 
-            height: '100vh', 
-            overflow: 'hidden',
-            background: 'var(--bg-app)'
-        }}>
-            {/* Barra de Progresso no Topo (FIXA) */}
-            <div className="wizard-progress-top">
-                <div 
-                    className="wizard-progress-fill-top"
-                    style={{ width: `${(step / 4) * 100}%` }}
-                />
+        <div className="wizard-container">
+            {/* STEPS INDICATOR */}
+            <div className="wizard-steps-indicator">
+                {[1, 2, 3, 4].map(s => (
+                    <div key={s} className={`step-indicator ${step >= s ? 'active' : ''}`} />
+                ))}
             </div>
 
+            <div className="glass card-face" style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+                <h2 className="holographic-text" style={{ textAlign: 'center', marginBottom: '30px', fontSize: '1.5rem' }}>
+                    {step === 1 && 'Escolha seu Plano'}
+                    {step === 2 && 'Dados da Empresa'}
+                    {step === 3 && 'Infraestrutura'}
+                    {step === 4 && 'Pagamento'}
+                </h2>
 
-            {/* Back to Login Button */}
-            <div className="top-left-controls">
-                <button 
-                    className="icon-btn" 
-                    onClick={() => navigate('/')}
-                    aria-label="Voltar para login"
-                    title="Voltar para login"
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M19 12H5M12 19l-7-7 7-7"/>
-                    </svg>
-                </button>
-            </div>
+                <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '10px' }}>
 
-            {/* Language Switcher (Bottom Right) */}
-            <LanguageSwitcher />
+                    {/* STEP 1: PLANS */}
+                    {step === 1 && (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+                            {['start', 'pro', 'corp'].map(p => (
+                                <div
+                                    key={p}
+                                    className={`holo-card ${formData.plan === p ? 'selected' : ''}`}
+                                    onClick={() => setFormData({ ...formData, plan: p })}
+                                    style={{ textAlign: 'center' }}
+                                >
+                                    <h3 style={{ textTransform: 'uppercase', color: 'var(--accent-color)' }}>{p}</h3>
+                                    <p style={{ margin: '10px 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                                        {p === 'start' ? 'Para iniciantes' : p === 'pro' ? 'Para crescimento' : 'Para grandes empresas'}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
-            <div className="wizard-container">
+                    {/* STEP 2: COMPANY DATA */}
+                    {step === 2 && (
+                        <div style={{ display: 'grid', gap: '15px' }}>
+                            <div className="input-group">
+                                <label>Nome da Empresa</label>
+                                <input name="companyName" value={formData.companyName} onChange={handleChange} placeholder="Ex: Titan Corp" />
+                            </div>
+                            <div className="input-group">
+                                <label>Email Administrativo</label>
+                                <input name="email" value={formData.email} onChange={handleChange} placeholder="admin@titan.com" />
+                            </div>
+                            <div className="input-group">
+                                <label>Senha Mestra</label>
+                                <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="******" />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <label>CNPJ</label>
+                                    <input name="cnpj" value={formData.cnpj} onChange={handleChange} placeholder="00.000.000/0001-00" />
+                                </div>
+                                <div>
+                                    <label>WhatsApp / Contato</label>
+                                    <input name="whatsapp" value={formData.whatsapp} onChange={handleChange} placeholder="(11) 99999-9999" />
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <label>Tamanho</label>
+                                    <select name="businessSize" value={formData.businessSize} onChange={handleChange}>
+                                        <option value="mei">MEI</option>
+                                        <option value="micro">Micro</option>
+                                        <option value="small">Pequena</option>
+                                        <option value="medium">Média</option>
+                                        <option value="large">Grande</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Setor</label>
+                                    <select name="sector" value={formData.sector} onChange={handleChange}>
+                                        <option value="retail">Varejo</option>
+                                        <option value="services">Serviços</option>
+                                        <option value="tech">Tecnologia</option>
+                                        <option value="industry">Indústria</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                {/* Indicadores de Passo */}
-                <div className="wizard-steps-indicator">
-                    {[1, 2, 3, 4].map((s) => (
-                        <div 
-                            key={s} 
-                            className={`step-indicator ${step >= s ? 'active' : ''}`} 
-                        />
-                    ))}
+                    {/* STEP 3: INFRASTRUCTURE */}
+                    {step === 3 && (
+                        <div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                                <div
+                                    className={`holo-card ${formData.storageType === 'cloud' ? 'selected' : ''}`}
+                                    onClick={() => setFormData({ ...formData, storageType: 'cloud' })}
+                                >
+                                    <Server size={32} style={{ marginBottom: '10px' }} />
+                                    <h4>Titan Cloud</h4>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>100% Nuvem Segura</p>
+                                </div>
+                                <div
+                                    className={`holo-card ${formData.storageType === 'local' ? 'selected' : ''}`}
+                                    onClick={() => setFormData({ ...formData, storageType: 'local' })}
+                                >
+                                    <Building size={32} style={{ marginBottom: '10px' }} />
+                                    <h4>Local Server</h4>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Servidor Próprio</p>
+                                </div>
+                                <div
+                                    className={`holo-card ${formData.storageType === 'hybrid' ? 'selected' : ''}`}
+                                    onClick={() => setFormData({ ...formData, storageType: 'hybrid' })}
+                                >
+                                    <CheckCircle size={32} style={{ marginBottom: '10px' }} />
+                                    <h4>Híbrido</h4>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Sync Automático</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STEP 4: PAYMENT */}
+                    {step === 4 && (
+                        <div>
+                            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                <CreditCard size={48} style={{ color: 'var(--accent-color)' }} />
+                                <p style={{ marginTop: '10px' }}>Gateway Seguro AES-256</p>
+                            </div>
+                            <div className="input-group">
+                                <label>Número do Cartão</label>
+                                <input name="cardNumber" value={formData.cardNumber} onChange={handleChange} placeholder="0000 0000 0000 0000" />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <label>Validade</label>
+                                    <input name="cardExpiry" value={formData.cardExpiry} onChange={handleChange} placeholder="MM/AA" />
+                                </div>
+                                <div>
+                                    <label>CVC</label>
+                                    <input name="cardCvc" value={formData.cardCvc} onChange={handleChange} placeholder="123" />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                 </div>
 
-                {step === 1 && renderStep1()}
-                {step === 2 && renderStep2()}
-                {step === 3 && renderStep3()}
-                {step === 4 && renderStep4()}
+                {/* NAVIGATION BUTTONS */}
+                <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
+                    {step > 1 && (
+                        <button className="btn btn-ghost" onClick={() => setStep(step - 1)}>
+                            Voltar
+                        </button>
+                    )}
+
+                    {step < 4 ? (
+                        <button className="btn btn-primary" onClick={() => setStep(step + 1)}>
+                            Próximo
+                        </button>
+                    ) : (
+                        <button className="btn btn-primary" onClick={handleFinish} disabled={loading}>
+                            {loading ? 'Processando...' : 'FINALIZAR CADASTRO'}
+                        </button>
+                    )}
+                </div>
+
             </div>
         </div>
     );

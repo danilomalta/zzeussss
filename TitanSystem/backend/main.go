@@ -36,7 +36,6 @@ func init() {
 		JWTSecret = []byte("titan_super_secret_key_change_in_production")
 	}
 	if len(AESKey) != 32 {
-		// Default key for dev only. In prod, panic if not set.
 		log.Println("⚠️  AES_KEY not set or invalid length. Using dev key.")
 		AESKey = []byte("12345678901234567890123456789012")
 	}
@@ -81,12 +80,11 @@ type AuditLog struct {
 	IP        string    `json:"ip"`
 	UserAgent string    `json:"user_agent"`
 	Timestamp time.Time `json:"timestamp"`
-	RiskLevel string    `json:"risk_level"` // Low, Medium, High, Critical
+	RiskLevel string    `json:"risk_level"`
 }
 
 // --- SECURITY UTILS ---
 
-// Encrypt encrypts plain text string into base64 encoded string
 func Encrypt(plaintext string) (string, error) {
 	block, err := aes.NewCipher(AESKey)
 	if err != nil {
@@ -107,7 +105,6 @@ func Encrypt(plaintext string) (string, error) {
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
-// Decrypt decrypts base64 encoded string
 func Decrypt(cryptoText string) (string, error) {
 	data, err := base64.StdEncoding.DecodeString(cryptoText)
 	if err != nil {
@@ -138,17 +135,13 @@ func Decrypt(cryptoText string) (string, error) {
 	return string(plaintext), nil
 }
 
-// HashPassword hashes password using Argon2id
 func HashPassword(password string) string {
 	salt := make([]byte, 16)
 	rand.Read(salt)
 	hash := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
-
-	// Format: salt:hash (hex encoded)
 	return hex.EncodeToString(salt) + ":" + hex.EncodeToString(hash)
 }
 
-// VerifyPassword verifies Argon2id hash
 func VerifyPassword(password, encodedHash string) bool {
 	parts := split(encodedHash, ":")
 	if len(parts) != 2 {
@@ -158,7 +151,6 @@ func VerifyPassword(password, encodedHash string) bool {
 	targetHash, _ := hex.DecodeString(parts[1])
 
 	hash := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
-
 	return string(hash) == string(targetHash)
 }
 
@@ -183,10 +175,8 @@ func AuditLogger() fiber.Handler {
 		start := time.Now()
 		err := c.Next()
 
-		// Log asynchronously
 		go func() {
 			userID := uint(0)
-			// Try to get user ID from locals if authenticated
 			if claims, ok := c.Locals("user").(*jwt.Token); ok {
 				if mapClaims, ok := claims.Claims.(jwt.MapClaims); ok {
 					if id, ok := mapClaims["user_id"].(float64); ok {
@@ -220,14 +210,14 @@ func AuditLogger() fiber.Handler {
 // --- HANDLERS ---
 
 type RegisterRequest struct {
-	CompanyName  string `json:"company"`
+	CompanyName  string `json:"companyName"`
 	Email        string `json:"email"`
 	Password     string `json:"password"`
-	Plan         string `json:"plan"` // start, pro, corp
-	CNPJ         string `json:"cnpj"` // Will be encrypted
-	BusinessSize string `json:"business_size"`
+	Plan         string `json:"plan"`
+	CNPJ         string `json:"cnpj"`
+	BusinessSize string `json:"businessSize"`
 	Sector       string `json:"sector"`
-	StorageType  string `json:"storage_type"`
+	StorageType  string `json:"storageType"`
 }
 
 func Register(c *fiber.Ctx) error {
@@ -236,18 +226,15 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
-	// 1. Encrypt Sensitive Data
 	encryptedCNPJ, err := Encrypt(req.CNPJ)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Encryption failed"})
 	}
 
-	// 2. Hash Password
 	hashedPassword := HashPassword(req.Password)
 
 	tx := DB.Begin()
 
-	// 3. Create Company
 	company := Company{
 		Name:          req.CompanyName,
 		Email:         req.Email,
@@ -262,7 +249,6 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not create company"})
 	}
 
-	// 4. Create User
 	user := User{
 		Email:     req.Email,
 		Password:  hashedPassword,
@@ -274,13 +260,12 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not create user"})
 	}
 
-	// 5. Create Billing (Active)
 	billing := Billing{
 		CompanyID:     company.ID,
 		Status:        "Active",
-		NextDueDate:   time.Now().AddDate(0, 1, 0), // +1 Month
+		NextDueDate:   time.Now().AddDate(0, 1, 0),
 		PaymentMethod: "Credit Card",
-		Amount:        99.00, // Dynamic based on plan
+		Amount:        99.00,
 	}
 	if err := tx.Create(&billing).Error; err != nil {
 		tx.Rollback()
@@ -311,12 +296,11 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
 	}
 
-	// Generate JWT
 	claims := jwt.MapClaims{
 		"user_id":    user.ID,
 		"company_id": user.CompanyID,
 		"role":       user.Role,
-		"exp":        time.Now().Add(time.Minute * 15).Unix(), // 15 min expiration
+		"exp":        time.Now().Add(time.Minute * 15).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString(JWTSecret)
@@ -324,13 +308,12 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not login"})
 	}
 
-	// Set Cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "jwt",
 		Value:    t,
 		Expires:  time.Now().Add(time.Minute * 15),
 		HTTPOnly: true,
-		Secure:   true, // Ensure HTTPS in prod
+		Secure:   true,
 		SameSite: "Strict",
 	})
 
@@ -344,10 +327,6 @@ func Login(c *fiber.Ctx) error {
 }
 
 func GetBillingStatus(c *fiber.Ctx) error {
-	// Mock implementation for now, assuming authenticated via middleware
-	// In real implementation, extract company_id from JWT
-
-	// For demo purposes, returning active status
 	return c.JSON(fiber.Map{
 		"status":   "Active",
 		"active":   true,
@@ -359,7 +338,6 @@ func GetBillingStatus(c *fiber.Ctx) error {
 // --- MAIN ---
 
 func main() {
-	// Database Connection
 	var err error
 	driver := os.Getenv("DB_DRIVER")
 	dsn := os.Getenv("DB_DSN")
@@ -380,15 +358,12 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Auto Migrate
 	DB.AutoMigrate(&Company{}, &User{}, &Billing{}, &AuditLog{})
 
-	// App Config
 	app := fiber.New(fiber.Config{
 		AppName: "Titan System Backend",
 	})
 
-	// Middleware
 	app.Use(helmet.New())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:5173",
@@ -396,21 +371,20 @@ func main() {
 	}))
 	app.Use(AuditLogger())
 
-	// Rate Limiter for Login
+	// Rate Limiter: 5 attempts per minute
 	loginLimiter := limiter.New(limiter.Config{
 		Max:        5,
-		Expiration: 1 * time.Hour,
+		Expiration: 1 * time.Minute,
 		KeyGenerator: func(c *fiber.Ctx) string {
 			return c.IP()
 		},
 		LimitReached: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error": "Too many login attempts. Try again in 1 hour.",
+				"error": "Too many login attempts. Try again in 1 minute.",
 			})
 		},
 	})
 
-	// Routes
 	api := app.Group("/api")
 
 	auth := api.Group("/auth")

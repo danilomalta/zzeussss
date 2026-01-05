@@ -1,176 +1,73 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth, AuthProvider } from './context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
-import { LanguageProvider } from './context/LanguageContext';
-import AuthLayout from './layouts/AuthLayout';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Globe } from 'lucide-react';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import ClientList from './pages/Clients/ClientList';
 import RegisterWizard from './pages/Auth/RegisterWizard';
 import WebLite from './pages/WebLite/WebLite';
-import MainLayout from './components/Layout/MainLayout';
+import Dashboard from './pages/Dashboard';
 import './index.css';
 
 // --- ENVIRONMENT DETECTION ---
-const isElectron = (): boolean => {
+const isElectron = () => {
     const userAgent = navigator.userAgent.toLowerCase();
     return userAgent.indexOf(' electron/') > -1;
 };
 
-const isBrowser = (): boolean => {
-    return !isElectron();
-};
-
 // --- GUARDS ---
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-    const { signed, loading } = useAuth();
-    if (loading) {
-        return (
-            <div className="glass-panel" style={{ 
-                padding: 40, 
-                color: 'white',
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 9999
-            }}>
-                Carregando Titan System...
-            </div>
-        );
-    }
-    return signed ? children : <Navigate to="/" />;
-};
-
-// Guard para rotas apenas Desktop (Electron)
-const DesktopOnlyRoute = ({ children }: { children: JSX.Element }) => {
+const PlatformGuard = ({ children }: { children: JSX.Element }) => {
     const isApp = isElectron();
-
-    if (!isApp) {
-        // Se for WEB, redireciona para /web-panel
-        return <Navigate to="/web-panel" replace />;
-    }
-
-    // Se for APP (Electron), permite acesso
+    if (!isApp) return <Navigate to="/web-lite" replace />;
     return children;
 };
 
-// Guard para rotas apenas Web (Browser)
-const WebOnlyRoute = ({ children }: { children: JSX.Element }) => {
-    const isApp = isElectron();
-
-    if (isApp) {
-        // Se for Electron, redireciona para dashboard
-        return <Navigate to="/dashboard" replace />;
-    }
-
-    // Se for Browser, permite acesso
+const WebGuard = ({ children }: { children: JSX.Element }) => {
+    // Allow web users to see WebLite
     return children;
 };
 
 const App = () => {
+    const [lang, setLang] = useState('EN');
+    const location = useLocation();
+
+    // Auto-detect theme (always dark for Titanium)
+    useEffect(() => {
+        document.body.classList.add('dark');
+    }, []);
+
     return (
-        <ThemeProvider>
-            <LanguageProvider>
-                <AuthProvider>
-                    <Routes>
-                        {/* PUBLIC ROUTES */}
-                        <Route element={<AuthLayout />}>
-                            <Route path="/" element={<Login />} />
-                            <Route path="/login" element={<Login />} />
-                        </Route>
+        <>
+            <Routes>
+                {/* PUBLIC */}
+                <Route path="/" element={<Login />} />
+                <Route path="/register" element={<RegisterWizard />} />
 
-                        <Route path="/register" element={<RegisterWizard />} />
+                {/* WEB LITE (Browser) */}
+                <Route path="/web-lite" element={
+                    <WebGuard>
+                        <WebLite />
+                    </WebGuard>
+                } />
 
-                        {/* WEB PANEL (Apenas Browser - Faturas, Status, Download) */}
-                        <Route 
-                            path="/web-panel" 
-                            element={
-                                <ProtectedRoute>
-                                    <WebOnlyRoute>
-                                        <MainLayout>
-                                            <WebLite />
-                                        </MainLayout>
-                                    </WebOnlyRoute>
-                                </ProtectedRoute>
-                            } 
-                        />
+                {/* DASHBOARD (Electron Only) */}
+                <Route path="/dashboard" element={
+                    <PlatformGuard>
+                        <Dashboard />
+                    </PlatformGuard>
+                } />
 
-                        {/* Alias para compatibilidade */}
-                        <Route 
-                            path="/web-lite" 
-                            element={<Navigate to="/web-panel" replace />} 
-                        />
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
 
-                        {/* APP ROUTES (Apenas Electron - ERP, CRM, PDV) */}
-                        <Route 
-                            path="/dashboard" 
-                            element={
-                                <ProtectedRoute>
-                                    <DesktopOnlyRoute>
-                                        <MainLayout>
-                                            <Dashboard />
-                                        </MainLayout>
-                                    </DesktopOnlyRoute>
-                                </ProtectedRoute>
-                            } 
-                        />
-
-                        <Route 
-                            path="/clients" 
-                            element={
-                                <ProtectedRoute>
-                                    <DesktopOnlyRoute>
-                                        <MainLayout>
-                                            <ClientList />
-                                        </MainLayout>
-                                    </DesktopOnlyRoute>
-                                </ProtectedRoute>
-                            } 
-                        />
-
-                        <Route 
-                            path="/pdv" 
-                            element={
-                                <ProtectedRoute>
-                                    <DesktopOnlyRoute>
-                                        <MainLayout>
-                                            <div className="glass-panel" style={{ padding: '40px' }}>
-                                                <h1 className="holographic-text">PDV System</h1>
-                                                <p style={{ color: 'var(--text-secondary)', marginTop: '20px' }}>
-                                                    Sistema de Ponto de Venda - Apenas disponível no App Desktop
-                                                </p>
-                                            </div>
-                                        </MainLayout>
-                                    </DesktopOnlyRoute>
-                                </ProtectedRoute>
-                            } 
-                        />
-
-                        <Route 
-                            path="/crm" 
-                            element={
-                                <ProtectedRoute>
-                                    <DesktopOnlyRoute>
-                                        <MainLayout>
-                                            <div className="glass-panel" style={{ padding: '40px' }}>
-                                                <h1 className="holographic-text">CRM System</h1>
-                                                <p style={{ color: 'var(--text-secondary)', marginTop: '20px' }}>
-                                                    Sistema de Gestão de Clientes - Apenas disponível no App Desktop
-                                                </p>
-                                            </div>
-                                        </MainLayout>
-                                    </DesktopOnlyRoute>
-                                </ProtectedRoute>
-                            } 
-                        />
-
-                        {/* Fallback */}
-                        <Route path="*" element={<Navigate to="/" />} />
-                    </Routes>
-                </AuthProvider>
-            </LanguageProvider>
-        </ThemeProvider>
+            {/* LANGUAGE CONTROL (Fixed Bottom Right) */}
+            {location.pathname === '/' && (
+                <div className="lang-control">
+                    <button className="lang-btn" onClick={() => setLang(lang === 'EN' ? 'PT' : 'EN')}>
+                        <Globe size={16} /> {lang}
+                    </button>
+                </div>
+            )}
+        </>
     );
 };
 
