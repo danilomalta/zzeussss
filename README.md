@@ -1,16 +1,28 @@
-# React + Vite
+# TitanSystem (Monorepo)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+O **TitanSystem** é um ecossistema de **PDV (POS) multiplataforma** organizado como monorepo.
 
-Currently, two official plugins are available:
+## Pilares
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Backend (Go)**: API HTTP com **Fiber** + persistência com **GORM** em **SQLite** (`titan_pos.db`).
+- **Frontend Web (React)**: dashboard/gestão e UI principal (base para o Desktop).
+- **Desktop (Electron)**: empacota o frontend web para Windows/Linux/macOS.
+- **Mobile (React Native + Expo)**: operação em campo (garçons/atendentes) e dispositivos móveis.
 
-## React Compiler
+## Onde está o código
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+O código do monorepo fica dentro de `TitanSystem/`:
 
-## Expanding the ESLint configuration
+- `TitanSystem/backend/`
+- `TitanSystem/frontend/`
+- `TitanSystem/desktop/`
+- `TitanSystem/mobile/`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Documentação por pasta
+
+Cada pasta do monorepo possui um `README.md` explicando:
+
+- o propósito da pasta
+- como ela se conecta ao restante do sistema
+- o que deve ser implementado ali
+

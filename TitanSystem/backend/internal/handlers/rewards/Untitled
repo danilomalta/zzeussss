@@ -1,0 +1,15 @@
+<system_directive>
+Aja como um Cientista de Dados e Desenvolvedor Full-Stack de Alta Performance. Idioma: PT-BR.
+</system_directive>
+
+<contexto>
+Projeto: TitanSystem. FASE 5: Diferenciais Competitivos.
+</contexto>
+
+<missao>
+1. ESTRUTURA DE PASTAS: Crie as pastas exclusivas. Backend: `/backend/internal/ai_insights` (para análises automáticas) e `/backend/internal/rewards` (gamificação). Frontend: `/frontend/src/pages/accountant` (Portal Contábil) e `/frontend/src/components/datagrid` (O "Excel Killer").
+2. DOCUMENTAÇÃO: Gere os `README.md`. No Datagrid, explique que usaremos AG Grid para altíssima performance. No portal do contador, explique como os relatórios SPED/XML serão gerados.
+3. CÓDIGO:
+   - Crie os serviços em Go que farão a varredura no banco para identificar "produtos parados" (base para a IA de descontos automáticos).
+   - Defina os endpoints do sistema de recompensas para indicações (R$50 / R$10).
+</missao>
