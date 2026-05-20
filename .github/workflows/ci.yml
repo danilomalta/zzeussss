@@ -1,0 +1,41 @@
+name: TitanSystem CI
+
+# Pipeline principal para integração contínua do ecossistema.
+# Foca em rodar testes e lint para garantir que a base mestre não se quebre.
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  backend-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+      - name: Build
+        working-directory: ./backend
+        run: go build -v ./...
+      - name: Test
+        working-directory: ./backend
+        run: go test -v ./...
+
+  frontend-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: ./frontend-web
+        run: npm install
+      - name: Build
+        working-directory: ./frontend-web
+        run: npm run build

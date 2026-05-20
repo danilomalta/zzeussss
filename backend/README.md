@@ -1,19 +1,22 @@
-# `backend/` (Raiz do Backend)
+# Backend (Go + Fiber + GORM + SQLite)
 
-Esta pasta representa a **raiz do backend** no monorepo.
+Este diretório contém a **API do TitanSystem**.
 
-## Atenção (estado atual do repositório)
+## Objetivo
 
-No estado atual, o código do backend está em `TitanSystem/backend/`.
+- Expor endpoints HTTP (Fiber) para operações de PDV: catálogo, pedidos, status do sistema, etc.
+- Persistir dados localmente em **SQLite** via **GORM** (e, no futuro, suportar outro banco se necessário).
 
-Esta pasta existe para cumprir a separação **na raiz** (`backend/`, `frontend/`, `desktop/`, `mobile/`) e deixar a arquitetura óbvia para qualquer pessoa que abrir o monorepo.
+## Pastas principais
 
-## Como isso se conecta ao sistema
+- **`cmd/`**: pontos de entrada (executáveis). Cada subpasta representa um binário.
+- **`internal/`**: implementação interna (não deve ser importada por outros módulos).
+- **`titan_pos.db`**: banco SQLite local do ambiente de desenvolvimento (pode ser sobrescrito via variável de ambiente).
 
-- O backend expõe a API HTTP e é consumido pelo Web, Computador e Mobile.
-- A implementação atual (Go + Fiber + GORM + SQLite) está dentro de `TitanSystem/backend/`.
+## O que deve ser programado aqui
 
-## O que deve morar aqui (próximo passo de organização)
-
-- Em uma limpeza de repositório, o conteúdo de `TitanSystem/backend/` deve ser movido para `backend/` preservando histórico de versão.
+- **Modelos** de domínio (ex.: `Product`, `Order`) em `internal/models`.
+- **Conexão e migrações** do banco em `internal/database`.
+- **Rotas e handlers** HTTP em `internal/routes` e `internal/handlers`.
+- **Configuração** (env, portas, caminhos) em `internal/config`.
 
