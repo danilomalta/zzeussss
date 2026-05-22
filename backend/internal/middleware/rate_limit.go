@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// RateLimiter retorna um middleware do Fiber para controle de taxa (Rate Limiting).
+// RateLimitMiddleware retorna um middleware do Fiber para controle de taxa (Rate Limiting).
 //
 // REGRAS DE NEGÓCIO E DE SEGURANÇA (SecOps):
 // 1. Prevenção de Ataques de Força Bruta (Brute-Force): Deve limitar tentativas consecutivas
@@ -16,7 +16,7 @@ import (
 //    (ex: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset) informando o estado da cota do cliente.
 // 5. Tratamento de Erro (HTTP 429): Caso o limite seja excedido, deve bloquear imediatamente o fluxo e retornar
 //    status HTTP 429 (Too Many Requests) com uma resposta JSON segura.
-func RateLimiter() fiber.Handler {
+func RateLimitMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// A lógica futura irá:
 		// a) Extrair o IP do cliente (c.IP()) ou cabeçalho de proxy confiável (X-Forwarded-For).

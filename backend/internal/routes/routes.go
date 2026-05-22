@@ -5,6 +5,7 @@ import (
 	"titansystem-backend/internal/handlers"
 	handlers_ai "titansystem-backend/internal/handlers/ai_insights"
 	handlers_recompensas "titansystem-backend/internal/handlers/rewards"
+	"titansystem-backend/internal/usecase/auth"
 	"titansystem-backend/internal/websocket"
 )
 
@@ -12,6 +13,13 @@ import (
 func Registrar(app *fiber.App) {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
+
+	// Autenticação (SecOps)
+	authUseCase := auth.NewLoginUseCase()
+	authHandler := handlers.NewAuthHandler(authUseCase)
+	authGroup := v1.Group("/auth")
+	authGroup.Post("/login", authHandler.Login)
+	authGroup.Post("/refresh", authHandler.RefreshToken)
 
 	v1.Get("/saude", handlers.Saude)
 

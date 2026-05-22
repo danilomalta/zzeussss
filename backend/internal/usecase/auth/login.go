@@ -1,5 +1,19 @@
 package auth
 
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"errors"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
+	"titansystem-backend/internal/database"
+	"titansystem-backend/internal/models"
+)
+
 // LoginInput define os dados necessários para que um usuário tente se autenticar no sistema.
 type LoginInput struct {
 	// E-mail corporativo do usuário utilizado como identificador primário
@@ -33,21 +47,78 @@ type LoginUseCase interface {
 	Execute(input LoginInput) (*LoginOutput, error)
 }
 
-// REGRAS DE NEGÓCIO E DE SEGURANÇA (SecOps) - LOGIN:
-// 1. Sanitização e Validação: Os campos de entrada (Email e Password) devem ser limpos (trim)
-//    e validados sintaticamente (verificar formato de e-mail, comprimento de senha) antes de prosseguir.
-// 2. Busca e Verificação de Hash: O usuário deve ser buscado no banco de dados. A senha fornecida
-//    deve ser validada utilizando um algoritmo de hashing robusto (como bcrypt.CompareHashAndPassword ou Argon2id)
-//    contra o hash salvo. Em caso de credencial inválida, deve-se responder com uma mensagem genérica
-//    (ex: "usuário ou senha inválidos") para evitar Enumeração de Usuários (User Enumeration).
-// 3. Geração de Access Token (JWT): Gerar um token JWT de curto prazo (expiração máxima recomendada: 15 minutos).
-//    Esse token deve conter claims básicas (sub/userID, role, exp, iat) assinadas criptograficamente com o JWT_SECRET.
-//    O AccessToken é devolvido no corpo da resposta JSON para armazenamento seguro na memória da aplicação do cliente.
-// 4. Geração de Refresh Token: Criar uma string criptograficamente segura e aleatória (ex: UUIDv4 de alta entropia)
-//    com expiração de longo prazo (ex: 7 dias), persistida no banco ou cache como ativa associada ao UserID.
-//    O Refresh Token NUNCA deve ser retornado no corpo da resposta JSON do endpoint público principal.
-// 5. Armazenamento Seguro (HttpOnly Cookie): O Refresh Token gerado deve ser enviado de volta ao cliente via
-//    cabeçalho HTTP 'Set-Cookie' utilizando flags estritas de proteção:
-//    - HttpOnly (impede leitura por scripts maliciosos, anulando ataques de roubo via XSS).
-//    - Secure (obriga tráfego apenas sobre HTTPS).
-//    - SameSite=Lax ou SameSite=Strict (mitiga ataques de CSRF).
+// loginUseCaseImpl é a implementação real da lógica de negócio e segurança de autenticação.
+type loginUseCaseImpl struct{}
+
+// NewLoginUseCase instancia uma implementação real do LoginUseCase.
+func NewLoginUseCase() LoginUseCase {
+	return &loginUseCaseImpl{}
+}
+
+// Execute valida as credenciais, verifica a criptografia da senha e gera os tokens de sessão.
+func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
+	// 1. Sanitização e Validação básica
+	email := strings.TrimSpace(strings.ToLower(input.Email))
+	if email == "" || input.Password == "" {
+		return nil, errors.New("e-mail ou senha inválidos")
+	}
+
+	// 2. Busca do usuário pelo e-mail
+	var user models.User
+	if err := database.DB.Where("email = ?", email).First(&user).Error; err != nil {
+		// [SecOps] Proteção contra enumeração de usuários (retorna erro genérico)
+		return nil, errors.New("e-mail ou senha inválidos")
+	}
+
+	// 3. Validação criptográfica da senha (Bcrypt)
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
+		// [SecOps] Retorna erro idêntico para evitar inferência de existência de usuário
+		return nil, errors.New("e-mail ou senha inválidos")
+	}
+
+	// 4. Emissão do Access Token (JWT - expira em 15 minutos)
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "super_secret_key_change_in_prod"
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":  user.ID,
+		"role": user.Role,
+		"name": user.Name,
+		"exp":  time.Now().Add(15 * time.Minute).Unix(),
+		"iat":  time.Now().Unix(),
+	})
+
+	accessToken, err := token.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return nil, fmtError("falha ao assinar token de acesso: %w", err)
+	}
+
+	// 5. Emissão do Refresh Token (String criptograficamente segura - 32 bytes)
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return nil, fmtError("falha ao gerar refresh token: %w", err)
+	}
+	refreshToken := hex.EncodeToString(b)
+
+	// Duração de expiração em segundos (15 minutos = 900 segundos)
+	expiresIn := int64(15 * 60)
+
+	return &LoginOutput{
+		AccessToken:  accessToken,
+		ExpiresIn:    expiresIn,
+		RefreshToken: refreshToken,
+		User: UserResponse{
+			ID:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+			Role:  user.Role,
+		},
+	}, nil
+}
+
+// fmtError é um pequeno utilitário local para evitar quebra com imports e manter legibilidade
+func fmtError(format string, err error) error {
+	return errors.New(strings.Replace(format, "%w", err.Error(), 1))
+}
