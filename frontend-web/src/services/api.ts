@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse, AxiosError } from 'axios';
 
 /*
 API CLIENT (AXIOS INTERCEPTORS)
@@ -6,11 +6,13 @@ API CLIENT (AXIOS INTERCEPTORS)
 Configuração mestre de saída de rede do React/Vite.
 
 Regras de Segurança:
-1. `withCredentials: true`: CRÍTICO. Instrui o navegador a enviar silenciosamente
-   o Cookie HttpOnly gerado no login em toda requisição subsequente. Sem isso,
-   o AuthGuard no Go vai recusar os acessos.
-2. Interceptor de Resposta: Capta ataques expirados (401) ou tentativas de acesso 
-   não autorizadas por Role (403) para ejetar o usuário instantaneamente para a tela de Login.
+1. `withCredentials: true`: [CRÍTICO & OBRIGATÓRIO]
+   Esta diretiva é ABSOLUTAMENTE OBRIGATÓRIA para que o navegador aceite, armazene
+   e envie silenciosamente o "Refresh Token" trafegado em cookie seguro com a flag HttpOnly.
+   Sem esta configuração ativada no Axios, o navegador descartará o cookie de autenticação
+   e as requisições protegidas subsequentes falharão no AuthGuard do backend.
+2. Interceptor de Resposta: Capta ataques expirados (401) ou de privilégios RBAC (403)
+   para redirecionar ou ejetar o usuário.
 */
 
 export const api = axios.create({
@@ -25,8 +27,8 @@ export const api = axios.create({
 
 // Interceptor de Resposta
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  (response: AxiosResponse) => response,
+  (error: AxiosError) => {
     if (error.response?.status === 401) {
       // Token expirou ou cookie sumiu. Disparar Logout Global do Zustand.
       console.warn("Sessão Inválida - Acesso Negado");

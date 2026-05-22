@@ -36,6 +36,15 @@ func NewAuthHandler() *AuthHandler {
 // 4. Retorno de Access Token (Body): O Access Token (JWT de curta duração) é enviado de volta ao cliente
 //    no corpo da resposta HTTP no formato JSON seguro, juntamente com os dados resumidos do usuário autenticado.
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
+	// [DIRETIVA DE SEGURANÇA E ARQUITETURA - SECOPS]
+	// O "Access Token (JWT)" pode ser retornado livremente no corpo JSON da resposta (pois é de curta duração e será mantido em memória no frontend).
+	// No entanto, o "Refresh Token" NUNCA deve ser enviado no JSON. Ele DEVE ser injetado exclusivamente através de Cookie seguro usando `c.Cookie()`
+	// configurado obrigatoriamente com as flags:
+	//   - HTTPOnly: true (impede roubo via ataques XSS no frontend)
+	//   - Secure: true (garante tráfego estrito via HTTPS em produção)
+	//   - SameSite: "Lax" (previne CSRF)
+	//   - Path: "/api/v1/auth/refresh" (restringe o envio do cookie apenas a rota de renovação, blindando os outros endpoints)
+	//
 	// A lógica futura irá:
 	// a) Fazer o binding do body (c.BodyParser) para uma struct LoginInput.
 	// b) Chamar loginUseCase.Execute(input).
@@ -46,7 +55,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	//        Value:    output.RefreshToken,
 	//        Expires:  time.Now().Add(7 * 24 * time.Hour),
 	//        HTTPOnly: true,
-	//        Secure:   true, // Ativar em prod
+	//        Secure:   true, // OBRIGATÓRIO EM PRODUÇÃO
 	//        SameSite: "Lax",
 	//        Path:     "/api/v1/auth/refresh",
 	//    })

@@ -4,7 +4,7 @@ O **TitanSystem** é um ecossistema de **PDV (POS) multiplataforma** organizado 
 
 ## Pilares
 
-- **Backend (Go)**: API HTTP com **Fiber** + persistência com **GORM** em **SQLite** (`titan_pos.db`).
+- **Backend (Go)**: API HTTP com **Fiber** + persistência com **GORM** em **PostgreSQL** (Banco de dados oficial de alta concorrência).
 - **Frontend Web (React)**: dashboard/gestão e UI principal (base para o Desktop).
 - **Desktop (Electron)**: empacota o frontend web para Windows/Linux/macOS.
 - **Mobile (React Native + Expo)**: operação em campo (garçons/atendentes) e dispositivos móveis.
