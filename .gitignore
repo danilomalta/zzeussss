@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# SecOps: Proteção de credenciais e infraestrutura
+.env
+.env.*
+!.env.example
+docker-compose.override.yml
+*.db
+*.sqlite
+/node_modules
+/dist

@@ -1,31 +1,32 @@
 package middleware
 
-import "time"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
-/*
-AUTH GUARD (JWT & Session Validation)
-=====================================
-A Espinha Dorsal da Segurança Zero-Trust do TitanSystem.
-
-Regras de Negócio e Segurança:
-1. Em vez de ler o `Authorization: Bearer <token>`, deve primariamente ler o token 
-   de um **Cookie HttpOnly e Secure**. Isso imunda completamente ataques de roubo 
-   de JWT via JavaScript malicioso (XSS).
-2. Valida a assinatura do token com chave assimétrica (RS256) ou HS256 com chave forte.
-3. Verifica se o "Role" do usuário bate com os níveis de acesso exigidos pela rota.
-*/
-
-// TokenPayload representa as claims embutidas no JWT gerado após o Login
-type TokenPayload struct {
-	UserID    string
-	Role      string    // Ex: "admin", "cashier", "manager"
-	IssuedAt  time.Time
-	ExpiresAt time.Time
-}
-
-// AuthGuard assina o contrato de validação das rotas trancadas
-type AuthGuard interface {
-	VerifySession() func(ctx interface{}) error
-	RequireRole(roles ...string) func(ctx interface{}) error
-	ExtractTokenFromCookie(ctx interface{}) (string, error)
+// AuthGuard retorna um middleware do Fiber para controle de acesso baseado em autenticação JWT.
+//
+// REGRAS DE NEGÓCIO E DE SEGURANÇA (SecOps):
+// 1. Extração do Token: Deve extrair o JSON Web Token (JWT) a partir do cabeçalho HTTP 'Authorization'
+//    utilizando o esquema 'Bearer <token>'.
+// 2. Validação Criptográfica: Deve decodificar e validar a assinatura do JWT contra o segredo definido
+//    pela variável de ambiente JWT_SECRET, utilizando algoritmos seguros (ex: HS256/RS256).
+// 3. Validação dos Claims Padrão: Verificar estritamente as claims de expiração (exp), data de emissão (iat)
+//    e emissor (iss) para evitar tokens obsoletos ou forjados.
+// 4. Injeção de Contexto (Claims): Se o token for válido, os dados do usuário autenticado (como UserID e Role)
+//    devem ser injetados nas variáveis locais da requisição (c.Locals) para uso nos handlers posteriores.
+// 5. Rejeição Segura (HTTP 401): Qualquer falha de parsing, token expirado, assinatura inválida ou ausência
+//    do cabeçalho deve resultar no bloqueio imediato do fluxo e resposta segura HTTP 401 Unauthorized.
+func AuthGuard() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// A lógica futura irá:
+		// a) Ler o cabeçalho "Authorization".
+		// b) Validar se o formato inicia com "Bearer ".
+		// c) Extrair a string do token.
+		// d) Executar a validação criptográfica (jwt.ParseWithClaims) usando o JWT_SECRET.
+		// e) Validar claims adicionais e injetar o "userID" e "role" em c.Locals("userID") e c.Locals("role").
+		// f) Se qualquer passo falhar, retornar c.Status(fiber.StatusUnauthorized).JSON(...)
+		// g) Se válido, prosseguir com c.Next().
+		return c.Next()
+	}
 }

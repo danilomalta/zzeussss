@@ -1,9 +1,8 @@
-import React from 'react';
-import Router from './routes/Router';
+import AdminDashboard from './pages/Dashboard/AdminDashboard';
 
 function App() {
   return (
-    <Router />
+    <AdminDashboard />
   );
 }
 
