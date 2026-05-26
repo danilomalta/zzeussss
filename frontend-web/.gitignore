@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# SecOps: Proteção de credenciais e infraestrutura
+.env
+.env.*
+!.env.example
+

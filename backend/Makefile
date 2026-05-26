@@ -1,20 +1,20 @@
-# Makefile para orquestração do backend Go TitanSystem
+# Makefile - Automação local do Backend do TitanSystem
+# Tech Lead SecOps - TitanSystem Team
 
-.PHONY: run build test migrate-up migrate-down
+.PHONY: run test test-integration docker-up
 
+# Inicializa o servidor HTTP principal na porta 8080
 run:
 	go run cmd/api/main.go
 
-build:
-	go build -o bin/api cmd/api/main.go
-
+# Executa toda a suíte de testes unitários
 test:
-	go test -v ./...
+	go test -v ./internal/...
 
-migrate-up:
-	@echo "Executando migrations UP..."
-	# Implementar lógica com golang-migrate ou similar
+# Executa especificamente a suíte de testes de integração HTTP E2E
+test-integration:
+	go test -v ./tests/integration/...
 
-migrate-down:
-	@echo "Executando migrations DOWN..."
-	# Implementar lógica com golang-migrate ou similar
+# Levanta os contêineres de infraestrutura na raiz do projeto (PostgreSQL)
+docker-up:
+	docker-compose -f ../docker-compose.yml up -d

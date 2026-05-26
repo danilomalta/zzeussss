@@ -1,4 +1,4 @@
-import AdminDashboard from './pages/Dashboard/AdminDashboard';
+import AdminDashboard from './modules/tenant/pages/AdminDashboard';
 
 function App() {
   return (

@@ -1,0 +1,14 @@
+# SecOps: Proteção de credenciais e infraestrutura do backend
+.env
+.env.*
+!.env.example
+docker-compose.override.yml
+*.db
+*.sqlite
+
+# Binários e builds
+/bin
+/dist
+/out
+/target
+/build
