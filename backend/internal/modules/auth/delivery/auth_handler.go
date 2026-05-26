@@ -1,9 +1,12 @@
 package delivery
 
 import (
+	"log"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"titansystem-backend/internal/modules/auth/usecase"
 )
 
@@ -48,7 +51,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		Expires:  time.Now().Add(7 * 24 * time.Hour), // Expira em 7 dias (SecOps)
 		HTTPOnly: true,                               // Bloqueia roubos de token via javascript do navegador (XSS)
 		Secure:   true,                               // Garante que o cookie apenas trafegará sob SSL/HTTPS
-		SameSite: "Lax",                              // Mitigação padrão para Cross-Site Request Forgery (CSRF)
+		SameSite: "Strict",                           // Mitigação total para Cross-Site Request Forgery (CSRF)
 		Path:     "/api/v1/auth/refresh",             // Restringe o escopo de transmissão de cabeçalhos
 	})
 
@@ -60,6 +63,93 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 //
 // ROTAS: POST /api/v1/auth/refresh
 func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
-	// A lógica futura de renovação lerá o cookie 'titan_session_rt'
-	return c.SendStatus(fiber.StatusNotImplemented)
+	// 1. Extrai o Refresh Token a partir do cookie seguro HttpOnly
+	cookie := c.Cookies("titan_session_rt")
+	if cookie == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "refresh token ausente",
+		})
+	}
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("Erro crítico: JWT_SECRET não configurado no ambiente.")
+	}
+
+	// 2. Faz o parse e validação do token JWT do refresh token
+	token, err := jwt.Parse(cookie, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fiber.NewError(fiber.StatusUnauthorized, "método de assinatura inválido")
+		}
+		return []byte(jwtSecret), nil
+	})
+
+	if err != nil || !token.Valid {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "refresh token inválido ou expirado",
+		})
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || claims["type"] != "refresh" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "tipo de token inválido",
+		})
+	}
+
+	userID := claims["sub"].(string)
+	role := claims["role"].(string)
+	name := claims["name"].(string)
+	tenantID := claims["tenant_id"].(string)
+
+	// 3. Emite um novo Access Token (JWT - expira em 15 minutos)
+	newAccessTokenObj := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":       userID,
+		"role":      role,
+		"name":      name,
+		"tenant_id": tenantID,
+		"exp":       time.Now().Add(15 * time.Minute).Unix(),
+		"iat":       time.Now().Unix(),
+	})
+
+	newAccessToken, err := newAccessTokenObj.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "falha ao assinar novo token de acesso",
+		})
+	}
+
+	// 4. Emite um novo Refresh Token (JWT - expira em 7 dias para rotatividade)
+	newRefreshTokenObj := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":       userID,
+		"role":      role,
+		"name":      name,
+		"tenant_id": tenantID,
+		"type":      "refresh",
+		"exp":       time.Now().Add(7 * 24 * time.Hour).Unix(),
+		"iat":       time.Now().Unix(),
+	})
+
+	newRefreshToken, err := newRefreshTokenObj.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "falha ao assinar novo token de renovação",
+		})
+	}
+
+	// 5. Injeta o novo Refresh Token na resposta utilizando c.Cookie()
+	c.Cookie(&fiber.Cookie{
+		Name:     "titan_session_rt",
+		Value:    newRefreshToken,
+		Expires:  time.Now().Add(7 * 24 * time.Hour),
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: "Strict",
+		Path:     "/api/v1/auth/refresh",
+	})
+
+	return c.JSON(fiber.Map{
+		"access_token": newAccessToken,
+		"expires_in":   int64(15 * 60),
+	})
 }

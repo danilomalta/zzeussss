@@ -1,32 +1,71 @@
 package middleware
 
 import (
+	"log"
+	"os"
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // AuthGuard retorna um middleware do Fiber para controle de acesso baseado em autenticação JWT.
-//
-// REGRAS DE NEGÓCIO E DE SEGURANÇA (SecOps):
-// 1. Extração do Token: Deve extrair o JSON Web Token (JWT) a partir do cabeçalho HTTP 'Authorization'
-//    utilizando o esquema 'Bearer <token>'.
-// 2. Validação Criptográfica: Deve decodificar e validar a assinatura do JWT contra o segredo definido
-//    pela variável de ambiente JWT_SECRET, utilizando algoritmos seguros (ex: HS256/RS256).
-// 3. Validação dos Claims Padrão: Verificar estritamente as claims de expiração (exp), data de emissão (iat)
-//    e emissor (iss) para evitar tokens obsoletos ou forjados.
-// 4. Injeção de Contexto (Claims): Se o token for válido, os dados do usuário autenticado (como UserID e Role)
-//    devem ser injetados nas variáveis locais da requisição (c.Locals) para uso nos handlers posteriores.
-// 5. Rejeição Segura (HTTP 401): Qualquer falha de parsing, token expirado, assinatura inválida ou ausência
-//    do cabeçalho deve resultar no bloqueio imediato do fluxo e resposta segura HTTP 401 Unauthorized.
 func AuthGuard() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// A lógica futura irá:
-		// a) Ler o cabeçalho "Authorization".
-		// b) Validar se o formato inicia com "Bearer ".
-		// c) Extrair a string do token.
-		// d) Executar a validação criptográfica (jwt.ParseWithClaims) usando o JWT_SECRET.
-		// e) Validar claims adicionais e injetar o "userID" e "role" em c.Locals("userID") e c.Locals("role").
-		// f) Se qualquer passo falhar, retornar c.Status(fiber.StatusUnauthorized).JSON(...)
-		// g) Se válido, prosseguir com c.Next().
+		// 1. Extração do cabeçalho de Autorização
+		authHeader := c.Get("Authorization")
+		if authHeader == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "cabeçalho Authorization ausente",
+			})
+		}
+
+		// 2. Validação do prefixo Bearer
+		const prefix = "Bearer "
+		if !strings.HasPrefix(authHeader, prefix) {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "esquema de autenticação inválido, utilize Bearer",
+			})
+		}
+
+		tokenString := strings.TrimPrefix(authHeader, prefix)
+
+		// 3. Carrega o segredo criptográfico
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
+			log.Fatal("Erro crítico: JWT_SECRET não configurado no ambiente.")
+		}
+
+		// 4. Decodificação e validação criptográfica da assinatura
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fiber.NewError(fiber.StatusUnauthorized, "método de assinatura inválido")
+			}
+			return []byte(jwtSecret), nil
+		})
+
+		if err != nil || !token.Valid {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "token de acesso inválido ou expirado",
+			})
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "claims do token inválidos",
+			})
+		}
+
+		// 5. Injeta as informações extraídas no Locals da requisição
+		userID, _ := claims["sub"].(string)
+		role, _ := claims["role"].(string)
+		tenantID, _ := claims["tenant_id"].(string)
+
+		c.Locals("user_id", userID)
+		c.Locals("role", role)
+		c.Locals("tenant_id", tenantID)
+
 		return c.Next()
 	}
 }

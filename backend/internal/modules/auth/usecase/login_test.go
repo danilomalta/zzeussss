@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -22,6 +23,9 @@ import (
 )
 
 func TestLoginRealScenarios(t *testing.T) {
+	// Configura o segredo do JWT temporariamente para o contexto de testes unitários
+	os.Setenv("JWT_SECRET", "test_secret_for_auth_scenarios_unit_testing")
+
 	// Prepara a hash Bcrypt correta para a senha de teste
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("correct_password"), bcrypt.DefaultCost)
 	if err != nil {
@@ -124,6 +128,6 @@ func TestLoginRealScenarios(t *testing.T) {
 		assert.True(t, strings.Contains(cookieLower, "titan_session_rt="))
 		assert.True(t, strings.Contains(cookieLower, "httponly"))
 		assert.True(t, strings.Contains(cookieLower, "secure"))
-		assert.True(t, strings.Contains(cookieLower, "samesite=lax"))
+		assert.True(t, strings.Contains(cookieLower, "samesite=strict"))
 	})
 }

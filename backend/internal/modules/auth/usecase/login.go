@@ -1,9 +1,8 @@
 package usecase
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -79,15 +78,16 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 	// 4. Emissão do Access Token (JWT - expira em 15 minutos)
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		jwtSecret = "super_secret_key_change_in_prod"
+		log.Fatal("Erro crítico: JWT_SECRET não configurado no ambiente.")
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":  user.ID,
-		"role": user.Role,
-		"name": user.Name,
-		"exp":  time.Now().Add(15 * time.Minute).Unix(),
-		"iat":  time.Now().Unix(),
+		"sub":       user.ID,
+		"role":      user.Role,
+		"name":      user.Name,
+		"tenant_id": user.ClientID,
+		"exp":       time.Now().Add(15 * time.Minute).Unix(),
+		"iat":       time.Now().Unix(),
 	})
 
 	accessToken, err := token.SignedString([]byte(jwtSecret))
@@ -95,12 +95,21 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 		return nil, fmtError("falha ao assinar token de acesso: %w", err)
 	}
 
-	// 5. Emissão do Refresh Token (String criptograficamente segura - 32 bytes)
-	b := make([]byte, 32)
-	if _, err := rand.Read(b); err != nil {
-		return nil, fmtError("falha ao gerar refresh token: %w", err)
+	// 5. Emissão do Refresh Token (JWT de 7 dias para rotatividade e segurança extra)
+	refreshTokenObj := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":       user.ID,
+		"role":      user.Role,
+		"name":      user.Name,
+		"tenant_id": user.ClientID,
+		"type":      "refresh",
+		"exp":       time.Now().Add(7 * 24 * time.Hour).Unix(),
+		"iat":       time.Now().Unix(),
+	})
+
+	refreshToken, err := refreshTokenObj.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return nil, fmtError("falha ao assinar token de renovação: %w", err)
 	}
-	refreshToken := hex.EncodeToString(b)
 
 	// Duração de expiração em segundos (15 minutos = 900 segundos)
 	expiresIn := int64(15 * 60)
