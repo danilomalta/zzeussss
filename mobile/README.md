@@ -10,8 +10,7 @@ Esta pasta existe para cumprir a separação **na raiz** e manter a arquitetura 
 
 ## Como isso se conecta ao sistema
 
-- O aplicativo mobile consome a API do backend via HTTP.
-- Ele pode operar com fluxo otimizado para atendentes e suportar modo desconectado no futuro.
+- O o otimizado para atendentes e suportar modo desconectado no futuro.
 
 ## O que deve morar aqui (próximo passo de organização)
 

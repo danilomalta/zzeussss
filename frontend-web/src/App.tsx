@@ -1,8 +1,9 @@
-import AdminDashboard from './modules/tenant/pages/AdminDashboard';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './core/router';
 
 function App() {
   return (
-    <AdminDashboard />
+    <RouterProvider router={router} />
   );
 }
 

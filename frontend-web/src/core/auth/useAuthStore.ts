@@ -2,9 +2,9 @@ import { create } from 'zustand';
 import { api } from '../api/api';
 
 /*
-INTERFACES DE AUTENTICAÇÃO
-==========================
-Tipagem estrita das informações de usuário e estado global do Zustand.
+INTERFACES DO MÓDULO DE AUTENTICAÇÃO
+====================================
+Tipagem completa das entidades e estado global de sessão.
 */
 
 export interface User {
@@ -18,15 +18,14 @@ export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   accessToken: string | null;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
 /*
-STORE DE AUTENTICAÇÃO (ZUSTAND)
-===============================
-Armazena a sessão ativa do usuário (memória volátil para o JWT) e expõe ações 
-de controle de acesso integradas ao Axios.
+ESTADO GLOBAL (ZUSTAND STORE)
+==============================
+Store volátil de alto desempenho para gerenciamento de JWT e autenticação de usuários.
 */
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -34,12 +33,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   accessToken: null,
 
-  login: async (credentials) => {
-    // POST real para o backend na rota /auth/login
-    const response = await api.post<{ access_token: string; user: User }>('/auth/login', credentials);
+  login: async (email, password) => {
+    // Realiza a chamada HTTP POST para autenticação
+    const response = await api.post<{ access_token: string; user: User }>('/auth/login', {
+      email,
+      password,
+    });
+    
     const { access_token, user } = response.data;
 
-    // Atualiza o estado global com os dados da sessão
+    // Atualiza o estado global de autenticação com dados do backend
     set({
       isAuthenticated: true,
       user,
@@ -48,7 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    // Reseta o estado global de autenticação
+    // Limpa completamente os tokens e dados de sessão
     set({
       isAuthenticated: false,
       user: null,

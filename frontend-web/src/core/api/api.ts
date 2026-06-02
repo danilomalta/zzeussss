@@ -2,14 +2,14 @@ import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'ax
 import { useAuthStore } from '../auth/useAuthStore';
 
 /*
-API CLIENT (AXIOS INTERCEPTORS)
-===============================
-Configuração da camada de rede utilizando Axios com suporte nativo a cookies seguros.
+API CLIENT (AXIOS)
+==================
+Instância central de rede configurada para comunicação com o backend Go (TitanSystem).
 
-Segurança & Protocolo:
-1. `withCredentials: true`: OBRIGATÓRIO para tráfego seguro de cookies HttpOnly (Refresh Token).
-2. Interceptor de Requisição: Injeta dinamicamente o accessToken no cabeçalho Authorization.
-3. Interceptor de Resposta: Trata a expiração da sessão (401) limpando o estado global.
+Segurança & Desempenho:
+1. `withCredentials: true`: Permite tráfego seguro de cookies HttpOnly.
+2. Interceptor de Requisição: Injeta automaticamente o token de acesso (JWT) no cabeçalho Authorization.
+3. Interceptor de Resposta: Em caso de erro 401 (Unauthorized), limpa a store do Zustand e realiza o logout.
 */
 
 export const api = axios.create({
@@ -22,7 +22,7 @@ export const api = axios.create({
   },
 });
 
-// Interceptor de requisições para injetar o Access Token JWT
+// Interceptor de Requisição: Injeta o JWT no Header de Autorização
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = useAuthStore.getState().accessToken;
@@ -36,12 +36,12 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor de respostas para captura global de falhas de autenticação
+// Interceptor de Resposta: Trata a invalidação de tokens e redirecionamento de segurança
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      console.warn('Sessão expirada ou inválida. Limpando credenciais locais...');
+      console.warn('Sessão expirada ou não autorizada. Limpando credenciais locais...');
       useAuthStore.getState().logout();
     }
     return Promise.reject(error);
