@@ -13,12 +13,11 @@ func RateLimitGeral() fiber.Handler {
 		Max:        100,
 		Expiration: 1 * time.Minute,
 		KeyGenerator: func(c *fiber.Ctx) string {
-			// Captura o IP real do cliente para controle de requisições
 			return c.IP()
 		},
 		LimitReached: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error": "limite de requisições gerais excedido. tente novamente mais tarde.",
+				"error": "Limite de requisições excedido. Tente novamente mais tarde.",
 			})
 		},
 	})
@@ -30,12 +29,11 @@ func RateLimitLogin() fiber.Handler {
 		Max:        5,
 		Expiration: 1 * time.Minute,
 		KeyGenerator: func(c *fiber.Ctx) string {
-			// Captura o IP real do cliente para controle estrito de login
 			return c.IP()
 		},
 		LimitReached: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error": "limite de tentativas de login excedido. por razões de segurança, tente novamente em 1 minuto.",
+				"error": "Limite de tentativas de login excedido. Tente novamente em 1 minuto.",
 			})
 		},
 	})

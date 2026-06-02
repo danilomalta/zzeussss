@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net"
 	"os"
 	"time"
 
@@ -11,13 +12,28 @@ import (
 	"titansystem-backend/internal/core/routes"
 	"titansystem-backend/internal/core/sync"
 	"titansystem-backend/internal/modules/auth/delivery"
-	"titansystem-backend/pkg/utils"
 )
+
+// ObterIPLocal busca o primeiro endereço IPv4 local não-loopback (como 192.168.x.x).
+func ObterIPLocal() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "127.0.0.1"
+	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return "127.0.0.1"
+}
 
 func main() {
 	log.Println("Iniciando TitanSystem Backend (API) de Produção...")
 
-	// 1. Carrega o arquivo .env se existir (silencioso em produção, logando local)
+	// 1. Carrega o arquivo .env se existir
 	if err := godotenv.Load(); err != nil {
 		log.Println("Aviso: Arquivo .env não localizado. Usando variáveis de ambiente globais.")
 	}
@@ -33,7 +49,7 @@ func main() {
 		log.Fatal("Erro crítico: falha ao estabelecer o Pool de conexões pgxpool. Abortando.")
 	}
 
-	// 3. Inicializa o SyncWorker de Resiliência Local-First (Passo 1)
+	// 3. Inicializa o SyncWorker de Resiliência Local-First
 	worker := sync.NovoSyncWorker()
 	worker.Start(1 * time.Minute)
 
@@ -43,24 +59,24 @@ func main() {
 
 	// 4. Proteção contra força bruta em tentativas de login (SecOps)
 	limitadorCfg := delivery.ConfiguracaoTentativasLoginPadrao()
-	limitadorCfg.CaminhoLogin = "/api/v1/auth/login" // Ajustado ao padrão de rotas atual
+	limitadorCfg.CaminhoLogin = "/api/v1/auth/login"
 	limitador := delivery.NovoLimitadorTentativasLogin(limitadorCfg)
 	app.Use(limitador.Middleware())
 
 	// 5. Registro de Rotas
 	routes.Registrar(app)
 
-	// 6. Servidor ouvindo na rede local (LAN/Wi-Fi) - escuta 0.0.0.0
+	// 6. Servidor ouvindo na rede local (LAN/Wi-Fi)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 	addr := "0.0.0.0:" + port
-	ipLocal := utils.ObterIPLocal()
+	ipLocal := ObterIPLocal()
 
 	log.Println("────────────────────────────────────────────────────────────────")
 	log.Printf("🚀 TitanSystem rodando localmente em: http://localhost:%s", port)
-	log.Printf("📱 Para acessar via celular no mesmo Wi-Fi, acesse: http://%s:%s", ipLocal, port)
+	log.Printf("Para acessar via smartphone no Wi-Fi, abra: http://%s:%s", ipLocal, port)
 	log.Println("────────────────────────────────────────────────────────────────")
 
 	if err := app.Listen(addr); err != nil {

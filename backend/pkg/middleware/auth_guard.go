@@ -47,6 +47,7 @@ func AuthGuard() fiber.Handler {
 
 		c.Locals("userID", claims["sub"])
 		c.Locals("role", claims["role"])
+		c.Locals("tenant_id", claims["tenant_id"]) // Mantém tenant_id para isolamento multi-tenant
 
 		return c.Next()
 	}

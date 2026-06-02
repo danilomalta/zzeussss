@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -78,7 +77,7 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 	// 4. Emissão do Access Token (JWT - expira em 15 minutos)
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		log.Fatal("Erro crítico: JWT_SECRET não configurado no ambiente.")
+		return nil, errors.New("erro crítico: JWT_SECRET não configurado no servidor")
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

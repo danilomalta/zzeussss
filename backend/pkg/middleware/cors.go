@@ -11,8 +11,7 @@ import (
 func CORS() fiber.Handler {
 	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
 	if allowedOrigins == "" {
-		// Fallback seguro de desenvolvimento local e rede local
-		allowedOrigins = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173"
+		allowedOrigins = "http://localhost:5173"
 	}
 
 	return cors.New(cors.Config{
@@ -20,6 +19,6 @@ func CORS() fiber.Handler {
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-Requested-With",
 		AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
-		MaxAge:           86400, // 24 horas de cache preflight para otimização
+		MaxAge:           86400,
 	})
 }
