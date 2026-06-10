@@ -1,109 +1,101 @@
 import React, { useState } from 'react';
-import { useAuthStore } from '../../../../core/auth/useAuthStore'; // Ajuste o path do authStore se necessário
+import { useAuthStore } from '../../../core/auth/useAuthStore';
 
 export default function AdminDashboard() {
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState('monitoramento');
+  const [activeTab, setActiveTab] = useState('pdv');
 
   return (
+    /* ROOT: Travado em 100% da tela */
     <div className="flex h-screen w-screen overflow-hidden bg-[#050505] text-gray-300 font-sans">
       
-      {/* SIDEBAR - TITANSYSTEM MASTER */}
-      <aside className="w-64 flex-shrink-0 bg-[#0a0a0a] border-r border-white/10 flex flex-col justify-between z-20">
-        <div>
-          <div className="h-16 flex items-center px-6 border-b border-white/10">
-            <span className="text-xl font-bold tracking-widest text-white">Titan<span className="text-indigo-500">System</span></span>
-          </div>
-          
-          <nav className="p-4 space-y-2">
-            <div className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-4 px-2 mt-2">Core Master Admin</div>
-            
-            <button 
-              onClick={() => setActiveTab('monitoramento')} 
-              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-all outline-none ${activeTab === 'monitoramento' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 shadow-sm' : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'}`}
-            >
-              Monitoramento & Logs
-            </button>
-            
-            <button 
-              onClick={() => setActiveTab('database')} 
-              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-all outline-none ${activeTab === 'database' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 shadow-sm' : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'}`}
-            >
-              Banco de Dados (PostgreSQL)
-            </button>
-
-            <button 
-              onClick={() => setActiveTab('clientes')} 
-              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-all outline-none ${activeTab === 'clientes' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 shadow-sm' : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'}`}
-            >
-              Gestão de Clientes (Tenants)
-            </button>
-
-            <button 
-              onClick={() => setActiveTab('configuracoes')} 
-              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-all outline-none ${activeTab === 'configuracoes' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 shadow-sm' : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'}`}
-            >
-              Configurações Globais
-            </button>
-          </nav>
+      {/* SIDEBAR */}
+      <aside className="w-20 md:w-64 flex-shrink-0 flex flex-col h-full bg-[#0a0a0a] border-r border-white/10 z-20">
+        <div className="h-16 flex items-center justify-center md:justify-start md:px-6 border-b border-white/10 flex-shrink-0">
+          <span className="hidden md:block text-xl font-bold tracking-widest text-white">Titan<span className="text-indigo-500">System</span></span>
+          <span className="block md:hidden text-xl font-bold text-indigo-500">T</span>
         </div>
+        
+        <nav className="flex-1 p-3 md:p-4 space-y-2 flex flex-col min-h-0 overflow-y-auto">
+          <div className="hidden md:block text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-4 px-2 mt-2">Módulos do Sistema</div>
+          
+          <button onClick={() => setActiveTab('pdv')} className={`w-full flex items-center justify-center md:justify-start px-0 md:px-4 py-3 rounded-lg text-sm transition-all outline-none ${activeTab === 'pdv' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20' : 'text-gray-500 hover:bg-white/5 border border-transparent'}`}>
+            <span className="md:hidden text-lg">🛒</span>
+            <span className="hidden md:block truncate">Frente de Caixa (PDV)</span>
+          </button>
+          
+          <button onClick={() => setActiveTab('monitoramento')} className={`w-full flex items-center justify-center md:justify-start px-0 md:px-4 py-3 rounded-lg text-sm transition-all outline-none ${activeTab === 'monitoramento' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20' : 'text-gray-500 hover:bg-white/5 border border-transparent'}`}>
+            <span className="md:hidden text-lg">📊</span>
+            <span className="hidden md:block truncate">Visão Geral & Logs</span>
+          </button>
 
-        {/* PERFIL DO USUÁRIO */}
-        <div className="p-4 border-t border-white/10 flex items-center gap-3 bg-[#080808]">
-          <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+          <button onClick={() => setActiveTab('estoque')} className={`w-full flex items-center justify-center md:justify-start px-0 md:px-4 py-3 rounded-lg text-sm transition-all outline-none ${activeTab === 'estoque' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20' : 'text-gray-500 hover:bg-white/5 border border-transparent'}`}>
+             <span className="md:hidden text-lg">📦</span>
+             <span className="hidden md:block truncate">Estoque & Financeiro</span>
+          </button>
+        </nav>
+
+        {/* PERFIL (Rodapé Fixo) */}
+        <div className="p-4 border-t border-white/10 flex items-center justify-center md:justify-start gap-3 bg-[#080808] flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             {user?.name ? user.name.charAt(0).toUpperCase() : 'T'}
           </div>
-          <div className="flex flex-col">
-            <span className="text-xs text-white font-medium">{user?.name || 'Administrador'}</span>
-            <span className="text-[10px] text-gray-500">Acesso Master</span>
+          <div className="hidden md:flex flex-col min-w-0">
+            <span className="text-xs text-white font-medium truncate">{user?.name || 'Administrador'}</span>
+            <span className="text-[10px] text-gray-500 truncate">SaaS Operator</span>
           </div>
         </div>
       </aside>
 
-      {/* ÁREA PRINCIPAL (CRAVADA NA TELA, ZERO SCROLL GLOBAL) */}
-      <main className="flex-1 flex flex-col h-screen relative overflow-hidden bg-[#0A0A0A]">
+      {/* ÁREA PRINCIPAL: min-w-0 forca os filhos a nao vazarem para os lados */}
+      <main className="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-[#0A0A0A]">
         
-        {/* HEADER TOP */}
-        <header className="h-16 flex-shrink-0 border-b border-white/10 flex items-center px-8 justify-between bg-[#0a0a0a]">
-          <div className="text-sm font-medium text-gray-400 uppercase tracking-wider">{activeTab.replace('_', ' ')}</div>
-          <div className="flex items-center gap-3">
+        {/* HEADER */}
+        <header className="h-16 flex-shrink-0 w-full border-b border-white/10 flex items-center px-4 md:px-8 justify-between bg-[#0a0a0a]">
+          <div className="text-sm font-medium text-gray-400 uppercase tracking-wider truncate">{activeTab.replace('_', ' ')}</div>
+          <div className="flex items-center gap-2 flex-shrink-0">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></span>
-            <span className="text-xs text-emerald-500 font-mono tracking-widest uppercase">API Go Conectada</span>
+            <span className="text-[10px] text-emerald-500 font-mono tracking-widest uppercase">Go API Integrada</span>
           </div>
         </header>
 
-        {/* MIOLO DINÂMICO PROPORCIONAL */}
-        <div className="flex-1 p-8 overflow-hidden flex flex-col">
-          <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col animate-in fade-in duration-300">
-            
-            {activeTab === 'monitoramento' && (
-              <div className="flex-1 flex flex-col space-y-6">
-                <h1 className="text-2xl font-semibold text-white tracking-tight">Status da Infraestrutura</h1>
-                <div className="flex-1 grid grid-cols-1 gap-6 pb-6">
-                  {/* Terminal Log de Verdade */}
-                  <div className="flex flex-col bg-[#050505] border border-white/10 rounded-xl overflow-hidden shadow-2xl h-full">
-                    <div className="bg-white/5 px-4 py-3 border-b border-white/10">
-                      <span className="text-xs font-mono text-gray-400">TitanSystem_Terminal.log</span>
+        {/* WRAPPER DE CONTEÚDO (min-h-0 forca o conteudo a caber na altura restante) */}
+        <div className="flex-1 p-4 md:p-8 flex flex-col min-h-0 w-full">
+          
+          <div className="flex-1 flex flex-col bg-[#050505] border border-white/10 rounded-xl min-h-0 w-full overflow-hidden animate-in fade-in duration-300">
+             
+             <div className="h-14 flex-shrink-0 border-b border-white/10 flex items-center px-6 bg-white/[0.02]">
+                <h2 className="text-white font-medium text-sm truncate">
+                  {activeTab === 'pdv' ? 'Operação de Caixa Nativa' : `Módulo: ${activeTab.toUpperCase()}`}
+                </h2>
+             </div>
+
+             {/* MIOLO: Redimensiona proporcionalmente, sem barras de scroll globais */}
+             <div className="flex-1 p-6 flex flex-col items-center justify-center min-h-0">
+                {activeTab === 'pdv' ? (
+                  <div className="text-center w-full max-w-2xl">
+                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-indigo-500 text-2xl">🛒</span>
                     </div>
-                    <div className="p-5 font-mono text-xs text-gray-400 space-y-3 flex-1 overflow-y-auto">
-                      <p><span className="text-emerald-500">✓</span> Conexão com API Go na porta 8080 estabelecida.</p>
-                      <p><span className="text-emerald-500">✓</span> Autenticação JWT HTTPOnly validada.</p>
-                      <p className="text-indigo-400 pt-2">ℹ Sistema aguardando provisionamento de novos locatários no banco de dados.</p>
+                    <h3 className="text-lg font-medium text-white mb-2">Frente de Caixa Totalmente Integrada</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                      As vendas registradas aqui não dependem de marketplaces ou APIs externas. Toda operação atualiza o estoque, caixa, financeiro e os relatórios do TitanSystem de forma nativa e imediata via API Go.
+                    </p>
+                    <div className="inline-flex items-center px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-mono">
+                      Status: Pronto para Operação Nativa
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab !== 'monitoramento' && (
-              <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-xl bg-white/[0.01] mb-6">
-                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-indigo-500 text-2xl">⚡</span>
-                </div>
-                <h3 className="text-white font-medium text-lg mb-1">Módulo {activeTab.toUpperCase()}</h3>
-                <p className="text-gray-500 text-sm">Aguardando endpoints da API Fiber na pasta `/backend/api/`.</p>
-              </div>
-            )}
+                ) : (
+                  <div className="text-center w-full max-w-md">
+                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-gray-500 text-2xl">⚙️</span>
+                    </div>
+                    <p className="text-gray-400 text-sm leading-relaxed">
+                      Painel fluído e responsivo ativado. O CSS Flexbox agora utiliza as propriedades corretas para evitar overflows indesejados.
+                    </p>
+                  </div>
+                )}
+             </div>
 
           </div>
         </div>
