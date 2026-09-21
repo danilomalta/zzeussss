@@ -22,10 +22,11 @@ type LoginInput struct {
 
 // UserResponse representa os dados públicos do usuário retornados após autenticação.
 type UserResponse struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Role     string `json:"role"`
+	TenantID string `json:"tenant_id"`
 }
 
 // LoginOutput define os tokens e dados de sessão gerados após sucesso na autenticação.
@@ -118,10 +119,11 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 		ExpiresIn:    expiresIn,
 		RefreshToken: refreshToken,
 		User: UserResponse{
-			ID:    user.ID,
-			Name:  user.Name,
-			Email: user.Email,
-			Role:  user.Role,
+			ID:       user.ID,
+			Name:     user.Name,
+			Email:    user.Email,
+			Role:     user.Role,
+			TenantID: user.ClientID,
 		},
 	}, nil
 }

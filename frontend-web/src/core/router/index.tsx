@@ -28,8 +28,6 @@ const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
   </Suspense>
 );
 
-import Layout from '../../shared/components/Layout';
-
 // Definição da árvore de rotas modularizada do TitanSystem
 export const router = createBrowserRouter([
   {
@@ -58,11 +56,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: (
-      <Layout>
-        <Outlet />
-      </Layout>
-    ),
+    element: <Outlet />,
     children: [
       {
         path: '',

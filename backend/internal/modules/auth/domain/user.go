@@ -8,7 +8,7 @@ import (
 // Ele é mapeado de forma estrita para a tabela relacional 'users' do PostgreSQL.
 type User struct {
 	ID           string    `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	ClientID     string    `gorm:"type:uuid;not null" json:"client_id"`
+	ClientID     string    `gorm:"column:tenant_id;type:uuid;not null" json:"client_id"`
 	Name         string    `gorm:"size:255;not null" json:"name"`
 	Email        string    `gorm:"size:255;not null;uniqueIndex" json:"email"`
 	PasswordHash string    `gorm:"size:255;not null" json:"-"`

@@ -45,15 +45,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 	// 3. Injeta de forma estrita o Refresh Token nas propriedades do Cookie
 	//    [CRÍTICO] HTTPOnly e Secure ativados para blindagem total contra roubos de sessão.
-	c.Cookie(&fiber.Cookie{
-		Name:     "titan_session_rt",
-		Value:    output.RefreshToken,
-		Expires:  time.Now().Add(7 * 24 * time.Hour), // Expira em 7 dias (SecOps)
-		HTTPOnly: true,                               // Bloqueia roubos de token via javascript do navegador (XSS)
-		Secure:   true,                               // Garante que o cookie apenas trafegará sob SSL/HTTPS
-		SameSite: "Strict",                           // Mitigação total para Cross-Site Request Forgery (CSRF)
-		Path:     "/api/v1/auth/refresh",             // Restringe o escopo de transmissão de cabeçalhos
-	})
+	c.Cookie(cookieRenovacao(output.RefreshToken))
 
 	// 4. Retorna o Access Token (JWT) e dados públicos no corpo da resposta
 	return c.JSON(output)
@@ -138,18 +130,27 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	}
 
 	// 5. Injeta o novo Refresh Token na resposta utilizando c.Cookie()
-	c.Cookie(&fiber.Cookie{
-		Name:     "titan_session_rt",
-		Value:    newRefreshToken,
-		Expires:  time.Now().Add(7 * 24 * time.Hour),
-		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "Strict",
-		Path:     "/api/v1/auth/refresh",
-	})
+	c.Cookie(cookieRenovacao(newRefreshToken))
 
 	return c.JSON(fiber.Map{
 		"access_token": newAccessToken,
 		"expires_in":   int64(15 * 60),
 	})
+}
+
+func cookieRenovacao(valor string) *fiber.Cookie {
+	seguro := os.Getenv("COOKIE_SECURE") == "true"
+	mesmoSite := "Lax"
+	if seguro {
+		mesmoSite = "Strict"
+	}
+	return &fiber.Cookie{
+		Name:     "titan_session_rt",
+		Value:    valor,
+		Expires:  time.Now().Add(7 * 24 * time.Hour),
+		HTTPOnly: true,
+		Secure:   seguro,
+		SameSite: mesmoSite,
+		Path:     "/api/v1/auth/refresh",
+	}
 }
