@@ -9,14 +9,16 @@ import (
 // Product representa um item vendável no sistema de PDV.
 type Product struct {
 	gorm.Model
+
+	TenantID  string  `json:"-" gorm:"column:tenant_id;type:uuid;not null;uniqueIndex:idx_products_tenant_sku"`
 	Nome      string  `json:"nome"`
 	Descricao string  `json:"descricao"`
 	Preco     float64 `json:"preco"`
-	SKU       string  `json:"sku" gorm:"uniqueIndex"`
+	SKU       string  `json:"sku" gorm:"uniqueIndex:idx_products_tenant_sku"`
 	Estoque   int     `json:"estoque"`
 	Ativo     bool    `json:"ativo" gorm:"default:true"`
 
-	// Campos para controle inteligente de estoque (base para previsões e reabastecimento).
+	// Campos para controle inteligente de estoque.
 	EstoqueMinimo           int        `json:"estoque_minimo"`
 	PontoReposicao          int        `json:"ponto_reposicao"`
 	DemandaMediaDiaria      float64    `json:"demanda_media_diaria"`

@@ -8,7 +8,7 @@ import (
 
 // SpedJob status constants
 const (
-	SpedJobStatusPending   = "PENDING"
+	SpedJobStatusPending    = "PENDING"
 	SpedJobStatusProcessing = "PROCESSING"
 	SpedJobStatusCompleted  = "COMPLETED"
 	SpedJobStatusFailed     = "FAILED"
@@ -17,6 +17,7 @@ const (
 // SpedJob representa uma solicitação assíncrona para geração de arquivos EFD/Contábeis
 type SpedJob struct {
 	gorm.Model
+	TenantID    string     `json:"-" gorm:"column:tenant_id;type:uuid;not null;index"`
 	JobID       string     `json:"job_id" gorm:"uniqueIndex"`
 	Type        string     `json:"type"` // e.g., "EFD-ICMS/IPI"
 	Status      string     `json:"status"`

@@ -3,30 +3,46 @@ package delivery
 import (
 	"strings"
 
-	"github.com/gofiber/fiber/v2"
 	"titansystem-backend/internal/core/database"
 	"titansystem-backend/internal/modules/catalog/domain"
+	"titansystem-backend/pkg/middleware"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type CreateProductRequest struct {
 	Nome      string  `json:"nome"`
 	Descricao string  `json:"descricao"`
 	Preco     float64 `json:"preco"`
-	SKU         string  `json:"sku"`
-	Estoque     int     `json:"estoque"`
+	SKU       string  `json:"sku"`
+	Estoque   int     `json:"estoque"`
 }
 
 func ListarProdutos(c *fiber.Ctx) error {
+	tenantID, err := middleware.TenantID(c)
+	if err != nil {
+		return err
+	}
+
 	var produtos []domain.Product
-	if err := database.DB.Order("id desc").Find(&produtos).Error; err != nil {
+	if err := database.DB.
+		Where("tenant_id = ?", tenantID).
+		Order("id desc").
+		Find(&produtos).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"erro": "falha ao listar produtos",
 		})
 	}
+
 	return c.Status(fiber.StatusOK).JSON(produtos)
 }
 
 func CriarProduto(c *fiber.Ctx) error {
+	tenantID, err := middleware.TenantID(c)
+	if err != nil {
+		return err
+	}
+
 	var req CreateProductRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -36,16 +52,19 @@ func CriarProduto(c *fiber.Ctx) error {
 
 	req.Nome = strings.TrimSpace(req.Nome)
 	req.SKU = strings.TrimSpace(req.SKU)
+
 	if req.Nome == "" || req.SKU == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"erro": "campos obrigatórios: nome, sku",
 		})
 	}
+
 	if req.Preco < 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"erro": "preco não pode ser negativo",
 		})
 	}
+
 	if req.Estoque < 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"erro": "estoque não pode ser negativo",
@@ -53,12 +72,13 @@ func CriarProduto(c *fiber.Ctx) error {
 	}
 
 	p := domain.Product{
+		TenantID:  tenantID,
 		Nome:      req.Nome,
 		Descricao: req.Descricao,
 		Preco:     req.Preco,
-		SKU:         req.SKU,
-		Estoque:     req.Estoque,
-		Ativo:       true,
+		SKU:       req.SKU,
+		Estoque:   req.Estoque,
+		Ativo:     true,
 	}
 
 	if err := database.DB.Create(&p).Error; err != nil {
@@ -69,4 +89,3 @@ func CriarProduto(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusCreated).JSON(p)
 }
-

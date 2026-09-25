@@ -41,9 +41,9 @@ func AuthGuard() fiber.Handler {
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok {
+		if !ok || claims["type"] != "access" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Falha ao ler dados do token.",
+				"error": "Token de acesso inválido. Faça login novamente.",
 			})
 		}
 

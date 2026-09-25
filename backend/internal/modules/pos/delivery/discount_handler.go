@@ -1,38 +1,63 @@
 package delivery
 
 import (
+	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
+
 	"titansystem-backend/internal/core/database"
 	"titansystem-backend/internal/modules/pos/domain"
 	"titansystem-backend/internal/modules/pos/usecase"
+	"titansystem-backend/pkg/middleware"
 )
 
-// SuggestDiscounts POST /api/v1/discounts/suggest
-// Trigga o motor de análise para gerar um relatório em banco.
 func SuggestDiscounts(c *fiber.Ctx) error {
-	sugestoes, err := usecase.RunDiscountEngine()
+	tenantID, err := middleware.TenantID(c)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Falha ao executar IA / Motor de Descontos"})
+		return err
+	}
+
+	sugestoes, err := usecase.RunDiscountEngine(tenantID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Falha ao gerar sugestões de desconto.",
+		})
 	}
 
 	return c.JSON(fiber.Map{
-		"message":       "Motor finalizado com sucesso",
+		"message":       "Análise concluída.",
 		"items_gerados": len(sugestoes),
 		"sugestoes":     sugestoes,
 	})
 }
 
-// GetSuggestions GET /api/v1/discounts/suggestions
-// Lista sugestões pendentes para o gestor
 func GetSuggestions(c *fiber.Ctx) error {
-	var sugestoes []domain.DiscountSuggestion
+	tenantID, err := middleware.TenantID(c)
+	if err != nil {
+		return err
+	}
 
 	statusFilter := c.Query("status", domain.DiscountStatusPending)
+	switch statusFilter {
+	case domain.DiscountStatusPending,
+		domain.DiscountStatusApproved,
+		domain.DiscountStatusRejected:
+	default:
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Status inválido.",
+		})
+	}
 
-	if err := database.DB.Where("status = ?", statusFilter).Find(&sugestoes).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Falha ao buscar sugestões."})
+	sugestoes := make([]domain.DiscountSuggestion, 0)
+	if err := database.DB.
+		Where("tenant_id = ? AND status = ?", tenantID, statusFilter).
+		Order("id DESC").
+		Find(&sugestoes).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Falha ao buscar sugestões.",
+		})
 	}
 
 	return c.JSON(fiber.Map{
@@ -41,34 +66,50 @@ func GetSuggestions(c *fiber.Ctx) error {
 	})
 }
 
-// ReviewSuggestion POST /api/v1/discounts/suggestions/:id/review
 func ReviewSuggestion(c *fiber.Ctx) error {
-	idParam := c.Params("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	tenantID, err := middleware.TenantID(c)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
+		return err
+	}
+
+	userID := strings.TrimSpace(middleware.UserID(c))
+	if userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Operador ausente na sessão.",
+		})
+	}
+
+	id, err := strconv.ParseUint(c.Params("id"), 10, strconv.IntSize)
+	if err != nil || id == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "ID inválido.",
+		})
 	}
 
 	var payload struct {
-		Aprovado bool `json:"aprovado"`
+		Aprovado *bool `json:"aprovado"`
+	}
+	if err := c.BodyParser(&payload); err != nil || payload.Aprovado == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Informe aprovado como true ou false.",
+		})
 	}
 
-	if err := c.BodyParser(&payload); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Payload inválido"})
-	}
-
-	// TODO: Get user from context
-	user := "Gerente (Mock)"
-
-	// Aprovar ou rejeitar
-	if payload.Aprovado {
-		err = usecase.ApproveSuggestion(uint(id), user)
+	if *payload.Aprovado {
+		err = usecase.ApproveSuggestion(tenantID, uint(id), userID)
 	} else {
-		err = usecase.RejectSuggestion(uint(id), user)
+		err = usecase.RejectSuggestion(tenantID, uint(id), userID)
 	}
 
+	if errors.Is(err, usecase.ErrSuggestionUnavailable) {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Sugestão não encontrada ou já revisada.",
+		})
+	}
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Falha ao salvar revisão."})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Falha ao salvar revisão.",
+		})
 	}
 
 	return c.JSON(fiber.Map{

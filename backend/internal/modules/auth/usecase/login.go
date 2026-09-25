@@ -6,10 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 	"titansystem-backend/internal/core/database"
 	"titansystem-backend/internal/modules/auth/domain"
+
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // LoginInput define os dados necessários para que um usuário tente se autenticar no sistema.
@@ -75,7 +76,7 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 		return nil, errors.New("e-mail ou senha inválidos")
 	}
 
-	// 4. Emissão do Access Token (JWT - expira em 15 minutos)
+	// 4. Emissão do Access Token: validade de 15 minutos.
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		return nil, errors.New("erro crítico: JWT_SECRET não configurado no servidor")
@@ -86,6 +87,7 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 		"role":      user.Role,
 		"name":      user.Name,
 		"tenant_id": user.ClientID,
+		"type":      "access",
 		"exp":       time.Now().Add(15 * time.Minute).Unix(),
 		"iat":       time.Now().Unix(),
 	})
@@ -95,7 +97,7 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 		return nil, fmtError("falha ao assinar token de acesso: %w", err)
 	}
 
-	// 5. Emissão do Refresh Token (JWT de 7 dias para rotatividade e segurança extra)
+	// 5. Emissão do Refresh Token: validade de 7 dias.
 	refreshTokenObj := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":       user.ID,
 		"role":      user.Role,

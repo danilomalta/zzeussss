@@ -1,66 +1,93 @@
 package usecase
 
 import (
-	"log"
+	"errors"
+	"strings"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+
 	"titansystem-backend/internal/core/database"
 	catalogDomain "titansystem-backend/internal/modules/catalog/domain"
 	posDomain "titansystem-backend/internal/modules/pos/domain"
 )
 
-// RunDiscountEngine analisa todos os produtos e gera sugestões de desconto.
-// Critérios utilizados: Estoque alto, tempo de reposição longo sem giro, variação de demanda.
-func RunDiscountEngine() ([]posDomain.DiscountSuggestion, error) {
-	log.Println("Inciando Motor de Descontos...")
-	
-	var produtos []catalogDomain.Product
-	if err := database.DB.Find(&produtos).Error; err != nil {
-		return nil, err
+var ErrSuggestionUnavailable = errors.New(
+	"sugestão não encontrada ou já revisada",
+)
+
+func RunDiscountEngine(tenantID string) ([]posDomain.DiscountSuggestion, error) {
+	if strings.TrimSpace(tenantID) == "" {
+		return nil, errors.New("empresa obrigatória")
 	}
 
-	var suggestions []posDomain.DiscountSuggestion
+	suggestions := make([]posDomain.DiscountSuggestion, 0)
 
-	for _, p := range produtos {
-		// Pular inativos
-		if !p.Ativo {
-			continue
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		var produtos []catalogDomain.Product
+		if err := tx.
+			Where("tenant_id = ? AND ativo = ?", tenantID, true).
+			Find(&produtos).Error; err != nil {
+			return err
 		}
 
-		suggestion := evaluateProduct(p)
-		if suggestion != nil {
-			// Save pending suggestion
-			if err := database.DB.Create(suggestion).Error; err != nil {
-				log.Printf("Failed to save suggestion for product %d: %v", p.ID, err)
+		for _, p := range produtos {
+			suggestion := evaluateProduct(p)
+			if suggestion == nil {
 				continue
 			}
-			suggestions = append(suggestions, *suggestion)
-		}
-	}
 
+			// A empresa vem do contexto autenticado.
+			suggestion.TenantID = tenantID
+
+			// O índice da migração impede duas sugestões pendentes
+			// para o mesmo produto, inclusive em chamadas concorrentes.
+			result := tx.Clauses(clause.OnConflict{
+				DoNothing: true,
+			}).Create(suggestion)
+
+			if result.Error != nil {
+				return result.Error
+			}
+			if result.RowsAffected > 0 {
+				suggestions = append(suggestions, *suggestion)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
 	return suggestions, nil
 }
 
 func evaluateProduct(p catalogDomain.Product) *posDomain.DiscountSuggestion {
-	// Regras hipotéticas do motor para definir sugestão e faixa
-	
-	// Critério 1: Produto Parado e com grande estoque
+	if !p.Ativo {
+		return nil
+	}
+
 	if p.Estoque > 50 && p.DemandaMediaDiaria < 0.5 {
 		return &posDomain.DiscountSuggestion{
+			TenantID:          p.TenantID,
 			ProductID:         p.ID,
-			SuggestedDiscount: 15.0,
-			SuggestedRange:    "10%% - 20%%",
+			SuggestedDiscount: 15,
+			SuggestedRange:    "10% - 20%",
 			Reason:            "Produto ocioso com alto estoque e baixíssimo giro",
 			Criteria:          "PRODUTO_PARADO",
 			Status:            posDomain.DiscountStatusPending,
 		}
 	}
 
-	// Critério 2: Estoque acima do max recomendado
-	maxRecomendado := float64(p.DemandaMediaDiaria) * float64(p.TempoReposicaoDias) * 1.5 // buffer de 50%
-	if maxRecomendado > 0 && float64(p.Estoque) > maxRecomendado*2 { // Dobro do recomendado
+	maxRecomendado := p.DemandaMediaDiaria *
+		float64(p.TempoReposicaoDias) * 1.5
+
+	if maxRecomendado > 0 && float64(p.Estoque) > maxRecomendado*2 {
 		return &posDomain.DiscountSuggestion{
+			TenantID:          p.TenantID,
 			ProductID:         p.ID,
-			SuggestedDiscount: 10.0,
-			SuggestedRange:    "5%% - 10%%",
+			SuggestedDiscount: 10,
+			SuggestedRange:    "5% - 10%",
 			Reason:            "Excesso de estoque frente ao tempo de giro usual",
 			Criteria:          "EXCESSO_ESTOQUE_VS_GIRO",
 			Status:            posDomain.DiscountStatusPending,
@@ -70,27 +97,48 @@ func evaluateProduct(p catalogDomain.Product) *posDomain.DiscountSuggestion {
 	return nil
 }
 
-// ApproveSuggestion altera o status da sugestão e (em um sistema completo) pode alterar o preço ou gerar um cupom
-func ApproveSuggestion(suggestionID uint, userID string) error {
-	var suggestion posDomain.DiscountSuggestion
-	if err := database.DB.First(&suggestion, suggestionID).Error; err != nil {
-		return err
-	}
-
-	suggestion.Status = posDomain.DiscountStatusApproved
-	suggestion.ReviewedBy = userID
-	
-	return database.DB.Save(&suggestion).Error
+func ApproveSuggestion(tenantID string, suggestionID uint, userID string) error {
+	return reviewSuggestion(
+		tenantID, suggestionID, userID, posDomain.DiscountStatusApproved,
+	)
 }
 
-func RejectSuggestion(suggestionID uint, userID string) error {
-	var suggestion posDomain.DiscountSuggestion
-	if err := database.DB.First(&suggestion, suggestionID).Error; err != nil {
-		return err
+func RejectSuggestion(tenantID string, suggestionID uint, userID string) error {
+	return reviewSuggestion(
+		tenantID, suggestionID, userID, posDomain.DiscountStatusRejected,
+	)
+}
+
+func reviewSuggestion(
+	tenantID string,
+	suggestionID uint,
+	userID string,
+	status string,
+) error {
+	if strings.TrimSpace(tenantID) == "" ||
+		strings.TrimSpace(userID) == "" ||
+		suggestionID == 0 {
+		return errors.New("empresa, operador e sugestão são obrigatórios")
 	}
 
-	suggestion.Status = posDomain.DiscountStatusRejected
-	suggestion.ReviewedBy = userID
-	
-	return database.DB.Save(&suggestion).Error
+	// Atualiza somente sugestões pendentes da empresa autenticada.
+	// A condição também impede duas revisões concorrentes.
+	result := database.DB.
+		Model(&posDomain.DiscountSuggestion{}).
+		Where(
+			"tenant_id = ? AND id = ? AND status = ?",
+			tenantID, suggestionID, posDomain.DiscountStatusPending,
+		).
+		Updates(map[string]interface{}{
+			"status":      status,
+			"reviewed_by": userID,
+		})
+
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return ErrSuggestionUnavailable
+	}
+	return nil
 }
