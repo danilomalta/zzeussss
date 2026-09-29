@@ -49,8 +49,7 @@ func TestCanOperateRejectsRevokedMembership(t *testing.T) {
 		"market", "caixa"); err != nil {
 		t.Fatal(err)
 	}
-	if err := CanOperate(ctx, db, Scope{IdentityID: "caixa", TenantID: "market", StoreID: "m1"}, device, Sell);
-		!errors.Is(err, ErrDenied) {
+	if err := CanOperate(ctx, db, Scope{IdentityID: "caixa", TenantID: "market", StoreID: "m1"}, device, Sell); !errors.Is(err, ErrDenied) {
 		t.Fatalf("vínculo revogado autorizou venda: %v", err)
 	}
 }

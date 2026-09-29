@@ -65,8 +65,7 @@ func TestPairingExpiresAndRespectsStore(t *testing.T) {
 		t.Fatal(err)
 	}
 	if _, err := RequestPairing(ctx, db,
-		Scope{IdentityID: "gerente", TenantID: "market", StoreID: "m2"}, "wrong-store", "Celular", public);
-		!errors.Is(err, ErrDenied) {
+		Scope{IdentityID: "gerente", TenantID: "market", StoreID: "m2"}, "wrong-store", "Celular", public); !errors.Is(err, ErrDenied) {
 		t.Fatalf("gerente abriu pareamento de outra loja: %v", err)
 	}
 	challenge, err := RequestPairing(ctx, db,
