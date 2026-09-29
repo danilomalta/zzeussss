@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"titansystem-backend/internal/modules/auth/usecase"
+	"titansystem-backend/internal/core/security"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -118,6 +119,17 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	if !ok || tenantID == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "empresa ausente no token",
+		})
+	}
+	active, lookupErr := security.ActiveSession(userID, tenantID, role)
+	if lookupErr != nil {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+			"error": "sessão indisponível",
+		})
+	}
+	if !active {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "sessão sem vínculo ativo",
 		})
 	}
 

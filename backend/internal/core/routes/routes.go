@@ -54,8 +54,8 @@ func Registrar(app *fiber.App) {
 
 	// Catálogo de Produtos (Bounded Context: Catalog)
 	produtos := negocios.Group("/produtos")
-	produtos.Get("/", catalogDelivery.ListarProdutos)
-	produtos.Post("/", catalogDelivery.CriarProduto)
+	produtos.Get("/", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "cashier", "stock"), catalogDelivery.ListarProdutos)
+	produtos.Post("/", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.CriarProduto)
 
 	// Análises com Inteligência Artificial (Bounded Context: Catalog)
 	analises := negocios.Group("/analises")
@@ -74,8 +74,8 @@ func Registrar(app *fiber.App) {
 
 	// Frente de Caixa e Motor de Descontos (Bounded Context: POS)
 	descontos := negocios.Group("/discounts")
-	descontos.Post("/suggest", posDelivery.SuggestDiscounts)
-	descontos.Get("/suggestions", posDelivery.GetSuggestions)
+	descontos.Post("/suggest", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), posDelivery.SuggestDiscounts)
+	descontos.Get("/suggestions", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), posDelivery.GetSuggestions)
 	descontos.Post("/suggestions/:id/review", Indisponivel)
 
 	// O chat de demonstração não recebe autenticação; não é exposto nesta fase.

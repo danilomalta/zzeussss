@@ -61,7 +61,7 @@ func TestLoginRealScenarios(t *testing.T) {
 	// CENÁRIO A: Senha Incorreta (Retorna 401 Unauthorized)
 	t.Run("Cenário A: Senha incorreta deve falhar e retornar 401", func(t *testing.T) {
 		// Define o retorno mockado da query SELECT
-		rows := sqlmock.NewRows([]string{"id", "client_id", "name", "email", "password_hash", "role", "created_at"}).
+		rows := sqlmock.NewRows([]string{"id", "tenant_id", "name", "email", "password_hash", "role", "created_at"}).
 			AddRow("user-uuid-1", "client-uuid-1", "John Doe", "john@titan.com", string(hashedPassword), "admin", time.Now())
 
 		// GORM executa uma busca por email
@@ -92,12 +92,15 @@ func TestLoginRealScenarios(t *testing.T) {
 	// CENÁRIO B: Credenciais Corretas (Retorna 200 OK com JWT e Cookie seguro)
 	t.Run("Cenário B: Credenciais corretas deve retornar 200 e emitir JWT + Cookie", func(t *testing.T) {
 		// Define o retorno mockado da query SELECT
-		rows := sqlmock.NewRows([]string{"id", "client_id", "name", "email", "password_hash", "role", "created_at"}).
+		rows := sqlmock.NewRows([]string{"id", "tenant_id", "name", "email", "password_hash", "role", "created_at"}).
 			AddRow("user-uuid-1", "client-uuid-1", "John Doe", "john@titan.com", string(hashedPassword), "admin", time.Now())
 
 		mock.ExpectQuery(`SELECT \* FROM "users" WHERE email = \$1.*`).
 			WithArgs("john@titan.com", 1).
 			WillReturnRows(rows)
+		mock.ExpectQuery(`SELECT EXISTS`).
+			WithArgs("user-uuid-1", "client-uuid-1", "admin").
+			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 
 		// Payload com a senha correta
 		body := map[string]string{
@@ -130,4 +133,29 @@ func TestLoginRealScenarios(t *testing.T) {
 		assert.True(t, strings.Contains(cookieLower, "secure"))
 		assert.True(t, strings.Contains(cookieLower, "samesite=strict"))
 	})
+
+	t.Run("credenciais corretas e empresa sem vínculo ativo retornam 401", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"id", "tenant_id", "name", "email", "password_hash", "role", "created_at"}).
+			AddRow("user-uuid-1", "client-uuid-1", "John Doe", "john@titan.com", string(hashedPassword), "admin", time.Now())
+		mock.ExpectQuery(`SELECT \* FROM "users" WHERE email = \$1.*`).
+			WithArgs("john@titan.com", 1).WillReturnRows(rows)
+		mock.ExpectQuery(`SELECT EXISTS`).
+			WithArgs("user-uuid-1", "client-uuid-1", "admin").
+			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+		body, err := json.Marshal(map[string]string{"email": "john@titan.com", "password": "correct_password"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		req := httptest.NewRequest("POST", "/api/v1/auth/login", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+		resp, err := app.Test(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	})
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
 }

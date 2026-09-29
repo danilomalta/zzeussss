@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"titansystem-backend/internal/core/database"
+	"titansystem-backend/internal/core/security"
 	"titansystem-backend/internal/modules/auth/domain"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -73,6 +74,13 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 	// 3. Validação criptográfica da senha (Bcrypt)
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
 		// [SecOps] Retorna erro idêntico para evitar inferência de existência de usuário
+		return nil, errors.New("e-mail ou senha inválidos")
+	}
+	active, lookupErr := security.ActiveSession(user.ID, user.ClientID, user.Role)
+	if lookupErr != nil {
+		return nil, errors.New("sessão indisponível")
+	}
+	if !active {
 		return nil, errors.New("e-mail ou senha inválidos")
 	}
 

@@ -1,0 +1,9 @@
+# Fase 3C — sessão da API legada
+
+Esta entrega endurece a API PostgreSQL existente, sem executar migrações ou abrir o SQLite da loja. Antes de emitir um token no login, renovar um token e atender as rotas ativas de produto/desconto, o servidor consulta `users` ligado a `tenants`: ID, empresa, papel e `tenants.status = 'active'` precisam corresponder. Conta excluída, papel alterado, empresa suspensa ou indisponibilidade do PostgreSQL impedem operações online. Resposta 503 indica falha de consulta; 401 indica sessão inválida ou vínculo inexistente; 403 indica papel insuficiente.
+
+Papéis aceitos enquanto houver dados legados: `admin` é compatibilidade do login existente. Consulta de produtos: `admin`, `owner`, `manager`, `cashier`, `stock`. Cadastro de produtos: `admin`, `owner`, `manager`, `stock`. Gerar/listar sugestões de desconto: `admin`, `owner`, `manager`. Revisão de sugestão permanece indisponível até aprovação vinculada e auditada. Rotas indisponíveis da Fase 3A não são reativadas.
+
+**Limites:** não há seleção de empresa/loja em PostgreSQL: cada conta legada ainda possui uma empresa. A política SQLite da Fase 3B continua sem ligação à API. Esta API depende de PostgreSQL e não é o PDV offline. Tokens de renovação continuam assinados sem armazenamento/rotação; exclusão de sessão individual, convite, dispositivo e desbloqueio offline exigem trabalhos próprios antes de uso real. A validação da empresa na hora de emitir/renovar token não substitui autorização por loja, dispositivo ou registro em cada operação. A aplicação deve expor corretamente estados offline e não tratar erro 503 como revogação definitiva.
+
+Testar em banco mockado: login válido/inválido, vínculo revogado ou de outra empresa, papel insuficiente, renovação revogada e falha de consulta. Sem acesso ao banco do usuário. Verificar build e testes Go antes de registrar o commit; não executar `backend/db/migrations/000001_init.sql`.
