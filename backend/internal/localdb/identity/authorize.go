@@ -15,14 +15,15 @@ var ErrDenied = errors.New("acesso negado")
 type Permission string
 
 const (
-	ViewCatalog      Permission = "view_catalog"
-	Sell             Permission = "sell"
-	ManageStock      Permission = "manage_stock"
-	ReviewDiscount   Permission = "review_discount"
-	ManageStaff      Permission = "manage_staff"
-	ViewAccounting   Permission = "view_accounting"
-	ManageProduction Permission = "manage_production"
-	ViewOrders       Permission = "view_orders"
+	ViewCatalog         Permission = "view_catalog"
+	Sell                Permission = "sell"
+	ManageStock         Permission = "manage_stock"
+	ReviewDiscount      Permission = "review_discount"
+	ManageStaff         Permission = "manage_staff"
+	ViewAccounting      Permission = "view_accounting"
+	ManageProduction    Permission = "manage_production"
+	ViewOrders          Permission = "view_orders"
+	ManageReplenishment Permission = "manage_replenishment"
 )
 
 type Scope struct {
@@ -91,12 +92,12 @@ func allowed(role string, permission Permission) bool {
 	switch role {
 	case "owner":
 		switch permission {
-		case ViewCatalog, Sell, ManageStock, ReviewDiscount, ManageStaff, ViewAccounting, ManageProduction, ViewOrders:
+		case ViewCatalog, Sell, ManageStock, ReviewDiscount, ManageStaff, ViewAccounting, ManageProduction, ViewOrders, ManageReplenishment:
 			return true
 		}
 	case "manager":
 		switch permission {
-		case ViewCatalog, Sell, ManageStock, ReviewDiscount, ManageStaff, ViewAccounting, ViewOrders:
+		case ViewCatalog, Sell, ManageStock, ReviewDiscount, ManageStaff, ViewAccounting, ViewOrders, ManageReplenishment:
 			return true
 		}
 	case "cashier":
