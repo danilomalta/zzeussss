@@ -4,13 +4,11 @@ import (
 	"log"
 	"net"
 	"os"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"titansystem-backend/internal/core/database"
 	"titansystem-backend/internal/core/routes"
-	"titansystem-backend/internal/core/sync"
 	"titansystem-backend/internal/modules/auth/delivery"
 )
 
@@ -49,10 +47,6 @@ func main() {
 		log.Fatal("Erro crítico: falha ao estabelecer o Pool de conexões pgxpool. Abortando.")
 	}
 
-	// 3. Inicializa o SyncWorker de Resiliência Local-First
-	worker := sync.NovoSyncWorker()
-	worker.Start(1 * time.Minute)
-
 	app := fiber.New(fiber.Config{
 		AppName: "TitanSystem Backend API (PostgreSQL Cores)",
 	})
@@ -76,7 +70,7 @@ func main() {
 
 	log.Println("────────────────────────────────────────────────────────────────")
 	log.Printf("🚀 TitanSystem rodando localmente em: http://localhost:%s", port)
-	log.Printf("Para acessar via smartphone no Wi-Fi, abra: http://%s:%s", ipLocal, port)
+	log.Printf("API disponível na rede local em: http://%s:%s (somente rotas implementadas)", ipLocal, port)
 	log.Println("────────────────────────────────────────────────────────────────")
 
 	if err := app.Listen(addr); err != nil {
