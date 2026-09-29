@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -13,7 +14,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"titansystem-backend/internal/localapi"
 	"titansystem-backend/internal/localdb"
+	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/localsetup"
 )
 
@@ -25,14 +28,87 @@ type stationFile struct {
 }
 
 func main() {
-	if len(os.Args) < 2 || os.Args[1] != "init" {
-		fmt.Fprintln(os.Stderr, "Uso: titan-local init --db CAMINHO_NOVO.sqlite --station CAMINHO_NOVO.station --empresa NOME --loja NOME --dono NOME")
+	if len(os.Args) < 2 || (os.Args[1] != "init" && os.Args[1] != "serve") {
+		fmt.Fprintln(os.Stderr, "Uso: titan-local init|serve --db CAMINHO.sqlite --station CAMINHO.station")
 		os.Exit(2)
 	}
-	if err := initStation(os.Args[2:], os.Stdin, os.Stdout); err != nil {
-		fmt.Fprintln(os.Stderr, "Instalação local:", err)
+	var err error
+	if os.Args[1] == "init" {
+		err = initStation(os.Args[2:], os.Stdin, os.Stdout)
+	} else {
+		err = serveStation(os.Args[2:])
+	}
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Titan local:", err)
 		os.Exit(1)
 	}
+}
+
+func serveStation(args []string) error {
+	options := flag.NewFlagSet("serve", flag.ContinueOnError)
+	options.SetOutput(io.Discard)
+	dbPath := options.String("db", "", "SQLite existente")
+	stationPath := options.String("station", "", "arquivo privado do aparelho")
+	if err := options.Parse(args); err != nil {
+		return err
+	}
+	if *dbPath == "" || *stationPath == "" || options.NArg() != 0 {
+		return errors.New("informe banco e aparelho")
+	}
+	db, device, err := openVerified(context.Background(), *dbPath, *stationPath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	app, err := localapi.New(db, device)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(os.Stdout, "API local em http://127.0.0.1:8181/local/v1/health")
+	return app.Listen("127.0.0.1:8181")
+}
+
+func openVerified(ctx context.Context, dbPath, stationPath string) (*sql.DB, identity.DeviceContext, error) {
+	stat, err := os.Lstat(dbPath)
+	if err != nil {
+		return nil, identity.DeviceContext{}, err
+	}
+	if !stat.Mode().IsRegular() || stat.Mode().Perm() != 0600 {
+		return nil, identity.DeviceContext{}, errors.New("banco não é arquivo regular 0600")
+	}
+	stat, err = os.Lstat(stationPath)
+	if err != nil {
+		return nil, identity.DeviceContext{}, err
+	}
+	if !stat.Mode().IsRegular() || stat.Mode().Perm() != 0600 {
+		return nil, identity.DeviceContext{}, errors.New("arquivo privado não é regular 0600")
+	}
+	bytes, err := os.ReadFile(stationPath)
+	if err != nil {
+		return nil, identity.DeviceContext{}, err
+	}
+	var station stationFile
+	if err = json.Unmarshal(bytes, &station); err != nil {
+		return nil, identity.DeviceContext{}, errors.New("arquivo do aparelho inválido")
+	}
+	key, err := base64.RawURLEncoding.DecodeString(station.PrivateKey)
+	if err != nil || len(key) != ed25519.PrivateKeySize {
+		return nil, identity.DeviceContext{}, errors.New("chave do aparelho inválida")
+	}
+	db, err := localdb.Open(ctx, dbPath)
+	if err != nil {
+		return nil, identity.DeviceContext{}, err
+	}
+	device := identity.DeviceContext{TenantID: station.TenantID, StoreID: station.StoreID, DeviceID: station.DeviceID}
+	challenge, err := identity.IssueDeviceChallenge(ctx, db, device)
+	if err == nil {
+		_, err = identity.CompleteDeviceChallenge(ctx, db, device, challenge.ID, ed25519.Sign(ed25519.PrivateKey(key), identity.DeviceAuthMessage(device, challenge)))
+	}
+	if err != nil {
+		_ = db.Close()
+		return nil, identity.DeviceContext{}, err
+	}
+	return db, device, nil
 }
 
 func initStation(args []string, passwordReader io.Reader, output io.Writer) error {

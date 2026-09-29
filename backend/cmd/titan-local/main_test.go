@@ -34,6 +34,13 @@ func TestInitCreatesPrivateKeyAndRejectsSecondRun(t *testing.T) {
 	if err = reopened.Close(); err != nil {
 		t.Fatal(err)
 	}
+	verified, device, err := openVerified(context.Background(), dbPath, stationPath)
+	if err != nil || device.TenantID == "" {
+		t.Fatalf("prova do aparelho: %+v %v", device, err)
+	}
+	if err = verified.Close(); err != nil {
+		t.Fatal(err)
+	}
 	if err := initStation(args, strings.NewReader("senha-bem-forte-2026"), &output); err == nil {
 		t.Fatal("sobrescreveu instalação")
 	}
