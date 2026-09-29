@@ -14,18 +14,30 @@ func CanOperate(ctx context.Context, db *sql.DB, actor Scope, device DeviceConte
 	if db == nil {
 		return errors.New("banco local indisponível")
 	}
-	if strings.TrimSpace(actor.IdentityID) == "" || strings.TrimSpace(actor.TenantID) == "" ||
-		strings.TrimSpace(actor.StoreID) == "" || strings.TrimSpace(device.DeviceID) == "" ||
-		actor.TenantID != device.TenantID || actor.StoreID != device.StoreID {
-		return ErrDenied
-	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
+	if err := CanOperateTx(ctx, tx, actor, device, permission); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// CanOperateTx permite verificar autorização na mesma transação da escrita.
+// O chamador continua responsável por validar a sessão humana e a prova do aparelho.
+func CanOperateTx(ctx context.Context, tx *sql.Tx, actor Scope, device DeviceContext, permission Permission) error {
+	if tx == nil {
+		return errors.New("transação local indisponível")
+	}
+	if strings.TrimSpace(actor.IdentityID) == "" || strings.TrimSpace(actor.TenantID) == "" ||
+		strings.TrimSpace(actor.StoreID) == "" || strings.TrimSpace(device.DeviceID) == "" ||
+		actor.TenantID != device.TenantID || actor.StoreID != device.StoreID {
+		return ErrDenied
+	}
 	var role, status string
-	err = tx.QueryRowContext(ctx, "SELECT role, status FROM memberships WHERE tenant_id = ? AND identity_id = ?",
+	err := tx.QueryRowContext(ctx, "SELECT role, status FROM memberships WHERE tenant_id = ? AND identity_id = ?",
 		actor.TenantID, actor.IdentityID).Scan(&role, &status)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrDenied
@@ -58,7 +70,7 @@ func CanOperate(ctx context.Context, db *sql.DB, actor Scope, device DeviceConte
 	if err != nil {
 		return err
 	}
-	return tx.Commit()
+	return nil
 }
 
 // CanOperateReview acrescenta a regra de não aprovar a própria solicitação.

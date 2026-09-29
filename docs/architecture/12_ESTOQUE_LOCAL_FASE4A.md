@@ -1,0 +1,9 @@
+# Fase 4A — movimentos locais de estoque por localização
+
+A migração `0006_stock_operations.sql` acrescenta operações de entrada, transferência e perda. `stock.Record` valida papel, vínculo e aparelho dentro da **mesma transação** que grava operação, um ou dois movimentos e um evento de outbox. O ID estável da operação permite repetição idêntica sem nova baixa; reutilização com conteúdo diferente é recusada. Saldo por local deriva da soma dos movimentos. Uma transferência retira do depósito e adiciona à gôndola na mesma transação; retirada sem saldo local suficiente é recusada. Quantidades usam milésimos de unidade e preços do catálogo continuam em centavos.
+
+O fluxo ainda não cria produto, loja ou localização por interface, nem registra venda. Os testes montam cadastros somente em `t.TempDir()`. A assinatura de `Record` recebe operador/aparelho como contexto **já verificado**; rota HTTP futura precisa obtê-los da sessão, jamais aceitar os IDs do corpo como autorização. Evento de outbox é persistido, mas não é sincronizado nem confirmado por esta fase. Se dispositivos isolados disputarem a última unidade, seus saldos locais poderão divergir: não anunciar saldo global exato ou impedir venda cruzada sem reserva/reconciliação.
+
+O código só insere movimentos, mas o esquema legado ainda não impede `UPDATE` direto na tabela. O serviço de migração atual não suporta triggers; endurecer imutabilidade na base antes de produção. Operações `entry` não equivalem ao recebimento fiscal conferido: esse fluxo terá pedido, lote, quantidade aceita e aprovação próprios.
+
+Verificar saldo depósito/gôndola, transferência atômica, perda, duplicata, ID alterado, estoque insuficiente, produto de outra empresa, revogação do aparelho e contagem de outbox. Não executar migrações no banco real nesta etapa.
