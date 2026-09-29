@@ -1,0 +1,9 @@
+# Fase 3D — convites locais para vínculos
+
+Migração SQLite `0003_membership_invites.sql` cria convites para **identidades que já existem e foram verificadas por mecanismo externo**. O convite possui empresa, loja, destinatário fixo, papel, emissor e prazo de 15 minutos. Somente o hash SHA-256 do código aleatório de 256 bits fica no banco; o código é entregue uma única vez ao emissor por `IssueInvite`, sem log. Apenas dono pode convidar gerente, produção, fornecedor e contador; gerente pode convidar caixa, estoque e funcionário da própria loja. Ninguém pode conceder papel de dono por convite.
+
+`RedeemInvite` exige identidade autenticada igual ao destinatário, código válido e emissor ainda ativo/com alçada; registra vínculo e loja em transação com consumo do código e auditoria. `RevokeInvite` permite ao dono da empresa ou ao gerente que emitiu um convite cancelar o convite pendente; evento de cancelamento é auditado. Tentativa de repetição, destinatário errado, prazo encerrado ou revogação não criam vínculo.
+
+**Integração pendente:** ainda não existe rota HTTP para estas funções, nem cadastro/validação externa da identidade ou transporte seguro do convite ao destinatário. O parâmetro `actorID`/`issuer.IdentityID` deve vir **somente da sessão autenticada**, nunca do corpo da requisição. Conhecer o código por si só não prova identidade. Este pacote não autoriza dispositivo, não resolve login offline, não habilita compartilhamento entre mercado e fornecedor nem emite token de API. A API PostgreSQL da Fase 3C e este SQLite local permanecem separados.
+
+Verificar em banco temporário: reabrir/aplicar migrações sem perder dados, emissão com papel e loja corretos, destinatário errado, expiração, repetição, revogação do emissor, cancelamento e trilha de auditoria. Não executar migrações em banco real nem `backend/db/migrations/000001_init.sql`.
