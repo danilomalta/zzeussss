@@ -15,6 +15,7 @@ var ErrDenied = errors.New("acesso negado")
 type Permission string
 
 const (
+	ViewCatalog      Permission = "view_catalog"
 	Sell             Permission = "sell"
 	ManageStock      Permission = "manage_stock"
 	ReviewDiscount   Permission = "review_discount"
@@ -90,20 +91,20 @@ func allowed(role string, permission Permission) bool {
 	switch role {
 	case "owner":
 		switch permission {
-		case Sell, ManageStock, ReviewDiscount, ManageStaff, ViewAccounting, ManageProduction, ViewOrders:
+		case ViewCatalog, Sell, ManageStock, ReviewDiscount, ManageStaff, ViewAccounting, ManageProduction, ViewOrders:
 			return true
 		}
 	case "manager":
 		switch permission {
-		case Sell, ManageStock, ReviewDiscount, ManageStaff, ViewAccounting, ViewOrders:
+		case ViewCatalog, Sell, ManageStock, ReviewDiscount, ManageStaff, ViewAccounting, ViewOrders:
 			return true
 		}
 	case "cashier":
-		return permission == Sell
+		return permission == Sell || permission == ViewCatalog
 	case "stock":
-		return permission == ManageStock || permission == ViewOrders
+		return permission == ManageStock || permission == ViewOrders || permission == ViewCatalog
 	case "production":
-		return permission == ManageProduction || permission == ViewOrders
+		return permission == ManageProduction || permission == ViewOrders || permission == ViewCatalog
 	case "supplier":
 		return permission == ViewOrders
 	case "accountant":

@@ -1,0 +1,7 @@
+# Fase 4B — cadastro local de produtos e locais
+
+Migração `0007_product_details.sql` acrescenta unidade de medida e código de barras ao produto existente sem apagar registros; códigos de barras cadastrados são únicos por empresa, enquanto o mesmo código pode existir em empresas diferentes. A unidade padrão para cadastros antigos é `unit`. Preço de venda e custo continuam inteiros em centavos. `catalog.CreateProduct` e `CreateLocation` exigem operador com permissão de estoque e dispositivo aprovado, checados na mesma transação da escrita.
+
+`ListProducts` filtra por empresa, pagina até cem itens e permite consulta ao caixa para venda. O custo não é incluído na resposta do caixa ou da produção; gerente, dono e estoquista autorizados recebem custo. `ListLocations` filtra pela empresa e loja. Os testes verificam isolamento, SKU/código repetidos, papel do caixa, exposição de custo, gôndola e depósito, além de revogação do aparelho.
+
+**Integração pendente:** estas funções não têm telas nem rotas HTTP. O futuro backend local deve obter operador, empresa, loja e dispositivo da sessão validada e não do corpo da requisição. Fotos, lotes, validade, embalagem do fornecedor, regras fiscais, importação do catálogo legado e estoque reservado não estão implementados. O produto é compartilhado por empresa; preços específicos por loja ainda exigem modelo próprio. Não executar migração no banco real nesta etapa.
