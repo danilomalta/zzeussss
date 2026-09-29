@@ -14,12 +14,12 @@ import (
 var ErrInvalidCatalog = errors.New("cadastro local inválido")
 
 type ProductInput struct {
-	SKU        string
-	Barcode    string
-	Name       string
-	Unit       string
-	PriceCents int64
-	CostCents  int64
+	SKU        string `json:"sku"`
+	Barcode    string `json:"barcode"`
+	Name       string `json:"name"`
+	Unit       string `json:"unit"`
+	PriceCents int64  `json:"price_cents"`
+	CostCents  int64  `json:"cost_cents"`
 }
 
 type Product struct {
@@ -33,8 +33,8 @@ type Product struct {
 }
 
 type LocationInput struct {
-	Kind string
-	Name string
+	Kind string `json:"kind"`
+	Name string `json:"name"`
 }
 
 type Location struct {

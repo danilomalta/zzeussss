@@ -34,6 +34,7 @@ func New(db *sql.DB, device identity.DeviceContext) (*fiber.App, error) {
 		return c.JSON(fiber.Map{"tenant_id": session.Actor.TenantID, "store_id": session.Actor.StoreID, "identity_id": session.Actor.IdentityID, "device_id": session.Device.DeviceID, "expires_unix": session.ExpiresUnix})
 	})
 	protected.Post("/logout", s.logout)
+	s.mountCatalog(protected)
 	return app, nil
 }
 
