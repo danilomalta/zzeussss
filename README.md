@@ -4,19 +4,19 @@ O **TitanSystem** é um ecossistema de **PDV (POS) multiplataforma** organizado 
 
 ## Pilares
 
-- **Backend (Go)**: API HTTP com **Fiber** + persistência com **GORM** em **SQLite** (`titan_pos.db`).
+- **Backend (Go)**: API Fiber com PostgreSQL via pgx e GORM.
 - **Frontend Web (React)**: dashboard/gestão e UI principal (base para o Desktop).
-- **Desktop (Electron)**: empacota o frontend web para Windows/Linux/macOS.
-- **Mobile (React Native + Expo)**: operação em campo (garçons/atendentes) e dispositivos móveis.
+- **Desktop (Electron)**: estrutura existente; funcionamento completo ainda não verificado.
+- **Mobile (React Native + Expo)**: estrutura existente; vendas offline ainda não implementadas.
 
 ## Onde está o código
 
-O código do monorepo fica dentro de `TitanSystem/`:
+O código ativo fica na raiz do repositório:
 
-- `TitanSystem/backend/`
-- `TitanSystem/frontend/`
-- `TitanSystem/desktop/`
-- `TitanSystem/mobile/`
+- `backend/`
+- `frontend-web/`
+- `desktop/`
+- `mobile/`
 
 ## Documentação por pasta
 
@@ -26,3 +26,5 @@ Cada pasta do monorepo possui um `README.md` explicando:
 - como ela se conecta ao restante do sistema
 - o que deve ser implementado ali
 
+
+A árvore `TitanSystem/` está preservada para inventário e comparação; Compose e CI usam as pastas da raiz. O modo offline e a venda pelo smartphone ainda são planejados.

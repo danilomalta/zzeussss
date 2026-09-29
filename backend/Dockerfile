@@ -1,7 +1,7 @@
 # ==========================================
 # STAGE 1: BUILDER
 # ==========================================
-FROM golang:1.22-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Instala certificados atualizados e dependências para build seguro
 RUN apk add --no-cache ca-certificates git tzdata
