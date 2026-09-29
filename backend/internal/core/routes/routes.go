@@ -5,11 +5,8 @@ import (
 	authDelivery "titansystem-backend/internal/modules/auth/delivery"
 	"titansystem-backend/internal/modules/auth/usecase"
 	catalogDelivery "titansystem-backend/internal/modules/catalog/delivery"
-	financialDelivery "titansystem-backend/internal/modules/financial/delivery"
 	posDelivery "titansystem-backend/internal/modules/pos/delivery"
-	tenantDelivery "titansystem-backend/internal/modules/tenant/delivery"
 	"titansystem-backend/pkg/middleware"
-	"titansystem-backend/pkg/websocket"
 )
 
 type RespostaSaude struct {
@@ -19,6 +16,13 @@ type RespostaSaude struct {
 // Saude é o handler de verificação de integridade do backend (inline)
 func Saude(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(RespostaSaude{Status: "ativo"})
+}
+
+// Indisponivel impede a execução de fluxos ainda sem isolamento ou autorização completa.
+func Indisponivel(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusNotImplemented).JSON(fiber.Map{
+		"status": "indisponivel",
+	})
 }
 
 // Registrar registra todas as rotas HTTP do backend sob a nova arquitetura DDD.
@@ -55,25 +59,24 @@ func Registrar(app *fiber.App) {
 
 	// Análises com Inteligência Artificial (Bounded Context: Catalog)
 	analises := negocios.Group("/analises")
-	analises.Get("/produtos-parados", catalogDelivery.ListarProdutosParados)
+	analises.Get("/produtos-parados", Indisponivel)
 
 	// Indicações e Recompensas SaaS (Bounded Context: Tenant)
 	recompensas := negocios.Group("/recompensas")
-	recompensas.Post("/indicacoes", tenantDelivery.CriarIndicacao)
-	recompensas.Post("/indicacoes/recompensar", tenantDelivery.ConcederRecompensaIndicacao)
-	recompensas.Get("/indicacoes/saldo", tenantDelivery.ConsultarSaldoIndicador)
+	recompensas.Post("/indicacoes", Indisponivel)
+	recompensas.Post("/indicacoes/recompensar", Indisponivel)
+	recompensas.Get("/indicacoes/saldo", Indisponivel)
 
 	// Contábil e Fiscal - SPED (Bounded Context: Financial)
 	contabil := negocios.Group("/accounting")
-	contabil.Post("/sped/request", financialDelivery.RequestSpedGeneration)
-	contabil.Get("/sped/status/:job_id", financialDelivery.GetSpedStatus)
+	contabil.Post("/sped/request", Indisponivel)
+	contabil.Get("/sped/status/:job_id", Indisponivel)
 
 	// Frente de Caixa e Motor de Descontos (Bounded Context: POS)
 	descontos := negocios.Group("/discounts")
 	descontos.Post("/suggest", posDelivery.SuggestDiscounts)
 	descontos.Get("/suggestions", posDelivery.GetSuggestions)
-	descontos.Post("/suggestions/:id/review", posDelivery.ReviewSuggestion)
+	descontos.Post("/suggestions/:id/review", Indisponivel)
 
-	// Tempo real (WebSocket): chat e funil logístico transversal
-	websocket.RegistrarRotas(app)
+	// O chat de demonstração não recebe autenticação; não é exposto nesta fase.
 }

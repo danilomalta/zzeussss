@@ -54,8 +54,16 @@ func AuthGuard() fiber.Handler {
 			})
 		}
 
-		c.Locals("userID", valorClaim(claims["sub"]))
-		c.Locals("role", valorClaim(claims["role"]))
+		userID := valorClaim(claims["sub"])
+		role := valorClaim(claims["role"])
+		if userID == "" || role == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Sessão sem operador ou papel válido.",
+			})
+		}
+
+		c.Locals("userID", userID)
+		c.Locals("role", role)
 		c.Locals("tenant_id", tenantID)
 
 		return c.Next()
