@@ -42,8 +42,17 @@ type Location struct {
 	LocationInput
 }
 
-// CreateProduct cadastra na empresa da sessão. Preço e custo são centavos.
+type catalogAuthorization func(context.Context, *sql.Tx, identity.Scope, identity.DeviceContext) error
+
+// CreateProduct mantém o caminho legado sem licença. Não usar em novas rotas.
+// A integração gradual deve usar CreateProductWithContract.
 func CreateProduct(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in ProductInput) (string, error) {
+	return createProduct(ctx, db, actor, device, in, func(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext) error {
+		return identity.CanOperateTx(ctx, tx, actor, device, identity.ManageStock)
+	})
+}
+
+func createProduct(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in ProductInput, authorize catalogAuthorization) (string, error) {
 	if db == nil {
 		return "", errors.New("banco local indisponível")
 	}
@@ -64,7 +73,7 @@ func CreateProduct(ctx context.Context, db *sql.DB, actor identity.Scope, device
 		return "", err
 	}
 	defer tx.Rollback()
-	if err := identity.CanOperateTx(ctx, tx, actor, device, identity.ManageStock); err != nil {
+	if err := authorize(ctx, tx, actor, device); err != nil {
 		return "", err
 	}
 	var barcode any
@@ -81,8 +90,15 @@ func CreateProduct(ctx context.Context, db *sql.DB, actor identity.Scope, device
 	return id, tx.Commit()
 }
 
-// CreateLocation separa gôndola, depósito, recebimento e produção por loja.
+// CreateLocation mantém o caminho legado sem licença. Não usar em novas rotas.
+// A integração gradual deve usar CreateLocationWithContract.
 func CreateLocation(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in LocationInput) (string, error) {
+	return createLocation(ctx, db, actor, device, in, func(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext) error {
+		return identity.CanOperateTx(ctx, tx, actor, device, identity.ManageStock)
+	})
+}
+
+func createLocation(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in LocationInput, authorize catalogAuthorization) (string, error) {
 	if db == nil {
 		return "", errors.New("banco local indisponível")
 	}
@@ -99,7 +115,7 @@ func CreateLocation(ctx context.Context, db *sql.DB, actor identity.Scope, devic
 		return "", err
 	}
 	defer tx.Rollback()
-	if err := identity.CanOperateTx(ctx, tx, actor, device, identity.ManageStock); err != nil {
+	if err := authorize(ctx, tx, actor, device); err != nil {
 		return "", err
 	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO stock_locations (tenant_id, store_id, id, kind, name)
