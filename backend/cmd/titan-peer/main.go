@@ -34,6 +34,9 @@ func runPeer(ctx context.Context, args []string, password io.Reader, output io.W
 	if args[0] == "trust" || args[0] == "approve" || args[0] == "revoke" {
 		return runPeerAdmin(ctx, args, password, output)
 	}
+	if args[0] == "pair-start" || args[0] == "pair-answer" || args[0] == "pair-finish" {
+		return runPeerPairing(ctx, args, password, output)
+	}
 	if args[0] == "inspect" {
 		return inspectPeer(args[1:], output)
 	}
