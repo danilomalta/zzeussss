@@ -5,7 +5,10 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"titansystem-backend/internal/core/entitlements"
+	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb/catalog"
+	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/localauth"
 )
@@ -35,12 +38,15 @@ func (s *Server) listProducts(c *fiber.Ctx) error {
 }
 
 func (s *Server) createProduct(c *fiber.Ctx) error {
+	if s.contracts == nil {
+		return c.SendStatus(fiber.StatusServiceUnavailable)
+	}
 	var input catalog.ProductInput
 	if err := c.BodyParser(&input); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 	session := c.Locals("session").(localauth.Session)
-	id, err := catalog.CreateProduct(c.UserContext(), s.DB, session.Actor, session.Device, input)
+	id, err := catalog.CreateProductWithContract(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, input)
 	if err != nil {
 		return catalogError(c, err)
 	}
@@ -57,12 +63,15 @@ func (s *Server) listLocations(c *fiber.Ctx) error {
 }
 
 func (s *Server) createLocation(c *fiber.Ctx) error {
+	if s.contracts == nil {
+		return c.SendStatus(fiber.StatusServiceUnavailable)
+	}
 	var input catalog.LocationInput
 	if err := c.BodyParser(&input); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 	session := c.Locals("session").(localauth.Session)
-	id, err := catalog.CreateLocation(c.UserContext(), s.DB, session.Actor, session.Device, input)
+	id, err := catalog.CreateLocationWithContract(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, input)
 	if err != nil {
 		return catalogError(c, err)
 	}
@@ -71,8 +80,13 @@ func (s *Server) createLocation(c *fiber.Ctx) error {
 
 func catalogError(c *fiber.Ctx, err error) error {
 	switch {
-	case errors.Is(err, identity.ErrDenied):
+	case errors.Is(err, identity.ErrDenied), errors.Is(err, entitlementstore.ErrNotInstalled),
+		errors.Is(err, modules.ErrUnavailable), errors.Is(err, entitlements.ErrTrust),
+		errors.Is(err, entitlements.ErrSignature), errors.Is(err, entitlements.ErrClaims),
+		errors.Is(err, entitlements.ErrTenant), errors.Is(err, entitlements.ErrValidity):
 		return c.SendStatus(fiber.StatusForbidden)
+	case errors.Is(err, entitlementstore.ErrClockRollback):
+		return c.SendStatus(fiber.StatusConflict)
 	case errors.Is(err, catalog.ErrInvalidCatalog):
 		return c.SendStatus(fiber.StatusBadRequest)
 	default:

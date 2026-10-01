@@ -10,20 +10,38 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"titansystem-backend/internal/core/entitlements"
+	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/localauth"
 )
 
 type Server struct {
-	DB     *sql.DB
-	Device identity.DeviceContext
+	DB        *sql.DB
+	Device    identity.DeviceContext
+	contracts *entitlementstore.Store
 }
 
+// New preserves authentication and authorized reads without issuer keys.
+// Catalog mutations are unavailable until a trusted verifier is configured.
 func New(db *sql.DB, device identity.DeviceContext) (*fiber.App, error) {
+	return NewWithVerifier(db, device, nil)
+}
+
+// NewWithVerifier receives trust from process configuration, never HTTP input.
+// The device must already be proven by startup; user sessions are checked per request.
+func NewWithVerifier(db *sql.DB, device identity.DeviceContext, verifier *entitlements.Verifier) (*fiber.App, error) {
 	if db == nil || device.TenantID == "" || device.StoreID == "" || device.DeviceID == "" {
 		return nil, errors.New("servidor local sem aparelho")
 	}
 	s := &Server{DB: db, Device: device}
+	if verifier != nil {
+		contracts, err := entitlementstore.New(db, verifier, nil)
+		if err != nil {
+			return nil, err
+		}
+		s.contracts = contracts
+	}
 	app := fiber.New(fiber.Config{AppName: "Titan Local", DisableStartupMessage: true, BodyLimit: 1 << 20})
 	v1 := app.Group("/local/v1")
 	v1.Get("/health", func(c *fiber.Ctx) error { return c.JSON(fiber.Map{"status": "local"}) })
@@ -34,6 +52,7 @@ func New(db *sql.DB, device identity.DeviceContext) (*fiber.App, error) {
 		return c.JSON(fiber.Map{"tenant_id": session.Actor.TenantID, "store_id": session.Actor.StoreID, "identity_id": session.Actor.IdentityID, "device_id": session.Device.DeviceID, "expires_unix": session.ExpiresUnix})
 	})
 	protected.Post("/logout", s.logout)
+	protected.Post("/module-contracts", s.installContract)
 	s.mountCatalog(protected)
 	return app, nil
 }

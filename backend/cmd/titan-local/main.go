@@ -49,22 +49,30 @@ func serveStation(args []string) error {
 	options.SetOutput(io.Discard)
 	dbPath := options.String("db", "", "SQLite existente")
 	stationPath := options.String("station", "", "arquivo privado do aparelho")
+	issuerKeys := options.String("issuer-keys", "", "JSON local de chaves publicas emissoras confiaveis")
 	if err := options.Parse(args); err != nil {
 		return err
 	}
 	if *dbPath == "" || *stationPath == "" || options.NArg() != 0 {
 		return errors.New("informe banco e aparelho")
 	}
+	verifier, err := readIssuerVerifier(*issuerKeys)
+	if err != nil {
+		return err
+	}
 	db, device, err := openVerified(context.Background(), *dbPath, *stationPath)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	app, err := localapi.New(db, device)
+	app, err := localapi.NewWithVerifier(db, device, verifier)
 	if err != nil {
 		return err
 	}
 	fmt.Fprintln(os.Stdout, "API local em http://127.0.0.1:8181/local/v1/health")
+	if verifier == nil {
+		fmt.Fprintln(os.Stdout, "Cadastros indisponiveis: configure --issuer-keys e instale um contrato valido. Login e consultas continuam disponiveis.")
+	}
 	return app.Listen("127.0.0.1:8181")
 }
 

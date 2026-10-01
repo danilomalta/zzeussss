@@ -34,10 +34,7 @@ func fixture(t *testing.T) (*sql.DB, *fiber.App, localsetup.Result) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	app, err := New(db, identity.DeviceContext{TenantID: result.TenantID, StoreID: result.StoreID, DeviceID: result.DeviceID})
-	if err != nil {
-		t.Fatal(err)
-	}
+	app := newLicensedTestApp(t, db, identity.DeviceContext{TenantID: result.TenantID, StoreID: result.StoreID, DeviceID: result.DeviceID}, result.OwnerID)
 	return db, app, result
 }
 
