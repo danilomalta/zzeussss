@@ -55,6 +55,7 @@ func NewWithVerifier(db *sql.DB, device identity.DeviceContext, verifier *entitl
 	protected.Post("/module-contracts", s.installContract)
 	s.mountCatalog(protected)
 	s.mountStock(protected)
+	s.mountCash(protected)
 	return app, nil
 }
 

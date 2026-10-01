@@ -23,29 +23,36 @@ var (
 )
 
 type OpenInput struct {
-	SessionID    string
-	OpeningCents int64
+	SessionID    string `json:"session_id"`
+	OpeningCents int64  `json:"opening_cents"`
 }
 
 type CloseInput struct {
-	SessionID     string
-	OperationID   string
-	DeclaredCents int64
+	SessionID     string `json:"session_id"`
+	OperationID   string `json:"operation_id"`
+	DeclaredCents int64  `json:"declared_cents"`
 }
 
 type Result struct {
-	SessionID       string
-	Repeated        bool
-	ExpectedCents   int64
-	DifferenceCents int64
+	SessionID       string `json:"session_id"`
+	Repeated        bool   `json:"repeated"`
+	ExpectedCents   int64  `json:"expected_cents"`
+	DifferenceCents int64  `json:"difference_cents"`
 }
 
+type authorization func(context.Context, *sql.Tx, identity.Scope, identity.DeviceContext) error
+
+// Open preserves the internal permission-only path. HTTP uses OpenWithContract.
 func Open(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in OpenInput) (Result, error) {
+	return open(ctx, db, actor, device, in, authorizeLegacy)
+}
+
+func open(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in OpenInput, authorize authorization) (Result, error) {
 	if db == nil {
 		return Result{}, errors.New("banco local indisponível")
 	}
 	in.SessionID = strings.TrimSpace(in.SessionID)
-	if in.SessionID == "" || in.OpeningCents < 0 {
+	if in.SessionID == "" || len(in.SessionID) > 128 || in.OpeningCents < 0 {
 		return Result{}, ErrInvalid
 	}
 	tx, err := db.BeginTx(ctx, nil)
@@ -53,7 +60,7 @@ func Open(ctx context.Context, db *sql.DB, actor identity.Scope, device identity
 		return Result{}, err
 	}
 	defer tx.Rollback()
-	if err = identity.CanOperateTx(ctx, tx, actor, device, identity.Sell); err != nil {
+	if err = authorize(ctx, tx, actor, device); err != nil {
 		return Result{}, err
 	}
 	var tenant, store, deviceID, operator string
@@ -79,6 +86,13 @@ func Open(ctx context.Context, db *sql.DB, actor identity.Scope, device identity
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return Result{}, err
+	}
+	var active int
+	if err = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM cash_sessions WHERE tenant_id=? AND store_id=? AND device_id=? AND closed_at IS NULL`, actor.TenantID, actor.StoreID, device.DeviceID).Scan(&active); err != nil {
+		return Result{}, err
+	}
+	if active != 0 {
+		return Result{}, ErrConflict
 	}
 	// Projeção de uma identidade já validada para a FK da tabela legada users.
 	_, err = tx.ExecContext(ctx, `INSERT INTO users(tenant_id, id, display_name)
@@ -109,12 +123,17 @@ func Open(ctx context.Context, db *sql.DB, actor identity.Scope, device identity
 	return Result{SessionID: in.SessionID}, nil
 }
 
+// Close preserves the internal permission-only path. HTTP uses CloseWithContract.
 func Close(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in CloseInput) (Result, error) {
+	return close(ctx, db, actor, device, in, authorizeLegacy)
+}
+
+func close(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in CloseInput, authorize authorization) (Result, error) {
 	if db == nil {
 		return Result{}, errors.New("banco local indisponível")
 	}
 	in.SessionID, in.OperationID = strings.TrimSpace(in.SessionID), strings.TrimSpace(in.OperationID)
-	if in.SessionID == "" || in.OperationID == "" || in.DeclaredCents < 0 {
+	if in.SessionID == "" || in.OperationID == "" || len(in.SessionID) > 128 || len(in.OperationID) > 128 || in.DeclaredCents < 0 {
 		return Result{}, ErrInvalid
 	}
 	tx, err := db.BeginTx(ctx, nil)
@@ -122,7 +141,7 @@ func Close(ctx context.Context, db *sql.DB, actor identity.Scope, device identit
 		return Result{}, err
 	}
 	defer tx.Rollback()
-	if err = identity.CanOperateTx(ctx, tx, actor, device, identity.Sell); err != nil {
+	if err = authorize(ctx, tx, actor, device); err != nil {
 		return Result{}, err
 	}
 	var store, deviceID, operator string
@@ -157,6 +176,13 @@ func Close(ctx context.Context, db *sql.DB, actor identity.Scope, device identit
 			return Result{}, err
 		}
 		return Result{SessionID: in.SessionID, Repeated: true, ExpectedCents: expected, DifferenceCents: declared - expected}, nil
+	}
+	var used int
+	if err = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM cash_closures WHERE tenant_id=? AND operation_id=?`, actor.TenantID, in.OperationID).Scan(&used); err != nil {
+		return Result{}, err
+	}
+	if used != 0 {
+		return Result{}, ErrConflict
 	}
 	var movement int64
 	if err = tx.QueryRowContext(ctx, `SELECT COALESCE(SUM(amount_cents), 0) FROM cash_movements
@@ -210,4 +236,8 @@ func event(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identit
 	_, err = tx.ExecContext(ctx, `INSERT INTO outbox(event_id, tenant_id, store_id, device_id, operation_id, aggregate_id, event_type, schema_version, payload_json, created_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`, id, actor.TenantID, actor.StoreID, device.DeviceID, operationID, aggregateID, eventType, string(payload), now)
 	return err
+}
+
+func authorizeLegacy(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext) error {
+	return identity.CanOperateTx(ctx, tx, actor, device, identity.Sell)
 }
