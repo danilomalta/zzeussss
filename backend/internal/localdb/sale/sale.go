@@ -19,6 +19,8 @@ import (
 )
 
 var (
+	ErrNotFound          = errors.New("venda local nao encontrada")
+	ErrCashOverflow      = errors.New("saldo de caixa excede limite inteiro")
 	ErrInvalid           = errors.New("venda inválida")
 	ErrNoStock           = errors.New("estoque insuficiente na gôndola")
 	ErrConflict          = errors.New("ID de venda ou operação reutilizado com outros dados")
@@ -46,14 +48,21 @@ type Input struct {
 }
 
 type Result struct {
-	SaleID     string
-	TotalCents int64
-	Repeated   bool
+	SaleID     string `json:"sale_id"`
+	TotalCents int64  `json:"total_cents"`
+	Repeated   bool   `json:"repeated"`
 }
 
 // Complete recebe Scope e DeviceContext já provados pela camada de sessão.
 // O preço vem somente do catálogo persistido, nunca da requisição.
+type authorization func(context.Context, *sql.Tx, identity.Scope, identity.DeviceContext) error
+
+// Complete preserves the internal permission-only path. HTTP uses CompleteWithContract.
 func Complete(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in Input) (Result, error) {
+	return complete(ctx, db, actor, device, in, authorizeLegacy)
+}
+
+func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in Input, authorize authorization) (Result, error) {
 	if db == nil {
 		return Result{}, errors.New("banco local indisponível")
 	}
@@ -70,7 +79,7 @@ func Complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 		return Result{}, err
 	}
 	defer tx.Rollback()
-	if err = identity.CanOperateTx(ctx, tx, actor, device, identity.Sell); err != nil {
+	if err = authorize(ctx, tx, actor, device); err != nil {
 		return Result{}, err
 	}
 	var priorSale, priorHash, priorStore, priorActor string
@@ -92,6 +101,13 @@ func Complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return Result{}, err
+	}
+	var existingSale int
+	if err = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM sales WHERE tenant_id=? AND id=?`, actor.TenantID, in.SaleID).Scan(&existingSale); err != nil {
+		return Result{}, err
+	}
+	if existingSale != 0 {
+		return Result{}, ErrConflict
 	}
 	var operator, sessionDevice string
 	err = tx.QueryRowContext(ctx, `SELECT b.identity_id, c.device_id FROM cash_sessions c
@@ -174,6 +190,20 @@ func Complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	if paid != total {
 		return Result{}, ErrInvalid
 	}
+	var opening, movements int64
+	if err = tx.QueryRowContext(ctx, `SELECT opening_cents FROM cash_sessions WHERE tenant_id=? AND id=?`, actor.TenantID, in.CashSessionID).Scan(&opening); err != nil {
+		return Result{}, err
+	}
+	if err = tx.QueryRowContext(ctx, `SELECT COALESCE(SUM(amount_cents),0) FROM cash_movements WHERE tenant_id=? AND store_id=? AND cash_session_id=?`, actor.TenantID, actor.StoreID, in.CashSessionID).Scan(&movements); err != nil {
+		return Result{}, err
+	}
+	if movements > 0 && opening > math.MaxInt64-movements {
+		return Result{}, ErrCashOverflow
+	}
+	current := opening + movements
+	if current < 0 || total > math.MaxInt64-current {
+		return Result{}, ErrCashOverflow
+	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	_, err = tx.ExecContext(ctx, `INSERT INTO sales(tenant_id,store_id,device_id,id,cash_session_id,status,total_cents,committed_at)
 		VALUES (?,?,?,?,?,'committed',?,?)`, actor.TenantID, actor.StoreID, device.DeviceID, in.SaleID, in.CashSessionID, total, now)
@@ -254,11 +284,11 @@ func Complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 }
 
 func valid(in Input) bool {
-	if strings.TrimSpace(in.OperationID) == "" || strings.TrimSpace(in.SaleID) == "" || strings.TrimSpace(in.CashSessionID) == "" || len(in.Items) == 0 || len(in.Payments) == 0 {
+	if strings.TrimSpace(in.OperationID) == "" || strings.TrimSpace(in.SaleID) == "" || strings.TrimSpace(in.CashSessionID) == "" || len(in.Items) == 0 || len(in.Items) > 500 || len(in.Payments) == 0 || len(in.Payments) > 8 || len(in.OperationID) > 128 || len(in.SaleID) > 128 || len(in.CashSessionID) > 128 {
 		return false
 	}
 	for _, item := range in.Items {
-		if strings.TrimSpace(item.ProductID) == "" || strings.TrimSpace(item.LocationID) == "" || item.QuantityMilli <= 0 {
+		if strings.TrimSpace(item.ProductID) == "" || strings.TrimSpace(item.LocationID) == "" || item.QuantityMilli <= 0 || len(item.ProductID) > 128 || len(item.LocationID) > 128 {
 			return false
 		}
 	}
@@ -281,4 +311,8 @@ func roundedCents(price, quantity int64) (int64, error) {
 		return 0, ErrInvalid
 	}
 	return n.Int64(), nil
+}
+
+func authorizeLegacy(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext) error {
+	return identity.CanOperateTx(ctx, tx, actor, device, identity.Sell)
 }
