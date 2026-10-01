@@ -26,28 +26,44 @@ Não executar `000001_init.sql` (contém `DROP TABLE`).
 Não compilar com `go build -o api` em caminho versionado; usar `go build -o /tmp/titan-api ./cmd/api`.
 
 ## Estrutura efetiva
-- Backend oficial: `backend/` (Go, Fiber, módulos em `internal/modules`, porta 8080). É o que `backend/Makefile` e `docker-compose.yml` usam.
+- Backend oficial: `backend/`. API online Go/Fiber/PostgreSQL na porta 8080, usada por Makefile/Compose; API local SQLite em `cmd/titan-local` na porta loopback 8181, iniciada separadamente.
 - Frontend oficial: `frontend-web/` (Vite, TypeScript). É o que `docker-compose.yml` usa.
 - `TitanSystem/backend` e `TitanSystem/frontend`: árvores duplicadas, menores. **Não são usadas** por Makefile nem Compose. Não apagar até haver inventário e comparação.
 - CI: `.github/workflows/ci.yml` usa `backend/` para Go e `frontend-web/` para typecheck e build.
-- Banco da API atual: PostgreSQL via pgx/GORM. O banco local offline do smartphone está planejado.
+- Persistência online: PostgreSQL via pgx/GORM. Núcleo local Go: SQLite com migrações numeradas. Aplicativo móvel com banco próprio e venda sem PC ainda não demonstrado.
 - `backend/.env` foi retirado do índice Git e permanece no PC. Credenciais anteriormente publicadas precisam ser trocadas pelo proprietário.
-- O frontend usa `http://localhost:8080/api/v1`; acesso por outro PC ou celular ainda não está configurado.
+- Frontend online: `http://localhost:8080/api/v1`. Integração local em `/local/login` e `/local/catalog`, via proxy de desenvolvimento Vite para `127.0.0.1:8181/local/v1`. Publicação desse caminho e acesso por outros aparelhos ainda dependem de integração específica.
 
 ## Estado das funcionalidades
-Implementado e com teste observado:
-- Login com JWT e cookie (teste de usecase de auth).
-- Guarda de autenticação por tipo de token (teste de middleware).
-- Health check HTTP (teste de integração).
+Implementado no backend, com testes observados até o commit c89430c:
+- Autenticação online e local, contexto de empresa/loja, papéis, convites e pareamento auditado.
+- Catálogo, locais, movimentos e contagem de estoque no núcleo local.
+- Caixa e venda em dinheiro, com operações atômicas, idempotência e outbox; APIs locais correspondentes.
+- Política, sugestão e aprovação humana de reposição local; pedido entre empresas ainda não demonstrado.
+- Contratos assinados por empresa e verificações nas operações locais integradas.
+- Transporte cifrado entre aparelhos da mesma empresa/loja, inbox durável, recibos assinados, retries persistentes e ferramentas de aprovação/pareamento.
 
-Existe código, sem teste ou sem verificação nesta fase:
-- Módulos `catalog`, `financial`, `pos`, `tenant` (sem arquivos de teste).
-- Frontend: build passou a compilar na Fase 0; sem teste de comportamento.
+Integração de interfaces em validação:
+- Login local, confirmação de contexto e consulta paginada do catálogo foram adicionados. Aceite exige build e demonstração contra a API local.
+- Rotas online e locais usam guardas de sessão na interface; a autorização continua obrigatória no backend.
+- PDV web ainda é um esqueleto. Caixa, venda, descontos e pagamentos não estão completos na interface.
+- Desktop Electron aponta para o Vite; empacotamento, preload e integrações de hardware não foram comprovados.
+- Mobile é uma tela inicial: não implementa venda, banco próprio, ponto ou sincronização offline.
 
-Planejado (não implementado):
-- Sugestão de reposição, aprovação humana, confirmação do fornecedor, reserva de doca, recebimento conferido, relatório para contador.
-- Banco próprio no smartphone e operação offline; rede local sem internet.
-- Ponto, tarefas, metas e avaliação de funcionários.
-- Produção por etapa do fornecedor.
+Pendências do roteiro original:
+- Instalação completa do segundo aparelho, reconciliação dos dados comerciais, catálogo no sentido inverso e backup/restauração.
+- Smartphone vendendo e recuperando sua venda com PC desligado.
+- Vínculo mercado–fornecedor, pedido confirmado, agenda de descarga e recebimento conferido.
+- Produção configurável, ponto/tarefas/avaliações, financeiro e exportações autorizadas ao contador.
+- Cancelamento/devolução, descontos e pagamentos além da venda em dinheiro demonstrada no núcleo; fiscal e piloto continuam pendentes.
 
-Simulado: nenhum item confirmado. Registrar aqui qualquer tela ou dado simulado que for encontrado.
+## Referência de progresso
+O roteiro original de fases 0–13 continua sendo a referência de requisitos e aceite.
+Os nomes de patches 8A–8I e 9A–9L identificam entregas técnicas; não demonstram conclusão das fases originais 8 (mercado–fornecedor) e 9 (descarga/recebimento).
+Backend, frontend, desktop e mobile devem ter seu estado registrado separadamente. Teste de biblioteca não substitui demonstração do fluxo integrado ou teste no aparelho.
+Não anunciar percentuais de conclusão sem requisitos e critérios de aceite medidos.
+
+## Estados simulados ou indisponíveis
+A mensagem mobile que anunciava sincronização offline ativa era incompatível com sua implementação e foi corrigida para indicar pendência.
+O login online não deve afirmar HTTPS sem verificação nem registrar objetos Axios que podem conter senha.
+Outras telas devem ser inventariadas antes de afirmar ausência de simulações.

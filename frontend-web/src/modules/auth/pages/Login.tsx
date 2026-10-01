@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../core/auth/useAuthStore';
 
 /*
@@ -33,7 +33,7 @@ const Login: React.FC = () => {
       // Redireciona para a raiz após sucesso
       navigate('/');
     } catch (err: any) {
-      console.error('Erro de autenticação:', err);
+      // Não registrar o erro Axios: ele pode carregar a senha no corpo do pedido.
 
       // Tratamento de erros detalhado do backend (SecOps)
       if (err.response?.status === 429) {
@@ -142,12 +142,14 @@ const Login: React.FC = () => {
           </button>
         </form>
 
-        {/* Rodapé Seguro */}
+        <Link to="/local/login" className="mt-5 block text-center text-sm text-indigo-300">Acessar instalação local</Link>
+
+        {/* Rodapé */}
         <div className="mt-6 pt-4 border-t border-slate-700/40 flex items-center justify-center space-x-1 text-[10px] text-slate-500">
           <svg className="w-3 h-3 text-indigo-500/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
-          <span>Ambiente Autenticado via HTTPS</span>
+          <span>Acesso à API online</span>
         </div>
       </div>
     </div>

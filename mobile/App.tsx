@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 /*
 MOBILE APP (REACT NATIVE)
 =========================
-Aplicativo focado em funções "On-the-go":
+Planejado, ainda não implementado: aplicativo focado em funções "On-the-go":
 1. Aprovação de pagamentos pelo dono.
 2. Consulta de estoque em tempo real na loja.
 3. [CRÍTICO] Sincronização offline-first: Se o sinal cair dentro do estoque,
@@ -15,7 +15,7 @@ Aplicativo focado em funções "On-the-go":
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>TitanSystem Mobile: Sincronização Offline Ativa</Text>
+      <Text>TitanSystem Mobile: vendas e sincronização offline ainda não implementadas</Text>
     </View>
   );
 }

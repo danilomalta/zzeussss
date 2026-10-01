@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
+import { OnlineSessionGuard, LocalSessionGuard } from '../local/SessionGuards';
 
 /*
 ROTEAMENTO MODULAR COM DIVISÃO DE CÓDIGO (LAZY LOADING)
@@ -9,6 +10,8 @@ consumo de memória RAM (importante para hardwares limitados do PDV varejista).
 */
 
 // Carregamento assíncrono e sob demanda de cada página/módulo
+const LocalLogin = React.lazy(() => import('../../modules/auth/pages/LocalLogin'));
+const LocalCatalog = React.lazy(() => import('../../modules/catalog/pages/LocalCatalog'));
 const Login = React.lazy(() => import('../../modules/auth/pages/Login'));
 const PointOfSale = React.lazy(() => import('../../modules/pos/pages/PointOfSale'));
 const Checkout = React.lazy(() => import('../../modules/financial/pages/Checkout'));
@@ -30,6 +33,11 @@ const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
 
 // Definição da árvore de rotas modularizada do TitanSystem
 export const router = createBrowserRouter([
+  { path: '/local/login', element: <SuspenseWrapper><LocalLogin /></SuspenseWrapper> },
+  { path: '/local', element: <LocalSessionGuard><Outlet /></LocalSessionGuard>, children: [
+    { index: true, element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
+    { path: 'catalog', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
+  ] },
   {
     path: '/login',
     element: (
@@ -42,7 +50,7 @@ export const router = createBrowserRouter([
     path: '/pos',
     element: (
       <SuspenseWrapper>
-        <PointOfSale />
+        <OnlineSessionGuard><PointOfSale /></OnlineSessionGuard>
       </SuspenseWrapper>
     ),
   },
@@ -50,13 +58,13 @@ export const router = createBrowserRouter([
     path: '/checkout',
     element: (
       <SuspenseWrapper>
-        <Checkout />
+        <OnlineSessionGuard><Checkout /></OnlineSessionGuard>
       </SuspenseWrapper>
     ),
   },
   {
     path: '/',
-    element: <Outlet />,
+    element: <OnlineSessionGuard><Outlet /></OnlineSessionGuard>,
     children: [
       {
         path: '',
