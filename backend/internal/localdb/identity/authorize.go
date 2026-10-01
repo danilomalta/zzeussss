@@ -89,7 +89,7 @@ func CanReviewDiscount(ctx context.Context, db *sql.DB, scope Scope, requesterID
 }
 
 func allowed(role string, permission Permission) bool {
-	if permission == CancelSale {
+	if permission == CancelSale || permission == ManageCash {
 		return role == "owner" || role == "manager"
 	}
 	switch role {

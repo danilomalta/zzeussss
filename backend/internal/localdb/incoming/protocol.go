@@ -47,7 +47,7 @@ func validID(id string) bool {
 }
 
 func knownType(eventType string) bool {
-	if eventType == "sale.cancelled" {
+	if eventType == "sale.cancelled" || eventType == "cash.movement" {
 		return true
 	}
 	switch eventType {
