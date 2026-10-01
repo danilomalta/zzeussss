@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -17,32 +18,44 @@ var (
 	ErrInvalidOperation  = errors.New("movimentação inválida")
 	ErrInsufficientStock = errors.New("saldo local insuficiente")
 	ErrOperationConflict = errors.New("ID de operação reutilizado com dados diferentes")
+	ErrStockOverflow     = errors.New("saldo excede limite inteiro local")
 )
 
 type Input struct {
-	OperationID     string `json:"operation_id"`
-	Kind            string `json:"kind"`
-	ProductID       string `json:"product_id"`
-	FromLocationID  string `json:"from_location_id,omitempty"`
-	ToLocationID    string `json:"to_location_id,omitempty"`
-	QuantityMilli   int64  `json:"quantity_milli"`
-	Reason          string `json:"reason"`
+	OperationID    string `json:"operation_id"`
+	Kind           string `json:"kind"`
+	ProductID      string `json:"product_id"`
+	FromLocationID string `json:"from_location_id,omitempty"`
+	ToLocationID   string `json:"to_location_id,omitempty"`
+	QuantityMilli  int64  `json:"quantity_milli"`
+	Reason         string `json:"reason"`
 }
 
 type Result struct {
-	OperationID string
-	Repeated    bool
+	OperationID string `json:"operation_id"`
+	Repeated    bool   `json:"repeated"`
 }
 
-// Record verifica autorização e grava operação, movimentos e outbox em uma
-// transação. O operador e o aparelho devem vir de sessões verificadas.
+type stockAuthorization func(context.Context, *sql.Tx, identity.Scope, identity.DeviceContext) error
+
+// Record preserves the legacy permission-only path. New routes must use
+// RecordWithContract, which also validates the inventory entitlement.
 func Record(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in Input) (Result, error) {
+	return record(ctx, db, actor, device, in, func(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext) error {
+		return identity.CanOperateTx(ctx, tx, actor, device, identity.ManageStock)
+	})
+}
+
+func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in Input, authorize stockAuthorization) (Result, error) {
 	if db == nil {
 		return Result{}, errors.New("banco local indisponível")
 	}
 	in.OperationID = strings.TrimSpace(in.OperationID)
 	in.ProductID = strings.TrimSpace(in.ProductID)
 	in.Reason = strings.TrimSpace(in.Reason)
+	if len(in.OperationID) > 128 || len(in.ProductID) > 128 || len(in.FromLocationID) > 128 || len(in.ToLocationID) > 128 {
+		return Result{}, ErrInvalidOperation
+	}
 	if in.OperationID == "" || in.ProductID == "" || in.QuantityMilli <= 0 ||
 		in.Reason == "" || len(in.Reason) > 255 || !validLocations(in) {
 		return Result{}, ErrInvalidOperation
@@ -52,13 +65,13 @@ func Record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		return Result{}, err
 	}
 	defer tx.Rollback()
-	if err := identity.CanOperateTx(ctx, tx, actor, device, identity.ManageStock); err != nil {
+	if err := authorize(ctx, tx, actor, device); err != nil {
 		return Result{}, err
 	}
 	var existing struct {
 		tenant, store, device, actor, kind, product, reason string
-		from, to sql.NullString
-		quantity int64
+		from, to                                            sql.NullString
+		quantity                                            int64
 	}
 	err = tx.QueryRowContext(ctx, `SELECT tenant_id, store_id, device_id, actor_identity_id,
 		kind, product_id, from_location_id, to_location_id, quantity_milli, reason
@@ -90,6 +103,15 @@ func Record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 			return Result{}, ErrInsufficientStock
 		}
 	}
+	if in.ToLocationID != "" {
+		balance, err := balanceTx(ctx, tx, actor, in.ProductID, in.ToLocationID)
+		if err != nil {
+			return Result{}, err
+		}
+		if balance > math.MaxInt64-in.QuantityMilli {
+			return Result{}, ErrStockOverflow
+		}
+	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	_, err = tx.ExecContext(ctx, `INSERT INTO stock_operations
 		(id, tenant_id, store_id, device_id, actor_identity_id, kind, product_id,
@@ -112,9 +134,9 @@ func Record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 	}
 	payload, err := json.Marshal(struct {
 		TenantID string `json:"tenant_id"`
-		StoreID string `json:"store_id"`
+		StoreID  string `json:"store_id"`
 		DeviceID string `json:"device_id"`
-		ActorID string `json:"actor_id"`
+		ActorID  string `json:"actor_id"`
 		Input
 	}{device.TenantID, device.StoreID, device.DeviceID, actor.IdentityID, in})
 	if err != nil {
