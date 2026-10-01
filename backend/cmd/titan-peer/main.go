@@ -31,6 +31,9 @@ func runPeer(ctx context.Context, args []string, password io.Reader, output io.W
 	if ctx == nil || output == nil || len(args) == 0 {
 		return errPeerConfig
 	}
+	if args[0] == "trust" || args[0] == "approve" || args[0] == "revoke" {
+		return runPeerAdmin(ctx, args, password, output)
+	}
 	if args[0] == "inspect" {
 		return inspectPeer(args[1:], output)
 	}
