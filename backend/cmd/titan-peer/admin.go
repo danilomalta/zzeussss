@@ -45,6 +45,13 @@ func runPeerAdmin(ctx context.Context, args []string, password io.Reader, output
 		events = strings.Split(eventsText, ",")
 		seen := make(map[string]bool)
 		for _, event := range events {
+			if event == "sale.cancelled" {
+				if seen[event] {
+					return errPeerConfig
+				}
+				seen[event] = true
+				continue
+			}
 			switch event {
 			case "sale.committed", "stock.operation", "cash.open", "cash.close":
 			default:

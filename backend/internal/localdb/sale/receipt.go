@@ -38,6 +38,15 @@ type Receipt struct {
 	FiscalAuthorized bool             `json:"fiscal_authorized"`
 	Items            []ReceiptItem    `json:"items"`
 	Payments         []ReceiptPayment `json:"payments"`
+	Cancellation     *Cancellation    `json:"cancellation,omitempty"`
+}
+
+type Cancellation struct {
+	OperationID   string `json:"operation_id"`
+	ActorID       string `json:"actor_id"`
+	Reason        string `json:"reason"`
+	RefundedCents int64  `json:"refunded_cents"`
+	CancelledAt   string `json:"cancelled_at"`
 }
 
 // Read only returns a sale from this company/store/device and human actor.
@@ -110,6 +119,16 @@ func Read(ctx context.Context, db *sql.DB, actor identity.Scope, device identity
 	}
 	if closeErr != nil {
 		return Receipt{}, closeErr
+	}
+	if result.Status == "cancelled" {
+		result.Cancellation = &Cancellation{}
+		err = tx.QueryRowContext(ctx, `SELECT operation_id,actor_identity_id,reason,refunded_cents,cancelled_at
+			FROM sale_cancellations WHERE tenant_id=? AND store_id=? AND device_id=? AND sale_id=?`,
+			actor.TenantID, actor.StoreID, device.DeviceID, saleID).Scan(&result.Cancellation.OperationID,
+			&result.Cancellation.ActorID, &result.Cancellation.Reason, &result.Cancellation.RefundedCents, &result.Cancellation.CancelledAt)
+		if err != nil {
+			return Receipt{}, err
+		}
 	}
 	if err = tx.Commit(); err != nil {
 		return Receipt{}, err

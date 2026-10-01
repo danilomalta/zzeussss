@@ -82,6 +82,13 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	if err = authorize(ctx, tx, actor, device); err != nil {
 		return Result{}, err
 	}
+	var cancelledOperation int
+	if err = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM sale_cancellations WHERE tenant_id=? AND device_id=? AND operation_id=?`, actor.TenantID, device.DeviceID, in.OperationID).Scan(&cancelledOperation); err != nil {
+		return Result{}, err
+	}
+	if cancelledOperation != 0 {
+		return Result{}, ErrConflict
+	}
 	var priorSale, priorHash, priorStore, priorActor string
 	err = tx.QueryRowContext(ctx, `SELECT sale_id, request_hash, store_id, actor_identity_id FROM sale_operations
 		WHERE tenant_id = ? AND device_id = ? AND operation_id = ?`, actor.TenantID, device.DeviceID, in.OperationID).
@@ -91,8 +98,12 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 			return Result{}, ErrConflict
 		}
 		var total int64
-		if err = tx.QueryRowContext(ctx, `SELECT total_cents FROM sales WHERE tenant_id = ? AND id = ?`, actor.TenantID, priorSale).Scan(&total); err != nil {
+		var saleStatus string
+		if err = tx.QueryRowContext(ctx, `SELECT total_cents,status FROM sales WHERE tenant_id = ? AND id = ?`, actor.TenantID, priorSale).Scan(&total, &saleStatus); err != nil {
 			return Result{}, err
+		}
+		if saleStatus != "committed" {
+			return Result{}, ErrConflict
 		}
 		if err = tx.Commit(); err != nil {
 			return Result{}, err
