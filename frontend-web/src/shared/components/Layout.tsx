@@ -1,7 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../core/auth/useAuthStore';
-import AIAssistantWidget from './AIAssistantWidget';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
@@ -79,8 +78,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="max-w-6xl mx-auto">{children}</div>
         </main>
 
-        {/* Assistente deve existir apenas uma vez no aplicativo */}
-        <AIAssistantWidget />
       </div>
     </div>
   );

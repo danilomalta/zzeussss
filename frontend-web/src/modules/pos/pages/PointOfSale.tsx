@@ -1,18 +1,5 @@
+import FeaturePage from '../../../shared/brand/FeaturePage';
 
-/*
-POINT OF SALE (PDV) PAGE
-========================
-Módulo crítico de Venda Rápida. Foco total em atalhos de teclado, performance e suporte offline.
-Regra: Se a rede cair, salva pedidos no IndexedDB local e sicroniza com a API via WebWorkers assim que retornar.
-*/
-
-const PointOfSale = () => {
-  return (
-    <div>
-      {/* Estrutura futura do PDV */}
-      <h1>Frente de Caixa (PDV)</h1>
-    </div>
-  );
-};
-
-export default PointOfSale;
+export default function PointOfSale() {
+  return <FeaturePage eyebrow="OPERAÇÕES" title="Frente de caixa" description="A venda funciona no backend local, mas esta tela ainda não está ligada à API da instalação. Não registra vendas nesta versão da interface." />;
+}
