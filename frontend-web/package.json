@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "test:local": "node --test tests/localClient.test.mjs tests/localPOS.test.mjs tests/localManagement.test.mjs tests/localAccess.test.mjs",
+    "test:local": "node --test tests/localClient.test.mjs tests/localPOS.test.mjs tests/localManagement.test.mjs tests/localAccess.test.mjs tests/localPurchases.test.mjs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
