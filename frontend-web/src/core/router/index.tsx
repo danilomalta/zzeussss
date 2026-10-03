@@ -10,6 +10,12 @@ consumo de memória RAM (importante para hardwares limitados do PDV varejista).
 */
 
 // Carregamento assíncrono e sob demanda de cada página/módulo
+import {LocalAccessProvider} from '../local/LocalAccess';
+const LocalHome = React.lazy(() => import('../../modules/tenant/pages/LocalHome'));
+const LocalSubscription = React.lazy(() => import('../../modules/tenant/pages/LocalSubscription'));
+const LocalStaff = React.lazy(() => import('../../modules/tenant/pages/LocalStaff'));
+const Registration = React.lazy(() => import('../../modules/auth/pages/Registration'));
+const LocalWorkspace = React.lazy(() => import('../../shared/brand/LocalWorkspace'));
 const LocalLogin = React.lazy(() => import('../../modules/auth/pages/LocalLogin'));
 const LocalCatalog = React.lazy(() => import('../../modules/catalog/pages/LocalCatalog'));
 const LocalPointOfSale = React.lazy(() => import('../../modules/pos/pages/LocalPointOfSale'));
@@ -34,9 +40,14 @@ const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
 
 // Definição da árvore de rotas modularizada do TitanSystem
 export const router = createBrowserRouter([
+  { path: '/register', element: <SuspenseWrapper><Registration /></SuspenseWrapper> },
   { path: '/local/login', element: <SuspenseWrapper><LocalLogin /></SuspenseWrapper> },
-  { path: '/local', element: <LocalSessionGuard><Outlet /></LocalSessionGuard>, children: [
-    { index: true, element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
+  { path: '/local', element: <LocalSessionGuard><LocalAccessProvider><SuspenseWrapper><LocalWorkspace /></SuspenseWrapper></LocalAccessProvider></LocalSessionGuard>, children: [
+    { index: true, element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
+    { path: 'home', element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
+    { path: 'stock', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
+    { path: 'subscription', element: <SuspenseWrapper><LocalSubscription /></SuspenseWrapper> },
+    { path: 'staff', element: <SuspenseWrapper><LocalStaff /></SuspenseWrapper> },
     { path: 'catalog', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
     { path: 'pos', element: <SuspenseWrapper><LocalPointOfSale /></SuspenseWrapper> },
   ] },

@@ -29,3 +29,19 @@
 .pos-pending button { margin: 6px 10px 0 0; }
 @media (max-width: 850px) { .pos-grid { grid-template-columns: 1fr; } .pos-cash { align-items: flex-start; flex-direction: column; } }
 @media (max-width: 520px) { .pos-content { width: calc(100% - 28px); } .pos-content form { flex-direction: column; align-items: stretch; width: 100%; } .pos-navigation { gap: 12px; } }
+
+.workspace .pos-content { width:auto; margin:0; }
+.workspace .pos-grid { grid-template-columns:minmax(0,1.5fr) minmax(360px,1fr); }
+.workspace .pos-content h2 { font-size:20px; }
+.workspace .pos-product { font-size:15px; padding:18px 10px; }
+.workspace .pos-cart-item > div { font-size:15px; }
+.workspace .pos-content input, .workspace .pos-content select { font-size:15px; min-height:44px; }
+.workspace .pos-total strong { font-size:36px; }
+.pos-closing { padding:30px; }
+.pos-payment-status { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin:22px 0; }
+.pos-payment-status > div { display:flex; flex-direction:column; gap:8px; padding:18px; border:1px solid var(--brand-border); border-radius:14px; }
+.pos-payment-status span { color:var(--brand-muted); font-size:13px; }
+.pos-count { border-top:1px solid var(--brand-border); padding:16px 0 24px; }
+.pos-count-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:14px; margin:18px 0; }
+.pos-history { margin-top:24px; }
+@media(max-width:1000px) { .workspace .pos-grid { grid-template-columns:1fr; } }

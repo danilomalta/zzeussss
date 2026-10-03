@@ -15,7 +15,7 @@ export default function LocalLogin() {
     signupHelp="Esta instalação já possui uma empresa. Novos operadores são vinculados pelo administrador; o cadastro comercial será oferecido no site."
     recoveryHelp="A recuperação da senha local exige verificação do dono ou administrador desta instalação. O fluxo automático ainda não está disponível."
     errorMessage={localErrorMessage}
-    onSubmit={async (id, password) => { await login(id, password); navigate('/local/catalog', { replace: true }); }}
+    onSubmit={async (id, password) => { await login(id, password); navigate('/local/home', { replace: true }); }}
     secondary={<>Acesso à API online? <Link to="/login">Entrar aqui</Link></>}
   />;
 }

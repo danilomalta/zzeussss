@@ -1,0 +1,39 @@
+.plan-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin:24px 0; }
+.area-card { color:var(--brand-ink);text-decoration:none; }
+.area-card p { color:var(--brand-muted); }
+.area-card span { color:var(--brand-blue); }
+.license-days { font-size:28px; }
+.workspace { height: 100dvh; min-height: 0; display: flex; flex-direction: row; overflow: hidden; }
+.workspace-rail { width: 80px; flex: none; padding: 14px 8px; border-right: 1px solid var(--brand-border); background: var(--brand-surface); overflow-y: auto; transition: width .22s ease; }
+.workspace-expanded .workspace-rail { width: 260px; padding: 16px; }
+.workspace-rail nav { display: grid; gap: 9px; margin-top: 22px; }
+.workspace-menu { width: 50px; height: 46px; border: 0; border-radius: 16px; background: transparent; color: var(--brand-ink); font-size: 24px; cursor: pointer; }
+.workspace-tile { display: flex; gap: 12px; align-items: center; padding: 4px; border: 0; border-radius: 18px; background: transparent; color: var(--brand-muted); text-decoration: none; text-align: left; cursor: pointer; min-height: 56px; }
+.workspace-squircle { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 18px; background: var(--brand-input); border: 1px solid var(--brand-border); font-size: 25px; transition: background .2s ease, transform .2s ease, box-shadow .2s ease; }
+.workspace-tile.selected { color: var(--brand-blue); }
+.workspace-tile.selected .workspace-squircle { background: rgba(23,103,245,.16); box-shadow: inset 0 0 0 1px var(--brand-blue); }
+.workspace-tile:hover .workspace-squircle { transform: translateY(-2px); background: rgba(23,103,245,.12); }
+.workspace-tile:active .workspace-squircle { transform: scale(.96); }
+.workspace-label { display: none; font-size: 13px; font-weight: 600; }
+.workspace-expanded .workspace-label { display: block; }
+.workspace-label small { display: block; font-size: 10px; font-weight: 400; margin-top: 3px; }
+.workspace-body { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
+.workspace-top { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; border-bottom: 1px solid var(--brand-border); }
+.workspace-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+.workspace .brand-app-content { width: auto; max-width: none; margin: 0; padding: 24px; }
+.workspace .pos-page { min-height: 0; background: transparent; }
+.workspace .pos-page::before { display: none; }
+.workspace-notice { padding: 12px 24px; display: flex; justify-content: space-between; gap: 12px; background: rgba(23,103,245,.1); font-size: 13px; }
+.workspace-shortcuts { margin-top: 24px; }
+.workspace-shortcuts h2 { font-size: 13px; }
+.workspace-shortcuts label { display: block; font-size: 12px; margin: 12px 0; }
+.workspace-shortcuts select, .catalog-form input, .catalog-form select { display: block; width: 100%; margin-top: 6px; padding: 11px; border: 1px solid var(--brand-border); border-radius: 10px; background: var(--brand-input); color: var(--brand-ink); }
+.catalog-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin: 20px 0; }
+.catalog-form label { font-size: 13px; color: var(--brand-muted); }
+.catalog-form .catalog-wide { grid-column: 1 / -1; }
+.catalog-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+button, a, .brand-input-wrap { transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+button:active:not(:disabled) { transform: scale(.98); }
+.catalog-tabs [aria-pressed='true'] { border-color: var(--brand-blue); background: rgba(23,103,245,.14); }
+.brand-card:focus-within { box-shadow: var(--brand-shadow), 0 0 0 2px rgba(23,103,245,.12); }
+@media(max-width:700px) { .workspace-rail { width: 64px; padding: 10px 4px; } .workspace-squircle { width: 46px; height: 46px; border-radius: 16px; } .workspace-expanded .workspace-rail { position:absolute; top:0; bottom:0; left:0; z-index:20; box-shadow:var(--brand-shadow); } .workspace .brand-app-content { padding: 16px; } .workspace-top { padding:12px; } .catalog-form { grid-template-columns:1fr; } }

@@ -30,7 +30,7 @@ export function createLocalClient(fetcher = globalThis.fetch) {
       });
       if (!response.ok) {
         const messages = { 401: 'Identidade ou senha inválida, sessão expirada ou acesso revogado.',
-          403: 'A sessão não tem permissão para esta operação.',
+          403: 'Operação bloqueada: confira a permissão do operador e o módulo contratado.',
           429: 'Limite de tentativas excedido. Aguarde antes de tentar novamente.',
           400: 'Dados recusados. Confira os valores; o preço do catálogo pode ter mudado.',
           404: 'Registro não encontrado para esta sessão.',
@@ -88,9 +88,57 @@ export function createLocalClient(fetcher = globalThis.fetch) {
     async locations(token) {
       requireToken(token);
       const result = await request('/locations', token);
+      if (result?.items === null) return [];
       if (!Array.isArray(result?.items) || !result.items.every((item) => item && isID(item.ID) && typeof item.name === 'string' && ['shelf', 'backroom', 'receiving', 'production'].includes(item.kind))) invalid();
       // Location.ID is currently exported by Go without a json tag.
       return result.items.map((item) => ({ id: item.ID, kind: item.kind, name: item.name }));
+    },
+    createProduct(token, input) {
+      return mutation('/products', token, input, input && typeof input.sku === 'string' && input.sku.trim().length > 0 && input.sku.length <= 100 &&
+        typeof input.name === 'string' && input.name.trim().length > 0 && input.name.length <= 255 &&
+        ['unit', 'kg', 'g', 'liter', 'ml', 'meter'].includes(input.unit) && isCents(input.price_cents) && isCents(input.cost_cents), result => isID(result?.id));
+    },
+    createLocation(token, input) {
+      return mutation('/locations', token, input, input && ['shelf', 'backroom', 'receiving', 'production'].includes(input.kind) &&
+        typeof input.name === 'string' && input.name.trim().length > 0 && input.name.length <= 255, result => isID(result?.id));
+    },
+    stockEntry(token, input) {
+      return mutation('/stock/operations', token, input, input && isID(input.operation_id) && input.kind === 'entry' && isID(input.product_id) && isID(input.to_location_id) &&
+        Number.isSafeInteger(input.quantity_milli) && input.quantity_milli > 0 && typeof input.reason === 'string' && !!input.reason.trim(),
+        result => result?.operation_id === input.operation_id && typeof result.repeated === 'boolean');
+    },
+    async history(token, offset = 0) {
+      requireToken(token);
+      if (!Number.isSafeInteger(offset) || offset < 0) invalid();
+      const result = await request(`/sales?limit=20&offset=${offset}`, token);
+      if (!Array.isArray(result?.items) || !result.items.every(item => isID(item?.sale_id) && isID(item.cash_session_id) &&
+        ['committed', 'cancelled'].includes(item.status) && typeof item.committed_at === 'string' && isCents(item.total_cents))) invalid();
+      return result.items;
+    },
+    async capabilities(token, session) {
+      requireToken(token);
+      const result = await request('/capabilities', token);
+      const states = ['active','expired','not_yet_valid','unavailable','not_installed','invalid','clock_blocked'];
+      const knownModules = ['core','inventory','pos','orders','logistics','finance','fiscal','accounting','staff','production'];
+      const knownPermissions = ['view_catalog','sell','manage_stock','manage_staff','view_accounting','manage_production','view_orders','manage_replenishment','manage_cash','cancel_sale'];
+      if (!result || !session || !['tenant_id','store_id','device_id','identity_id'].every(key => result[key] === session[key]) ||
+          !['owner','manager','cashier','stock','production','employee','supplier','accountant'].includes(result.role) ||
+          !Array.isArray(result.permissions) || !result.permissions.every(p => knownPermissions.includes(p)) ||
+          !states.includes(result.license?.state) || !Array.isArray(result.license.modules) || !result.license.modules.every(m => knownModules.includes(m)) ||
+          !Number.isSafeInteger(result.license.remaining_days) || result.license.remaining_days < 0 ||
+          (result.license.expires_unix !== undefined && (!Number.isSafeInteger(result.license.expires_unix) || result.license.expires_unix <= 0))) invalid();
+      return result;
+    },
+    createStaff(token, input) {
+      return mutation('/staff',token,input,input && isID(input.operation_id) && isID(input.identity_id) && typeof input.name === 'string' && input.name.trim().length > 0 && input.name.length <= 255 &&
+        ['manager','cashier','stock','production','employee','supplier','accountant'].includes(input.role) && typeof input.password === 'string' && new TextEncoder().encode(input.password).length >= 12 && new TextEncoder().encode(input.password).length <= 72,
+        result => result?.identity_id === input.identity_id && typeof result.repeated === 'boolean');
+    },
+    async staff(token) {
+      requireToken(token);
+      const result=await request('/staff',token);
+      if(!Array.isArray(result?.items) || !result.items.every(item => isID(item?.identity_id) && typeof item.name==='string' && ['owner','manager','cashier','stock','production','employee','supplier','accountant'].includes(item.role) && ['active','revoked'].includes(item.status))) invalid();
+      return result.items;
     },
     async currentCash(token) {
       requireToken(token);

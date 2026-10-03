@@ -50,11 +50,15 @@ func serveStation(args []string) error {
 	dbPath := options.String("db", "", "SQLite existente")
 	stationPath := options.String("station", "", "arquivo privado do aparelho")
 	issuerKeys := options.String("issuer-keys", "", "JSON local de chaves publicas emissoras confiaveis")
+	port := options.Int("port", 8181, "porta local entre 1 e 65535; escuta somente em 127.0.0.1")
 	if err := options.Parse(args); err != nil {
 		return err
 	}
 	if *dbPath == "" || *stationPath == "" || options.NArg() != 0 {
 		return errors.New("informe banco e aparelho")
+	}
+	if *port < 1 || *port > 65535 {
+		return errors.New("porta local deve estar entre 1 e 65535")
 	}
 	verifier, err := readIssuerVerifier(*issuerKeys)
 	if err != nil {
@@ -69,11 +73,12 @@ func serveStation(args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(os.Stdout, "API local em http://127.0.0.1:8181/local/v1/health")
+	address := fmt.Sprintf("127.0.0.1:%d", *port)
+	fmt.Fprintf(os.Stdout, "API local em http://%s/local/v1/health\n", address)
 	if verifier == nil {
 		fmt.Fprintln(os.Stdout, "Cadastros indisponiveis: configure --issuer-keys e instale um contrato valido. Login e consultas continuam disponiveis.")
 	}
-	return app.Listen("127.0.0.1:8181")
+	return app.Listen(address)
 }
 
 func openVerified(ctx context.Context, dbPath, stationPath string) (*sql.DB, identity.DeviceContext, error) {

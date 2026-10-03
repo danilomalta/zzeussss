@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { BrandLogo, BrandShell } from './BrandShell';
@@ -24,6 +25,7 @@ interface SignInCardProps {
 }
 
 export default function SignInCard({ credentialLabel, credentialPlaceholder, credentialType, subtitle, onSubmit, errorMessage, notice, secondary, signupHelp, recoveryHelp }: SignInCardProps) {
+  const navigate = useNavigate();
   const [credential, setCredential] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -48,8 +50,8 @@ export default function SignInCard({ credentialLabel, credentialPlaceholder, cre
         <p className="brand-subtitle">{subtitle}</p>
       </div>
       <div className="brand-tabs" role="group" aria-label="Acesso">
-        <button type="button" className="active" aria-current="page" onClick={() => setHelp('')}>Entrar</button>
-        <button type="button" onClick={() => setHelp(signupHelp)}>Criar conta</button>
+        <button type="button" className={help === signupHelp ? '' : 'active'} aria-pressed={help !== signupHelp} onClick={() => setHelp('')}>Entrar</button>
+        <button type="button" className={help === signupHelp ? 'active' : ''} aria-pressed={help === signupHelp} onClick={() => navigate('/register')}>Criar conta</button>
       </div>
       {notice && <p className="brand-message" role="status">{notice}</p>}
       <form onSubmit={submit}>

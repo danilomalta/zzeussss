@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { localClient, localErrorMessage, useLocalSession } from '../../../core/local/useLocalSession';
 import { LocalAPIError, formatLocalCents } from '../../../core/local/localClient.mjs';
 import type { CashSession, LocalLocation, LocalProduct, LocalSession, SaleReceipt } from '../../../core/local/localClient.mjs';
@@ -7,7 +7,8 @@ import { cartTotal, lineCents, makeSale, parseMoney, parseQuantity } from '../..
 import type { CartItem } from '../../../core/local/posModel.mjs';
 import { createPOSOperations } from '../../../core/local/posOperations.mjs';
 import type { OperationOutcome, PendingOperation } from '../../../core/local/posOperations.mjs';
-import { BrandLogo, ThemeToggle } from '../../../shared/brand/BrandShell';
+import CashCount from './CashCount';
+import SalesHistory from './SalesHistory';
 import './localPOS.css';
 
 async function browserLock<T>(key: string, action: () => Promise<T>): Promise<T> {
@@ -29,6 +30,11 @@ export default function LocalPointOfSale() {
 }
 
 function POSWorkspace({ token, session }: { token: string; session: LocalSession }) {
+  const [params] = useSearchParams();
+  const [historyRevision, setHistoryRevision] = useState(0);
+  const [turnBusy, setTurnBusy] = useState(false);
+  const turnLatch = useRef(false);
+  const [closedReport, setClosedReport] = useState<{expected_cents:number;difference_cents:number;declared_cents:number}|null>(null);
   const invalidate = useLocalSession((state) => state.invalidate);
   const setup = useMemo(() => {
     try { return { operations: createPOSOperations(localClient, window.localStorage, session, browserLock), error: '' }; }
@@ -87,22 +93,26 @@ function POSWorkspace({ token, session }: { token: string; session: LocalSession
     return () => { window.removeEventListener('storage', update); window.removeEventListener('focus', update); };
   }, [syncPending]);
 
-  async function refreshCash() {
+  useEffect(() => { if (params.get('panel') === 'cash' && cash) setClosing(true); }, [params, cash]);
+  async function refreshCash(notify = false) {
+    if (turnLatch.current) return;
+    turnLatch.current = true; setTurnBusy(true);
     try {
       const current = await localClient.currentCash(token);
-      if (active.current) { setCash(current); setKnownCash(true); }
+      if (active.current) { setCash(current); setKnownCash(true); if(notify){setError('');setMessage(current ? `Turno consultado: aberto desde ${new Date(current.opened_at).toLocaleString('pt-BR')}. ID ${current.session_id}.` : 'Consulta concluída: não há turno aberto para este operador neste aparelho.');} }
     } catch (failure) {
       if (active.current) { setKnownCash(false); setError(`Confira o turno antes de continuar. ${failureText(failure)}`); }
-    }
+    } finally { turnLatch.current=false; if(active.current)setTurnBusy(false); }
   }
   function confirmed(outcome: OperationOutcome) {
     if (outcome.kind === 'sale') {
-      setReceipt(outcome.result); setCart([]); setReceived('');
+      setReceipt(outcome.result); setCart([]); setReceived(''); setHistoryRevision(v=>v+1);
       setMessage(outcome.result.status === 'cancelled' ? 'A operação foi localizada e consta como cancelada.' : 'Venda confirmada pela API local.');
     } else if (outcome.kind === 'open') { setOpening(''); setMessage('Abertura de caixa confirmada.'); }
     else {
       const result = outcome.result;
       const difference = result.difference_cents;
+      setClosedReport({expected_cents:result.expected_cents,difference_cents:difference,declared_cents:result.expected_cents+difference});
       setClosing(false); setDeclared('');
       setMessage(`Caixa fechado. Valor esperado: ${formatLocalCents(result.expected_cents)}. Diferença declarada: ${difference < 0 ? '−' : '+'}${formatLocalCents(Math.abs(difference))}.`);
     }
@@ -131,7 +141,7 @@ function POSWorkspace({ token, session }: { token: string; session: LocalSession
   try { total = cartTotal(cart); } catch (failure) { calculationError = failureText(failure); }
   let change: number | null = null;
   try { const amount = parseMoney(received); if (amount >= total) change = amount - total; } catch { /* Keep payment button disabled. */ }
-  const locked = busy || loading || !!pending || !operations || !knownCash || !!calculationError;
+  const locked = busy || turnBusy || loading || !!pending || !operations || !knownCash || !!calculationError;
   const filtered = products.filter((product) => `${product.name} ${product.sku} ${product.barcode || ''}`.toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')));
   function addProduct(product: LocalProduct) {
     try {
@@ -151,10 +161,10 @@ function POSWorkspace({ token, session }: { token: string; session: LocalSession
     catch (failure) { setError(failureText(failure)); }
   }
   return <div className="brand-page brand-app-page pos-page">
-    <header className="brand-topbar"><BrandLogo /><nav className="pos-navigation"><Link className="brand-link" to="/local/catalog">Catálogo</Link><ThemeToggle /></nav></header>
+
     <main className="brand-app-content pos-content">
       <div className="brand-app-heading"><div><p className="brand-eyebrow">INSTALAÇÃO LOCAL</p><h1>Frente de caixa</h1><p className="brand-subtitle">Operador {session.identity_id} · Venda em dinheiro</p></div>
-        <button className="brand-secondary" disabled={busy || loading} onClick={() => void refreshCash()}>Consultar turno</button></div>
+        <button className="brand-secondary" disabled={busy || loading || turnBusy} onClick={() => void refreshCash(true)}>{turnBusy ? 'Consultando turno…' : 'Consultar turno'}</button></div>
       {(error || calculationError) && <p role="alert" className="brand-message error">{error || calculationError}</p>}
       {message && <p role="status" className="brand-message">{message}</p>}
       {pending && <section className="brand-panel pos-pending" role="status"><h2>Operação pendente de conferência</h2>
@@ -169,9 +179,12 @@ function POSWorkspace({ token, session }: { token: string; session: LocalSession
           <button className="brand-small-primary" disabled={locked}>Abrir caixa</button></form>}
         {cash && <button className="brand-secondary" disabled={locked || cart.length > 0} onClick={() => setClosing((value) => !value)}>Fechamento cego</button>}
       </section>
-      {closing && cash && <section className="brand-panel pos-closing"><h2>Conte o dinheiro da gaveta</h2><p>Declare a contagem sem consultar o saldo esperado. A conferência aparece após o fechamento.</p>
+      {closing && cash && <section className="brand-panel pos-closing"><p className="brand-eyebrow">ENCERRAMENTO DO TURNO</p><h2>Fechamento de caixa</h2><p>1. Finalize as vendas pendentes. 2. Conte o dinheiro. 3. Confirme a declaração. A diferença é revelada depois do fechamento.</p>
+        <div className="pos-payment-status"><div><strong>Dinheiro</strong><span>Contagem assistida disponível</span></div><div><strong>Crédito / débito / Pix</strong><span>Conciliação e leitura por smartphone em preparação. Nenhum comprovante será confirmado automaticamente.</span></div></div>
+        <CashCount disabled={locked} onTotal={setDeclared} />
         <form onSubmit={(event) => { event.preventDefault(); if (!operations || locked || cart.length) return; try { const input = { session_id: cash.session_id, operation_id: crypto.randomUUID(), declared_cents: parseMoney(declared) }; void run(() => operations.start(token, 'close', input)); } catch (failure) { setError(failureText(failure)); } }}>
           <label>Dinheiro contado (R$)<input required inputMode="decimal" disabled={locked} value={declared} placeholder="0,00" onChange={(event) => setDeclared(event.target.value)} /></label><button className="brand-small-primary" disabled={locked || cart.length > 0}>Confirmar fechamento</button></form></section>}
+      {closedReport && <section className="brand-panel pos-closing-report" role="status"><h2>Resultado do último fechamento nesta sessão</h2><div className="pos-payment-status"><div><span>Dinheiro declarado</span><strong>{formatLocalCents(closedReport.declared_cents)}</strong></div><div><span>Saldo esperado confirmado pela API</span><strong>{formatLocalCents(closedReport.expected_cents)}</strong></div><div><span>{closedReport.difference_cents===0?'Caixa conferido':closedReport.difference_cents<0?'Falta de dinheiro':'Sobra de dinheiro'}</span><strong>{formatLocalCents(Math.abs(closedReport.difference_cents))}</strong></div></div></section>}
       <div className="pos-grid">
         <section className="brand-panel pos-products"><div className="brand-panel-top"><h2>Produtos</h2><button className="brand-secondary" disabled={loading || busy} onClick={() => { setError(''); setReload((value) => value + 1); }}>Atualizar catálogo</button></div>
           <label>Gôndola de saída<select value={locationID} disabled={locked} onChange={(event) => setLocationID(event.target.value)}><option value="">Selecione a gôndola</option>{locations.map((place) => <option key={place.id} value={place.id}>{place.name}</option>)}</select></label>
@@ -191,6 +204,7 @@ function POSWorkspace({ token, session }: { token: string; session: LocalSession
         </section>
       </div>
       {receipt && <section className="brand-panel pos-receipt"><p className="brand-eyebrow">REGISTRO OPERACIONAL · NÃO FISCAL</p><h2>{receipt.status === 'cancelled' ? 'Venda cancelada' : 'Venda confirmada'}</h2><p>ID {receipt.sale_id}</p><p>Total registrado: <strong>{formatLocalCents(receipt.total_cents)}</strong></p><p>{receipt.items.length} linha(s) · Pagamento em dinheiro confirmado.</p></section>}
+      <SalesHistory token={token} revision={historyRevision} onRead={setReceipt} />
     </main>
   </div>;
 }

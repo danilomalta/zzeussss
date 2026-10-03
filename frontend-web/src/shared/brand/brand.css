@@ -22,6 +22,8 @@
 html, body, #root { min-height: 100%; height: auto; width: 100%; overflow: auto; }
 body { background: var(--brand-bg); color: var(--brand-ink); }
 button, input { font: inherit; }
+.brand-tabs button, .brand-input-wrap, .brand-primary { transition: background .18s ease, box-shadow .18s ease, transform .18s ease; }
+.brand-primary:active:not(:disabled), .brand-tabs button:active { transform: scale(.98); }
 button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid #69a4ff; outline-offset: 2px; }
 
 .brand-page { position: relative; isolation: isolate; display: flex; flex-direction: column; min-height: 100vh; overflow: hidden; color: var(--brand-ink); background: var(--brand-bg); }
@@ -47,7 +49,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .brand-subtitle { margin: 5px 0 0; color: var(--brand-muted); font-size: 13px; }
 .brand-tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; margin: 20px 0 15px; background: rgba(130, 155, 200, .12); border-radius: 9px; }
 .brand-tabs button { padding: 8px 5px; border: 0; border-radius: 7px; background: transparent; color: var(--brand-ink); font-size: 12px; cursor: pointer; }
-.brand-tabs button.active { color: white; font-weight: 650; background: var(--brand-blue); box-shadow: 0 2px 6px rgba(18, 95, 228, .19); }
+.brand-tabs button.active { outline:1px solid rgba(23,103,245,.3); color: white; font-weight: 650; background: var(--brand-blue); box-shadow: 0 2px 6px rgba(18, 95, 228, .19); }
 .brand-field { display: block; margin-top: 14px; color: var(--brand-ink); font-size: 12px; font-weight: 600; }
 .brand-input-wrap { display: flex; align-items: center; gap: 9px; margin-top: 6px; border: 1px solid var(--brand-border); border-radius: 7px; background: var(--brand-input); padding: 0 10px; }
 .brand-input-wrap:focus-within { border-color: #4994fa; box-shadow: 0 0 0 3px rgba(42, 121, 245, .13); }
