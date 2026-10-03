@@ -102,3 +102,4 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .brand-feature-icon { color: var(--brand-blue); font-size: 26px; }
 .brand-feature-link { margin-top: 12px; color: var(--brand-blue); font-size: 13px; font-weight: 650; text-decoration: none; }
 .brand-feature-link:hover { text-decoration: underline; }
+.brand-actions { display: flex; align-items: center; gap: 16px; font-size: 13px; }

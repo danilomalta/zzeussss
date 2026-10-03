@@ -59,6 +59,5 @@ jobs:
       - name: Run Frontend Tests
         working-directory: ./frontend-web
         run: |
-          # Comando para rodar testes automatizados do React
-          # Executa npm test se configurado, ou build teste
+          npm run test:local
           npm run build

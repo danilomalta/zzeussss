@@ -12,6 +12,7 @@ consumo de memória RAM (importante para hardwares limitados do PDV varejista).
 // Carregamento assíncrono e sob demanda de cada página/módulo
 const LocalLogin = React.lazy(() => import('../../modules/auth/pages/LocalLogin'));
 const LocalCatalog = React.lazy(() => import('../../modules/catalog/pages/LocalCatalog'));
+const LocalPointOfSale = React.lazy(() => import('../../modules/pos/pages/LocalPointOfSale'));
 const Login = React.lazy(() => import('../../modules/auth/pages/Login'));
 const PointOfSale = React.lazy(() => import('../../modules/pos/pages/PointOfSale'));
 const Checkout = React.lazy(() => import('../../modules/financial/pages/Checkout'));
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
   { path: '/local', element: <LocalSessionGuard><Outlet /></LocalSessionGuard>, children: [
     { index: true, element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
     { path: 'catalog', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
+    { path: 'pos', element: <SuspenseWrapper><LocalPointOfSale /></SuspenseWrapper> },
   ] },
   {
     path: '/login',

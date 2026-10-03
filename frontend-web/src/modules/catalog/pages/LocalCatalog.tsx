@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { LocalAPIError, formatLocalCents } from '../../../core/local/localClient.mjs';
 import type { LocalProduct } from '../../../core/local/localClient.mjs';
 import { localClient, localErrorMessage, useLocalSession } from '../../../core/local/useLocalSession';
@@ -33,7 +34,7 @@ export default function LocalCatalog() {
       <div className="brand-app-heading">
         <div><p className="brand-eyebrow">INSTALAÇÃO LOCAL</p><h1>Catálogo de produtos</h1>
           <p className="brand-subtitle">Empresa {session?.tenant_id} · Loja {session?.store_id}</p></div>
-        <button type="button" className="brand-secondary" onClick={() => void endSession()}>Sair da sessão</button>
+        <div className="brand-actions"><Link className="brand-link" to="/local/pos">Abrir PDV local</Link><button type="button" className="brand-secondary" onClick={() => void endSession()}>Sair da sessão</button></div>
       </div>
       <section className="brand-panel">
         <div className="brand-panel-top">

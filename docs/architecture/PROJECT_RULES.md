@@ -46,7 +46,7 @@ Implementado no backend, com testes observados até o commit c89430c:
 Integração de interfaces em validação:
 - Login local, confirmação de contexto e consulta paginada do catálogo foram adicionados. Aceite exige build e demonstração contra a API local.
 - Rotas online e locais usam guardas de sessão na interface; a autorização continua obrigatória no backend.
-- PDV web ainda é um esqueleto. Caixa, venda, descontos e pagamentos não estão completos na interface.
+- PDV local em `/local/pos` integra consulta/abertura de caixa, carrinho, venda em dinheiro, consulta do registro e fechamento cego. Build e testes de cliente não substituem demonstração contra o servidor. Descontos, cartão/Pix e demais operações visuais continuam pendentes.
 - Desktop Electron aponta para o Vite; empacotamento, preload e integrações de hardware não foram comprovados.
 - Mobile é uma tela inicial: não implementa venda, banco próprio, ponto ou sincronização offline.
 
