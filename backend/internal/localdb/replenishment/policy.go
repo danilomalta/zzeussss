@@ -33,6 +33,12 @@ type PolicyResult struct {
 // SetPolicy configura limite e alvo sob autorização gerencial. A mudança e
 // seu evento local são atômicos. A API ainda deve provar a sessão do gerente.
 func SetPolicy(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in PolicyInput) (PolicyResult, error) {
+	return setPolicy(ctx, db, actor, device, in, func(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext) error {
+		return identity.CanOperateTx(ctx, tx, actor, device, identity.ManageReplenishment)
+	})
+}
+
+func setPolicy(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in PolicyInput, authorize replenishmentAuthorization) (PolicyResult, error) {
 	if db == nil {
 		return PolicyResult{}, errors.New("banco local indisponível")
 	}
@@ -46,7 +52,7 @@ func SetPolicy(ctx context.Context, db *sql.DB, actor identity.Scope, device ide
 		return PolicyResult{}, err
 	}
 	defer tx.Rollback()
-	if err = identity.CanOperateTx(ctx, tx, actor, device, identity.ManageReplenishment); err != nil {
+	if err = authorize(ctx, tx, actor, device); err != nil {
 		return PolicyResult{}, err
 	}
 	var store, product, by string
@@ -78,16 +84,19 @@ func SetPolicy(ctx context.Context, db *sql.DB, actor identity.Scope, device ide
 	if !errors.Is(err, sql.ErrNoRows) && err != nil {
 		return PolicyResult{}, err
 	}
+	if revision >= MaxExact {
+		return PolicyResult{}, ErrInvalid
+	}
 	revision++
 	now := time.Now().UTC().Format(time.RFC3339Nano)
-	_, err = tx.ExecContext(ctx, `INSERT INTO restock_policies VALUES (?,?,?,?,?,?,?,?)
+	_, err = checkedExec(ctx, tx, `INSERT INTO restock_policies VALUES (?,?,?,?,?,?,?,?)
 		ON CONFLICT(tenant_id,store_id,product_id) DO UPDATE SET minimum_milli=excluded.minimum_milli,
 		target_milli=excluded.target_milli,revision=excluded.revision,changed_by=excluded.changed_by,changed_at=excluded.changed_at`,
 		actor.TenantID, actor.StoreID, in.ProductID, in.MinimumMilli, in.TargetMilli, revision, actor.IdentityID, now)
 	if err != nil {
 		return PolicyResult{}, err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO restock_policy_changes VALUES (?,?,?,?,?,?,?,?,?,?)`,
+	_, err = checkedExec(ctx, tx, `INSERT INTO restock_policy_changes VALUES (?,?,?,?,?,?,?,?,?,?)`,
 		actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, actor.IdentityID, in.ProductID, in.MinimumMilli, in.TargetMilli, revision, now)
 	if err != nil {
 		return PolicyResult{}, err
@@ -107,7 +116,7 @@ func SetPolicy(ctx context.Context, db *sql.DB, actor identity.Scope, device ide
 	if err != nil {
 		return PolicyResult{}, err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)
+	_, err = checkedExec(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)
 		VALUES (?,?,?,?,?,?,'restock.policy_changed',1,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.ProductID, string(payload), now)
 	if err != nil {
 		return PolicyResult{}, fmt.Errorf("enfileirar política: %w", err)

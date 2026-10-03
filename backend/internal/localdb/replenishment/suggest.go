@@ -29,9 +29,15 @@ type SuggestResult struct {
 	Repeated         bool
 }
 
-// Suggest observa os locais shelf/backroom/receiving do mesmo dispositivo.
+// Suggest observa os locais shelf/backroom/receiving da mesma loja.
 // Não envia pedido, não marca pagamento e não altera estoque.
 func Suggest(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in SuggestInput) (SuggestResult, error) {
+	return suggest(ctx, db, actor, device, in, func(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext) error {
+		return identity.CanOperateTx(ctx, tx, actor, device, identity.ManageStock)
+	})
+}
+
+func suggest(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in SuggestInput, authorize replenishmentAuthorization) (SuggestResult, error) {
 	if db == nil {
 		return SuggestResult{}, errors.New("banco local indisponível")
 	}
@@ -45,7 +51,7 @@ func Suggest(ctx context.Context, db *sql.DB, actor identity.Scope, device ident
 		return SuggestResult{}, err
 	}
 	defer tx.Rollback()
-	if err = identity.CanOperateTx(ctx, tx, actor, device, identity.ManageStock); err != nil {
+	if err = authorize(ctx, tx, actor, device); err != nil {
 		return SuggestResult{}, err
 	}
 	var prior SuggestResult
@@ -84,7 +90,7 @@ func Suggest(ctx context.Context, db *sql.DB, actor identity.Scope, device ident
 	if err != nil {
 		return SuggestResult{}, err
 	}
-	if observed < 0 {
+	if observed < 0 || observed > MaxExact || target > MaxExact || revision > MaxExact {
 		return SuggestResult{}, ErrInvalid
 	}
 	status = "not_needed"
@@ -98,7 +104,7 @@ func Suggest(ctx context.Context, db *sql.DB, actor identity.Scope, device ident
 		return SuggestResult{}, err
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
-	_, err = tx.ExecContext(ctx, `INSERT INTO restock_suggestions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+	_, err = checkedExec(ctx, tx, `INSERT INTO restock_suggestions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		actor.TenantID, actor.StoreID, device.DeviceID, id, in.OperationID, actor.IdentityID, in.ProductID, observed, minimum, target, revision, recommended, status, now)
 	if err != nil {
 		return SuggestResult{}, err
@@ -122,7 +128,7 @@ func Suggest(ctx context.Context, db *sql.DB, actor identity.Scope, device ident
 		if err != nil {
 			return SuggestResult{}, err
 		}
-		_, err = tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)
+		_, err = checkedExec(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)
 			VALUES (?,?,?,?,?,?,'restock.suggested',1,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, id, string(payload), now)
 		if err != nil {
 			return SuggestResult{}, fmt.Errorf("enfileirar sugestão: %w", err)

@@ -35,6 +35,12 @@ type ReviewResult struct {
 // Review só permite decisão de gerente/dono. A aprovação confere política e
 // saldo atual local antes de alterar o estado e registrar evento auditável.
 func Review(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in ReviewInput) (ReviewResult, error) {
+	return review(ctx, db, actor, device, in, func(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext) error {
+		return identity.CanOperateTx(ctx, tx, actor, device, identity.ManageReplenishment)
+	})
+}
+
+func review(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in ReviewInput, authorize replenishmentAuthorization) (ReviewResult, error) {
 	if db == nil {
 		return ReviewResult{}, errors.New("banco local indisponível")
 	}
@@ -49,7 +55,7 @@ func Review(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		return ReviewResult{}, err
 	}
 	defer tx.Rollback()
-	if err = identity.CanOperateTx(ctx, tx, actor, device, identity.ManageReplenishment); err != nil {
+	if err = authorize(ctx, tx, actor, device); err != nil {
 		return ReviewResult{}, err
 	}
 	var priorSuggestion, priorDecision, priorReason, priorReviewer, priorStore string
@@ -81,6 +87,9 @@ func Review(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 	}
 	if store != actor.StoreID {
 		return ReviewResult{}, identity.ErrDenied
+	}
+	if observed < 0 || observed > MaxExact || recommended < 0 || recommended > MaxExact || revision < 1 || revision > MaxExact {
+		return ReviewResult{}, ErrInvalid
 	}
 	if status != "suggested" {
 		return ReviewResult{}, ErrConflict
@@ -116,7 +125,7 @@ func Review(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 			return ReviewResult{}, ErrPendingApproval
 		}
 	}
-	result, err := tx.ExecContext(ctx, `UPDATE restock_suggestions SET status=? WHERE tenant_id=? AND store_id=? AND id=? AND status='suggested'`,
+	result, err := checkedExec(ctx, tx, `UPDATE restock_suggestions SET status=? WHERE tenant_id=? AND store_id=? AND id=? AND status='suggested'`,
 		in.Decision, actor.TenantID, actor.StoreID, in.SuggestionID)
 	if err != nil {
 		return ReviewResult{}, err
@@ -129,7 +138,7 @@ func Review(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		return ReviewResult{}, ErrConflict
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
-	_, err = tx.ExecContext(ctx, `INSERT INTO restock_reviews VALUES (?,?,?,?,?,?,?,?,?)`,
+	_, err = checkedExec(ctx, tx, `INSERT INTO restock_reviews VALUES (?,?,?,?,?,?,?,?,?)`,
 		actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.SuggestionID, actor.IdentityID, in.Decision, in.Reason, now)
 	if err != nil {
 		return ReviewResult{}, err
@@ -150,7 +159,7 @@ func Review(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 	if err != nil {
 		return ReviewResult{}, err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)
+	_, err = checkedExec(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)
 		VALUES (?,?,?,?,?,?,'restock.reviewed',1,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.SuggestionID, string(payload), now)
 	if err != nil {
 		return ReviewResult{}, fmt.Errorf("enfileirar decisão: %w", err)
