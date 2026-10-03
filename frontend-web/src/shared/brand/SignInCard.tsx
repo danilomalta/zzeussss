@@ -51,7 +51,7 @@ export default function SignInCard({ credentialLabel, credentialPlaceholder, cre
       </div>
       <div className="brand-tabs" role="group" aria-label="Acesso">
         <button type="button" className={help === signupHelp ? '' : 'active'} aria-pressed={help !== signupHelp} onClick={() => setHelp('')}>Entrar</button>
-        <button type="button" className={help === signupHelp ? 'active' : ''} aria-pressed={help === signupHelp} onClick={() => navigate('/register')}>Criar conta</button>
+        <button type="button" className={help === signupHelp ? 'active' : ''} aria-pressed={help === signupHelp} onClick={() => navigate('/register', { viewTransition: true })}>Criar conta</button>
       </div>
       {notice && <p className="brand-message" role="status">{notice}</p>}
       <form onSubmit={submit}>

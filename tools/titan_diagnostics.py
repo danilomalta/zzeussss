@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import webbrowser
 ROOT = Path(__file__).resolve().parents[1]
 CHECKS = [('Frontend — testes',['npm','--prefix','frontend-web','run','test:local']),('Frontend — build',['npm','--prefix','frontend-web','run','build']),('Backend — testes',['go','test','-count=1','./...']),('Backend — vet',['go','vet','./...']),('Git — diff',['git','diff','--check'])]
 def run_checks(root=ROOT,runner=subprocess.run,finder=shutil.which):
@@ -40,6 +41,7 @@ def save_report(results,destination=None):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check',action='store_true')
+    parser.add_argument('--open',action='store_true',help='Abrir o relatorio privado no navegador deste computador')
     args=parser.parse_args()
     if args.check:
         for tool in ['npm','go','git']:print(tool+': '+('disponível' if shutil.which(tool) else 'indisponível'))
@@ -50,4 +52,10 @@ def main():
     path=save_report(result)
     print('Relatório privado: '+str(path))
     print('Abrir no navegador: '+path.as_uri())
+    if args.open:
+        try:
+            if not webbrowser.open(path.as_uri(),new=2):
+                print('Nao foi possivel abrir automaticamente. Use o endereco acima.')
+        except (OSError,webbrowser.Error):
+            print('Nao foi possivel abrir automaticamente. Use o endereco acima.')
 if __name__=='__main__':main()

@@ -5,6 +5,12 @@ spec = importlib.util.spec_from_file_location('demo_profiles', Path(__file__).re
 demo=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(demo)
 class ProfileTests(unittest.TestCase):
+    def test_complete_profile_is_explicit_and_default_profiles_stay_separate(self):
+        self.assertEqual(demo.DEMO_MODULES['rh'], 'staff')
+        self.assertEqual(demo.DEMO_MODULES['varejo'], 'pos')
+        complete=set(demo.DEMO_MODULES['completo'].split(','))
+        self.assertEqual(complete, {'pos','orders','logistics','finance','fiscal','accounting','staff','production'})
+
     def test_hr_and_accounting_never_seed_stock_or_cash(self):
         class API:
             def __init__(self):self.calls=[]

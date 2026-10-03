@@ -162,7 +162,7 @@ def seed(api, identity_id, password, station, contract, profile="varejo"):
             if balance.get("quantity_milli") != quantity:
                 raise DemoError("Saldo de teste nao corresponde a entrada confirmada.")
             rows.append({"id": product, "sku": sku, "unit": unit, "price_cents": price, "quantity_milli": quantity})
-        if profile == "varejo" and api.request("/cash/current", token).get("session", "missing") is not None:
+        if profile in ("varejo", "completo") and api.request("/cash/current", token).get("session", "missing") is not None:
             raise DemoError("A instalacao nova ja possui turno aberto; preserve para conferencia.")
         return rows
     finally:
@@ -184,8 +184,11 @@ def read_public_context(directory):
     return {key: station[key] for key in ("tenant_id", "store_id", "device_id")}, owners[0][0]
 
 
+DEMO_MODULES = {"varejo": "pos", "producao": "production", "rh": "staff", "contabilidade": "accounting",
+                "completo": "pos,orders,logistics,finance,fiscal,accounting,staff,production"}
+
 def run(repo, api_port, web_port, profile="varejo"):
-    module = {"varejo": "pos", "producao": "production", "rh": "staff", "contabilidade": "accounting"}[profile]
+    module = DEMO_MODULES[profile]
     check_environment(repo, api_port, web_port)
     if not sys.stdin.isatty():
         raise DemoError("Execute em um terminal para escolher a senha sem exibi-la.")
@@ -239,7 +242,9 @@ def run(repo, api_port, web_port, profile="varejo"):
         print(f"ID do operador DE TESTE: {owner}", flush=True)
         print("Senha: a que voce acabou de escolher; ela nao foi salva em texto nem impressa.", flush=True)
         print(f"Perfil da instalacao DE TESTE: {profile}. O menu usa apenas os modulos desse contrato.", flush=True)
-        if profile == "varejo":
+        if profile == "completo":
+            print("Todos os modulos selecionados SOMENTE nesta instalacao de teste. Tiles em preparacao continuam sem implementacao.", flush=True)
+        if profile in ("varejo", "completo"):
             print("Abra o PDV, informe fundo de 100,00 e selecione Gondola de teste.", flush=True)
             print("Adicione 1 Cafe (8,99) e 0,500 kg de Arroz (5,00). Total: 13,99.", flush=True)
             print("Dinheiro recebido: 20,00. Troco: 6,01. Conclua a venda.", flush=True)
@@ -263,7 +268,7 @@ def main():
     options = argparse.ArgumentParser(description="Demonstra o PDV em instalacao nova e isolada.")
     options.add_argument("--api-port", type=int, default=8182)
     options.add_argument("--web-port", type=int, default=3001)
-    options.add_argument("--profile", choices=["varejo", "producao", "rh", "contabilidade"], default="varejo")
+    options.add_argument("--profile", choices=list(DEMO_MODULES), default="varejo")
     options.add_argument("--check", action="store_true", help="verifica ferramentas e portas; nao cria arquivos")
     args = options.parse_args()
     repo = Path(__file__).resolve().parent.parent
