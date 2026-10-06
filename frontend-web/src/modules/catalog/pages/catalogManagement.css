@@ -1,0 +1,15 @@
+.catalog-create summary,.catalog-columns summary{cursor:pointer;font-weight:650;min-height:36px;display:flex;align-items:center;gap:8px}
+.catalog-create summary::before,.catalog-columns summary::before{content:'+';color:var(--brand-blue,#1769ff);font-size:20px}
+.catalog-create[open] summary::before,.catalog-columns[open] summary::before{content:'−'}
+.catalog-create summary:focus-visible,.catalog-columns summary:focus-visible{outline:2px solid #1769ff;outline-offset:4px;border-radius:6px}
+.catalog-search-panel,.catalog-results{margin-top:20px}
+.catalog-search-form{display:grid;grid-template-columns:minmax(220px,2fr) minmax(130px,1fr) minmax(220px,1.4fr) auto;gap:12px;align-items:end}
+.catalog-search-form label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600}
+.catalog-search-form input,.catalog-search-form select{width:100%;min-height:42px;border:1px solid var(--brand-border);border-radius:9px;padding:9px 11px;color:var(--brand-ink);background:var(--brand-input);font:inherit}
+.catalog-table-heading{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:12px}
+.catalog-table-heading h2{margin-bottom:6px}.catalog-table-heading p{font-size:13px;margin:0}
+.catalog-columns fieldset{display:grid;gap:8px;padding:12px;border:1px solid var(--brand-border);border-radius:8px;font-size:13px}.catalog-columns label{display:flex;gap:8px;align-items:center}
+.catalog-data-table{font-size:13px}.catalog-data-table th,.catalog-data-table td{padding:12px 14px}.catalog-data-table td{vertical-align:middle}.catalog-data-table .catalog-money{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.catalog-approximate{display:block;font-size:11px;font-weight:400;margin-top:5px}.catalog-empty{padding:20px 0;font-size:14px}
+@media(max-width:1000px){.catalog-search-form{grid-template-columns:1fr 1fr}.catalog-search-query{grid-column:1/-1}}
+@media(max-width:580px){.catalog-search-form{grid-template-columns:1fr}.catalog-table-heading{flex-direction:column}.catalog-results .brand-pagination{flex-wrap:wrap}.catalog-data-table th,.catalog-data-table td{padding:10px}}

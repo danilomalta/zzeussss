@@ -15,6 +15,7 @@ import (
 
 func (s *Server) mountCatalog(router fiber.Router) {
 	router.Get("/products", s.listProducts)
+ router.Get("/catalog/search",s.searchCatalog)
 	router.Post("/products", s.createProduct)
 	router.Get("/locations", s.listLocations)
 	router.Post("/locations", s.createLocation)
