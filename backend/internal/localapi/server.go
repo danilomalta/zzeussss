@@ -46,6 +46,7 @@ func NewWithVerifier(db *sql.DB, device identity.DeviceContext, verifier *entitl
 	v1 := app.Group("/local/v1")
 	v1.Get("/health", func(c *fiber.Ctx) error { return c.JSON(fiber.Map{"status": "local"}) })
 	v1.Post("/login", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.login)
+	v1.Post("/account/recover", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.recoverOwner)
 	protected := v1.Group("", s.requireSession)
 	protected.Get("/me", func(c *fiber.Ctx) error {
 		session := c.Locals("session").(localauth.Session)
@@ -58,6 +59,9 @@ func NewWithVerifier(db *sql.DB, device identity.DeviceContext, verifier *entitl
 	protected.Get("/account/sessions", s.ownSessions)
 	protected.Post("/account/password", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.changeOwnPassword)
 	protected.Post("/account/sessions/revoke-others", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.revokeOtherSessions)
+	protected.Post("/staff/:id/password-reset", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.resetStaffPassword)
+	protected.Post("/staff/:id/sessions/revoke", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.revokeStaffSessions)
+	protected.Post("/account/recovery/revoke", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.revokeOwnRecovery)
 	protected.Post("/module-contracts", s.installContract)
 	s.mountCatalog(protected)
 	s.mountComparison(protected)

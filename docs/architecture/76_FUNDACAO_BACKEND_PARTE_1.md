@@ -1,7 +1,8 @@
 # Parte 1 — Fundação operacional do backend
 
-Base de aplicação: commit do usuário `294a544`. Esta entrega é o primeiro
-incremento da parte 1; NÃO encerra os onze requisitos. Frontend inalterado.
+Base da entrega 01: commit do usuário `294a544`. A matriz abaixo foi atualizada
+pela entrega 02 de administração e recuperação local; NÃO encerra os onze
+requisitos. Frontend inalterado.
 
 ## Matriz de conclusão
 
@@ -12,12 +13,12 @@ incremento da parte 1; NÃO encerra os onze requisitos. Frontend inalterado.
 | F03 | Isolamento | Contextos tenant/loja/aparelho/ator, autorização local; novas APIs revalidam sessão na transação | Inventário e testes de isolamento de todas as APIs, workers, exportações e integrações |
 | F04 | Instalação | Inicialização e comprovação de estação existentes; CLI de backup | Instalador, atualização, recuperação e desinstalação preservando dados |
 | F05 | Modos | Núcleos SQLite e PostgreSQL existentes | Implementação e demonstração de local, servidor, nuvem e híbrido; nenhum seletor visual comprova o modo |
-| F06 | Autenticação | Login/logout/revogação; APIs de troca da própria senha, consulta e revogação das outras sessões | Recuperação do dono sem sessão/senha; troca/recuperação online; gerenciamento administrativo; sincronização da política de credenciais |
+| F06 | Autenticação | Login/logout/revogação; troca da própria senha; consulta de sessões; reset/revogação administrativos restritos; recuperação local do dono com chave preparada de uso único | Recuperação/troca online; sincronização de credenciais e revogações; sessões individuais e entrada secreta interativa |
 | F07 | Autorizações | Papéis e contratos existentes | Permissões por ação/departamento/loja e delegação auditada; o RH não ganha acesso total implicitamente |
-| F08 | Auditoria | Eventos em operações críticas; novas mudanças de segurança atômicas e sem segredos | Cobertura administrativa completa e consulta paginada autorizada |
+| F08 | Auditoria | Eventos em operações críticas; mudanças de segurança, administração e recuperação atômicas sem segredos | Cobertura administrativa completa e consulta paginada autorizada |
 | F09 | Proteção de dados | Transporte cifrado; backup AES-256-GCM, chave separada 0600 e autenticação do arquivo | Backups remotos, proteção dos demais arquivos/certificados, rotação e recuperação de todas as chaves |
-| F10 | Backup/restauração | Snapshot SQLite vivo consistente, verificação, restauração somente em arquivo novo; sessões restauradas revogadas; agendamento via CLI watch | Retenção, cópia externa, serviço instalado, monitoramento, PostgreSQL e ensaio de desastre completo |
-| F11 | Documentação API | OpenAPI das três novas rotas e inventário dos grupos atuais | OpenAPI de todas as rotas, erros padronizados antigos, paginação uniforme e compatibilidade entre versões |
+| F10 | Backup/restauração | Snapshot SQLite consistente, restauração em arquivo novo; sessões e chaves de recuperação da cópia revogadas; snapshots 25/26; agendamento CLI watch | Retenção, cópia externa, serviço instalado, monitoramento, PostgreSQL e ensaio de desastre completo |
+| F11 | Documentação API | OpenAPI de sete rotas de segurança/acesso e inventário dos grupos atuais | OpenAPI de todas as rotas, erros padronizados antigos, paginação uniforme e compatibilidade entre versões |
 
 ## Segurança de conta local
 
@@ -54,7 +55,7 @@ incremento da parte 1; NÃO encerra os onze requisitos. Frontend inalterado.
 | Online `/api/v1` | analises/produtos-parados, recompensas, accounting/sped, discounts/suggestions/:id/review | Rotas explicitamente indisponíveis; não contar como recurso pronto |
 
 Contrato OpenAPI incremental: `docs/api/account-security.openapi.json`.
-Ele cobre SOMENTE as novas rotas, não todo o ERP. Política: manter contratos
+Ele cobre SOMENTE segurança e acesso locais, não todo o ERP. Política: manter contratos
 antigos compatíveis na v1; alterações incompatíveis requerem nova versão e
 migração explicitamente documentada. Isso não implementa compatibilidade dos
 eventos comerciais entre aparelhos.
@@ -102,8 +103,9 @@ titan-backup watch --db /instalacao/store.sqlite --station /instalacao/station.j
   posteriores ao backup. Primeiro verificar estação, licença, sincronização e
   continuidade dos eventos em ambiente isolado. Não executar duas cópias da mesma
   identidade de aparelho ao mesmo tempo. Não ativar automaticamente a restauração.
-- Migrações futuras e backups antigos sem esquema completo atual são recusados;
-  recuperação de versões anteriores terá fluxo específico antes de ser anunciada.
+- Migrações futuras são recusadas. A entrega 02 aceita snapshots verificados em
+  esquema 25 e 26, migrando somente a cópia de recuperação. Versões anteriores
+  a 25 continuam sem suporte neste formato.
 - Backups PostgreSQL, cópia externa, rotação, retenção e recuperação de desastre
   seguem pendentes. Nenhum banco real foi usado para os testes desta entrega.
 
@@ -114,7 +116,6 @@ mudança de senha/revogação, auditoria interrompida, isolamento de usuário e
 aparelho, arquivos alterados, chave errada, contexto errado, WAL confirmado,
 sessões revogadas na restauração e recusa de sobrescrita.
 
-Próxima sequência dentro da parte 1: recuperação/administração de contas →
-permissões delegáveis e auditoria consultável → backup/instalação/atualizações →
+Próxima sequência dentro da parte 1: permissões delegáveis e auditoria consultável → backup/instalação/atualizações →
 modos de armazenamento e serviços online → OpenAPI completa e aceite integrado.
 Não fechar F01–F11 somente por compilar esta entrega.

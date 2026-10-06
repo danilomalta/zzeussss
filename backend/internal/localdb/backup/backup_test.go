@@ -193,3 +193,37 @@ func TestRestoreRejectsIgnoredSessionRevocationAndStaleSidecars(t *testing.T) {
 		t.Fatal("stale WAL accepted")
 	}
 }
+
+func TestRestoreConsumesRecoveryKeysOnlyInRecoveredCopy(t *testing.T) {
+	db, device, key, dir := fixture(t)
+	var owner string
+	if err := db.QueryRow(`SELECT identity_id FROM memberships WHERE role='owner'`).Scan(&owner); err != nil {
+		t.Fatal(err)
+	}
+	if err := localauth.IssueOwnerRecovery(context.Background(), db, device, owner, "strong-private-password", make([]byte, 32), func() error { return nil }); err != nil {
+		t.Fatal(err)
+	}
+	archive := filepath.Join(dir, "recovery.tytbak")
+	if err := Create(context.Background(), db, device, key, archive); err != nil {
+		t.Fatal(err)
+	}
+	destination := filepath.Join(dir, "recovered.sqlite")
+	if err := Restore(context.Background(), archive, destination, device, key); err != nil {
+		t.Fatal(err)
+	}
+	recovered, err := localdb.Open(context.Background(), destination)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer recovered.Close()
+	var original, restored int
+	if err := db.QueryRow(`SELECT count(*) FROM owner_recovery_keys WHERE consumed_unix IS NULL`).Scan(&original); err != nil {
+		t.Fatal(err)
+	}
+	if err := recovered.QueryRow(`SELECT count(*) FROM owner_recovery_keys WHERE consumed_unix IS NULL`).Scan(&restored); err != nil {
+		t.Fatal(err)
+	}
+	if original != 1 || restored != 0 {
+		t.Fatalf("keys: original=%d recovered=%d", original, restored)
+	}
+}

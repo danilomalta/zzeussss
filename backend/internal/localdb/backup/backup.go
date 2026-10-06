@@ -156,17 +156,25 @@ func withSnapshot(ctx context.Context, archive string, device identity.DeviceCon
 	if destination == "" {
 		return true, nil
 	}
-	db, err := sql.Open("sqlite", snapshot)
+	// Migrate a validated older snapshot only in this disposable recovery copy.
+	db, err := localdb.Open(ctx, snapshot)
 	if err != nil {
 		return false, ErrBackup
 	}
 	_, err = db.ExecContext(ctx, `UPDATE local_sessions SET revoked_unix=? WHERE revoked_unix IS NULL`, time.Now().Unix())
+	if err == nil {
+		_, err = db.ExecContext(ctx, `UPDATE owner_recovery_keys SET consumed_unix=? WHERE consumed_unix IS NULL`, time.Now().Unix())
+	}
 	var remaining int
 	if err == nil {
 		err = db.QueryRowContext(ctx, `SELECT count(*) FROM local_sessions WHERE revoked_unix IS NULL`).Scan(&remaining)
 	}
+	var remainingKeys int
+	if err == nil {
+		err = db.QueryRowContext(ctx, `SELECT count(*) FROM owner_recovery_keys WHERE consumed_unix IS NULL`).Scan(&remainingKeys)
+	}
 	closeErr := db.Close()
-	if err != nil || closeErr != nil || remaining != 0 {
+	if err != nil || closeErr != nil || remaining != 0 || remainingKeys != 0 {
 		return false, ErrBackup
 	}
 	body, err = readLimited(snapshot, MaxBytes)
@@ -205,7 +213,8 @@ func validate(ctx context.Context, path string, device identity.DeviceContext) e
 		return ErrBackup
 	}
 	var count int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != 25 {
+	// This release explicitly supports snapshots at schema 25 and 26.
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || (count != 25 && count != 26) {
 		return ErrBackup
 	}
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM tenants`).Scan(&count); err != nil || count != 1 {

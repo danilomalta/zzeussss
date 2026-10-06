@@ -125,6 +125,9 @@ func updateSecurity(ctx context.Context, db *sql.DB, device identity.DeviceConte
 		if written != 1 {
 			return errSecurityWrite
 		}
+		if _, err := consumeRecoveryKeys(ctx, tx, session.Actor.TenantID, session.Actor.IdentityID); err != nil {
+			return err
+		}
 		query = `UPDATE local_sessions SET revoked_unix=? WHERE tenant_id=? AND identity_id=? AND revoked_unix IS NULL`
 		args = []any{now, session.Actor.TenantID, session.Actor.IdentityID}
 	}

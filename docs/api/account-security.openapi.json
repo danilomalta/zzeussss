@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Titan local account security \u2014 incremental contract",
-    "version": "1.0.0",
-    "description": "Only the three account security endpoints, not the full ERP API. Passwords never belong in URLs or logs. Duplicate fields, null and trailing JSON are rejected. Each mutation requires the existing password; not a forgot-password flow. Session revocation is local to this database."
+    "title": "Titan local account security and access \u2014 incremental contract",
+    "version": "1.1.0",
+    "description": "Local account security endpoints only, not the entire ERP. Passwords and recovery keys never belong in URLs or logs. Revocation applies to this database. Owner emergency recovery requires a previously prepared single-use key and a proven station."
   },
   "servers": [
     {
@@ -205,6 +205,371 @@
             "description": "Operation failed; transaction rolled back."
           }
         }
+      }
+    },
+    "/staff/{id}/password-reset": {
+      "post": {
+        "operationId": "resetStaffLocalPassword",
+        "summary": "Local access management with current-password reauthentication.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "current_password",
+                  "new_password",
+                  "reason"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "writeOnly": false
+                  },
+                  "current_password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 72,
+                    "writeOnly": true
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "maxLength": 72,
+                    "writeOnly": true,
+                    "description": "Server enforces 12\u201372 bytes and no leading/trailing whitespace."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "writeOnly": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid, duplicated, unknown, null or trailing JSON fields."
+          },
+          "401": {
+            "description": "Session, password or emergency credential rejected."
+          },
+          "403": {
+            "description": "Role, target or store does not authorize administration."
+          },
+          "409": {
+            "description": "Operation identity reused or reset superseded by a later password change."
+          },
+          "413": {
+            "description": "Body too large."
+          },
+          "415": {
+            "description": "Content-Type must be application/json."
+          },
+          "429": {
+            "description": "Five requests per minute per IP per route."
+          },
+          "500": {
+            "description": "Write or audit failed; transaction rolled back."
+          },
+          "200": {
+            "description": "Original operation result, repeated=false on first application and true on retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "operation_id",
+                    "identity_id",
+                    "repeated",
+                    "affected_sessions"
+                  ],
+                  "properties": {
+                    "operation_id": {
+                      "type": "string"
+                    },
+                    "identity_id": {
+                      "type": "string"
+                    },
+                    "repeated": {
+                      "type": "boolean"
+                    },
+                    "affected_sessions": {
+                      "type": "integer",
+                      "format": "int64",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Another non-owner active member of the current store. Manager limited to employee/cashier/stock.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/staff/{id}/sessions/revoke": {
+      "post": {
+        "operationId": "revokeStaffLocalSessions",
+        "summary": "Local access management with current-password reauthentication.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "current_password",
+                  "reason"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "writeOnly": false
+                  },
+                  "current_password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 72,
+                    "writeOnly": true
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "writeOnly": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid, duplicated, unknown, null or trailing JSON fields."
+          },
+          "401": {
+            "description": "Session, password or emergency credential rejected."
+          },
+          "403": {
+            "description": "Role, target or store does not authorize administration."
+          },
+          "409": {
+            "description": "Operation identity reused or reset superseded by a later password change."
+          },
+          "413": {
+            "description": "Body too large."
+          },
+          "415": {
+            "description": "Content-Type must be application/json."
+          },
+          "429": {
+            "description": "Five requests per minute per IP per route."
+          },
+          "500": {
+            "description": "Write or audit failed; transaction rolled back."
+          },
+          "200": {
+            "description": "Original operation result, repeated=false on first application and true on retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "operation_id",
+                    "identity_id",
+                    "repeated",
+                    "affected_sessions"
+                  ],
+                  "properties": {
+                    "operation_id": {
+                      "type": "string"
+                    },
+                    "identity_id": {
+                      "type": "string"
+                    },
+                    "repeated": {
+                      "type": "boolean"
+                    },
+                    "affected_sessions": {
+                      "type": "integer",
+                      "format": "int64",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Another non-owner active member of the current store. Manager limited to employee/cashier/stock.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/account/recovery/revoke": {
+      "post": {
+        "operationId": "revokeOwnEmergencyKeys",
+        "summary": "Local access management with current-password reauthentication.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "current_password"
+                ],
+                "properties": {
+                  "current_password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 72,
+                    "writeOnly": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid, duplicated, unknown, null or trailing JSON fields."
+          },
+          "401": {
+            "description": "Session, password or emergency credential rejected."
+          },
+          "403": {
+            "description": "Role, target or store does not authorize administration."
+          },
+          "409": {
+            "description": "Operation identity reused or reset superseded by a later password change."
+          },
+          "413": {
+            "description": "Body too large."
+          },
+          "415": {
+            "description": "Content-Type must be application/json."
+          },
+          "429": {
+            "description": "Five requests per minute per IP per route."
+          },
+          "500": {
+            "description": "Write or audit failed; transaction rolled back."
+          },
+          "204": {
+            "description": "Committed; no session or secret returned."
+          }
+        }
+      }
+    },
+    "/account/recover": {
+      "post": {
+        "operationId": "recoverLocalOwner",
+        "summary": "Owner emergency recovery; new login required.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "identity_id",
+                  "recovery_key",
+                  "new_password"
+                ],
+                "properties": {
+                  "identity_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "writeOnly": false
+                  },
+                  "recovery_key": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43,
+                    "writeOnly": true,
+                    "description": "Canonical base64url without padding, 32-byte secret; single use and bound to station/owner."
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "maxLength": 72,
+                    "writeOnly": true,
+                    "description": "Server enforces 12\u201372 bytes and no leading/trailing whitespace."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid, duplicated, unknown, null or trailing JSON fields."
+          },
+          "401": {
+            "description": "Session, password or emergency credential rejected."
+          },
+          "403": {
+            "description": "Role, target or store does not authorize administration."
+          },
+          "409": {
+            "description": "Operation identity reused or reset superseded by a later password change."
+          },
+          "413": {
+            "description": "Body too large."
+          },
+          "415": {
+            "description": "Content-Type must be application/json."
+          },
+          "429": {
+            "description": "Five requests per minute per IP per route."
+          },
+          "500": {
+            "description": "Write or audit failed; transaction rolled back."
+          },
+          "204": {
+            "description": "Committed; no session or secret returned."
+          }
+        },
+        "security": []
       }
     }
   }
