@@ -20,7 +20,7 @@ const modules = [
  { id: 'staff', name: 'RH e funcionários', icon: '♧', path: '/local/staff' },
  { id: 'point', name: 'Meu ponto', icon: '◷' },
  { id: 'accounting', name: 'Contabilidade', icon: '▧' },
- { id: 'prices', name: 'Comparador de preços', icon: '≍' },
+ { id: 'prices', name: 'Comparador de preços', icon: '≍', path: '/local/prices' },
  { id: 'payments', name: 'Maquininha, Pix e delivery', icon: '▭' },
  { id: 'plans', name: 'Assinatura e faturas', icon: '⚙', path: '/local/subscription' },
 ];
@@ -72,7 +72,7 @@ export default function LocalWorkspace() {
    <button className="workspace-menu" aria-expanded={expanded} aria-label={expanded ? 'Recolher menu' : 'Abrir menu de módulos'} onClick={() => setExpanded(!expanded)}>☰</button>
    {expanded && <><BrandLogo /><p className="brand-state">Módulos da empresa</p></>}
    <nav>{(expanded ? visible : effectiveShortcuts.map(id => visible.find(m => m.id === id)!)).map(m => m.path ?
-    <NavLink key={m.id} to={m.path} title={m.name} aria-label={m.name} className={() => `workspace-tile ${(m.id==='pos' && location.pathname==='/local/pos' && !location.search.includes('panel=cash')) || (m.id==='cash' && location.pathname==='/local/pos' && location.search.includes('panel=cash')) || (m.id==='catalog' && location.pathname==='/local/catalog') || (m.id==='stock' && location.pathname==='/local/stock') || (m.id==='orders' && location.pathname==='/local/orders') ? 'selected' : ''}`} onClick={() => setExpanded(false)}>
+    <NavLink key={m.id} to={m.path} title={m.name} aria-label={m.name} className={() => `workspace-tile ${(m.id==='pos' && location.pathname==='/local/pos' && !location.search.includes('panel=cash')) || (m.id==='cash' && location.pathname==='/local/pos' && location.search.includes('panel=cash')) || (m.id==='catalog' && location.pathname==='/local/catalog') || (m.id==='stock' && location.pathname==='/local/stock') || (m.id==='orders' && location.pathname==='/local/orders') || (m.id==='prices' && location.pathname==='/local/prices') ? 'selected' : ''}`} onClick={() => setExpanded(false)}>
      <span className="workspace-squircle" aria-hidden="true"><TileIcon id={m.id}/></span><span className="workspace-label">{m.name}</span>
     </NavLink> : <button key={m.id} className="workspace-tile" title={`${m.name} — em preparação`} aria-label={m.name} onClick={() => setNotice(`${m.name}: módulo planejado. Esta etapa disponibiliza a navegação; a função ainda não está integrada.`)}><span className="workspace-squircle" aria-hidden="true"><TileIcon id={m.id}/></span><span className="workspace-label">{m.name}<small>Em preparação</small></span></button>)}</nav>
    {expanded && <section className="workspace-shortcuts"><h2>Seus 3 atalhos rápidos</h2>{effectiveShortcuts.map((id, slot) => <label key={slot}>Atalho {slot+1}<select value={id} onChange={e => choose(slot, e.target.value)}>{visible.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</select></label>)}<button className="brand-secondary" onClick={() => void endSession()}>Sair da sessão</button></section>}

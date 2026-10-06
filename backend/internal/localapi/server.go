@@ -57,6 +57,7 @@ func NewWithVerifier(db *sql.DB, device identity.DeviceContext, verifier *entitl
 	protected.Post("/logout", s.logout)
 	protected.Post("/module-contracts", s.installContract)
 	s.mountCatalog(protected)
+	s.mountComparison(protected)
 	s.mountPurchases(protected)
 	s.mountReplenishment(protected)
 	s.mountStock(protected)
