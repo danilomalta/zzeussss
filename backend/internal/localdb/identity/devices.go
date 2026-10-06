@@ -191,6 +191,13 @@ func requireDeviceAdmin(ctx context.Context, tx *sql.Tx, actor Scope, storeID st
 	if status != "active" || (role != "owner" && role != "manager") || actor.StoreID != storeID {
 		return ErrDenied
 	}
+	permit, policyErr := effective(ctx, tx, actor, role, ManageStaff)
+	if policyErr != nil {
+		return policyErr
+	}
+	if !permit {
+		return ErrDenied
+	}
 	if role == "owner" {
 		err = tx.QueryRowContext(ctx, "SELECT 1 FROM stores WHERE tenant_id = ? AND id = ?",
 			actor.TenantID, storeID).Scan(new(int))

@@ -1,7 +1,7 @@
 # Parte 1 — Fundação operacional do backend
 
 Base da entrega 01: commit do usuário `294a544`. A matriz abaixo foi atualizada
-pela entrega 02 de administração e recuperação local; NÃO encerra os onze
+pela entrega 03 de permissões e auditoria local; NÃO encerra os onze
 requisitos. Frontend inalterado.
 
 ## Matriz de conclusão
@@ -14,11 +14,11 @@ requisitos. Frontend inalterado.
 | F04 | Instalação | Inicialização e comprovação de estação existentes; CLI de backup | Instalador, atualização, recuperação e desinstalação preservando dados |
 | F05 | Modos | Núcleos SQLite e PostgreSQL existentes | Implementação e demonstração de local, servidor, nuvem e híbrido; nenhum seletor visual comprova o modo |
 | F06 | Autenticação | Login/logout/revogação; troca da própria senha; consulta de sessões; reset/revogação administrativos restritos; recuperação local do dono com chave preparada de uso único | Recuperação/troca online; sincronização de credenciais e revogações; sessões individuais e entrada secreta interativa |
-| F07 | Autorizações | Papéis e contratos existentes | Permissões por ação/departamento/loja e delegação auditada; o RH não ganha acesso total implicitamente |
-| F08 | Auditoria | Eventos em operações críticas; mudanças de segurança, administração e recuperação atômicas sem segredos | Cobertura administrativa completa e consulta paginada autorizada |
+| F07 | Autorizações | Papéis, contratos, regras allow/deny/inherit por ação/loja/pessoa/grupo; departamentos e delegação limitada auditada | Interfaces de administração; propagação e reconciliação entre aparelhos; granularidade de registros dos futuros módulos de RH/produção; políticas online |
+| F08 | Auditoria | Eventos críticos; políticas e acesso atômicos; consulta autorizada por loja/departamento com paginação para políticas, contas e cadastro de funcionários | Cobertura/consulta das demais fontes administrativas e comerciais; retenção e exportação |
 | F09 | Proteção de dados | Transporte cifrado; backup AES-256-GCM, chave separada 0600 e autenticação do arquivo | Backups remotos, proteção dos demais arquivos/certificados, rotação e recuperação de todas as chaves |
-| F10 | Backup/restauração | Snapshot SQLite consistente, restauração em arquivo novo; sessões e chaves de recuperação da cópia revogadas; snapshots 25/26; agendamento CLI watch | Retenção, cópia externa, serviço instalado, monitoramento, PostgreSQL e ensaio de desastre completo |
-| F11 | Documentação API | OpenAPI de sete rotas de segurança/acesso e inventário dos grupos atuais | OpenAPI de todas as rotas, erros padronizados antigos, paginação uniforme e compatibilidade entre versões |
+| F10 | Backup/restauração | Snapshot SQLite consistente, restauração em arquivo novo; sessões e chaves de recuperação da cópia revogadas; snapshots 25/26/27; agendamento CLI watch | Retenção, cópia externa, serviço instalado, monitoramento, PostgreSQL e ensaio de desastre completo |
+| F11 | Documentação API | OpenAPI de sete rotas de segurança/acesso, três operações de política/auditoria e inventário dos grupos atuais | OpenAPI de todas as rotas, erros padronizados antigos, paginação uniforme e compatibilidade entre versões |
 
 ## Segurança de conta local
 
@@ -45,7 +45,7 @@ requisitos. Frontend inalterado.
 
 | Serviço | Grupos existentes | Limitações |
 | --- | --- | --- |
-| Local `/local/v1` | health, login, me, logout, capabilities, staff, module-contracts | Recuperação de acesso e administração detalhada pendentes |
+| Local `/local/v1` | health, login, me, logout, capabilities, staff, module-contracts | Recuperação local preparada e APIs de acesso existentes; recuperação online pendente |
 | Local `/local/v1` | products, catalog/search, locations, stock | Edição completa de catálogo e inventário operacional pendentes |
 | Local `/local/v1` | cash, sales | Dinheiro, cancelamento integral, sangria/suprimento; sem integração real Pix/cartão |
 | Local `/local/v1` | replenishment, purchase-suppliers, purchase-approvals, purchase-orders | Pedido somente local, sem envio/confirmação do fornecedor |
@@ -119,3 +119,5 @@ sessões revogadas na restauração e recusa de sobrescrita.
 Próxima sequência dentro da parte 1: permissões delegáveis e auditoria consultável → backup/instalação/atualizações →
 modos de armazenamento e serviços online → OpenAPI completa e aceite integrado.
 Não fechar F01–F11 somente por compilar esta entrega.
+
+Entrega 03: docs/architecture/78_PERMISSOES_DEPARTAMENTOS_E_AUDITORIA.md e docs/api/access-policy.openapi.json. Três operações novas: GET/POST access/policy e GET access/audit. Nenhuma interface alterada.

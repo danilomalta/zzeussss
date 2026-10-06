@@ -45,7 +45,7 @@ func CanOperateTx(ctx context.Context, tx *sql.Tx, actor Scope, device DeviceCon
 	if err != nil {
 		return err
 	}
-	if status != "active" || !allowed(role, permission) {
+	if status != "active" {
 		return ErrDenied
 	}
 	if role != "owner" {
@@ -69,6 +69,13 @@ func CanOperateTx(ctx context.Context, tx *sql.Tx, actor Scope, device DeviceCon
 	}
 	if err != nil {
 		return err
+	}
+	permit, err := effective(ctx, tx, actor, role, permission)
+	if err != nil {
+		return err
+	}
+	if !permit {
+		return ErrDenied
 	}
 	return nil
 }

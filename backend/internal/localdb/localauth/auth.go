@@ -48,6 +48,13 @@ func SetPassword(ctx context.Context, db *sql.DB, actor identity.Scope, device i
 	if err = identity.CanOperateTx(ctx, tx, actor, device, identity.ManageStaff); err != nil {
 		return err
 	}
+	var actorRole string
+	if err := tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=?`, actor.TenantID, actor.IdentityID).Scan(&actorRole); err != nil {
+		return err
+	}
+	if actorRole != "owner" && actorRole != "manager" {
+		return identity.ErrDenied
+	}
 	var role, status string
 	err = tx.QueryRowContext(ctx, `SELECT role,status FROM memberships WHERE tenant_id=? AND identity_id=?`, actor.TenantID, targetID).Scan(&role, &status)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -56,11 +63,20 @@ func SetPassword(ctx context.Context, db *sql.DB, actor identity.Scope, device i
 	if err != nil {
 		return err
 	}
-	if status != "active" {
+	if status != "active" || (actorRole == "manager" && role != "employee" && role != "cashier" && role != "stock") {
 		return ErrDenied
 	}
 	if role == "owner" && targetID != actor.IdentityID {
 		return ErrDenied
+	}
+	if role != "owner" {
+		var linked int
+		if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM membership_stores WHERE tenant_id=? AND store_id=? AND identity_id=?`, actor.TenantID, actor.StoreID, targetID).Scan(&linked); err != nil {
+			return err
+		}
+		if linked != 1 {
+			return ErrDenied
+		}
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	_, err = tx.ExecContext(ctx, `INSERT INTO local_passwords VALUES (?,?,?,?) ON CONFLICT(tenant_id,identity_id)
@@ -195,4 +211,12 @@ func Logout(ctx context.Context, db *sql.DB, token string) error {
 	digest := sha256.Sum256([]byte(token))
 	_, err := db.ExecContext(ctx, `UPDATE local_sessions SET revoked_unix=? WHERE token_sha256=? AND revoked_unix IS NULL`, time.Now().Unix(), digest[:])
 	return err
+}
+
+// ResolveTx revalidates a human session in the transaction of an administrative write.
+func ResolveTx(ctx context.Context, tx *sql.Tx, token string) (Session, error) {
+	if tx == nil {
+		return Session{}, ErrDenied
+	}
+	return resolve(ctx, tx, token)
 }

@@ -76,6 +76,13 @@ func IssueInvite(ctx context.Context, db *sql.DB, issuer Scope, targetID, role, 
 	if err != nil {
 		return "", err
 	}
+	permit, policyErr := effective(ctx, tx, Scope{IdentityID: issuer.IdentityID, TenantID: issuer.TenantID, StoreID: storeID}, issuerRole, ManageStaff)
+	if policyErr != nil {
+		return "", policyErr
+	}
+	if !permit {
+		return "", ErrDenied
+	}
 	var existing int
 	err = tx.QueryRowContext(ctx, "SELECT 1 FROM memberships WHERE tenant_id = ? AND identity_id = ?",
 		issuer.TenantID, targetID).Scan(&existing)
@@ -122,7 +129,7 @@ func RedeemInvite(ctx context.Context, db *sql.DB, actorID, token string) error 
 		return err
 	}
 	defer tx.Rollback()
-	var inviteID, tenantID, storeID, role string
+	var inviteID, tenantID, storeID, role, issuerID string
 	err = tx.QueryRowContext(ctx, `UPDATE membership_invites SET consumed_unix = ?
 		WHERE token_hash = ? AND target_identity_id = ? AND consumed_unix IS NULL
 		AND revoked_unix IS NULL AND expires_unix > ?
@@ -132,13 +139,24 @@ func RedeemInvite(ctx context.Context, db *sql.DB, actorID, token string) error 
 		AND membership_invites.role IN ('cashier', 'stock', 'employee')
 		AND EXISTS (SELECT 1 FROM membership_stores ms WHERE ms.tenant_id = m.tenant_id
 		AND ms.identity_id = m.identity_id AND ms.store_id = membership_invites.store_id))))
-		RETURNING id, tenant_id, store_id, role`,
-		now, fmt.Sprintf("%x", hash), actorID, now).Scan(&inviteID, &tenantID, &storeID, &role)
+		RETURNING id, tenant_id, store_id, role, issued_by`,
+		now, fmt.Sprintf("%x", hash), actorID, now).Scan(&inviteID, &tenantID, &storeID, &role, &issuerID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrInviteUnavailable
 	}
 	if err != nil {
 		return err
+	}
+	var issuerRole string
+	if err := tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=?`, tenantID, issuerID).Scan(&issuerRole); err != nil {
+		return err
+	}
+	permit, policyErr := effective(ctx, tx, Scope{IdentityID: issuerID, TenantID: tenantID, StoreID: storeID}, issuerRole, ManageStaff)
+	if policyErr != nil {
+		return policyErr
+	}
+	if !permit {
+		return ErrInviteUnavailable
 	}
 	if _, err := tx.ExecContext(ctx, `INSERT INTO memberships (tenant_id, identity_id, role, status, created_at)
 		VALUES (?, ?, ?, 'active', ?)`, tenantID, actorID, role, time.Now().UTC().Format(time.RFC3339Nano)); err != nil {
@@ -175,7 +193,7 @@ func RevokeInvite(ctx context.Context, db *sql.DB, actor Scope, inviteID string)
 		return err
 	}
 	defer tx.Rollback()
-	var returned string
+	var returned, storeID string
 	err = tx.QueryRowContext(ctx, `UPDATE membership_invites SET revoked_unix = ?
 		WHERE id = ? AND tenant_id = ? AND consumed_unix IS NULL AND revoked_unix IS NULL
 		AND EXISTS (SELECT 1 FROM memberships m WHERE m.tenant_id = membership_invites.tenant_id
@@ -183,12 +201,23 @@ func RevokeInvite(ctx context.Context, db *sql.DB, actor Scope, inviteID string)
 		AND (m.role = 'owner' OR (m.role = 'manager' AND m.identity_id = membership_invites.issued_by
 		AND EXISTS (SELECT 1 FROM membership_stores ms WHERE ms.tenant_id = m.tenant_id
 		AND ms.identity_id = m.identity_id AND ms.store_id = membership_invites.store_id))))
-		RETURNING id`, now, inviteID, actor.TenantID, actor.IdentityID).Scan(&returned)
+		RETURNING id,store_id`, now, inviteID, actor.TenantID, actor.IdentityID).Scan(&returned, &storeID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrInviteUnavailable
 	}
 	if err != nil {
 		return err
+	}
+	var actorRole string
+	if err := tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=?`, actor.TenantID, actor.IdentityID).Scan(&actorRole); err != nil {
+		return err
+	}
+	permit, policyErr := effective(ctx, tx, Scope{IdentityID: actor.IdentityID, TenantID: actor.TenantID, StoreID: storeID}, actorRole, ManageStaff)
+	if policyErr != nil {
+		return policyErr
+	}
+	if !permit {
+		return ErrDenied
 	}
 	eventID, err := localdb.NewID()
 	if err != nil {

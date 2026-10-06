@@ -52,7 +52,7 @@ func Can(ctx context.Context, db *sql.DB, scope Scope, permission Permission) er
 	if err != nil {
 		return fmt.Errorf("consultar vínculo: %w", err)
 	}
-	if status != "active" || !allowed(role, permission) {
+	if status != "active" {
 		return ErrDenied
 	}
 	if scope.StoreID == "" {
@@ -76,6 +76,13 @@ func Can(ctx context.Context, db *sql.DB, scope Scope, permission Permission) er
 	}
 	if err != nil {
 		return fmt.Errorf("consultar loja autorizada: %w", err)
+	}
+	permit, err := effective(ctx, db, scope, role, permission)
+	if err != nil {
+		return err
+	}
+	if !permit {
+		return ErrDenied
 	}
 	return nil
 }
