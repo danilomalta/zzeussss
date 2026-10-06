@@ -1,0 +1,211 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan local account security \u2014 incremental contract",
+    "version": "1.0.0",
+    "description": "Only the three account security endpoints, not the full ERP API. Passwords never belong in URLs or logs. Duplicate fields, null and trailing JSON are rejected. Each mutation requires the existing password; not a forgot-password flow. Session revocation is local to this database."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8181/local/v1",
+      "description": "Loopback local API; this server description is not a remote publishing configuration."
+    }
+  ],
+  "security": [
+    {
+      "localSession": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "opaque local session"
+      }
+    }
+  },
+  "paths": {
+    "/account/sessions": {
+      "get": {
+        "operationId": "listOwnLocalSessions",
+        "summary": "List up to 100 most recent active sessions of this identity in this local database",
+        "responses": {
+          "200": {
+            "description": "No session tokens or hashes are returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "limit"
+                  ],
+                  "properties": {
+                    "limit": {
+                      "type": "integer",
+                      "enum": [
+                        100
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "maxItems": 100,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "store_id",
+                          "device_id",
+                          "created_unix",
+                          "expires_unix",
+                          "current"
+                        ],
+                        "properties": {
+                          "store_id": {
+                            "type": "string"
+                          },
+                          "device_id": {
+                            "type": "string"
+                          },
+                          "created_unix": {
+                            "type": "integer",
+                            "format": "int64"
+                          },
+                          "expires_unix": {
+                            "type": "integer",
+                            "format": "int64"
+                          },
+                          "current": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid session or device."
+          },
+          "500": {
+            "description": "Internal failure."
+          }
+        }
+      }
+    },
+    "/account/password": {
+      "post": {
+        "operationId": "changeOwnLocalPassword",
+        "summary": "Authenticated self-service account mutation; does not select another identity",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "current_password",
+                  "new_password"
+                ],
+                "properties": {
+                  "current_password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 72,
+                    "writeOnly": true,
+                    "description": "Current password for reauthentication; never log or echo this field."
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 72,
+                    "writeOnly": true,
+                    "description": "Server enforces byte limits. New password requires 12\u201372 bytes, no leading/trailing whitespace, and differs from the current password."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Operation committed; password change requires a new login."
+          },
+          "400": {
+            "description": "Invalid or ambiguous JSON body."
+          },
+          "401": {
+            "description": "Missing, expired or revoked session, rejected password verification or password policy."
+          },
+          "413": {
+            "description": "Body exceeds 2048 bytes."
+          },
+          "415": {
+            "description": "Content-Type must be application/json."
+          },
+          "429": {
+            "description": "Five requests per minute per IP per mutation route."
+          },
+          "500": {
+            "description": "Operation failed; transaction rolled back."
+          }
+        }
+      }
+    },
+    "/account/sessions/revoke-others": {
+      "post": {
+        "operationId": "revokeOtherLocalSessions",
+        "summary": "Authenticated self-service account mutation; does not select another identity",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "current_password"
+                ],
+                "properties": {
+                  "current_password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 72,
+                    "writeOnly": true,
+                    "description": "Current password for reauthentication; never log or echo this field."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Operation committed; password change requires a new login."
+          },
+          "400": {
+            "description": "Invalid or ambiguous JSON body."
+          },
+          "401": {
+            "description": "Missing, expired or revoked session, rejected password verification or password policy."
+          },
+          "413": {
+            "description": "Body exceeds 2048 bytes."
+          },
+          "415": {
+            "description": "Content-Type must be application/json."
+          },
+          "429": {
+            "description": "Five requests per minute per IP per mutation route."
+          },
+          "500": {
+            "description": "Operation failed; transaction rolled back."
+          }
+        }
+      }
+    }
+  }
+}

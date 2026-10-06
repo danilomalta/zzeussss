@@ -40,8 +40,8 @@ func Open(ctx context.Context, path string) (*sql.DB, error) {
 		}
 	} else if err != nil {
 		return nil, fmt.Errorf("inspecionar SQLite: %w", err)
-	} else if !info.Mode().IsRegular() {
-		return nil, errors.New("caminho SQLite existente não é arquivo regular")
+	} else if !info.Mode().IsRegular() || info.Mode().Perm() != 0600 {
+		return nil, errors.New("SQLite existente deve ser arquivo regular privado (0600)")
 	}
 
 	db, err := sql.Open("sqlite", absolute)
@@ -56,6 +56,9 @@ func Open(ctx context.Context, path string) (*sql.DB, error) {
 	fail := func(cause error) (*sql.DB, error) {
 		_ = db.Close()
 		return nil, cause
+	}
+	if err := ValidateSchema(ctx, db); err != nil {
+		return fail(err)
 	}
 	for _, statement := range []string{
 		"PRAGMA busy_timeout = 5000",

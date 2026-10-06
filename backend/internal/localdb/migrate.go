@@ -29,6 +29,11 @@ func Migrate(ctx context.Context, db *sql.DB) error {
 		return fmt.Errorf("listar migrações locais: %w", err)
 	}
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
+	// Validate the complete applied history BEFORE applying anything. An older
+	// executable must not write into a schema produced by a newer executable.
+	if err := ValidateSchema(ctx, db); err != nil {
+		return err
+	}
 	for _, entry := range entries {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".sql") {
 			continue
@@ -51,6 +56,69 @@ func Migrate(ctx context.Context, db *sql.DB) error {
 		}
 	}
 	return nil
+}
+
+// ValidateSchema checks the applied history without changing the database.
+// Missing migrations are allowed; unknown versions and altered checksums are not.
+func ValidateSchema(ctx context.Context, db *sql.DB) error {
+	if db == nil {
+		return errors.New("SQLite não inicializado")
+	}
+	var exists int
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM sqlite_master WHERE type='table' AND name='schema_migrations'`).Scan(&exists); err != nil {
+		return err
+	}
+	if exists == 0 {
+		return nil
+	}
+	entries, err := migrations.ReadDir("migrations")
+	if err != nil {
+		return err
+	}
+	known := make(map[int]string)
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".sql") {
+			continue
+		}
+		prefix, _, _ := strings.Cut(entry.Name(), "_")
+		version, err := strconv.Atoi(prefix)
+		if err != nil || version < 1 {
+			return errors.New("versão local inválida")
+		}
+		if _, duplicate := known[version]; duplicate {
+			return errors.New("versão local duplicada")
+		}
+		body, err := migrations.ReadFile("migrations/" + entry.Name())
+		if err != nil {
+			return err
+		}
+		known[version] = fmt.Sprintf("%x", sha256.Sum256(body))
+	}
+	rows, err := db.QueryContext(ctx, `SELECT version,checksum FROM schema_migrations ORDER BY version`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	previous := 0
+	for rows.Next() {
+		var version int
+		var checksum string
+		if err := rows.Scan(&version, &checksum); err != nil {
+			return err
+		}
+		expected, ok := known[version]
+		if !ok {
+			return fmt.Errorf("banco requer versão mais nova do aplicativo: migração %d", version)
+		}
+		if version != previous+1 {
+			return errors.New("histórico de migrações incompleto")
+		}
+		if checksum != expected {
+			return fmt.Errorf("versão %d alterada após aplicação", version)
+		}
+		previous = version
+	}
+	return rows.Err()
 }
 
 func applyMigration(ctx context.Context, db *sql.DB, version int, checksum, script string) error {

@@ -151,6 +151,14 @@ func Resolve(ctx context.Context, db *sql.DB, token string) (Session, error) {
 	if db == nil {
 		return Session{}, errors.New("banco local indisponível")
 	}
+	return resolve(ctx, db, token)
+}
+
+type sessionReader interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+}
+
+func resolve(ctx context.Context, db sessionReader, token string) (Session, error) {
 	raw, err := base64.RawURLEncoding.DecodeString(token)
 	if err != nil || len(raw) != 32 {
 		return Session{}, ErrDenied
