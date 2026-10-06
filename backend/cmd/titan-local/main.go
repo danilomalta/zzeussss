@@ -28,13 +28,15 @@ type stationFile struct {
 }
 
 func main() {
-	if len(os.Args) < 2 || (os.Args[1] != "init" && os.Args[1] != "serve") {
-		fmt.Fprintln(os.Stderr, "Uso: titan-local init|serve --db CAMINHO.sqlite --station CAMINHO.station")
+	if len(os.Args) < 2 || (os.Args[1] != "init" && os.Args[1] != "serve" && os.Args[1] != "check") {
+		fmt.Fprintln(os.Stderr, "Uso: titan-local init|serve|check --db CAMINHO.sqlite --station CAMINHO.station")
 		os.Exit(2)
 	}
 	var err error
 	if os.Args[1] == "init" {
 		err = initStation(os.Args[2:], os.Stdin, os.Stdout)
+	} else if os.Args[1] == "check" {
+		err = checkStation(os.Args[2:], os.Stdout)
 	} else {
 		err = serveStation(os.Args[2:])
 	}

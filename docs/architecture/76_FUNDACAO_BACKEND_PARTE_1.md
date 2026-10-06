@@ -1,17 +1,17 @@
 # Parte 1 — Fundação operacional do backend
 
 Base da entrega 01: commit do usuário `294a544`. A matriz abaixo foi atualizada
-pela entrega 04 de auditoria e revisão da barreira de isolamento local; NÃO encerra os onze
+pela entrega 05 de instalação gerenciada e atualização local Linux; NÃO encerra os onze
 requisitos. Frontend inalterado.
 
 ## Matriz de conclusão
 
 | ID | Requisito | Implementação existente / desta entrega | Trabalho em aberto e aceite |
 | --- | --- | --- | --- |
-| F01 | Banco local e atualização | Transações por migração, checksums; validação integral antes de migrar; recusa de versões futuras/histórico com lacunas; arquivo regular 0600; teste de saída abrupta sem commit | Política de distribuição/compatibilidade entre aparelhos; ensaio de queda durante upgrade completo da instalação; backup anterior a upgrade automático |
+| F01 | Banco local e atualização | Migrações transacionais/checksums; recusa de versão futura/lacunas; backup pré-upgrade, teste em cópia, ativação atômica e recuperação em fronteiras persistentes | Distribuição assinada/compatibilidade entre aparelhos; upgrade com mudança futura de esquema, queda de energia e disco cheio em equipamento real |
 | F02 | Backend online | PostgreSQL, login/refresh, catálogo e parte de descontos | Serviços online completos; reconciliação com dados locais e testes isolados de cada operação |
 | F03 | Isolamento | Contextos tenant/loja/aparelho/ator; novas APIs revalidam sessão na transação; teste da barreira de autenticação nas 45 rotas locais protegidas | Inventário e testes de isolamento de todas as APIs, workers, exportações e integrações |
-| F04 | Instalação | Inicialização e comprovação de estação existentes; CLI de backup | Instalador, atualização, recuperação e desinstalação preservando dados |
+| F04 | Instalação | Gerenciador Linux por usuário, pacote local verificado, raiz separada de dados, init/check, bloqueios herdados, atualização/recuperação e desativação preservando dados | Distribuição assinada, recuperação do init incompleto, serviço automático, desinstalação formal, desktop/mobile e Windows/macOS |
 | F05 | Modos | Núcleos SQLite e PostgreSQL existentes | Implementação e demonstração de local, servidor, nuvem e híbrido; nenhum seletor visual comprova o modo |
 | F06 | Autenticação | Login/logout/revogação; troca da própria senha; consulta de sessões; reset/revogação administrativos restritos; recuperação local do dono com chave preparada de uso único | Recuperação/troca online; sincronização de credenciais e revogações; sessões individuais e entrada secreta interativa |
 | F07 | Autorizações | Papéis, contratos, regras allow/deny/inherit por ação/loja/pessoa/grupo; departamentos e delegação limitada auditada | Interfaces de administração; propagação e reconciliação entre aparelhos; granularidade de registros dos futuros módulos de RH/produção; políticas online |
@@ -123,3 +123,5 @@ Não fechar F01–F11 somente por compilar esta entrega.
 Entrega 03: docs/architecture/78_PERMISSOES_DEPARTAMENTOS_E_AUDITORIA.md e docs/api/access-policy.openapi.json. Três operações novas: GET/POST access/policy e GET access/audit. Nenhuma interface alterada.
 
 Entrega 04: docs/architecture/79_AUDITORIA_ADMINISTRATIVA_E_ISOLAMENTO_LOCAL.md. Sem nova migração ou interface. Isolamento por registro e serviços online/trabalhadores continuam no inventário de pendências.
+
+Entrega 05: docs/architecture/80_INSTALACAO_E_ATUALIZACAO_LOCAL_LINUX.md. Gerenciador Python local e titan-local check. Sem nova migração/interface; dados da demonstração inalterados. Hash de pacote não autentica origem; assinatura de distribuição pendente.
