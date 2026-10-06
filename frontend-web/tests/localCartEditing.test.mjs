@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {addCartProduct,replaceCartQuantity,restoreCartItem,selectCatalogProduct} from '../src/core/local/cartEditing.mjs';
+import {cartTotal,makeSale} from '../src/core/local/posModel.mjs';
+const p={id:'product',name:'Rice',sku:'R',unit:'unit',price_cents:899};
+test('repeated scans group same product and location but keep distinct locations',()=>{let c=addCartProduct([],p,'a','1');c=addCartProduct(c,p,'a','2');c=addCartProduct(c,p,'b','1');assert.equal(c.length,2);assert.equal(c[0].quantity_milli,3000);assert.equal(cartTotal(c),3596);});
+test('editing quantity preserves source and exact weighted rounding; invalid edit preserves original',()=>{const c=addCartProduct([],{...p,unit:'kg'},'shelf','0,125');const edited=replaceCartQuantity(c,0,'0,375');assert.equal(edited[0].location_id,'shelf');assert.equal(cartTotal(edited),337);assert.equal(c[0].quantity_milli,125);for(const v of ['0','-1','1e3','0.0001'])assert.throws(()=>replaceCartQuantity(c,0,v));assert.throws(()=>replaceCartQuantity(c,2,'1'));});
+test('restore merges a later scan rather than duplicate a sale line and payload remains server-priced',()=>{const removed=addCartProduct([],p,'a','2')[0];let c=addCartProduct([],p,'a','1');c=restoreCartItem(c,removed);assert.equal(c.length,1);assert.equal(c[0].quantity_milli,3000);const sale=makeSale(c,'cash',()=> 'uuid');assert.equal(sale.payments[0].amount_cents,2697);assert.deepEqual(Object.keys(sale.items[0]).sort(),['location_id','product_id','quantity_milli']);});
+test('whole units, overflow and line limit reject before modifying cart',()=>{assert.throws(()=>addCartProduct([],p,'a','0.5'));const huge=[{product:{...p,price_cents:0},location_id:'a',quantity_milli:Number.MAX_SAFE_INTEGER-991}];assert.throws(()=>addCartProduct(huge,p,'a','1'));const full=Array.from({length:500},(_,i)=>({product:{...p,id:String(i)},location_id:'a',quantity_milli:1000}));assert.throws(()=>addCartProduct(full,p,'b','1'));assert.equal(full.length,500);});
+
+test('scanner requires exact numeric codes and rejects ambiguous codes',()=>{const a={...p,barcode:'1001'};assert.equal(selectCatalogProduct([a],'1001'),a);assert.throws(()=>selectCatalogProduct([a],'100'));assert.throws(()=>selectCatalogProduct([a,{...a,id:'other'}],'1001'));assert.equal(selectCatalogProduct([a],'rice'),a);});
