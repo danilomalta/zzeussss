@@ -156,6 +156,7 @@ type AuditPage struct {
 	NextCursor string       `json:"next_cursor"`
 }
 type cursor struct {
+	Source     string `json:"source,omitempty"`
 	Tenant     string `json:"tenant"`
 	Store      string `json:"store"`
 	Department string `json:"department"`
@@ -164,10 +165,21 @@ type cursor struct {
 }
 
 // Audit provides descending keyset pagination with a cursor bound to the scope.
-// Owners see the four supported administrative sources, delegates only policy
+// Owners see the eight supported administrative sources, delegates only policy
 // events in the explicit department. No raw JSON payloads or hashes are read.
 func Audit(ctx context.Context, db *sql.DB, device identity.DeviceContext, token, department, encoded string, limit int) (AuditPage, error) {
+	return AuditFiltered(ctx, db, device, token, department, "", encoded, limit)
+}
+
+// AuditFiltered adds a source whitelist without exposing raw event payloads.
+func AuditFiltered(ctx context.Context, db *sql.DB, device identity.DeviceContext, token, department, source, encoded string, limit int) (AuditPage, error) {
 	out := AuditPage{Items: []AuditEvent{}}
+	if !validSource(source) {
+		return out, ErrInput
+	}
+	if department != "" && source != "" && source != "policy" {
+		return out, ErrDenied
+	}
 	if limit < 1 || limit > 100 {
 		return out, ErrInput
 	}
@@ -180,7 +192,7 @@ func Audit(ctx context.Context, db *sql.DB, device identity.DeviceContext, token
 	if err != nil {
 		return out, err
 	}
-	cur := cursor{Tenant: a.TenantID, Store: a.StoreID, Department: department, Time: 9223372036854775807, Reference: "~"}
+	cur := cursor{Source: source, Tenant: a.TenantID, Store: a.StoreID, Department: department, Time: 9223372036854775807, Reference: "~"}
 	if encoded != "" {
 		if len(encoded) > 2048 {
 			return out, ErrInput
@@ -191,7 +203,7 @@ func Audit(ctx context.Context, db *sql.DB, device identity.DeviceContext, token
 		}
 		dec := json.NewDecoder(strings.NewReader(string(raw)))
 		dec.DisallowUnknownFields()
-		if dec.Decode(&cur) != nil || cur.Tenant != a.TenantID || cur.Store != a.StoreID || cur.Department != department || cur.Time < 0 || len(cur.Reference) > 512 || cur.Reference == "" {
+		if dec.Decode(&cur) != nil || cur.Tenant != a.TenantID || cur.Store != a.StoreID || cur.Department != department || cur.Source != source || cur.Time < 0 || len(cur.Reference) > 512 || cur.Reference == "" {
 			return out, ErrInput
 		}
 		canonical, _ := json.Marshal(cur)
@@ -200,20 +212,36 @@ func Audit(ctx context.Context, db *sql.DB, device identity.DeviceContext, token
 		}
 	}
 	query := `WITH events AS (
- SELECT 'policy:'||printf('%d:%s:%s',length(device_id),device_id,operation_id) ref,kind,actor_id,target_id,department_id,permission,before_value,after_value,reason,created_unix,revision
+ SELECT 'policy' source,'policy:'||printf('%d:%s:%s',length(device_id),device_id,operation_id) ref,kind,actor_id,target_id,department_id,permission,before_value,after_value,reason,created_unix,revision
  FROM access_policy_events WHERE tenant_id=? AND store_id=? AND (?='' OR department_id=?)
  UNION ALL
- SELECT 'account:'||printf('%d:%s:%s',length(device_id),device_id,operation_id),kind,actor_id,target_id,'','','','',reason,created_unix,0
+ SELECT 'account','account:'||printf('%d:%s:%s',length(device_id),device_id,operation_id),kind,actor_id,target_id,'','','','',reason,created_unix,0
  FROM account_access_operations WHERE tenant_id=? AND store_id=? AND ? AND ?=''
  UNION ALL
- SELECT 'security:'||id,kind,identity_id,identity_id,'','','','','',created_unix,0
+ SELECT 'security','security:'||id,kind,identity_id,identity_id,'','','','','',created_unix,0
  FROM account_security_events WHERE tenant_id=? AND store_id=? AND ? AND ?=''
  UNION ALL
- SELECT 'staff:'||printf('%d:%s:%s',length(device_id),device_id,operation_id),'staff_registered',created_by,identity_id,'','','','','',COALESCE(CAST(strftime('%s',created_at) AS INTEGER),0),0
+ SELECT 'staff','staff:'||printf('%d:%s:%s',length(device_id),device_id,operation_id),'staff_registered',created_by,identity_id,'','','','','',COALESCE(CAST(strftime('%s',created_at) AS INTEGER),0),0
  FROM staff_registrations WHERE tenant_id=? AND store_id=? AND ? AND ?=''
+ UNION ALL
+ SELECT 'invite','invite:'||e.id,'invite_'||e.action,e.actor_identity_id,i.target_identity_id,'','','','','',e.occurred_unix,0
+ FROM membership_invite_events e JOIN membership_invites i ON i.id=e.invite_id WHERE i.tenant_id=? AND i.store_id=? AND ? AND ?=''
+ UNION ALL
+ SELECT 'pairing','pairing:'||e.id,'device_'||e.action,e.actor_ref,e.device_id,'','','','','',e.occurred_unix,0
+ FROM device_pairing_events e JOIN device_pairings p ON p.tenant_id=e.tenant_id AND p.device_id=e.device_id WHERE e.tenant_id=? AND p.store_id=? AND ? AND ?=''
+ UNION ALL
+ SELECT 'peer','peer:'||id,'peer_'||action,actor_id,sender_device_id,'',event_type,'','','',COALESCE(CAST(strftime('%s',created_at) AS INTEGER),0),0
+ FROM sync_peer_audit WHERE tenant_id=? AND store_id=? AND ? AND ?=''
+ UNION ALL
+ SELECT 'encryption','encryption:'||id,'encryption_key_approved',approved_by,device_id,'','','','','',COALESCE(CAST(strftime('%s',approved_at) AS INTEGER),0),revision
+ FROM device_encryption_key_audit WHERE tenant_id=? AND store_id=? AND ? AND ?=''
  ) SELECT ref,kind,actor_id,target_id,department_id,permission,before_value,after_value,reason,created_unix,revision
- FROM events WHERE (created_unix<? OR (created_unix=? AND ref<?)) ORDER BY created_unix DESC,ref DESC LIMIT ?`
-	args := []any{a.TenantID, a.StoreID, department, department, a.TenantID, a.StoreID, owner, department, a.TenantID, a.StoreID, owner, department, a.TenantID, a.StoreID, owner, department, cur.Time, cur.Time, cur.Reference, limit + 1}
+ FROM events WHERE (?='' OR source=?) AND (created_unix<? OR (created_unix=? AND ref<?)) ORDER BY created_unix DESC,ref DESC LIMIT ?`
+	args := []any{a.TenantID, a.StoreID, department, department}
+	for i := 0; i < 7; i++ {
+		args = append(args, a.TenantID, a.StoreID, owner, department)
+	}
+	args = append(args, source, source, cur.Time, cur.Time, cur.Reference, limit+1)
 	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return out, err
@@ -237,7 +265,7 @@ func Audit(ctx context.Context, db *sql.DB, device identity.DeviceContext, token
 	if len(out.Items) > limit {
 		out.Items = out.Items[:limit]
 		last := out.Items[limit-1]
-		raw, _ := json.Marshal(cursor{a.TenantID, a.StoreID, department, last.CreatedUnix, last.Reference})
+		raw, _ := json.Marshal(cursor{Source: source, Tenant: a.TenantID, Store: a.StoreID, Department: department, Time: last.CreatedUnix, Reference: last.Reference})
 		out.NextCursor = base64.RawURLEncoding.EncodeToString(raw)
 	}
 	return out, tx.Commit()
@@ -245,3 +273,11 @@ func Audit(ctx context.Context, db *sql.DB, device identity.DeviceContext, token
 
 // IsDenied covers the authentication distinction without exposing database errors.
 func IsDenied(err error) bool { return errors.Is(err, ErrDenied) || errors.Is(err, identity.ErrDenied) }
+
+func validSource(source string) bool {
+	switch source {
+	case "", "policy", "account", "security", "staff", "invite", "pairing", "peer", "encryption":
+		return true
+	}
+	return false
+}

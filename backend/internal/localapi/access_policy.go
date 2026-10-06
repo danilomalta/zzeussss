@@ -44,7 +44,7 @@ func (s *Server) auditAccess(c *fiber.Ctx) error {
 		limit = n
 	}
 	session := c.Locals("session").(localauth.Session)
-	out, err := accesspolicy.Audit(c.UserContext(), s.DB, s.Device, session.Token, c.Query("department_id"), c.Query("cursor"), limit)
+	out, err := accesspolicy.AuditFiltered(c.UserContext(), s.DB, s.Device, session.Token, c.Query("department_id"), c.Query("source"), c.Query("cursor"), limit)
 	if err != nil {
 		return policyError(c, err)
 	}
@@ -55,7 +55,7 @@ func policyQuery(c *fiber.Ctx, audit bool) bool {
 	seen := map[string]bool{}
 	c.Context().QueryArgs().VisitAll(func(k, v []byte) {
 		key := string(k)
-		if seen[key] || (key != "department_id" && (!audit || (key != "limit" && key != "cursor"))) {
+		if seen[key] || (key != "department_id" && (!audit || (key != "limit" && key != "cursor" && key != "source"))) {
 			valid = false
 		}
 		seen[key] = true

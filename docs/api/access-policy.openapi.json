@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Titan Local — políticas e auditoria de acesso",
-    "version": "1.0.0",
-    "description": "API local da entrega 03. Sessão e aparelho determinam empresa/loja. Departamentos agrupam pessoas; não delimitam linhas de vendas/estoque. Administradores delegados não ganham permissão para mudar donos, credenciais ou contratos. Auditoria cobre políticas, segurança de conta, administração de acesso e cadastro de funcionários; demais fontes permanecem em seus módulos."
+    "version": "1.1.0",
+    "description": "API local da entrega 03. Sessão e aparelho determinam empresa/loja. Departamentos agrupam pessoas; não delimitam linhas de vendas/estoque. Administradores delegados não ganham permissão para mudar donos, credenciais ou contratos. Auditoria cobre políticas, segurança de conta, administração de acesso e cadastro de funcionários; demais fontes permanecem em seus módulos. Entrega 04: auditoria também inclui convites, pareamento, permissões de sincronização e aprovação de chaves públicas. Nenhuma chave/hash/payload de mensagens é retornado."
   },
   "servers": [
     {
@@ -153,6 +153,25 @@
               "type": "string",
               "maxLength": 2048
             }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "policy",
+                "account",
+                "security",
+                "staff",
+                "invite",
+                "pairing",
+                "peer",
+                "encryption"
+              ]
+            },
+            "description": "Omitir para todas as fontes autorizadas. Delegado/departamento só pode consultar policy. Cursor não pode trocar fonte."
           }
         ],
         "responses": {
@@ -563,7 +582,7 @@
           },
           "next_cursor": {
             "type": "string",
-            "description": "Vazio na última página; cursor opaco vinculado à empresa, loja e filtro de departamento."
+            "description": "Vazio na última página; cursor vinculado à empresa, loja, departamento e fonte. Fonte omitida preserva o formato anterior."
           }
         }
       },
