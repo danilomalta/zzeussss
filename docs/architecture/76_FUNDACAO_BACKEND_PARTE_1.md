@@ -133,3 +133,5 @@ Entrega 07: docs/architecture/82_CONEXAO_E_AUTENTICACAO_ONLINE.md. Sem migraçã
 Entrega 08: docs/architecture/83_SESSOES_ONLINE_PERSISTIDAS.md. Migração incremental PostgreSQL 5, sessões online próprias, refresh de uso único, auditoria e ferramenta de manutenção explícita. Teste PostgreSQL real opt-in não executado; frontend/SQLite inalterados.
 
 Entrega 09: docs/architecture/84_TROCA_SENHA_ONLINE_E_COORDENACAO.md. Migração PostgreSQL 6 aditiva; nenhuma migração SQLite ou interface. Bloqueio por conta coordena login/refresh/revogação/senha. Teste PostgreSQL real permanece opt-in; produção em branch separada reserva SQLite 0028 após conferência.
+
+Entrega 10: docs/architecture/85_VALIDACAO_POSTGRESQL_ISOLADA.md. Ferramenta para preparar banco novo de teste e exigir execução/aprovação do teste PostgreSQL das entregas 08/09. Sem alteração de API, migração ou interface. Testes da ferramenta não comprovam PostgreSQL real; registrar separadamente o resultado no PC. Recursos de teste preservados, credenciais temporárias e relatório privado.
