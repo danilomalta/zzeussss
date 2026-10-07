@@ -16,6 +16,7 @@ import (
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/localdb/stockreservation"
 )
 
 var (
@@ -181,7 +182,14 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 			actor.TenantID, actor.StoreID, item.ProductID, item.LocationID).Scan(&balance); err != nil {
 			return Result{}, err
 		}
-		if balance < consumed[key] {
+		free, err := stockreservation.FreeTx(ctx, tx, actor.TenantID, actor.StoreID, item.ProductID, item.LocationID, balance)
+		if errors.Is(err, stockreservation.ErrUnavailable) {
+			return Result{}, ErrNoStock
+		}
+		if err != nil {
+			return Result{}, err
+		}
+		if free < consumed[key] {
 			return Result{}, ErrNoStock
 		}
 	}

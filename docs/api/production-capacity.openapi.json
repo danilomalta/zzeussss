@@ -3,7 +3,7 @@
   "info": {
     "title": "Titan Local Production Capacity P03",
     "version": "1.0.0",
-    "description": "Read-only theoretical capacity from one location. Alternatives compete for the same stock; no simultaneous total. Reads require manage_production and approved device. Expired contract does not block historical reads. Movements lack historical unit, so catalog/recipe unit divergence is refused."
+    "description": "Read-only theoretical capacity from one location. Alternatives compete for the same stock; no simultaneous total. Reads require manage_production and approved device. Expired contract does not block historical reads. Movements lack historical unit, so catalog/recipe unit divergence is refused. P05: stock_milli is available balance after active production reservations."
   },
   "servers": [
     {
@@ -171,7 +171,7 @@
           "basis": {
             "type": "string",
             "enum": [
-              "local_recorded_balance_without_reservations"
+              "local_available_balance_after_reservations"
             ]
           },
           "alternatives_independent": {
@@ -293,7 +293,8 @@
             "type": "integer",
             "format": "int64",
             "minimum": 0,
-            "maximum": 9007199254740991
+            "maximum": 9007199254740991,
+            "description": "Free quantity in thousandths of stock_unit, after active production reservations."
           },
           "conversion_numerator": {
             "type": "integer",

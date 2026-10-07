@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/localdb/stockreservation"
 )
 
 var ErrCapacity = errors.New("saldo, unidade ou capacidade fora dos limites")
@@ -141,6 +142,10 @@ func capacityTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, locationI
 		if err != nil {
 			return Capacity{}, err
 		}
+		balance, err = stockreservation.FreeTx(ctx, tx, actor.TenantID, actor.StoreID, item.ProductID, locationID, balance)
+		if err != nil {
+			return Capacity{}, ErrCapacity
+		}
 		batches, err := batchCount(balance, item.QuantityMilli, n, d)
 		if err != nil {
 			return Capacity{}, err
@@ -191,7 +196,7 @@ func Capacities(ctx context.Context, db *sql.DB, actor identity.Scope, device id
 	if err != nil {
 		return CapacityResult{}, err
 	}
-	out := CapacityResult{LocationID: in.LocationID, MeasuredAt: time.Now().UTC().Format(time.RFC3339Nano), Basis: "local_recorded_balance_without_reservations", AlternativesIndependent: true, SimultaneousTotalAvailable: false, Alternatives: []Capacity{}}
+	out := CapacityResult{LocationID: in.LocationID, MeasuredAt: time.Now().UTC().Format(time.RFC3339Nano), Basis: "local_available_balance_after_reservations", AlternativesIndependent: true, SimultaneousTotalAvailable: false, Alternatives: []Capacity{}}
 	for _, id := range in.VersionIDs {
 		version, e := scanVersion(tx.QueryRowContext(ctx, `SELECT request_json,revision,created_at,actor_id FROM production_recipe_versions WHERE tenant_id=? AND store_id=? AND version_id=?`, actor.TenantID, actor.StoreID, id))
 		if e != nil {

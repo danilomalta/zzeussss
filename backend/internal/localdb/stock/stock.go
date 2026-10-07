@@ -12,6 +12,7 @@ import (
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/localdb/stockreservation"
 )
 
 var (
@@ -99,7 +100,14 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		if err != nil {
 			return Result{}, err
 		}
-		if balance < in.QuantityMilli {
+		free, err := stockreservation.FreeTx(ctx, tx, actor.TenantID, actor.StoreID, in.ProductID, in.FromLocationID, balance)
+		if errors.Is(err, stockreservation.ErrUnavailable) {
+			return Result{}, ErrInsufficientStock
+		}
+		if err != nil {
+			return Result{}, err
+		}
+		if free < in.QuantityMilli {
 			return Result{}, ErrInsufficientStock
 		}
 	}

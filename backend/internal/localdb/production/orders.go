@@ -241,6 +241,9 @@ func ChangeOrderState(ctx context.Context, db *sql.DB, license *entitlementstore
 		}
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
+	if err = guardMaterialCancellation(ctx, tx, a, in.OrderID, in.Status); err != nil {
+		return OrderResult{}, err
+	}
 	result = OrderResult{OrderID: in.OrderID, Revision: revision + 1, Status: in.Status}
 	if err = one(ctx, tx, `UPDATE production_orders SET status=?,revision=?,updated_at=? WHERE tenant_id=? AND store_id=? AND id=? AND revision=? AND status=?`, result.Status, result.Revision, now, a.TenantID, a.StoreID, in.OrderID, revision, status); err != nil {
 		return OrderResult{}, err
