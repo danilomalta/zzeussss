@@ -10,6 +10,7 @@ import (
 	"log"
 	"strings"
 	"time"
+	"titansystem-backend/internal/apicontract"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -59,6 +60,7 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 		config.Concurrency = 128
 	}
 	app := fiber.New(config)
+	app.Use(apicontract.Errors())
 	if gate != nil {
 		// fasthttp's parser/connection diagnostics may include raw request
 		// fragments. Structured, redacted operational telemetry is separate.

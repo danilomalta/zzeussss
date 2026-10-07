@@ -11,13 +11,13 @@ import (
 func CORS() fiber.Handler {
 	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
 	if allowedOrigins == "" {
-               allowedOrigins = "http://localhost:3000"
+		allowedOrigins = "http://localhost:3000"
 	}
 
 	return cors.New(cors.Config{
 		AllowOrigins:     allowedOrigins,
 		AllowCredentials: true,
-		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-Requested-With, X-Client-Platform, X-Correlacao-Id",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-Requested-With, X-Client-Platform, X-Correlacao-Id, X-Titan-Error-Format",
 		AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
 		MaxAge:           86400,
 	})

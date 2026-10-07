@@ -1,0 +1,1721 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — inventario de rotas",
+    "version": "1.0.0",
+    "description": "Mapa da base fde43f8. Schemas de payload pendentes estão marcados por operação; não é um contrato completo de negócios."
+  },
+  "paths": {
+    "/local/v1/access/audit": {
+      "get": {
+        "operationId": "local_GET__local_v1_access_audit",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./access-policy.openapi.json"
+        }
+      }
+    },
+    "/local/v1/access/policy": {
+      "get": {
+        "operationId": "local_GET__local_v1_access_policy",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./access-policy.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "local_POST__local_v1_access_policy",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./access-policy.openapi.json"
+        }
+      }
+    },
+    "/local/v1/account/password": {
+      "post": {
+        "operationId": "local_POST__local_v1_account_password",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./account-security.openapi.json"
+        }
+      }
+    },
+    "/local/v1/account/recover": {
+      "post": {
+        "operationId": "local_POST__local_v1_account_recover",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./account-security.openapi.json"
+        }
+      }
+    },
+    "/local/v1/account/recovery/revoke": {
+      "post": {
+        "operationId": "local_POST__local_v1_account_recovery_revoke",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./account-security.openapi.json"
+        }
+      }
+    },
+    "/local/v1/account/sessions": {
+      "get": {
+        "operationId": "local_GET__local_v1_account_sessions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./account-security.openapi.json"
+        }
+      }
+    },
+    "/local/v1/account/sessions/revoke-others": {
+      "post": {
+        "operationId": "local_POST__local_v1_account_sessions_revoke_others",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./account-security.openapi.json"
+        }
+      }
+    },
+    "/local/v1/capabilities": {
+      "get": {
+        "operationId": "local_GET__local_v1_capabilities",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/cash/close": {
+      "post": {
+        "operationId": "local_POST__local_v1_cash_close",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/cash.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/cash/current": {
+      "get": {
+        "operationId": "local_GET__local_v1_cash_current",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/cash.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/cash/movements": {
+      "post": {
+        "operationId": "local_POST__local_v1_cash_movements",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/cash.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/cash/open": {
+      "post": {
+        "operationId": "local_POST__local_v1_cash_open",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/cash.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/catalog/search": {
+      "get": {
+        "operationId": "local_GET__local_v1_catalog_search",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/catalog.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/comparison-site-operations/{id}": {
+      "get": {
+        "operationId": "local_GET__local_v1_comparison_site_operations__id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/comparison.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/comparison-sites": {
+      "get": {
+        "operationId": "local_GET__local_v1_comparison_sites",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/comparison.go",
+        "x-state": "implemented"
+      },
+      "post": {
+        "operationId": "local_POST__local_v1_comparison_sites",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/comparison.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/health": {
+      "get": {
+        "operationId": "local_GET__local_v1_health",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/locations": {
+      "get": {
+        "operationId": "local_GET__local_v1_locations",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/catalog.go",
+        "x-state": "implemented"
+      },
+      "post": {
+        "operationId": "local_POST__local_v1_locations",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/catalog.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/login": {
+      "post": {
+        "operationId": "local_POST__local_v1_login",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/logout": {
+      "post": {
+        "operationId": "local_POST__local_v1_logout",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/me": {
+      "get": {
+        "operationId": "local_GET__local_v1_me",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/module-contracts": {
+      "post": {
+        "operationId": "local_POST__local_v1_module_contracts",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/products": {
+      "get": {
+        "operationId": "local_GET__local_v1_products",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/catalog.go",
+        "x-state": "implemented"
+      },
+      "post": {
+        "operationId": "local_POST__local_v1_products",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/catalog.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/purchase-approvals": {
+      "get": {
+        "operationId": "local_GET__local_v1_purchase_approvals",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/purchases.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/purchase-orders": {
+      "get": {
+        "operationId": "local_GET__local_v1_purchase_orders",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/purchases.go",
+        "x-state": "implemented"
+      },
+      "post": {
+        "operationId": "local_POST__local_v1_purchase_orders",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/purchases.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/purchase-orders/{id}": {
+      "get": {
+        "operationId": "local_GET__local_v1_purchase_orders__id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/purchases.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/purchase-suppliers": {
+      "get": {
+        "operationId": "local_GET__local_v1_purchase_suppliers",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/purchases.go",
+        "x-state": "implemented"
+      },
+      "post": {
+        "operationId": "local_POST__local_v1_purchase_suppliers",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/purchases.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/replenishment/operations/{kind}/{id}": {
+      "get": {
+        "operationId": "local_GET__local_v1_replenishment_operations__kind__id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/replenishment.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/replenishment/policies": {
+      "post": {
+        "operationId": "local_POST__local_v1_replenishment_policies",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/replenishment.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/replenishment/products": {
+      "get": {
+        "operationId": "local_GET__local_v1_replenishment_products",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/replenishment.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/replenishment/reviews": {
+      "post": {
+        "operationId": "local_POST__local_v1_replenishment_reviews",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/replenishment.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/replenishment/suggestions": {
+      "get": {
+        "operationId": "local_GET__local_v1_replenishment_suggestions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/replenishment.go",
+        "x-state": "implemented"
+      },
+      "post": {
+        "operationId": "local_POST__local_v1_replenishment_suggestions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/replenishment.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/sales": {
+      "get": {
+        "operationId": "local_GET__local_v1_sales",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/sales.go",
+        "x-state": "implemented"
+      },
+      "post": {
+        "operationId": "local_POST__local_v1_sales",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/sales.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/sales/{id}": {
+      "get": {
+        "operationId": "local_GET__local_v1_sales__id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/sales.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/sales/{id}/cancel": {
+      "post": {
+        "operationId": "local_POST__local_v1_sales__id_cancel",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/sales.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/staff": {
+      "get": {
+        "operationId": "local_GET__local_v1_staff",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented"
+      },
+      "post": {
+        "operationId": "local_POST__local_v1_staff",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/staff/{id}/password-reset": {
+      "post": {
+        "operationId": "local_POST__local_v1_staff__id_password_reset",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./account-security.openapi.json"
+        }
+      }
+    },
+    "/local/v1/staff/{id}/sessions/revoke": {
+      "post": {
+        "operationId": "local_POST__local_v1_staff__id_sessions_revoke",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/server.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./account-security.openapi.json"
+        }
+      }
+    },
+    "/local/v1/stock/balance": {
+      "get": {
+        "operationId": "local_GET__local_v1_stock_balance",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/stock.go",
+        "x-state": "implemented"
+      }
+    },
+    "/local/v1/stock/operations": {
+      "post": {
+        "operationId": "local_POST__local_v1_stock_operations",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/localapi/stock.go",
+        "x-state": "implemented"
+      }
+    },
+    "/api/v1/accounting/sped/request": {
+      "post": {
+        "operationId": "online_POST__api_v1_accounting_sped_request",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/accounting/sped/status/{job_id}": {
+      "get": {
+        "operationId": "online_GET__api_v1_accounting_sped_status__job_id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/analises/produtos-parados": {
+      "get": {
+        "operationId": "online_GET__api_v1_analises_produtos_parados",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "online_POST__api_v1_auth_login",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-auth.openapi.json"
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "online_POST__api_v1_auth_logout",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-auth.openapi.json"
+        }
+      }
+    },
+    "/api/v1/auth/password": {
+      "post": {
+        "operationId": "online_POST__api_v1_auth_password",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-auth.openapi.json"
+        }
+      }
+    },
+    "/api/v1/auth/recovery/key": {
+      "post": {
+        "operationId": "online_POST__api_v1_auth_recovery_key",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-auth.openapi.json"
+        }
+      }
+    },
+    "/api/v1/auth/recovery/reset": {
+      "post": {
+        "operationId": "online_POST__api_v1_auth_recovery_reset",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-auth.openapi.json"
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "online_POST__api_v1_auth_refresh",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-auth.openapi.json"
+        }
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "operationId": "online_GET__api_v1_auth_sessions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-auth.openapi.json"
+        }
+      }
+    },
+    "/api/v1/auth/sessions/{id}/revoke": {
+      "post": {
+        "operationId": "online_POST__api_v1_auth_sessions__id_revoke",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-auth.openapi.json"
+        }
+      }
+    },
+    "/api/v1/auth/sessions/revoke-others": {
+      "post": {
+        "operationId": "online_POST__api_v1_auth_sessions_revoke_others",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-auth.openapi.json"
+        }
+      }
+    },
+    "/api/v1/discounts/suggest": {
+      "post": {
+        "operationId": "online_POST__api_v1_discounts_suggest",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented"
+      }
+    },
+    "/api/v1/discounts/suggestions": {
+      "get": {
+        "operationId": "online_GET__api_v1_discounts_suggestions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented"
+      }
+    },
+    "/api/v1/discounts/suggestions/{id}/review": {
+      "post": {
+        "operationId": "online_POST__api_v1_discounts_suggestions__id_review",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/produtos/": {
+      "get": {
+        "operationId": "online_GET__api_v1_produtos_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented"
+      },
+      "post": {
+        "operationId": "online_POST__api_v1_produtos_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented"
+      }
+    },
+    "/api/v1/recompensas/indicacoes": {
+      "post": {
+        "operationId": "online_POST__api_v1_recompensas_indicacoes",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/recompensas/indicacoes/recompensar": {
+      "post": {
+        "operationId": "online_POST__api_v1_recompensas_indicacoes_recompensar",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/recompensas/indicacoes/saldo": {
+      "get": {
+        "operationId": "online_GET__api_v1_recompensas_indicacoes_saldo",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/saude": {
+      "get": {
+        "operationId": "online_GET__api_v1_saude",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

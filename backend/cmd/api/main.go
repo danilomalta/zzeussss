@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"time"
+	"titansystem-backend/internal/apicontract"
 	"titansystem-backend/internal/onlinesessions"
 
 	"github.com/gofiber/fiber/v2"
@@ -66,6 +67,8 @@ func main() {
 	app := fiber.New(fiber.Config{
 		AppName: "TitanSystem Backend API (PostgreSQL Cores)",
 	})
+
+	app.Use(apicontract.Errors())
 
 	// 4. Proteção contra força bruta em tentativas de login (SecOps)
 	limitadorCfg := delivery.ConfiguracaoTentativasLoginPadrao()

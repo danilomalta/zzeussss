@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"titansystem-backend/internal/apicontract"
 	authDelivery "titansystem-backend/internal/modules/auth/delivery"
 	"titansystem-backend/internal/modules/auth/usecase"
 	catalogDelivery "titansystem-backend/internal/modules/catalog/delivery"
@@ -27,6 +28,7 @@ func Indisponivel(c *fiber.Ctx) error {
 
 // Registrar registra todas as rotas HTTP do backend sob a nova arquitetura DDD.
 func Registrar(app *fiber.App) {
+	app.Use(apicontract.Errors())
 	// CORS geral aplicado a todas as rotas
 	app.Use(middleware.CORS())
 

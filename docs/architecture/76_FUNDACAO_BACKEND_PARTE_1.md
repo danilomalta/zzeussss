@@ -18,7 +18,7 @@ requisitos. Frontend inalterado.
 | F08 | Auditoria | Eventos críticos; políticas e acesso atômicos; consulta autorizada por loja/departamento com paginação para políticas, contas, funcionários, convites, pareamento, permissões de sincronização e aprovação de chaves públicas | Cobertura/consulta das demais fontes administrativas e comerciais; retenção e exportação |
 | F09 | Proteção de dados | Transporte cifrado; backup AES-256-GCM, chave separada 0600 e autenticação do arquivo | Backups remotos, proteção dos demais arquivos/certificados, rotação e recuperação de todas as chaves |
 | F10 | Backup/restauração | Snapshot SQLite consistente, restauração em arquivo novo; sessões e chaves de recuperação da cópia revogadas; snapshots 25/26/27; agendamento CLI watch | Retenção, cópia externa, serviço instalado, monitoramento, PostgreSQL e ensaio de desastre completo |
-| F11 | Documentação API | OpenAPI de segurança/acesso local, política/auditoria e login/refresh online; inventário dos grupos atuais | OpenAPI de todas as rotas, erros padronizados antigos, paginação uniforme e compatibilidade entre versões |
+| F11 | Documentação API | Contratos detalhados de acesso/segurança e auth online; inventário de 69 rotas comparado ao Fiber; mapa OpenAPI; erro JSON opcional compatível; limites atuais de paginação testados | Schemas completos dos demais domínios; parsers e paginação de todas as coleções; aceite de clientes e evolução por versão |
 
 ## Segurança de conta local
 
@@ -137,3 +137,5 @@ Entrega 09: docs/architecture/84_TROCA_SENHA_ONLINE_E_COORDENACAO.md. Migração
 Entrega 10: docs/architecture/85_VALIDACAO_POSTGRESQL_ISOLADA.md. Ferramenta para preparar banco novo de teste e exigir execução/aprovação do teste PostgreSQL das entregas 08/09. Sem alteração de API, migração ou interface. Testes da ferramenta não comprovam PostgreSQL real; registrar separadamente o resultado no PC. Recursos de teste preservados, credenciais temporárias e relatório privado.
 
 Entrega 11: docs/architecture/86_RECUPERACAO_ONLINE_COM_CHAVE_PESSOAL.md. Migração PostgreSQL 7 aditiva; emissão autenticada com senha atual e recuperação por chave pessoal previamente guardada. Consumo, senha, revogação e auditoria transacionais. Não usa e-mail não verificado; recuperação por e-mail e interface permanecem pendentes. Teste PostgreSQL isolado ampliado, exigindo nova execução no PC. Produção e SQLite inalterados.
+
+Entrega 12: docs/architecture/87_CONTRATOS_HTTP_ERROS_E_INVENTARIO.md. Negociação opcional de erros, inventário real, mapa OpenAPI e documentação de paginação existente. Sem migração nem integração da branch de produção. Contratos de payload pendentes estão explicitamente marcados.

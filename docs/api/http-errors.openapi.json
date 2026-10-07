@@ -1,0 +1,50 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan HTTP — negociação de erros",
+    "version": "1.0.0",
+    "description": "Contrato opcional compartilhado. O inventário de rotas está em route-inventory.json; este documento não substitui os schemas de cada operação."
+  },
+  "paths": {},
+  "components": {
+    "parameters": {
+      "ErrorFormat": {
+        "name": "X-Titan-Error-Format",
+        "in": "header",
+        "required": false,
+        "description": "v1 solicita erro JSON genérico; ausente preserva o formato legado. Status HTTP e headers de autenticação/retry permanecem. Não implica que uma operação possa ser repetida.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "v1"
+          ]
+        }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
