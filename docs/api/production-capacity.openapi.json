@@ -1,0 +1,334 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan Local Production Capacity P03",
+    "version": "1.0.0",
+    "description": "Read-only theoretical capacity from one location. Alternatives compete for the same stock; no simultaneous total. Reads require manage_production and approved device. Expired contract does not block historical reads. Movements lack historical unit, so catalog/recipe unit divergence is refused."
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/production/capacity": {
+      "get": {
+        "operationId": "getProductionCapacity",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "location_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "query",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Independent alternatives in a single read transaction; whole reference batches only. No stock reserved or consumed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "404": {
+            "description": "Location or version not found in scope"
+          },
+          "409": {
+            "description": "Invalid balance, ambiguous historic unit or arithmetic overflow"
+          },
+          "500": {
+            "description": "Internal failure"
+          }
+        }
+      }
+    },
+    "/production/capacity/alternatives": {
+      "post": {
+        "operationId": "queryProductionAlternatives",
+        "description": "Read-only query with up to 20 distinct version IDs. All alternatives share one transaction and stock snapshot. Body limit 8192 bytes.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Input"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Independent alternatives in a single read transaction; whole reference batches only. No stock reserved or consumed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "404": {
+            "description": "Location or version not found in scope"
+          },
+          "409": {
+            "description": "Invalid balance, ambiguous historic unit or arithmetic overflow"
+          },
+          "500": {
+            "description": "Internal failure"
+          },
+          "413": {
+            "description": "Body exceeds 8192 bytes"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "location_id",
+          "version_ids"
+        ],
+        "properties": {
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "version_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        }
+      },
+      "Result": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "location_id": {
+            "type": "string"
+          },
+          "measured_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "local_recorded_balance_without_reservations"
+            ]
+          },
+          "alternatives_independent": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "simultaneous_total_available": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "alternatives": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/Capacity"
+            }
+          }
+        },
+        "required": [
+          "location_id",
+          "measured_at",
+          "basis",
+          "alternatives_independent",
+          "simultaneous_total_available",
+          "alternatives"
+        ]
+      },
+      "Capacity": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "recipe_id": {
+            "type": "string"
+          },
+          "version_id": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "output_product_id": {
+            "type": "string"
+          },
+          "output_unit": {
+            "type": "string"
+          },
+          "yield_per_batch_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "possible_batches": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "possible_output_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limiting_product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Material"
+            }
+          }
+        },
+        "required": [
+          "recipe_id",
+          "version_id",
+          "revision",
+          "output_product_id",
+          "output_unit",
+          "yield_per_batch_milli",
+          "possible_batches",
+          "possible_output_milli",
+          "limiting_product_ids",
+          "materials"
+        ]
+      },
+      "Material": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "recipe_unit": {
+            "type": "string"
+          },
+          "stock_unit": {
+            "type": "string"
+          },
+          "required_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "stock_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "conversion_numerator": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "conversion_denominator": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "possible_batches": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limiting": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "product_id",
+          "recipe_unit",
+          "stock_unit",
+          "required_milli",
+          "stock_milli",
+          "conversion_numerator",
+          "conversion_denominator",
+          "possible_batches",
+          "limiting"
+        ]
+      }
+    }
+  }
+}
