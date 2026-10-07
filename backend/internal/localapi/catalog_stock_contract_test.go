@@ -36,6 +36,18 @@ func domainSchemaFile(t *testing.T, file, name string, body []byte) {
 	}
 	var check func(map[string]any, any) error
 	check = func(s map[string]any, v any) error {
+		if choices, ok := s["oneOf"].([]any); ok {
+			matches := 0
+			for _, candidate := range choices {
+				if check(candidate.(map[string]any), v) == nil {
+					matches++
+				}
+			}
+			if matches != 1 {
+				return fmt.Errorf("oneOf matched %d schemas", matches)
+			}
+			return nil
+		}
 		if v == nil && s["nullable"] == true {
 			return nil
 		}

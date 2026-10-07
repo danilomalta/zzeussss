@@ -400,9 +400,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/comparison.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/comparison-sites": {
@@ -423,9 +427,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/comparison.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       },
       "post": {
         "operationId": "local_POST__local_v1_comparison_sites",
@@ -444,9 +452,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/comparison.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/health": {
@@ -678,9 +690,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/purchases.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/purchase-orders": {
@@ -701,9 +717,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/purchases.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       },
       "post": {
         "operationId": "local_POST__local_v1_purchase_orders",
@@ -722,9 +742,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/purchases.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/purchase-orders/{id}": {
@@ -753,9 +777,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/purchases.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/purchase-suppliers": {
@@ -776,9 +804,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/purchases.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       },
       "post": {
         "operationId": "local_POST__local_v1_purchase_suppliers",
@@ -797,9 +829,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/purchases.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/replenishment/operations/{kind}/{id}": {
@@ -836,9 +872,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/replenishment.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/replenishment/policies": {
@@ -859,9 +899,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/replenishment.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/replenishment/products": {
@@ -882,9 +926,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/replenishment.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/replenishment/reviews": {
@@ -905,9 +953,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/replenishment.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/replenishment/suggestions": {
@@ -928,9 +980,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/replenishment.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       },
       "post": {
         "operationId": "local_POST__local_v1_replenishment_suggestions",
@@ -949,9 +1005,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/replenishment.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./orders-replenishment-comparison.openapi.json"
+        }
       }
     },
     "/local/v1/sales": {
