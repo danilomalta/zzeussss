@@ -11,10 +11,11 @@ Base desta revisão: entrega 11 (`fde43f8`). A documentação separa presença d
 | `account-security.openapi.json` | Segurança e administração de conta local. |
 | `access-policy.openapi.json` | Política de acesso e auditoria local. |
 | `online-auth.openapi.json` | Login, refresh, sessões, troca de senha e chave pessoal de recuperação online. |
+| `cash-sales.openapi.json` | Oito operações locais de caixa/venda/histórico/cancelamento, com schemas conferidos no ciclo HTTP. |
 | `catalog-stock.openapi.json` | Sete operações locais de catálogo/busca/locais/saldo/movimentos, com schemas conferidos contra respostas HTTP. |
 | `http-errors.openapi.json` | Negociação opcional de erros, compartilhada pelas duas APIs. |
 
-Os documentos de produção pertencem à branch separada e não são incorporados nesta entrega. Caixa, vendas, compras, comparação e reposição ainda precisam de schemas completos por operação; o catálogo online também requer contrato próprio. O mapa de rotas não finge completar esses contratos.
+Os documentos de produção pertencem à branch separada e não são incorporados nesta entrega. Compras, comparação e reposição ainda precisam de schemas completos por operação; o catálogo online também requer contrato próprio. O mapa de rotas não finge completar esses contratos.
 
 ## Endereços e segurança
 

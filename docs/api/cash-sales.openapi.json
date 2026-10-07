@@ -1,0 +1,1908 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — caixa e vendas locais",
+    "version": "1.0.0",
+    "description": "Contrato do código na base cfee4fe. Operações em dinheiro, sem integração bancária/fiscal, OCR ou app móvel de fechamento."
+  },
+  "paths": {
+    "/local/v1/cash/current": {
+      "get": {
+        "operationId": "localCurrentCash",
+        "summary": "Consulta o turno do operador",
+        "description": "sell. Retorna session=null sem turno aberto. Não expõe opening_cents ou expected_cents. Leitura autorizada não exige contrato atual.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Current"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/open": {
+      "post": {
+        "operationId": "localOpenCash",
+        "summary": "Abre turno",
+        "description": "sell e contrato POS. JSON exato até 4096 bytes. session_id após trim: 1–128 bytes; opening_cents>=0. Novo turno 201/repeated=false; repetição idêntica aberta 200/true; turno encerrado não reabre por retry.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenResult"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/close": {
+      "post": {
+        "operationId": "localCloseCash",
+        "summary": "Fecha turno com declaração cega",
+        "description": "sell e contrato POS; JSON exato até 4096 bytes; IDs após trim até 128 bytes; declared_cents>=0. Resultado expected_cents e difference_cents=declarado-esperado somente após fechamento. Repetição idêntica mantém resultado; divergência 409. Não verifica notas da maquininha nem contagem OCR.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloseResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/movements": {
+      "post": {
+        "operationId": "localCashMovement",
+        "summary": "Registra suprimento ou sangria",
+        "description": "manage_cash e contrato POS; JSON exato até 8192 bytes. IDs até 128 bytes, sem trim implícito/NUL; amount_cents>0. supply adiciona, withdrawal retira; fundos insuficientes/overflow 409. Repetição idêntica funciona após fechamento; operação nova exige turno aberto. Não devolve saldo esperado.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovementResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MovementInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/sales": {
+      "post": {
+        "operationId": "localCompleteSale",
+        "summary": "Registra venda em dinheiro",
+        "description": "sell e contrato POS. JSON exato inclusive objetos aninhados até 128 KiB; IDs até 128 bytes; 1–500 itens e 1–8 pagamentos. Apenas cash; cartão/Pix recusados 409. Total vem do catálogo e pagamento deve ser exatamente igual, sem troco enviado. Produto unit exige quantity_milli múltiplo de 1000; origem shelf. Arredonda cada linha (preço*quantidade+500)/1000 com inteiros exatos. Venda/estoque/caixa/outbox atômicos. Replay idêntico 200; venda já cancelada não pode ser revendida com retry.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResult"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaleInput"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "localSaleHistory",
+        "summary": "Lista vendas do operador",
+        "description": "sell. Empresa/loja/aparelho/operador próprios; ordem committed_at,id descendente. Sem total/snapshot. Leitura permanece após expiração de contrato.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/sales/{id}": {
+      "get": {
+        "operationId": "localReadSale",
+        "summary": "Consulta registro operacional da venda",
+        "description": "sell; contexto original do operador/aparelho/loja. 404 quando registro não encontrado nesse escopo. Preços/quantidades persistidos; não inventa nome/unidade da época. fiscal_authorized=false; não é NFC-e/NF-e autorizada. Cancellation omitido enquanto não cancelada. Pagamento cash passa de confirmed para reversed no cancelamento local; reversed não confirma estorno bancário.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID da venda, até 128 bytes conforme validação; não é seleção de empresa."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/sales/{id}/cancel": {
+      "post": {
+        "operationId": "localCancelSale",
+        "summary": "Cancela integralmente venda local",
+        "description": "cancel_sale e contrato POS. JSON exato até 8192 bytes. Devolve estoque e dinheiro no turno original ainda aberto e aparelho original; não exclui histórico. Repetição idêntica não duplica devolução; conflito ou dinheiro insuficiente 409. Não faz cancelamento fiscal, devolução parcial ou estorno de cartão.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID da venda, até 128 bytes conforme validação; não é seleção de empresa."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelInput"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "Session": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Sessão local opaca; escopo deriva da sessão e estação."
+      }
+    },
+    "schemas": {
+      "OpenInput": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "opening_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "session_id",
+          "opening_cents"
+        ],
+        "additionalProperties": false
+      },
+      "CloseInput": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "declared_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "session_id",
+          "operation_id",
+          "declared_cents"
+        ],
+        "additionalProperties": false
+      },
+      "CloseResult": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "expected_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "difference_cents": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "session_id",
+          "repeated",
+          "expected_cents",
+          "difference_cents"
+        ],
+        "additionalProperties": false
+      },
+      "MovementInput": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "supply",
+              "withdrawal"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string",
+            "description": "Até 500 caracteres, UTF-8 válido, sem NUL e não vazio após trim."
+          }
+        },
+        "required": [
+          "session_id",
+          "operation_id",
+          "kind",
+          "amount_cents",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "MovementResult": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "supply",
+              "withdrawal"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string"
+          },
+          "movement_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "session_id",
+          "operation_id",
+          "kind",
+          "amount_cents",
+          "reason",
+          "movement_id",
+          "created_at",
+          "repeated"
+        ],
+        "additionalProperties": false
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "location_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "product_id",
+          "location_id",
+          "quantity_milli"
+        ],
+        "additionalProperties": false
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "cash"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "method",
+          "amount_cents"
+        ],
+        "additionalProperties": false
+      },
+      "SaleInput": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "sale_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "cash_session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "minItems": 1,
+            "maxItems": 500
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Payment"
+            },
+            "minItems": 1,
+            "maxItems": 8
+          }
+        },
+        "required": [
+          "operation_id",
+          "sale_id",
+          "cash_session_id",
+          "items",
+          "payments"
+        ],
+        "additionalProperties": false
+      },
+      "SaleResult": {
+        "type": "object",
+        "properties": {
+          "sale_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "total_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sale_id",
+          "total_cents",
+          "repeated"
+        ],
+        "additionalProperties": false
+      },
+      "ReceiptItem": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "product_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "location_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "unit_price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "total_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "item_id",
+          "product_id",
+          "location_id",
+          "quantity_milli",
+          "unit_price_cents",
+          "total_cents"
+        ],
+        "additionalProperties": false
+      },
+      "ReceiptPayment": {
+        "type": "object",
+        "properties": {
+          "payment_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "cash"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "reversed"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "payment_id",
+          "method",
+          "status",
+          "amount_cents"
+        ],
+        "additionalProperties": false
+      },
+      "Receipt": {
+        "type": "object",
+        "properties": {
+          "sale_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "cash_session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "committed",
+              "cancelled"
+            ]
+          },
+          "committed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "total_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "fiscal_authorized": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReceiptItem"
+            }
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReceiptPayment"
+            }
+          },
+          "cancellation": {
+            "$ref": "#/components/schemas/Cancellation"
+          }
+        },
+        "required": [
+          "sale_id",
+          "operation_id",
+          "cash_session_id",
+          "status",
+          "committed_at",
+          "total_cents",
+          "fiscal_authorized",
+          "items",
+          "payments"
+        ],
+        "additionalProperties": false
+      },
+      "Cancellation": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "actor_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "reason": {
+            "type": "string"
+          },
+          "refunded_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "operation_id",
+          "actor_id",
+          "reason",
+          "refunded_cents",
+          "cancelled_at"
+        ],
+        "additionalProperties": false
+      },
+      "CancelResult": {
+        "type": "object",
+        "properties": {
+          "sale_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "refunded_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sale_id",
+          "operation_id",
+          "refunded_cents",
+          "cancelled_at",
+          "repeated"
+        ],
+        "additionalProperties": false
+      },
+      "Summary": {
+        "type": "object",
+        "properties": {
+          "sale_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "cash_session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "committed",
+              "cancelled"
+            ]
+          },
+          "committed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "total_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "sale_id",
+          "cash_session_id",
+          "status",
+          "committed_at",
+          "total_cents"
+        ],
+        "additionalProperties": false
+      },
+      "OpenResult": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "session_id",
+          "repeated"
+        ],
+        "additionalProperties": false
+      },
+      "Current": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "object",
+            "properties": {
+              "session_id": {
+                "type": "string"
+              },
+              "opened_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "session_id",
+              "opened_at"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "session"
+        ],
+        "additionalProperties": false
+      },
+      "History": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Summary"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "CancelInput": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "reason": {
+            "type": "string",
+            "description": "UTF-8 válido, até 500 caracteres e 2000 bytes; sem NUL; não vazio após trim."
+          }
+        },
+        "required": [
+          "operation_id",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

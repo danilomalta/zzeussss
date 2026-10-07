@@ -14,8 +14,12 @@ import (
 // responses. This is not a general OpenAPI validator: unused features must not
 // silently be introduced without extending this checker.
 func domainSchema(t *testing.T, name string, body []byte) {
+	domainSchemaFile(t, "catalog-stock.openapi.json", name, body)
+}
+
+func domainSchemaFile(t *testing.T, file, name string, body []byte) {
 	t.Helper()
-	raw, e := os.ReadFile("../../../docs/api/catalog-stock.openapi.json")
+	raw, e := os.ReadFile("../../../docs/api/" + file)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -32,6 +36,9 @@ func domainSchema(t *testing.T, name string, body []byte) {
 	}
 	var check func(map[string]any, any) error
 	check = func(s map[string]any, v any) error {
+		if v == nil && s["nullable"] == true {
+			return nil
+		}
 		if ref, ok := s["$ref"].(string); ok {
 			return check(schemas[strings.TrimPrefix(ref, "#/components/schemas/")].(map[string]any), v)
 		}
@@ -65,6 +72,12 @@ func domainSchema(t *testing.T, name string, body []byte) {
 			a, ok := v.([]any)
 			if !ok {
 				return fmt.Errorf("expected array")
+			}
+			if min, ok := s["minItems"].(float64); ok && len(a) < int(min) {
+				return fmt.Errorf("too few items")
+			}
+			if max, ok := s["maxItems"].(float64); ok && len(a) > int(max) {
+				return fmt.Errorf("too many items")
 			}
 			for _, item := range a {
 				if e := check(s["items"].(map[string]any), item); e != nil {

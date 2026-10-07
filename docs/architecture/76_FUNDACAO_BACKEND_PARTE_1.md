@@ -141,3 +141,5 @@ Entrega 11: docs/architecture/86_RECUPERACAO_ONLINE_COM_CHAVE_PESSOAL.md. Migra�
 Entrega 12: docs/architecture/87_CONTRATOS_HTTP_ERROS_E_INVENTARIO.md. Negociação opcional de erros, inventário real, mapa OpenAPI e documentação de paginação existente. Sem migração nem integração da branch de produção. Contratos de payload pendentes estão explicitamente marcados.
 
 Entrega 13: docs/architecture/88_CONTRATOS_CATALOGO_ESTOQUE_LOCAL.md. Sete operações locais com schemas detalhados e testes de payload HTTP/idempotência; nenhum handler ou schema de banco alterado.
+
+Entrega 14: docs/architecture/89_CONTRATOS_CAIXA_VENDAS_LOCAL.md. Oito operações locais com contrato detalhado e teste do ciclo cego, venda, cancelamento e repetição. Nenhuma funcionalidade de pagamento/fiscal ou migração acrescentada.
