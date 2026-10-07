@@ -21,7 +21,7 @@ func productionError(c *fiber.Ctx, err error) error {
 	switch {
 	case errors.Is(err, production.ErrInvalid):
 		return c.SendStatus(400)
-	case errors.Is(err, production.ErrConflict), errors.Is(err, production.ErrMaterials):
+	case errors.Is(err, production.ErrConflict), errors.Is(err, production.ErrMaterials), errors.Is(err, production.ErrResult):
 		return c.SendStatus(409)
 	case errors.Is(err, production.ErrNotFound):
 		return c.SendStatus(404)

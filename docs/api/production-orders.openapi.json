@@ -3,7 +3,7 @@
   "info": {
     "title": "Titan Local Production Orders P04",
     "version": "1.0.0",
-    "description": "Whole reference batches planned against immutable recipe version. planned -> approved/cancelled; approved -> cancelled. Approval does not reserve or consume stock. Writes require manage_production and Production/Core/Inventory contract within transaction. Exact duplicate-free objects and stable operation IDs."
+    "description": "Whole reference batches planned against immutable recipe version. planned -> approved/cancelled; approved -> cancelled. Approval does not reserve or consume stock. Writes require manage_production and Production/Core/Inventory contract within transaction. Exact duplicate-free objects and stable operation IDs. P06: order reads project completed and completion_id from an immutable production result; history also includes kind=completed. State mutation still accepts only approved/cancelled."
   },
   "servers": [
     {

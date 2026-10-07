@@ -51,6 +51,7 @@ type Order struct {
 	CreatedBy          string  `json:"created_by"`
 	CreatedAt          string  `json:"created_at"`
 	UpdatedAt          string  `json:"updated_at"`
+	CompletionID       string  `json:"completion_id,omitempty"`
 }
 
 type OrderEvent struct {
@@ -254,12 +255,15 @@ func ChangeOrderState(ctx context.Context, db *sql.DB, license *entitlementstore
 	return result, tx.Commit()
 }
 
-const orderColumns = `id,version_id,location_id,responsible_id,planned_batches,planned_output_milli,recipe_json,status,revision,created_by,created_at,updated_at`
+const orderColumns = `id,version_id,location_id,responsible_id,planned_batches,planned_output_milli,recipe_json,
+CASE WHEN EXISTS(SELECT 1 FROM production_results r WHERE r.tenant_id=production_orders.tenant_id AND r.store_id=production_orders.store_id AND r.order_id=production_orders.id) THEN 'completed' ELSE status END,
+revision,created_by,created_at,updated_at,
+COALESCE((SELECT r.id FROM production_results r WHERE r.tenant_id=production_orders.tenant_id AND r.store_id=production_orders.store_id AND r.order_id=production_orders.id),'')`
 
 func scanOrder(row interface{ Scan(...any) error }) (Order, error) {
 	var out Order
 	var recipe string
-	err := row.Scan(&out.ID, &out.VersionID, &out.LocationID, &out.ResponsibleID, &out.PlannedBatches, &out.PlannedOutputMilli, &recipe, &out.Status, &out.Revision, &out.CreatedBy, &out.CreatedAt, &out.UpdatedAt)
+	err := row.Scan(&out.ID, &out.VersionID, &out.LocationID, &out.ResponsibleID, &out.PlannedBatches, &out.PlannedOutputMilli, &recipe, &out.Status, &out.Revision, &out.CreatedBy, &out.CreatedAt, &out.UpdatedAt, &out.CompletionID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Order{}, ErrNotFound
 	}
@@ -336,7 +340,8 @@ func OrderHistory(ctx context.Context, db *sql.DB, a identity.Scope, d identity.
 	if err != nil {
 		return nil, err
 	}
-	rows, err := tx.QueryContext(ctx, `SELECT operation_id,actor_id,kind,before_status,after_status,revision,reason,created_at FROM production_order_events WHERE tenant_id=? AND store_id=? AND order_id=? ORDER BY revision LIMIT 50 OFFSET ?`, a.TenantID, a.StoreID, id, offset)
+	rows, err := tx.QueryContext(ctx, `SELECT operation_id,actor_id,kind,before_status,after_status,revision,reason,created_at FROM production_order_events WHERE tenant_id=? AND store_id=? AND order_id=?
+UNION ALL SELECT operation_id,actor_id,'completed','approved','completed',order_revision,reason,created_at FROM production_results WHERE tenant_id=? AND store_id=? AND order_id=? ORDER BY revision LIMIT 50 OFFSET ?`, a.TenantID, a.StoreID, id, a.TenantID, a.StoreID, id, offset)
 	if err != nil {
 		return nil, err
 	}

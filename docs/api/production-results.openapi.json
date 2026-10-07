@@ -1,0 +1,394 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P06 measured production result",
+    "version": "P06",
+    "description": "One immutable completion per order after P05 consumption. Quantities are integer thousandths of the snapshot output unit. Product, location and plan are obtained from the immutable order. Does not consume ingredients again. Tenant/store come only from the verified session. Query parameters are refused."
+  },
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/local/v1/production/results": {
+      "post": {
+        "operationId": "completeProduction",
+        "description": "Approved -> completed with revision CAS, verified consumed movements, positive output movement if measured output >0, immutable audit and outbox in one transaction. Exact authorized replays return the original result. Shortfall is yield difference, not an extra stock withdrawal.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Input"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid/duplicate/missing/extra/null input or invalid measured quantity"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission, responsible identity or Production contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "Revision/state/replay conflict, consumed proof mismatch, changed historic unit or overflow"
+          },
+          "500": {
+            "description": "Internal failure; whole write transaction rolled back"
+          },
+          "200": {
+            "description": "Historical replay; repeated=true",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Completion recorded; repeated=false",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 8192 bytes"
+          },
+          "503": {
+            "description": "Contracts unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/production/results/{id}": {
+      "get": {
+        "operationId": "getProductionResult",
+        "description": "Scoped historical result plus author/reason/movement. Missing movement_id is valid only for zero output. Current human/device permission required; expired contract does not block this read.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid/duplicate/missing/extra/null input or invalid measured quantity"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission, responsible identity or Production contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "Revision/state/replay conflict, consumed proof mismatch, changed historic unit or overflow"
+          },
+          "500": {
+            "description": "Internal failure; whole write transaction rolled back"
+          },
+          "200": {
+            "description": "Measured result and immutable audit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Input": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "produced_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Measured good output, not above the order plan; unit products require multiples of 1000. Zero completes with no positive stock movement."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "operation_id",
+          "result_id",
+          "order_id",
+          "expected_revision",
+          "produced_milli",
+          "reason"
+        ]
+      },
+      "Result": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reservation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "planned_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "produced_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "shortfall_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed"
+            ]
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "result_id",
+          "order_id",
+          "reservation_id",
+          "product_id",
+          "location_id",
+          "unit",
+          "planned_milli",
+          "produced_milli",
+          "shortfall_milli",
+          "revision",
+          "status",
+          "repeated"
+        ]
+      },
+      "Record": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reservation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "planned_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "produced_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "shortfall_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed"
+            ]
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "movement_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "result_id",
+          "order_id",
+          "reservation_id",
+          "product_id",
+          "location_id",
+          "unit",
+          "planned_milli",
+          "produced_milli",
+          "shortfall_milli",
+          "revision",
+          "status",
+          "repeated",
+          "operation_id",
+          "device_id",
+          "actor_id",
+          "reason",
+          "created_at"
+        ]
+      }
+    }
+  }
+}
