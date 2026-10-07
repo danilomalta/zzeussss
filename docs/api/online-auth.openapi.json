@@ -286,6 +286,70 @@
           }
         }
       }
+    },
+    "/api/v1/auth/password": {
+      "post": {
+        "summary": "Troca a própria senha online e revoga todas as sessões da conta",
+        "description": "Exige Bearer e sessão ativa, senha atual e nova senha diferente com 12–72 bytes UTF-8, sem espaços nas extremidades. Não aceita IDs de outra conta, campos extras, duplicatas, null ou JSON adicional. Hash, revogações e auditoria confirmam juntos. Sucesso expira cookie e exige novo login; perda de resposta não autoriza repetição automática. Limite: cinco tentativas/minuto por IP nesta rota.",
+        "security": [
+          {
+            "accessBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "current_password",
+                  "new_password"
+                ],
+                "properties": {
+                  "current_password": {
+                    "type": "string",
+                    "writeOnly": true,
+                    "description": "Senha atual; 1–72 bytes UTF-8"
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "writeOnly": true,
+                    "description": "12–72 bytes UTF-8; limite em bytes, não caracteres"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Troca e revogação confirmadas; sem token novo; realizar novo login"
+          },
+          "400": {
+            "description": "JSON ambíguo/inválido ou política de nova senha recusada"
+          },
+          "401": {
+            "description": "Sessão/vínculo inválido ou senha atual incorreta"
+          },
+          "413": {
+            "description": "Corpo maior que 2048 bytes"
+          },
+          "415": {
+            "description": "Content-Type diferente de application/json"
+          },
+          "429": {
+            "description": "Limite de solicitações"
+          },
+          "500": {
+            "description": "Chave de sessão ausente no servidor"
+          },
+          "503": {
+            "description": "Serviço ou confirmação da transação indisponível; resultado pode ser incerto"
+          }
+        }
+      }
     }
   },
   "components": {

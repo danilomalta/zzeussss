@@ -141,6 +141,9 @@ func (s *Store) Create(ctx context.Context, p Scope, expectedHash string) (Token
 		return Tokens{}, err
 	}
 	defer tx.Rollback()
+	if err = lockAccount(ctx, tx, p); err != nil {
+		return Tokens{}, err
+	}
 	name, hash, err := lockIdentity(ctx, tx, p)
 	if err != nil {
 		return Tokens{}, err
@@ -191,6 +194,17 @@ func (s *Store) Rotate(ctx context.Context, raw string) (Tokens, error) {
 	}
 	defer tx.Rollback()
 	p := Scope{Session: id}
+	err = tx.QueryRowContext(ctx, `SELECT tenant_id, user_id FROM online_sessions WHERE id=$1`, id).Scan(&p.Tenant, &p.User)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Tokens{}, ErrDenied
+	}
+	if err != nil {
+		return Tokens{}, ErrUnavailable
+	}
+	if err = lockAccount(ctx, tx, p); err != nil {
+		return Tokens{}, err
+	}
+	lockedTenant, lockedUser := p.Tenant, p.User
 	var expires, now time.Time
 	var revoked sql.NullTime
 	err = tx.QueryRowContext(ctx, `SELECT tenant_id, user_id, role, expires_at, revoked_at, clock_timestamp() FROM online_sessions WHERE id=$1 FOR UPDATE`, id).Scan(&p.Tenant, &p.User, &p.Role, &expires, &revoked, &now)
@@ -199,6 +213,9 @@ func (s *Store) Rotate(ctx context.Context, raw string) (Tokens, error) {
 	}
 	if err != nil {
 		return Tokens{}, ErrUnavailable
+	}
+	if p.Tenant != lockedTenant || p.User != lockedUser {
+		return Tokens{}, ErrDenied
 	}
 	if revoked.Valid {
 		return Tokens{}, ErrDenied
@@ -310,6 +327,9 @@ func (s *Store) Revoke(ctx context.Context, p Scope, target string, others bool)
 		return err
 	}
 	defer tx.Rollback()
+	if err = lockAccount(ctx, tx, p); err != nil {
+		return err
+	}
 	// Lock actor and targets in one ordered query, avoiding two-admin deadlocks.
 	rows, err := tx.QueryContext(ctx, `SELECT id, expires_at, revoked_at FROM online_sessions WHERE tenant_id=$1 AND user_id=$2 AND (id=$3 OR ($4 AND revoked_at IS NULL) OR id=$5) ORDER BY id FOR UPDATE`, p.Tenant, p.User, p.Session, others, target)
 	if err != nil {

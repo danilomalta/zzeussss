@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Opt-in only: a loopback PostgreSQL database named *_test. No .env is loaded.
@@ -57,7 +58,11 @@ func TestPostgresDurableRotationConcurrencyAndRollback(t *testing.T) {
 	if _, err = db.ExecContext(ctx, `INSERT INTO tenants VALUES ($1,'active')`, testTenant); err != nil {
 		t.Fatal("tenant fixture inválido")
 	}
-	if _, err = db.ExecContext(ctx, `INSERT INTO users VALUES ($1,$2,'Owner','hash','owner')`, testUser, testTenant); err != nil {
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(currentPassword), bcrypt.MinCost)
+	if err != nil {
+		t.Fatal("hash de teste indisponível")
+	}
+	if _, err = db.ExecContext(ctx, `INSERT INTO users VALUES ($1,$2,'Owner',$3,'owner')`, testUser, testTenant, string(passwordHash)); err != nil {
 		t.Fatal("user fixture inválido")
 	}
 	if err = Migrate(ctx, db); err != nil {
@@ -71,7 +76,7 @@ func TestPostgresDurableRotationConcurrencyAndRollback(t *testing.T) {
 	}
 	s := New(db, "test-only-key")
 	scope := Scope{User: testUser, Tenant: testTenant, Role: "owner"}
-	first, err := s.Create(ctx, scope, "hash")
+	first, err := s.Create(ctx, scope, string(passwordHash))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +107,7 @@ func TestPostgresDurableRotationConcurrencyAndRollback(t *testing.T) {
 	if db.QueryRowContext(ctx, `SELECT revoked_at IS NOT NULL FROM online_sessions WHERE id=$1`, id).Scan(&revoked) != nil || !revoked {
 		t.Fatal("replay não revogou família")
 	}
-	second, err := s.Create(ctx, Scope{User: testUser, Tenant: testTenant, Role: "owner"}, "hash")
+	second, err := s.Create(ctx, Scope{User: testUser, Tenant: testTenant, Role: "owner"}, string(passwordHash))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,5 +139,83 @@ func TestPostgresDurableRotationConcurrencyAndRollback(t *testing.T) {
 	items, err := s.List(ctx, scope)
 	if err != nil || len(items) != 2 {
 		t.Fatal("histórico de sessões não persistiu")
+	}
+	third, err := s.Create(ctx, Scope{User: testUser, Tenant: testTenant, Role: "owner"}, string(passwordHash))
+	if err != nil {
+		t.Fatal(err)
+	}
+	thirdID, _ := ParseRefresh(third.Refresh)
+	scope.Session = thirdID
+	if _, err = db.ExecContext(ctx, `CREATE TRIGGER reject_password BEFORE INSERT ON online_password_changes FOR EACH ROW EXECUTE FUNCTION reject_rotation()`); err != nil {
+		t.Fatal("trigger de senha inválido")
+	}
+	if err = s.ChangePassword(ctx, scope, currentPassword, nextPassword); err != ErrUnavailable {
+		t.Fatal("falha não reverteu troca")
+	}
+	var storedHash string
+	if db.QueryRowContext(ctx, `SELECT password_hash FROM users WHERE id=$1`, testUser).Scan(&storedHash) != nil || storedHash != string(passwordHash) {
+		t.Fatal("hash não sofreu rollback")
+	}
+	if db.QueryRowContext(ctx, `SELECT revoked_at IS NOT NULL FROM online_sessions WHERE id=$1`, thirdID).Scan(&revoked) != nil || revoked {
+		t.Fatal("revogação não sofreu rollback")
+	}
+	if _, err = db.ExecContext(ctx, `ALTER TABLE online_password_changes DISABLE TRIGGER reject_password`); err != nil {
+		t.Fatal("trigger não desativado")
+	}
+	// All three race for the same account lock. A login/refresh that commits
+	// before the password change must be revoked; one after it must be denied.
+	errorsByOperation := make(chan struct {
+		kind string
+		err  error
+	}, 3)
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		errorsByOperation <- struct {
+			kind string
+			err  error
+		}{"password", s.ChangePassword(ctx, scope, currentPassword, nextPassword)}
+	}()
+	go func() {
+		defer wg.Done()
+		_, e := s.Create(ctx, Scope{User: testUser, Tenant: testTenant, Role: "owner"}, string(passwordHash))
+		errorsByOperation <- struct {
+			kind string
+			err  error
+		}{"login", e}
+	}()
+	go func() {
+		defer wg.Done()
+		_, e := s.Rotate(ctx, third.Refresh)
+		errorsByOperation <- struct {
+			kind string
+			err  error
+		}{"refresh", e}
+	}()
+	wg.Wait()
+	close(errorsByOperation)
+	for result := range errorsByOperation {
+		if result.kind == "password" && result.err != nil {
+			t.Fatal("troca concorrente falhou", result.err)
+		}
+		if result.kind != "password" && result.err != nil && result.err != ErrDenied {
+			t.Fatal("concorrência falhou", result.err)
+		}
+	}
+	var live, audits int
+	if db.QueryRowContext(ctx, `SELECT count(*) FROM online_sessions WHERE tenant_id=$1 AND user_id=$2 AND revoked_at IS NULL`, testTenant, testUser).Scan(&live) != nil || live != 0 {
+		t.Fatal("sessão antiga escapou da revogação")
+	}
+	if db.QueryRowContext(ctx, `SELECT count(*) FROM online_password_changes WHERE tenant_id=$1 AND user_id=$2`, testTenant, testUser).Scan(&audits) != nil || audits != 1 {
+		t.Fatal("auditoria de senha incorreta")
+	}
+	if _, err = s.Create(ctx, Scope{User: testUser, Tenant: testTenant, Role: "owner"}, string(passwordHash)); err != ErrDenied {
+		t.Fatal("hash antigo criou sessão")
+	}
+	if db.QueryRowContext(ctx, `SELECT password_hash FROM users WHERE id=$1`, testUser).Scan(&storedHash) != nil || bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(nextPassword)) != nil {
+		t.Fatal("nova senha não persistiu")
+	}
+	if _, err = s.Create(ctx, Scope{User: testUser, Tenant: testTenant, Role: "owner"}, storedHash); err != nil {
+		t.Fatal("novo login falhou", err)
 	}
 }

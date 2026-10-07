@@ -12,13 +12,50 @@ import (
 
 var ErrSchema = errors.New("esquema de sessões online ausente ou incompatível; execute titan-online migrate-sessions")
 
-func schemaDigest() string {
-	h := sha256.Sum256([]byte(migrations.OnlineSessionsSQL))
-	return hex.EncodeToString(h[:])
+type securityMigration struct {
+	version int
+	sql     string
 }
 
-// Migrate installs just the new session schema, atomically and with a checksum.
-// It never applies the destructive historical initialization file.
+var securityMigrations = []securityMigration{{5, migrations.OnlineSessionsSQL}, {6, migrations.OnlinePasswordChangesSQL}}
+
+func migrationDigest(script string) string {
+	h := sha256.Sum256([]byte(script))
+	return hex.EncodeToString(h[:])
+}
+func schemaDigest() string { return migrationDigest(migrations.OnlinePasswordChangesSQL) }
+
+// readHistory requires an exact prefix of the embedded incremental migrations.
+// A missing earlier marker, changed checksum, or unknown future version fails.
+func readHistory(ctx context.Context, q interface {
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+}) (int, error) {
+	rows, err := q.QueryContext(ctx, `SELECT version, checksum FROM online_security_migrations ORDER BY version`)
+	if err != nil {
+		return 0, ErrSchema
+	}
+	defer rows.Close()
+	count := 0
+	for rows.Next() {
+		var v int
+		var hash string
+		if rows.Scan(&v, &hash) != nil || count >= len(securityMigrations) {
+			return 0, ErrSchema
+		}
+		expected := securityMigrations[count]
+		if v != expected.version || hash != migrationDigest(expected.sql) {
+			return 0, ErrSchema
+		}
+		count++
+	}
+	if rows.Err() != nil {
+		return 0, ErrSchema
+	}
+	return count, nil
+}
+
+// Migrate applies only the explicitly embedded additive security migrations.
+// All missing steps and their markers commit together; old checksums are fixed.
 func Migrate(ctx context.Context, db *sql.DB) error {
 	if db == nil {
 		return ErrUnavailable
@@ -34,27 +71,21 @@ func Migrate(ctx context.Context, db *sql.DB) error {
 	if _, err = tx.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS online_security_migrations (version INTEGER PRIMARY KEY, checksum CHAR(64) NOT NULL, installed_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)`); err != nil {
 		return ErrSchema
 	}
-	var version int
-	var digest string
-	err = tx.QueryRowContext(ctx, `SELECT version, checksum FROM online_security_migrations ORDER BY version DESC LIMIT 1`).Scan(&version, &digest)
-	if err == nil {
-		if version != 5 || digest != schemaDigest() {
+	count, err := readHistory(ctx, tx)
+	if err != nil {
+		return err
+	}
+	for _, step := range securityMigrations[count:] {
+		if _, err = tx.ExecContext(ctx, step.sql); err != nil {
 			return ErrSchema
 		}
-		return safeCommit(tx)
-	}
-	if !errors.Is(err, sql.ErrNoRows) {
-		return ErrSchema
-	}
-	if _, err = tx.ExecContext(ctx, migrations.OnlineSessionsSQL); err != nil {
-		return ErrSchema
-	}
-	result, err := tx.ExecContext(ctx, `INSERT INTO online_security_migrations(version, checksum) VALUES (5, $1)`, schemaDigest())
-	if err != nil {
-		return ErrSchema
-	}
-	if n, err := result.RowsAffected(); err != nil || n != 1 {
-		return ErrSchema
+		result, err := tx.ExecContext(ctx, `INSERT INTO online_security_migrations(version, checksum) VALUES ($1, $2)`, step.version, migrationDigest(step.sql))
+		if err != nil {
+			return ErrSchema
+		}
+		if n, e := result.RowsAffected(); e != nil || n != 1 {
+			return ErrSchema
+		}
 	}
 	return safeCommit(tx)
 }
@@ -63,13 +94,12 @@ func CheckSchema(ctx context.Context, db *sql.DB) error {
 	if db == nil {
 		return ErrSchema
 	}
-	var version int
-	var digest string
-	if err := db.QueryRowContext(ctx, `SELECT version, checksum FROM online_security_migrations ORDER BY version DESC LIMIT 1`).Scan(&version, &digest); err != nil || version != 5 || digest != schemaDigest() {
+	count, err := readHistory(ctx, db)
+	if err != nil || count != len(securityMigrations) {
 		return ErrSchema
 	}
 	// Prepare a zero-row query so missing columns/tables fail before serving.
-	rows, err := db.QueryContext(ctx, `SELECT s.id, s.tenant_id, s.user_id, s.role, s.expires_at, s.revoked_at, r.digest, r.consumed_at, a.event FROM online_sessions s LEFT JOIN online_refresh_tokens r ON r.session_id = s.id LEFT JOIN online_session_audit a ON a.session_id = s.id WHERE FALSE`)
+	rows, err := db.QueryContext(ctx, `SELECT s.id, s.tenant_id, s.user_id, s.role, s.expires_at, s.revoked_at, r.digest, r.consumed_at, a.event, p.revoked_count FROM online_sessions s LEFT JOIN online_refresh_tokens r ON r.session_id = s.id LEFT JOIN online_session_audit a ON a.session_id = s.id LEFT JOIN online_password_changes p ON p.actor_session_id = s.id WHERE FALSE`)
 	if err != nil {
 		return ErrSchema
 	}

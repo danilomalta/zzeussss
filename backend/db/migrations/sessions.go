@@ -6,3 +6,6 @@ import _ "embed"
 //
 //go:embed 000005_online_sessions.sql
 var OnlineSessionsSQL string
+
+//go:embed 000006_online_password_changes.sql
+var OnlinePasswordChangesSQL string

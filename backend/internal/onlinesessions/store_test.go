@@ -43,6 +43,7 @@ func TestCreateRequiresDurableSessionHashAndAudit(t *testing.T) {
 			s, m := testStore(t)
 			now := time.Now()
 			m.ExpectBegin()
+			accountLock(m)
 			identity(m)
 			m.ExpectQuery(`SELECT clock_timestamp`).WillReturnRows(sqlmock.NewRows([]string{"now"}).AddRow(now))
 			e := m.ExpectExec(`INSERT INTO online_sessions`).WithArgs(sqlmock.AnyArg(), testTenant, testUser, "owner", now, now.Add(7*24*time.Hour))
@@ -96,6 +97,8 @@ func TestRotateConsumesExactlyOnceAndCommitsReplayRevocation(t *testing.T) {
 			raw := "v1." + testID + "." + strings.Repeat("A", 43)
 			now := time.Now()
 			m.ExpectBegin()
+			m.ExpectQuery(`SELECT tenant_id, user_id FROM online_sessions WHERE id=\$1`).WithArgs(testID).WillReturnRows(sqlmock.NewRows([]string{"tenant", "user"}).AddRow(testTenant, testUser))
+			accountLock(m)
 			var revoked interface{}
 			if state == "revoked" {
 				revoked = now
@@ -167,6 +170,8 @@ func TestExpiryIsCheckedAfterLocksRatherThanBeforeWaiting(t *testing.T) {
 	s, m := testStore(t)
 	before := time.Now()
 	m.ExpectBegin()
+	m.ExpectQuery(`SELECT tenant_id, user_id FROM online_sessions WHERE id=\$1`).WithArgs(testID).WillReturnRows(sqlmock.NewRows([]string{"tenant", "user"}).AddRow(testTenant, testUser))
+	accountLock(m)
 	rotationLock(m, before, nil)
 	identity(m)
 	m.ExpectQuery(`SELECT clock_timestamp`).WillReturnRows(sqlmock.NewRows([]string{"now"}).AddRow(before.Add(2 * time.Hour)))
@@ -194,6 +199,7 @@ func TestRevocationIsScopedAndRollsBackWithAudit(t *testing.T) {
 				target = "00000000-0000-0000-0000-000000000000"
 			}
 			m.ExpectBegin()
+			accountLock(m)
 			rows := sqlmock.NewRows([]string{"id", "expires", "revoked"})
 			expires := now.Add(time.Hour)
 			if state == "expired-actor" {

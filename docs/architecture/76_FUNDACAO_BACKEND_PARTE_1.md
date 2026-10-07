@@ -1,7 +1,7 @@
 # Parte 1 — Fundação operacional do backend
 
 Base da entrega 01: commit do usuário `294a544`. A matriz abaixo foi atualizada
-pela entrega 08 de sessões online persistidas; NÃO encerra os onze
+pela entrega 09 de troca de senha online; NÃO encerra os onze
 requisitos. Frontend inalterado.
 
 ## Matriz de conclusão
@@ -13,7 +13,7 @@ requisitos. Frontend inalterado.
 | F03 | Isolamento | Contextos tenant/loja/aparelho/ator; novas APIs revalidam sessão na transação; teste da barreira nas 45 rotas locais e quatro operações comerciais online; consultas online por empresa | Inventário e testes de isolamento de todas as APIs, workers, exportações e integrações |
 | F04 | Instalação | Gerenciador Linux por usuário, pacote local verificado, raiz separada de dados, init/check, bloqueios herdados, atualização/recuperação e desativação preservando dados | Distribuição assinada, recuperação do init incompleto, serviço automático, desinstalação formal, desktop/mobile e Windows/macOS |
 | F05 | Modos | Perfis estritos, responsabilidades descritas; local loopback e servidor de loja SQLite via HTTPS com restrição de rede | Cliente LAN/piloto, identificação de cada terminal, nuvem comercial e reconciliação híbrida; cloud/hybrid recusados neste núcleo |
-| F06 | Autenticação | Login/logout/revogação; troca da própria senha; consulta de sessões; reset/revogação administrativos restritos; recuperação local do dono com chave preparada de uso único; sessões online próprias com rotação, logout e revogação | Recuperação/troca online; administração de outras contas; sincronização de credenciais e revogações; sessões individuais e entrada secreta interativa |
+| F06 | Autenticação | Login/logout/revogação; troca da própria senha; consulta de sessões; reset/revogação administrativos restritos; recuperação local do dono com chave preparada de uso único; sessões online próprias com rotação, logout e revogação; troca da própria senha online com revogação transacional | Recuperação online; administração de outras contas; sincronização de credenciais e revogações; sessões individuais e entrada secreta interativa |
 | F07 | Autorizações | Papéis, contratos, regras allow/deny/inherit por ação/loja/pessoa/grupo; departamentos e delegação limitada auditada | Interfaces de administração; propagação e reconciliação entre aparelhos; granularidade de registros dos futuros módulos de RH/produção; políticas online |
 | F08 | Auditoria | Eventos críticos; políticas e acesso atômicos; consulta autorizada por loja/departamento com paginação para políticas, contas, funcionários, convites, pareamento, permissões de sincronização e aprovação de chaves públicas | Cobertura/consulta das demais fontes administrativas e comerciais; retenção e exportação |
 | F09 | Proteção de dados | Transporte cifrado; backup AES-256-GCM, chave separada 0600 e autenticação do arquivo | Backups remotos, proteção dos demais arquivos/certificados, rotação e recuperação de todas as chaves |
@@ -51,7 +51,7 @@ requisitos. Frontend inalterado.
 | Local `/local/v1` | replenishment, purchase-suppliers, purchase-approvals, purchase-orders | Pedido somente local, sem envio/confirmação do fornecedor |
 | Local `/local/v1` | comparison-sites, comparison-site-operations | Configuração e links externos; preços automáticos não implementados |
 | Local `/local/v1` | account/sessions, account/password, account/sessions/revoke-others | Novas rotas nesta entrega; descritas em OpenAPI |
-| Online `/api/v1` | auth/login, auth/refresh, auth/logout, auth/sessions e revogações, saude, produtos, discounts/suggest, discounts/suggestions | Não equivale aos serviços locais completos |
+| Online `/api/v1` | auth/login, auth/refresh, auth/logout, auth/password, auth/sessions e revogações, saude, produtos, discounts/suggest, discounts/suggestions | Não equivale aos serviços locais completos |
 | Online `/api/v1` | analises/produtos-parados, recompensas, accounting/sped, discounts/suggestions/:id/review | Rotas explicitamente indisponíveis; não contar como recurso pronto |
 
 Contrato OpenAPI incremental: `docs/api/account-security.openapi.json`.
@@ -131,3 +131,5 @@ Entrega 06: docs/architecture/81_MODOS_LOCAL_E_SERVIDOR_TLS.md. Servidor de loja
 Entrega 07: docs/architecture/82_CONEXAO_E_AUTENTICACAO_ONLINE.md. Sem migração/interface. PostgreSQL sem senha padrão, TLS remoto verificado e validação compartilhada de JWT. Testes SQL mock das rotas online; PostgreSQL real e rotação persistida de refresh ainda pendentes.
 
 Entrega 08: docs/architecture/83_SESSOES_ONLINE_PERSISTIDAS.md. Migração incremental PostgreSQL 5, sessões online próprias, refresh de uso único, auditoria e ferramenta de manutenção explícita. Teste PostgreSQL real opt-in não executado; frontend/SQLite inalterados.
+
+Entrega 09: docs/architecture/84_TROCA_SENHA_ONLINE_E_COORDENACAO.md. Migração PostgreSQL 6 aditiva; nenhuma migração SQLite ou interface. Bloqueio por conta coordena login/refresh/revogação/senha. Teste PostgreSQL real permanece opt-in; produção em branch separada reserva SQLite 0028 após conferência.

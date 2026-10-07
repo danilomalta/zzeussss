@@ -105,6 +105,7 @@ func TestLoginRealScenarios(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 		now := time.Now()
 		mock.ExpectBegin()
+		mock.ExpectExec(`SELECT pg_advisory_xact_lock`).WithArgs("client-uuid-1:user-uuid-1").WillReturnResult(sqlmock.NewResult(0, 1))
 		mock.ExpectQuery(`SELECT u.name, u.password_hash`).WithArgs("user-uuid-1", "client-uuid-1", "admin").WillReturnRows(sqlmock.NewRows([]string{"name", "password_hash"}).AddRow("John Doe", string(hashedPassword)))
 		mock.ExpectQuery(`SELECT clock_timestamp`).WillReturnRows(sqlmock.NewRows([]string{"now"}).AddRow(now))
 		mock.ExpectExec(`INSERT INTO online_sessions`).WillReturnResult(sqlmock.NewResult(0, 1))

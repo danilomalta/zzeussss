@@ -32,6 +32,8 @@ func TestRefreshRejectsRevokedMembership(t *testing.T) {
 	id := "11111111-1111-4111-8111-111111111112"
 	token := "v1." + id + "." + strings.Repeat("A", 43)
 	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT tenant_id, user_id FROM online_sessions`).WithArgs(id).WillReturnRows(sqlmock.NewRows([]string{"tenant", "user"}).AddRow("empresa-a", "operador"))
+	mock.ExpectExec(`SELECT pg_advisory_xact_lock`).WithArgs("empresa-a:operador").WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectQuery(`SELECT tenant_id, user_id, role, expires_at, revoked_at, clock_timestamp`).WithArgs(id).WillReturnRows(sqlmock.NewRows([]string{"tenant_id", "user_id", "role", "expires_at", "revoked_at", "now"}).AddRow("empresa-a", "operador", "admin", time.Now().Add(time.Hour), time.Now().Add(-time.Minute), time.Now()))
 	mock.ExpectRollback()
 	app := fiber.New()
