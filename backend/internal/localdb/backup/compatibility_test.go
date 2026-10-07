@@ -20,8 +20,8 @@ import (
 
 // Build an actual schema-25 database from unchanged historical migrations,
 // not by deleting tables from a newer database.
-func TestOlderBackupRestoresThroughMigration27(t *testing.T) {
-	for _, historicalVersion := range []int{25, 26} {
+func TestOlderBackupRestoresThroughMigration28(t *testing.T) {
+	for _, historicalVersion := range []int{25, 26, 27} {
 		t.Run(strconv.Itoa(historicalVersion), func(t *testing.T) {
 			dir := t.TempDir()
 			path := filepath.Join(dir, "older.sqlite")
@@ -99,7 +99,7 @@ func TestOlderBackupRestoresThroughMigration27(t *testing.T) {
 			}
 			defer current.Close()
 			var count int
-			if err := current.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != 27 {
+			if err := current.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != 28 {
 				t.Fatalf("migration count %d %v", count, err)
 			}
 			if err := db.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != historicalVersion {
