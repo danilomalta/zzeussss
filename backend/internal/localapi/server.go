@@ -1,10 +1,13 @@
-// Package localapi expõe o banco do aparelho somente no endereço loopback.
+// Package localapi expõe o núcleo SQLite com sessão e contexto de estação.
+// O processo configura loopback ou servidor de loja com TLS e restrição de rede.
 // New recebe um DeviceContext já provado pelo processo de inicialização.
 package localapi
 
 import (
 	"database/sql"
 	"errors"
+	"io"
+	"log"
 	"strings"
 	"time"
 
@@ -31,6 +34,12 @@ func New(db *sql.DB, device identity.DeviceContext) (*fiber.App, error) {
 // NewWithVerifier receives trust from process configuration, never HTTP input.
 // The device must already be proven by startup; user sessions are checked per request.
 func NewWithVerifier(db *sql.DB, device identity.DeviceContext, verifier *entitlements.Verifier) (*fiber.App, error) {
+	return NewWithVerifierAndGate(db, device, verifier, nil)
+}
+
+// NewWithVerifierAndGate installs transport admission BEFORE all routes.
+// Session, device, role, contract and record checks still apply afterwards.
+func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier *entitlements.Verifier, gate fiber.Handler) (*fiber.App, error) {
 	if db == nil || device.TenantID == "" || device.StoreID == "" || device.DeviceID == "" {
 		return nil, errors.New("servidor local sem aparelho")
 	}
@@ -42,7 +51,22 @@ func NewWithVerifier(db *sql.DB, device identity.DeviceContext, verifier *entitl
 		}
 		s.contracts = contracts
 	}
-	app := fiber.New(fiber.Config{AppName: "Titan Local", DisableStartupMessage: true, BodyLimit: 1 << 20})
+	config := fiber.Config{AppName: "Titan Local", DisableStartupMessage: true, BodyLimit: 1 << 20}
+	if gate != nil {
+		config.ReadTimeout = 15 * time.Second
+		config.WriteTimeout = 15 * time.Second
+		config.IdleTimeout = time.Minute
+		config.Concurrency = 128
+	}
+	app := fiber.New(config)
+	if gate != nil {
+		// fasthttp's parser/connection diagnostics may include raw request
+		// fragments. Structured, redacted operational telemetry is separate.
+		app.Server().Logger = log.New(io.Discard, "", 0)
+	}
+	if gate != nil {
+		app.Use(gate)
+	}
 	v1 := app.Group("/local/v1")
 	v1.Get("/health", func(c *fiber.Ctx) error { return c.JSON(fiber.Map{"status": "local"}) })
 	v1.Post("/login", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.login)

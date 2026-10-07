@@ -26,7 +26,7 @@ Não executar `000001_init.sql` (contém `DROP TABLE`).
 Não compilar com `go build -o api` em caminho versionado; usar `go build -o /tmp/titan-api ./cmd/api`.
 
 ## Estrutura efetiva
-- Backend oficial: `backend/`. API online Go/Fiber/PostgreSQL na porta 8080, usada por Makefile/Compose; API local SQLite em `cmd/titan-local` na porta loopback 8181, iniciada separadamente.
+- Backend oficial: `backend/`. API online Go/Fiber/PostgreSQL na porta 8080, usada por Makefile/Compose; núcleo SQLite em `cmd/titan-local`, padrão loopback 8181. Perfil explícito da entrega06 permite servidor da loja com HTTPS e restrição de redes privadas; nuvem/híbrido comerciais ainda bloqueados nesse executável.
 - Frontend oficial: `frontend-web/` (Vite, TypeScript). É o que `docker-compose.yml` usa.
 - `TitanSystem/backend` e `TitanSystem/frontend`: árvores duplicadas, menores. **Não são usadas** por Makefile nem Compose. Não apagar até haver inventário e comparação.
 - CI: `.github/workflows/ci.yml` usa `backend/` para Go e `frontend-web/` para typecheck e build.

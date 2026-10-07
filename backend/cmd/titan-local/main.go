@@ -12,9 +12,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
-	"titansystem-backend/internal/localapi"
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/localsetup"
@@ -28,8 +29,8 @@ type stationFile struct {
 }
 
 func main() {
-	if len(os.Args) < 2 || (os.Args[1] != "init" && os.Args[1] != "serve" && os.Args[1] != "check") {
-		fmt.Fprintln(os.Stderr, "Uso: titan-local init|serve|check --db CAMINHO.sqlite --station CAMINHO.station")
+	if len(os.Args) < 2 || (os.Args[1] != "init" && os.Args[1] != "serve" && os.Args[1] != "check" && os.Args[1] != "mode") {
+		fmt.Fprintln(os.Stderr, "Uso: titan-local init|serve|check --db CAMINHO.sqlite --station CAMINHO.station; mode --deployment PERFIL.json")
 		os.Exit(2)
 	}
 	var err error
@@ -37,50 +38,17 @@ func main() {
 		err = initStation(os.Args[2:], os.Stdin, os.Stdout)
 	} else if os.Args[1] == "check" {
 		err = checkStation(os.Args[2:], os.Stdout)
+	} else if os.Args[1] == "mode" {
+		err = describeMode(os.Args[2:], os.Stdout)
 	} else {
-		err = serveStation(os.Args[2:])
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		err = serveStationContext(ctx, os.Args[2:], os.Stdout)
 	}
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Titan local:", err)
 		os.Exit(1)
 	}
-}
-
-func serveStation(args []string) error {
-	options := flag.NewFlagSet("serve", flag.ContinueOnError)
-	options.SetOutput(io.Discard)
-	dbPath := options.String("db", "", "SQLite existente")
-	stationPath := options.String("station", "", "arquivo privado do aparelho")
-	issuerKeys := options.String("issuer-keys", "", "JSON local de chaves publicas emissoras confiaveis")
-	port := options.Int("port", 8181, "porta local entre 1 e 65535; escuta somente em 127.0.0.1")
-	if err := options.Parse(args); err != nil {
-		return err
-	}
-	if *dbPath == "" || *stationPath == "" || options.NArg() != 0 {
-		return errors.New("informe banco e aparelho")
-	}
-	if *port < 1 || *port > 65535 {
-		return errors.New("porta local deve estar entre 1 e 65535")
-	}
-	verifier, err := readIssuerVerifier(*issuerKeys)
-	if err != nil {
-		return err
-	}
-	db, device, err := openVerified(context.Background(), *dbPath, *stationPath)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	app, err := localapi.NewWithVerifier(db, device, verifier)
-	if err != nil {
-		return err
-	}
-	address := fmt.Sprintf("127.0.0.1:%d", *port)
-	fmt.Fprintf(os.Stdout, "API local em http://%s/local/v1/health\n", address)
-	if verifier == nil {
-		fmt.Fprintln(os.Stdout, "Cadastros indisponiveis: configure --issuer-keys e instale um contrato valido. Login e consultas continuam disponiveis.")
-	}
-	return app.Listen(address)
 }
 
 func openVerified(ctx context.Context, dbPath, stationPath string) (*sql.DB, identity.DeviceContext, error) {

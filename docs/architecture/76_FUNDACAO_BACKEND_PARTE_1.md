@@ -1,7 +1,7 @@
 # Parte 1 — Fundação operacional do backend
 
 Base da entrega 01: commit do usuário `294a544`. A matriz abaixo foi atualizada
-pela entrega 05 de instalação gerenciada e atualização local Linux; NÃO encerra os onze
+pela entrega 06 de modos de armazenamento e servidor de loja TLS; NÃO encerra os onze
 requisitos. Frontend inalterado.
 
 ## Matriz de conclusão
@@ -12,7 +12,7 @@ requisitos. Frontend inalterado.
 | F02 | Backend online | PostgreSQL, login/refresh, catálogo e parte de descontos | Serviços online completos; reconciliação com dados locais e testes isolados de cada operação |
 | F03 | Isolamento | Contextos tenant/loja/aparelho/ator; novas APIs revalidam sessão na transação; teste da barreira de autenticação nas 45 rotas locais protegidas | Inventário e testes de isolamento de todas as APIs, workers, exportações e integrações |
 | F04 | Instalação | Gerenciador Linux por usuário, pacote local verificado, raiz separada de dados, init/check, bloqueios herdados, atualização/recuperação e desativação preservando dados | Distribuição assinada, recuperação do init incompleto, serviço automático, desinstalação formal, desktop/mobile e Windows/macOS |
-| F05 | Modos | Núcleos SQLite e PostgreSQL existentes | Implementação e demonstração de local, servidor, nuvem e híbrido; nenhum seletor visual comprova o modo |
+| F05 | Modos | Perfis estritos, responsabilidades descritas; local loopback e servidor de loja SQLite via HTTPS com restrição de rede | Cliente LAN/piloto, identificação de cada terminal, nuvem comercial e reconciliação híbrida; cloud/hybrid recusados neste núcleo |
 | F06 | Autenticação | Login/logout/revogação; troca da própria senha; consulta de sessões; reset/revogação administrativos restritos; recuperação local do dono com chave preparada de uso único | Recuperação/troca online; sincronização de credenciais e revogações; sessões individuais e entrada secreta interativa |
 | F07 | Autorizações | Papéis, contratos, regras allow/deny/inherit por ação/loja/pessoa/grupo; departamentos e delegação limitada auditada | Interfaces de administração; propagação e reconciliação entre aparelhos; granularidade de registros dos futuros módulos de RH/produção; políticas online |
 | F08 | Auditoria | Eventos críticos; políticas e acesso atômicos; consulta autorizada por loja/departamento com paginação para políticas, contas, funcionários, convites, pareamento, permissões de sincronização e aprovação de chaves públicas | Cobertura/consulta das demais fontes administrativas e comerciais; retenção e exportação |
@@ -125,3 +125,5 @@ Entrega 03: docs/architecture/78_PERMISSOES_DEPARTAMENTOS_E_AUDITORIA.md e docs/
 Entrega 04: docs/architecture/79_AUDITORIA_ADMINISTRATIVA_E_ISOLAMENTO_LOCAL.md. Sem nova migração ou interface. Isolamento por registro e serviços online/trabalhadores continuam no inventário de pendências.
 
 Entrega 05: docs/architecture/80_INSTALACAO_E_ATUALIZACAO_LOCAL_LINUX.md. Gerenciador Python local e titan-local check. Sem nova migração/interface; dados da demonstração inalterados. Hash de pacote não autentica origem; assinatura de distribuição pendente.
+
+Entrega 06: docs/architecture/81_MODOS_LOCAL_E_SERVIDOR_TLS.md. Servidor de loja com HTTPS e admissão por rede; cloud/hybrid descritos e bloqueados. Sem nova migração ou interface. Próximo trabalho: serviços online e isolamento de registros/terminais, antes de reconciliação comercial.
