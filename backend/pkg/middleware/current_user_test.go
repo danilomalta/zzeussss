@@ -43,7 +43,7 @@ func TestCurrentUserAndRoleOnProtectedRoute(t *testing.T) {
 		{"vínculo revogado", "admin", false, 401},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			claims := jwt.MapClaims{
+			claims := jwt.MapClaims{"sid": "11111111-1111-4111-8111-111111111112",
 				"sub": "operador", "tenant_id": "empresa-a", "role": tc.role,
 				"type": "access", "exp": time.Now().Add(time.Minute).Unix(),
 			}
@@ -52,7 +52,7 @@ func TestCurrentUserAndRoleOnProtectedRoute(t *testing.T) {
 				t.Fatal(err)
 			}
 			mock.ExpectQuery(`SELECT EXISTS`).
-				WithArgs("operador", "empresa-a", tc.role).
+				WithArgs("operador", "empresa-a", tc.role, "11111111-1111-4111-8111-111111111112").
 				WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(tc.active))
 			req := httptest.NewRequest("POST", "/produtos", nil)
 			req.Header.Set("Authorization", "Bearer "+token)

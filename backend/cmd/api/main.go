@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"os"
+	"time"
+	"titansystem-backend/internal/onlinesessions"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -41,6 +44,16 @@ func main() {
 		log.Fatal(err)
 	}
 	defer database.Pool.Close()
+	db, err := database.DB.DB()
+	if err != nil {
+		log.Fatal("base online indisponível")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	err = onlinesessions.CheckSchema(ctx, db)
+	cancel()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// [Fail Fast] Valida se os ponteiros de pool concorrente e ORM foram gerados com sucesso
 	if database.DB == nil {

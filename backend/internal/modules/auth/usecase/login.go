@@ -1,16 +1,17 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 	"os"
 	"strings"
 	"time"
+	"titansystem-backend/internal/onlinesessions"
 
 	"titansystem-backend/internal/core/database"
 	"titansystem-backend/internal/core/security"
 	"titansystem-backend/internal/modules/auth/domain"
 
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -43,7 +44,8 @@ type LoginOutput struct {
 	// Dados resumidos do usuário autenticado para consumo imediato do frontend
 	User UserResponse `json:"user"`
 	// Refresh Token de longo prazo (será injetado em um Cookie HttpOnly para segurança extra)
-	RefreshToken string `json:"-"`
+	RefreshToken   string    `json:"-"`
+	RefreshExpires time.Time `json:"-"`
 }
 
 // LoginUseCase define a assinatura da interface do caso de uso de Login.
@@ -93,50 +95,24 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 		return nil, errors.New("e-mail ou senha inválidos")
 	}
 
-	// 4. Emissão do Access Token: validade de 15 minutos.
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		return nil, ErrSessionUnavailable
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":       user.ID,
-		"role":      user.Role,
-		"name":      user.Name,
-		"tenant_id": user.ClientID,
-		"type":      "access",
-		"exp":       time.Now().Add(15 * time.Minute).Unix(),
-		"iat":       time.Now().Unix(),
-	})
-
-	accessToken, err := token.SignedString([]byte(jwtSecret))
+	db, err := database.DB.DB()
 	if err != nil {
 		return nil, ErrSessionUnavailable
 	}
-
-	// 5. Emissão do Refresh Token: validade de 7 dias.
-	refreshTokenObj := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":       user.ID,
-		"role":      user.Role,
-		"name":      user.Name,
-		"tenant_id": user.ClientID,
-		"type":      "refresh",
-		"exp":       time.Now().Add(7 * 24 * time.Hour).Unix(),
-		"iat":       time.Now().Unix(),
-	})
-
-	refreshToken, err := refreshTokenObj.SignedString([]byte(jwtSecret))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	tokens, err := onlinesessions.New(db, os.Getenv("JWT_SECRET")).Create(ctx, onlinesessions.Scope{User: user.ID, Tenant: user.ClientID, Role: user.Role}, user.PasswordHash)
+	if errors.Is(err, onlinesessions.ErrDenied) {
+		return nil, errors.New("e-mail ou senha inválidos")
+	}
 	if err != nil {
 		return nil, ErrSessionUnavailable
 	}
-
-	// Duração de expiração em segundos (15 minutos = 900 segundos)
-	expiresIn := int64(15 * 60)
-
 	return &LoginOutput{
-		AccessToken:  accessToken,
-		ExpiresIn:    expiresIn,
-		RefreshToken: refreshToken,
+		AccessToken:    tokens.Access,
+		ExpiresIn:      tokens.ExpiresIn,
+		RefreshToken:   tokens.Refresh,
+		RefreshExpires: tokens.RefreshExpires,
 		User: UserResponse{
 			ID:       user.ID,
 			Name:     user.Name,

@@ -20,7 +20,7 @@ import (
 func TestOnlineProductCreationCannotSelectAnotherCompany(t *testing.T) {
 	t.Setenv("JWT_SECRET", "isolated-test-secret")
 	mock := onlineMock(t)
-	mock.ExpectQuery(`SELECT EXISTS`).WithArgs("operator", "company-a", "owner").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
+	mock.ExpectQuery(`SELECT EXISTS`).WithArgs("operator", "company-a", "owner", "11111111-1111-4111-8111-111111111112").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 	mock.ExpectBegin()
 	args := make([]driver.Value, 17)
 	for i := range args {
@@ -68,7 +68,7 @@ func onlineMock(t *testing.T) sqlmock.Sqlmock {
 
 func onlineToken(t *testing.T, tenant, role string) string {
 	t.Helper()
-	value, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	value, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sid": "11111111-1111-4111-8111-111111111112",
 		"sub": "operator", "tenant_id": tenant, "role": role, "type": "access", "exp": time.Now().Add(time.Minute).Unix(),
 	}).SignedString([]byte("isolated-test-secret"))
 	if err != nil {
@@ -98,7 +98,7 @@ func TestOnlineImplementedRoutesRecheckMembershipBeforeBusinessQueries(t *testin
 						want = 403
 					}
 					req.Header.Set("Authorization", "Bearer "+onlineToken(t, "company-a", role))
-					expect := mock.ExpectQuery(`SELECT EXISTS`).WithArgs("operator", "company-a", role)
+					expect := mock.ExpectQuery(`SELECT EXISTS`).WithArgs("operator", "company-a", role, "11111111-1111-4111-8111-111111111112")
 					if scenario == "database-failure" {
 						expect.WillReturnError(errors.New("private database detail"))
 						want = 503
@@ -128,7 +128,7 @@ func TestOnlineReadsAndDiscountGenerationUseAuthenticatedCompany(t *testing.T) {
 		for _, route := range []string{"/api/v1/produtos/", "/api/v1/discounts/suggestions", "/api/v1/discounts/suggest"} {
 			t.Run(tenant+route, func(t *testing.T) {
 				mock := onlineMock(t)
-				mock.ExpectQuery(`SELECT EXISTS`).WithArgs("operator", tenant, "owner").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
+				mock.ExpectQuery(`SELECT EXISTS`).WithArgs("operator", tenant, "owner", "11111111-1111-4111-8111-111111111112").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 				method := "GET"
 				switch route {
 				case "/api/v1/produtos/":

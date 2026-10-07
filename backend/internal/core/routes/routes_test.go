@@ -12,7 +12,7 @@ import (
 func TestUnfinishedBusinessRoutesAreUnavailable(t *testing.T) {
 	const secret = "segredo-apenas-do-teste"
 	t.Setenv("JWT_SECRET", secret)
-	claims := jwt.MapClaims{
+	claims := jwt.MapClaims{"sid": "11111111-1111-4111-8111-111111111112",
 		"sub":       "11111111-1111-4111-8111-111111111111",
 		"tenant_id": "22222222-2222-4222-8222-222222222222",
 		"role":      "admin",

@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "TitanSystem — Autenticação online existente",
-    "version": "1.0.0",
-    "description": "Contrato incremental. PostgreSQL e JWT; não é contrato de autenticação SQLite. Parser legado de login ainda não rejeita todos os campos extras/duplicatas. HTTPS externo, recuperação e rotação persistida pendentes."
+    "version": "1.1.0",
+    "description": "Sessões PostgreSQL persistidas. Migração de segurança 5 obrigatória. Refresh opaco de uso único; tokens antigos exigem novo login. Autenticação SQLite é outro serviço."
   },
   "paths": {
     "/api/v1/auth/login": {
@@ -77,7 +77,7 @@
     "/api/v1/auth/refresh": {
       "post": {
         "summary": "Renova após validar refresh e vínculo atual",
-        "description": "Não invalida individualmente o refresh anterior. Rotação persistida ainda pendente.",
+        "description": "Segredo opaco de uso único. Reutilização de hash consumido revoga a família. Resposta perdida exige novo login. Expiração absoluta de sete dias. Origem de navegador não autorizada retorna 403.",
         "security": [
           {
             "refreshCookie": []
@@ -112,16 +112,6 @@
               }
             }
           },
-          "500": {
-            "description": "Chave de sessão indisponível",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "503": {
             "description": "Consulta de vínculo indisponível",
             "content": {
@@ -134,6 +124,165 @@
           },
           "429": {
             "description": "Limite geral do middleware Fiber"
+          },
+          "403": {
+            "description": "Origem de navegador recusada"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Revoga sessão atual e expira cookie",
+        "security": [
+          {
+            "accessBearer": []
+          }
+        ],
+        "description": "Sem corpo; corpo não vazio retorna 400. Empresa e usuário derivados da sessão.",
+        "responses": {
+          "401": {
+            "description": "Sessão ausente/expirada/revogada ou alvo fora da conta"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          },
+          "429": {
+            "description": "Limite do middleware Fiber"
+          },
+          "204": {
+            "description": "Revogação confirmada"
+          },
+          "400": {
+            "description": "Corpo ou identificador inválido"
+          },
+          "500": {
+            "description": "Chave de sessão indisponível no servidor"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sessions/revoke-others": {
+      "post": {
+        "summary": "Revoga demais sessões da própria conta",
+        "security": [
+          {
+            "accessBearer": []
+          }
+        ],
+        "description": "Sem corpo; corpo não vazio retorna 400. Empresa e usuário derivados da sessão.",
+        "responses": {
+          "401": {
+            "description": "Sessão ausente/expirada/revogada ou alvo fora da conta"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          },
+          "429": {
+            "description": "Limite do middleware Fiber"
+          },
+          "204": {
+            "description": "Revogação confirmada"
+          },
+          "400": {
+            "description": "Corpo ou identificador inválido"
+          },
+          "500": {
+            "description": "Chave de sessão indisponível no servidor"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sessions/{id}/revoke": {
+      "post": {
+        "summary": "Revoga uma sessão da própria conta",
+        "security": [
+          {
+            "accessBearer": []
+          }
+        ],
+        "description": "Sem corpo; corpo não vazio retorna 400. Empresa e usuário derivados da sessão.",
+        "responses": {
+          "401": {
+            "description": "Sessão ausente/expirada/revogada ou alvo fora da conta"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          },
+          "429": {
+            "description": "Limite do middleware Fiber"
+          },
+          "204": {
+            "description": "Revogação confirmada"
+          },
+          "400": {
+            "description": "Corpo ou identificador inválido"
+          },
+          "500": {
+            "description": "Chave de sessão indisponível no servidor"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "summary": "Lista até 100 sessões da própria conta",
+        "security": [
+          {
+            "accessBearer": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Sessão ausente/expirada/revogada ou alvo fora da conta"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          },
+          "429": {
+            "description": "Limite do middleware Fiber"
+          },
+          "200": {
+            "description": "Histórico sem tokens ou hashes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "sessions",
+                    "limit"
+                  ],
+                  "properties": {
+                    "limit": {
+                      "type": "integer",
+                      "enum": [
+                        100
+                      ]
+                    },
+                    "sessions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Session"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Chave de sessão indisponível no servidor"
           }
         }
       }
@@ -145,6 +294,11 @@
         "type": "apiKey",
         "in": "cookie",
         "name": "titan_session_rt"
+      },
+      "accessBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT HS256 com sid"
       }
     },
     "schemas": {
@@ -188,9 +342,8 @@
           },
           "expires_in": {
             "type": "integer",
-            "enum": [
-              900
-            ]
+            "minimum": 1,
+            "maximum": 900
           }
         }
       },
@@ -238,6 +391,38 @@
             }
           }
         ]
+      },
+      "Session": {
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "expires_at",
+          "revoked_at",
+          "current"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revoked_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "current": {
+            "type": "boolean"
+          }
+        }
       }
     }
   }

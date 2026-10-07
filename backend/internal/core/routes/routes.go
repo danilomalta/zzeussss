@@ -40,10 +40,14 @@ func Registrar(app *fiber.App) {
 	authUseCase := usecase.NewLoginUseCase()
 	authHandler := authDelivery.NewAuthHandler(authUseCase)
 	authGroup := v1.Group("/auth")
-	
+
 	// Limitador estrito para rota de login (máximo 5 req/min por IP) para proteção contra Brute Force
 	authGroup.Post("/login", middleware.RateLimitLogin(), authHandler.Login)
-	authGroup.Post("/refresh", authHandler.RefreshToken)
+	authGroup.Post("/refresh", authDelivery.RefreshOrigin, authHandler.RefreshToken)
+	authGroup.Post("/logout", middleware.AuthGuard(), middleware.CurrentUser(), authHandler.Logout)
+	authGroup.Get("/sessions", middleware.AuthGuard(), middleware.CurrentUser(), authHandler.Sessions)
+	authGroup.Post("/sessions/revoke-others", middleware.AuthGuard(), middleware.CurrentUser(), authHandler.RevokeOthers)
+	authGroup.Post("/sessions/:id/revoke", middleware.AuthGuard(), middleware.CurrentUser(), authHandler.RevokeSession)
 
 	// Health Check (Rota pública sem proteção)
 	v1.Get("/saude", Saude)

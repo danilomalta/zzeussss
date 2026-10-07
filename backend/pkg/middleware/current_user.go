@@ -14,7 +14,7 @@ func CurrentUser() fiber.Handler {
 			return err
 		}
 		role, _ := c.Locals("role").(string)
-		ok, err := security.ActiveSession(UserID(c), tenantID, role)
+		ok, err := security.ActiveOnlineSession(UserID(c), tenantID, role, valorClaim(c.Locals("session_id")))
 		if err != nil {
 			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"error": "sessão indisponível"})
 		}

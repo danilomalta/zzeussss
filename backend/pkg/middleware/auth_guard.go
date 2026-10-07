@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"titansystem-backend/internal/core/security"
+	"titansystem-backend/internal/onlinesessions"
 )
 
 func AuthGuard() fiber.Handler {
@@ -32,6 +33,11 @@ func AuthGuard() fiber.Handler {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Sessão inválida ou expirada. Faça login novamente."})
 		}
 
+		sessionID, _ := claims["sid"].(string)
+		if !onlinesessions.ValidID(sessionID) {
+			return c.Status(401).JSON(fiber.Map{"error": "sessão antiga ou inválida; faça login novamente"})
+		}
+		c.Locals("session_id", sessionID)
 		tenantID := valorClaim(claims["tenant_id"])
 		if tenantID == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{

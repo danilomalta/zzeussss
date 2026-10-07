@@ -6,11 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"titansystem-backend/internal/core/security"
 	"titansystem-backend/internal/modules/auth/usecase"
+	"titansystem-backend/internal/onlinesessions"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 // AuthHandler gerencia as requisições HTTP relativas ao ciclo de vida de autenticação.
@@ -29,6 +28,7 @@ func NewAuthHandler(loginUseCase usecase.LoginUseCase) *AuthHandler {
 //
 // ROTA: POST /api/v1/auth/login
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
+	c.Set("Cache-Control", "no-store")
 	var input usecase.LoginInput
 
 	if err := c.BodyParser(&input); err != nil {
@@ -46,7 +46,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	// O refresh token é armazenado somente em cookie HttpOnly.
-	c.Cookie(cookieRenovacao(output.RefreshToken))
+	c.Cookie(cookieRenovacao(output.RefreshToken, output.RefreshExpires))
 
 	return c.JSON(output)
 }
@@ -55,6 +55,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 //
 // ROTA: POST /api/v1/auth/refresh
 func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
+	c.Set("Cache-Control", "no-store")
 	cookie := c.Cookies("titan_session_rt")
 	if cookie == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -62,99 +63,24 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 		})
 	}
 
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "servidor sem chave de sessão configurada",
-		})
+	if _, err := onlinesessions.ParseRefresh(cookie); err != nil {
+		return sessionFailure(c, err)
 	}
-
-	claims, err := security.ParseSession(cookie, jwtSecret, "refresh")
+	store, err := sessionStore()
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "refresh token inválido ou expirado"})
+		return sessionFailure(c, err)
 	}
-
-	userID, ok := claims["sub"].(string)
-	if !ok || userID == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "usuário ausente no token",
-		})
-	}
-
-	role, ok := claims["role"].(string)
-	if !ok || role == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "perfil ausente no token",
-		})
-	}
-
-	name, ok := claims["name"].(string)
-	if !ok || name == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "nome ausente no token",
-		})
-	}
-
-	tenantID, ok := claims["tenant_id"].(string)
-	if !ok || tenantID == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "empresa ausente no token",
-		})
-	}
-	active, lookupErr := security.ActiveSession(userID, tenantID, role)
-	if lookupErr != nil {
-		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
-			"error": "sessão indisponível",
-		})
-	}
-	if !active {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "sessão sem vínculo ativo",
-		})
-	}
-
-	// Emite um novo Access Token com validade de 15 minutos.
-	newAccessTokenObj := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":       userID,
-		"role":      role,
-		"name":      name,
-		"tenant_id": tenantID,
-		"type":      "access",
-		"exp":       time.Now().Add(15 * time.Minute).Unix(),
-		"iat":       time.Now().Unix(),
-	})
-
-	newAccessToken, err := newAccessTokenObj.SignedString([]byte(jwtSecret))
+	ctx, cancel := sessionContext(c)
+	defer cancel()
+	tokens, err := store.Rotate(ctx, cookie)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "falha ao assinar novo token de acesso",
-		})
+		return sessionFailure(c, err)
 	}
-
-	// Emite um novo Refresh Token com validade de 7 dias.
-	newRefreshTokenObj := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":       userID,
-		"role":      role,
-		"name":      name,
-		"tenant_id": tenantID,
-		"type":      "refresh",
-		"exp":       time.Now().Add(7 * 24 * time.Hour).Unix(),
-		"iat":       time.Now().Unix(),
-	})
-
-	newRefreshToken, err := newRefreshTokenObj.SignedString([]byte(jwtSecret))
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "falha ao assinar novo token de renovação",
-		})
-	}
-
-	c.Cookie(cookieRenovacao(newRefreshToken))
+	c.Cookie(cookieRenovacao(tokens.Refresh, tokens.RefreshExpires))
 
 	return c.JSON(fiber.Map{
-		"access_token": newAccessToken,
-		"expires_in":   int64(15 * 60),
+		"access_token": tokens.Access,
+		"expires_in":   tokens.ExpiresIn,
 	})
 }
 
@@ -168,7 +94,7 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 // Para desenvolvimento local usando HTTP, defina explicitamente:
 //
 //	COOKIE_SECURE=false
-func cookieRenovacao(valor string) *fiber.Cookie {
+func cookieRenovacao(valor string, expires time.Time) *fiber.Cookie {
 	seguro := !strings.EqualFold(
 		strings.TrimSpace(os.Getenv("COOKIE_SECURE")),
 		"false",
@@ -182,7 +108,7 @@ func cookieRenovacao(valor string) *fiber.Cookie {
 	return &fiber.Cookie{
 		Name:     "titan_session_rt",
 		Value:    valor,
-		Expires:  time.Now().Add(7 * 24 * time.Hour),
+		Expires:  expires,
 		HTTPOnly: true,
 		Secure:   seguro,
 		SameSite: mesmoSite,

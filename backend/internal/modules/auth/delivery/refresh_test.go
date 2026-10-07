@@ -8,9 +8,9 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"strings"
 	"titansystem-backend/internal/core/database"
 )
 
@@ -29,17 +29,11 @@ func TestRefreshRejectsRevokedMembership(t *testing.T) {
 	database.DB = db
 	t.Cleanup(func() { database.DB = previous })
 
-	claims := jwt.MapClaims{
-		"sub": "operador", "tenant_id": "empresa-a", "role": "admin",
-		"name": "Operador", "type": "refresh", "exp": time.Now().Add(time.Minute).Unix(),
-	}
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte("secret-test-only"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	mock.ExpectQuery(`SELECT EXISTS`).
-		WithArgs("operador", "empresa-a", "admin").
-		WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+	id := "11111111-1111-4111-8111-111111111112"
+	token := "v1." + id + "." + strings.Repeat("A", 43)
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT tenant_id, user_id, role, expires_at, revoked_at, clock_timestamp`).WithArgs(id).WillReturnRows(sqlmock.NewRows([]string{"tenant_id", "user_id", "role", "expires_at", "revoked_at", "now"}).AddRow("empresa-a", "operador", "admin", time.Now().Add(time.Hour), time.Now().Add(-time.Minute), time.Now()))
+	mock.ExpectRollback()
 	app := fiber.New()
 	app.Post("/refresh", NewAuthHandler(nil).RefreshToken)
 	req := httptest.NewRequest("POST", "/refresh", nil)

@@ -103,6 +103,14 @@ func TestLoginRealScenarios(t *testing.T) {
 		mock.ExpectQuery(`SELECT EXISTS`).
 			WithArgs("user-uuid-1", "client-uuid-1", "admin").
 			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
+		now := time.Now()
+		mock.ExpectBegin()
+		mock.ExpectQuery(`SELECT u.name, u.password_hash`).WithArgs("user-uuid-1", "client-uuid-1", "admin").WillReturnRows(sqlmock.NewRows([]string{"name", "password_hash"}).AddRow("John Doe", string(hashedPassword)))
+		mock.ExpectQuery(`SELECT clock_timestamp`).WillReturnRows(sqlmock.NewRows([]string{"now"}).AddRow(now))
+		mock.ExpectExec(`INSERT INTO online_sessions`).WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectExec(`INSERT INTO online_refresh_tokens`).WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectExec(`INSERT INTO online_session_audit`).WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
 
 		// Payload com a senha correta
 		body := map[string]string{
@@ -114,7 +122,7 @@ func TestLoginRealScenarios(t *testing.T) {
 		req := httptest.NewRequest("POST", "https://example.com/api/v1/auth/login", bytes.NewBuffer(jsonBody))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-Forwarded-Proto", "https") // Habilita a detecção de HTTPS pelo ProxyHeader
-		req.TLS = &tls.ConnectionState{} // Simula uma conexão TLS segura real no Fiber
+		req.TLS = &tls.ConnectionState{}             // Simula uma conexão TLS segura real no Fiber
 
 		resp, err := app.Test(req, 5000)
 		assert.NoError(t, err)

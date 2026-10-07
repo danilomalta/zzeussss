@@ -21,6 +21,6 @@ type RefreshTokenUseCase interface {
 	Execute(input RefreshTokenInput) (*RefreshTokenOutput, error)
 }
 
-// Planejado: persistência, rotação de uso único e detecção de reutilização.
-// A implementação atual está no handler: JWT com expiração e consulta de vínculo
-// ativo. A emissão de outro token NÃO invalida individualmente o anterior.
+// A implementação persistida desta entrega usa internal/onlinesessions.
+// Refresh é segredo opaco de uso único, não JWT. O handler só emite tokens
+// após confirmar sessão, consumo do hash, novo hash e auditoria na transação.

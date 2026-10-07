@@ -25,7 +25,7 @@ func TestAuthGuardTokenTypes(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			claims := jwt.MapClaims{
+			claims := jwt.MapClaims{"sid": "11111111-1111-4111-8111-111111111112",
 				"sub":       "11111111-1111-4111-8111-111111111111",
 				"tenant_id": "22222222-2222-4222-8222-222222222222",
 				"role":      "admin",
@@ -67,9 +67,9 @@ func TestAuthGuardTokenTypes(t *testing.T) {
 func TestAuthGuardRequiresOperatorAndRole(t *testing.T) {
 	const secret = "chave-exclusiva-para-teste"
 	t.Setenv("JWT_SECRET", secret)
-	for _, missing := range []string{"sub", "role"} {
+	for _, missing := range []string{"sub", "role", "sid"} {
 		t.Run(missing, func(t *testing.T) {
-			claims := jwt.MapClaims{
+			claims := jwt.MapClaims{"sid": "11111111-1111-4111-8111-111111111112",
 				"sub":       "11111111-1111-4111-8111-111111111111",
 				"tenant_id": "22222222-2222-4222-8222-222222222222",
 				"role":      "admin",
