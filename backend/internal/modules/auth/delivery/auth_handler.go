@@ -1,13 +1,13 @@
 package delivery
 
 import (
-	"log"
+	"errors"
 	"os"
 	"strings"
 	"time"
 
-	"titansystem-backend/internal/modules/auth/usecase"
 	"titansystem-backend/internal/core/security"
+	"titansystem-backend/internal/modules/auth/usecase"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -39,9 +39,10 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 	output, err := h.loginUseCase.Execute(input)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		if errors.Is(err, usecase.ErrSessionUnavailable) {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"error": "sessão indisponível"})
+		}
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "e-mail ou senha inválidos"})
 	}
 
 	// O refresh token é armazenado somente em cookie HttpOnly.
@@ -63,35 +64,15 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		log.Println("Erro crítico: JWT_SECRET não configurado no ambiente.")
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "servidor sem chave de sessão configurada",
 		})
 	}
 
-	token, err := jwt.Parse(cookie, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fiber.NewError(
-				fiber.StatusUnauthorized,
-				"método de assinatura inválido",
-			)
-		}
-
-		return []byte(jwtSecret), nil
-	})
-
-	if err != nil || !token.Valid {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "refresh token inválido ou expirado",
-		})
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || claims["type"] != "refresh" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "tipo de token inválido",
-		})
+	claims, err := security.ParseSession(cookie, jwtSecret, "refresh")
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "refresh token inválido ou expirado"})
 	}
 
 	userID, ok := claims["sub"].(string)

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -24,7 +23,7 @@ import (
 
 func TestLoginRealScenarios(t *testing.T) {
 	// Configura o segredo do JWT temporariamente para o contexto de testes unitários
-	os.Setenv("JWT_SECRET", "test_secret_for_auth_scenarios_unit_testing")
+	t.Setenv("JWT_SECRET", "test_secret_for_auth_scenarios_unit_testing")
 
 	// Prepara a hash Bcrypt correta para a senha de teste
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("correct_password"), bcrypt.DefaultCost)
@@ -48,7 +47,9 @@ func TestLoginRealScenarios(t *testing.T) {
 	}
 
 	// Sobrescreve a conexão global compartilhada para os testes
+	previous := database.DB
 	database.DB = gormDB
+	t.Cleanup(func() { database.DB = previous })
 
 	// Inicializa a aplicação Fiber para testes e registra a rota de login
 	app := fiber.New(fiber.Config{
@@ -79,7 +80,8 @@ func TestLoginRealScenarios(t *testing.T) {
 		req := httptest.NewRequest("POST", "/api/v1/auth/login", bytes.NewBuffer(jsonBody))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, err := app.Test(req)
+		// Bcrypt com detector de corrida pode ultrapassar o padrão de 1 segundo.
+		resp, err := app.Test(req, 5000)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
@@ -114,7 +116,7 @@ func TestLoginRealScenarios(t *testing.T) {
 		req.Header.Set("X-Forwarded-Proto", "https") // Habilita a detecção de HTTPS pelo ProxyHeader
 		req.TLS = &tls.ConnectionState{} // Simula uma conexão TLS segura real no Fiber
 
-		resp, err := app.Test(req)
+		resp, err := app.Test(req, 5000)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -148,7 +150,7 @@ func TestLoginRealScenarios(t *testing.T) {
 		}
 		req := httptest.NewRequest("POST", "/api/v1/auth/login", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
-		resp, err := app.Test(req)
+		resp, err := app.Test(req, 5000)
 		if err != nil {
 			t.Fatal(err)
 		}

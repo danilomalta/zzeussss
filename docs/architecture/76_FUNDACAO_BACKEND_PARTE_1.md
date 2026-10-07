@@ -1,7 +1,7 @@
 # Parte 1 — Fundação operacional do backend
 
 Base da entrega 01: commit do usuário `294a544`. A matriz abaixo foi atualizada
-pela entrega 06 de modos de armazenamento e servidor de loja TLS; NÃO encerra os onze
+pela entrega 07 de conexão e autenticação online; NÃO encerra os onze
 requisitos. Frontend inalterado.
 
 ## Matriz de conclusão
@@ -9,8 +9,8 @@ requisitos. Frontend inalterado.
 | ID | Requisito | Implementação existente / desta entrega | Trabalho em aberto e aceite |
 | --- | --- | --- | --- |
 | F01 | Banco local e atualização | Migrações transacionais/checksums; recusa de versão futura/lacunas; backup pré-upgrade, teste em cópia, ativação atômica e recuperação em fronteiras persistentes | Distribuição assinada/compatibilidade entre aparelhos; upgrade com mudança futura de esquema, queda de energia e disco cheio em equipamento real |
-| F02 | Backend online | PostgreSQL, login/refresh, catálogo e parte de descontos | Serviços online completos; reconciliação com dados locais e testes isolados de cada operação |
-| F03 | Isolamento | Contextos tenant/loja/aparelho/ator; novas APIs revalidam sessão na transação; teste da barreira de autenticação nas 45 rotas locais protegidas | Inventário e testes de isolamento de todas as APIs, workers, exportações e integrações |
+| F02 | Backend online | PostgreSQL com credenciais explícitas e TLS remoto verificado; login/refresh com HS256/expiração estritos; catálogo e parte de descontos | Serviços online completos; reconciliação com dados locais e testes isolados de cada operação |
+| F03 | Isolamento | Contextos tenant/loja/aparelho/ator; novas APIs revalidam sessão na transação; teste da barreira nas 45 rotas locais e quatro operações comerciais online; consultas online por empresa | Inventário e testes de isolamento de todas as APIs, workers, exportações e integrações |
 | F04 | Instalação | Gerenciador Linux por usuário, pacote local verificado, raiz separada de dados, init/check, bloqueios herdados, atualização/recuperação e desativação preservando dados | Distribuição assinada, recuperação do init incompleto, serviço automático, desinstalação formal, desktop/mobile e Windows/macOS |
 | F05 | Modos | Perfis estritos, responsabilidades descritas; local loopback e servidor de loja SQLite via HTTPS com restrição de rede | Cliente LAN/piloto, identificação de cada terminal, nuvem comercial e reconciliação híbrida; cloud/hybrid recusados neste núcleo |
 | F06 | Autenticação | Login/logout/revogação; troca da própria senha; consulta de sessões; reset/revogação administrativos restritos; recuperação local do dono com chave preparada de uso único | Recuperação/troca online; sincronização de credenciais e revogações; sessões individuais e entrada secreta interativa |
@@ -18,7 +18,7 @@ requisitos. Frontend inalterado.
 | F08 | Auditoria | Eventos críticos; políticas e acesso atômicos; consulta autorizada por loja/departamento com paginação para políticas, contas, funcionários, convites, pareamento, permissões de sincronização e aprovação de chaves públicas | Cobertura/consulta das demais fontes administrativas e comerciais; retenção e exportação |
 | F09 | Proteção de dados | Transporte cifrado; backup AES-256-GCM, chave separada 0600 e autenticação do arquivo | Backups remotos, proteção dos demais arquivos/certificados, rotação e recuperação de todas as chaves |
 | F10 | Backup/restauração | Snapshot SQLite consistente, restauração em arquivo novo; sessões e chaves de recuperação da cópia revogadas; snapshots 25/26/27; agendamento CLI watch | Retenção, cópia externa, serviço instalado, monitoramento, PostgreSQL e ensaio de desastre completo |
-| F11 | Documentação API | OpenAPI de sete rotas de segurança/acesso, três operações de política/auditoria e inventário dos grupos atuais | OpenAPI de todas as rotas, erros padronizados antigos, paginação uniforme e compatibilidade entre versões |
+| F11 | Documentação API | OpenAPI de segurança/acesso local, política/auditoria e login/refresh online; inventário dos grupos atuais | OpenAPI de todas as rotas, erros padronizados antigos, paginação uniforme e compatibilidade entre versões |
 
 ## Segurança de conta local
 
@@ -127,3 +127,5 @@ Entrega 04: docs/architecture/79_AUDITORIA_ADMINISTRATIVA_E_ISOLAMENTO_LOCAL.md.
 Entrega 05: docs/architecture/80_INSTALACAO_E_ATUALIZACAO_LOCAL_LINUX.md. Gerenciador Python local e titan-local check. Sem nova migração/interface; dados da demonstração inalterados. Hash de pacote não autentica origem; assinatura de distribuição pendente.
 
 Entrega 06: docs/architecture/81_MODOS_LOCAL_E_SERVIDOR_TLS.md. Servidor de loja com HTTPS e admissão por rede; cloud/hybrid descritos e bloqueados. Sem nova migração ou interface. Próximo trabalho: serviços online e isolamento de registros/terminais, antes de reconciliação comercial.
+
+Entrega 07: docs/architecture/82_CONEXAO_E_AUTENTICACAO_ONLINE.md. Sem migração/interface. PostgreSQL sem senha padrão, TLS remoto verificado e validação compartilhada de JWT. Testes SQL mock das rotas online; PostgreSQL real e rotação persistida de refresh ainda pendentes.

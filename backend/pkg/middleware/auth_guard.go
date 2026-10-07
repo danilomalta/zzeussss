@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
+	"titansystem-backend/internal/core/security"
 )
 
 func AuthGuard() fiber.Handler {
@@ -27,24 +27,9 @@ func AuthGuard() fiber.Handler {
 			})
 		}
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fiber.ErrUnauthorized
-			}
-			return []byte(jwtSecret), nil
-		})
-
-		if err != nil || !token.Valid {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Sessão inválida ou expirada. Faça login novamente.",
-			})
-		}
-
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok || claims["type"] != "access" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Token de acesso inválido. Faça login novamente.",
-			})
+		claims, err := security.ParseSession(tokenString, jwtSecret, "access")
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Sessão inválida ou expirada. Faça login novamente."})
 		}
 
 		tenantID := valorClaim(claims["tenant_id"])
@@ -78,7 +63,7 @@ func valorClaim(v interface{}) string {
 	case string:
 		return strings.TrimSpace(t)
 	default:
-		return strings.TrimSpace(fmt.Sprint(t))
+		return ""
 	}
 }
 

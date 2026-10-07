@@ -12,7 +12,10 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
+
+var ErrSessionUnavailable = errors.New("sessão indisponível")
 
 // LoginInput define os dados necessários para que um usuário tente se autenticar no sistema.
 type LoginInput struct {
@@ -64,9 +67,15 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 		return nil, errors.New("e-mail ou senha inválidos")
 	}
 
+	if database.DB == nil {
+		return nil, ErrSessionUnavailable
+	}
 	// 2. Busca do usuário pelo e-mail
 	var user domain.User
 	if err := database.DB.Where("email = ?", email).First(&user).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrSessionUnavailable
+		}
 		// [SecOps] Proteção contra enumeração de usuários (retorna erro genérico)
 		return nil, errors.New("e-mail ou senha inválidos")
 	}
@@ -78,7 +87,7 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 	}
 	active, lookupErr := security.ActiveSession(user.ID, user.ClientID, user.Role)
 	if lookupErr != nil {
-		return nil, errors.New("sessão indisponível")
+		return nil, ErrSessionUnavailable
 	}
 	if !active {
 		return nil, errors.New("e-mail ou senha inválidos")
@@ -87,7 +96,7 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 	// 4. Emissão do Access Token: validade de 15 minutos.
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		return nil, errors.New("erro crítico: JWT_SECRET não configurado no servidor")
+		return nil, ErrSessionUnavailable
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -102,7 +111,7 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 
 	accessToken, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
-		return nil, fmtError("falha ao assinar token de acesso: %w", err)
+		return nil, ErrSessionUnavailable
 	}
 
 	// 5. Emissão do Refresh Token: validade de 7 dias.
@@ -118,7 +127,7 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 
 	refreshToken, err := refreshTokenObj.SignedString([]byte(jwtSecret))
 	if err != nil {
-		return nil, fmtError("falha ao assinar token de renovação: %w", err)
+		return nil, ErrSessionUnavailable
 	}
 
 	// Duração de expiração em segundos (15 minutos = 900 segundos)
@@ -136,9 +145,4 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 			TenantID: user.ClientID,
 		},
 	}, nil
-}
-
-// fmtError é um pequeno utilitário local para evitar quebra com imports e manter legibilidade
-func fmtError(format string, err error) error {
-	return errors.New(strings.Replace(format, "%w", err.Error(), 1))
 }

@@ -37,7 +37,10 @@ func main() {
 	}
 
 	// 2. Inicializa a conexão com o banco (PostgreSQL + pgxpool + GORM)
-	database.InitDB()
+	if err := database.InitDB(); err != nil {
+		log.Fatal(err)
+	}
+	defer database.Pool.Close()
 
 	// [Fail Fast] Valida se os ponteiros de pool concorrente e ORM foram gerados com sucesso
 	if database.DB == nil {
