@@ -218,4 +218,5 @@ func TestPostgresDurableRotationConcurrencyAndRollback(t *testing.T) {
 	if _, err = s.Create(ctx, Scope{User: testUser, Tenant: testTenant, Role: "owner"}, storedHash); err != nil {
 		t.Fatal("novo login falhou", err)
 	}
+	recoveryPostgresFlow(t, ctx, db, s)
 }

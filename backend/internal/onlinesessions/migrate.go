@@ -17,7 +17,7 @@ type securityMigration struct {
 	sql     string
 }
 
-var securityMigrations = []securityMigration{{5, migrations.OnlineSessionsSQL}, {6, migrations.OnlinePasswordChangesSQL}}
+var securityMigrations = []securityMigration{{5, migrations.OnlineSessionsSQL}, {6, migrations.OnlinePasswordChangesSQL}, {7, migrations.OnlineRecoveryKeysSQL}}
 
 func migrationDigest(script string) string {
 	h := sha256.Sum256([]byte(script))
@@ -100,6 +100,13 @@ func CheckSchema(ctx context.Context, db *sql.DB) error {
 	}
 	// Prepare a zero-row query so missing columns/tables fail before serving.
 	rows, err := db.QueryContext(ctx, `SELECT s.id, s.tenant_id, s.user_id, s.role, s.expires_at, s.revoked_at, r.digest, r.consumed_at, a.event, p.revoked_count FROM online_sessions s LEFT JOIN online_refresh_tokens r ON r.session_id = s.id LEFT JOIN online_session_audit a ON a.session_id = s.id LEFT JOIN online_password_changes p ON p.actor_session_id = s.id WHERE FALSE`)
+	if err != nil {
+		return ErrSchema
+	}
+	if rows.Close() != nil {
+		return ErrSchema
+	}
+	rows, err = db.QueryContext(ctx, `SELECT k.digest, k.credential_digest, k.expires_at, k.consumed_at, a.event FROM online_recovery_keys k LEFT JOIN online_recovery_audit a ON a.key_id=k.id AND a.tenant_id=k.tenant_id AND a.user_id=k.user_id WHERE FALSE`)
 	if err != nil {
 		return ErrSchema
 	}

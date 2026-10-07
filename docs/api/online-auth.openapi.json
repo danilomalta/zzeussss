@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "TitanSystem — Autenticação online existente",
-    "version": "1.1.0",
-    "description": "Sessões PostgreSQL persistidas. Migração de segurança 5 obrigatória. Refresh opaco de uso único; tokens antigos exigem novo login. Autenticação SQLite é outro serviço."
+    "version": "1.3.0",
+    "description": "Sessões PostgreSQL persistidas e esquema de segurança 5/6/7 obrigatório. Recuperação online por chave pessoal previamente preparada. E-mail verificado e recuperação por e-mail pendentes. SQLite é outro serviço."
   },
   "paths": {
     "/api/v1/auth/login": {
@@ -350,6 +350,100 @@
           }
         }
       }
+    },
+    "/api/v1/auth/recovery/key": {
+      "post": {
+        "summary": "Preparar chave pessoal de recuperação",
+        "description": "Sessão ativa e senha atual. Uma chave por conta, validade de 30 dias, cooldown persistido de um minuto. Substitui a anterior; não envia e-mail. JSON estrito, sem query, limite 2048 bytes. HTTPS obrigatório na implantação comercial.",
+        "security": [
+          {
+            "accessBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryKeyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Chave emitida após commit; no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryKeyOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou política de senha"
+          },
+          "401": {
+            "description": "Credencial de sessão/chave inválida"
+          },
+          "413": {
+            "description": "Corpo excedido"
+          },
+          "415": {
+            "description": "Content-Type inválido"
+          },
+          "429": {
+            "description": "Limite de tentativas/emissão"
+          },
+          "503": {
+            "description": "Serviço indisponível; commit pode ser incerto"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/recovery/reset": {
+      "post": {
+        "summary": "Redefinir senha com chave pessoal de uso único",
+        "description": "Chave previamente preparada. Consumo, senha, revogação e auditoria na mesma transação. Não cria sessão; exige novo login. JSON estrito, sem query e sem chave em URL. Sem repetição automática após resposta incerta.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryResetInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Senha redefinida; cookie de refresh expirado; no-store"
+          },
+          "400": {
+            "description": "Entrada inválida ou política de senha"
+          },
+          "401": {
+            "description": "Credencial de sessão/chave inválida"
+          },
+          "413": {
+            "description": "Corpo excedido"
+          },
+          "415": {
+            "description": "Content-Type inválido"
+          },
+          "429": {
+            "description": "Limite de tentativas/emissão"
+          },
+          "503": {
+            "description": "Serviço indisponível; commit pode ser incerto"
+          },
+          "403": {
+            "description": "Origem não autorizada"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -485,6 +579,62 @@
           },
           "current": {
             "type": "boolean"
+          }
+        }
+      },
+      "RecoveryKeyInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "current_password"
+        ],
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 72,
+            "writeOnly": true
+          }
+        }
+      },
+      "RecoveryResetInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "recovery_key",
+          "new_password"
+        ],
+        "properties": {
+          "recovery_key": {
+            "type": "string",
+            "minLength": 84,
+            "maxLength": 84,
+            "writeOnly": true
+          },
+          "new_password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 72,
+            "writeOnly": true,
+            "description": "Limites em bytes UTF-8; sem espaços nas extremidades, diferente da senha atual."
+          }
+        }
+      },
+      "RecoveryKeyOutput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "recovery_key",
+          "expires_at"
+        ],
+        "properties": {
+          "recovery_key": {
+            "type": "string",
+            "description": "Exibida somente nesta emissão autenticada; guarde em cofre pessoal, sem logs."
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

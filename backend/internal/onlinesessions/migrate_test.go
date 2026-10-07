@@ -8,8 +8,8 @@ import (
 	"testing"
 )
 
-func TestMigrationPreservesFiveAndAppliesSixAtomically(t *testing.T) {
-	for _, state := range []string{"new", "upgrade", "already", "future", "changed-five", "changed-six", "gap", "ddl-failure", "marker-failure", "zero-marker", "commit-failure"} {
+func TestMigrationPreservesHistoryAndAppliesRecoveryAtomically(t *testing.T) {
+	for _, state := range []string{"new", "upgrade", "upgrade-six", "already", "future", "changed-five", "changed-six", "changed-seven", "gap", "ddl-failure", "marker-failure", "zero-marker", "commit-failure"} {
 		t.Run(state, func(t *testing.T) {
 			db, m, err := sqlmock.New()
 			if err != nil {
@@ -25,7 +25,7 @@ func TestMigrationPreservesFiveAndAppliesSixAtomically(t *testing.T) {
 			case "upgrade", "ddl-failure", "marker-failure", "zero-marker", "commit-failure":
 				rows.AddRow(5, migrationDigest(securityMigrations[0].sql))
 				count = 1
-			case "already", "future", "changed-six":
+			case "already", "future", "changed-six", "changed-seven", "upgrade-six":
 				rows.AddRow(5, migrationDigest(securityMigrations[0].sql))
 				hash := schemaDigest()
 				if state == "changed-six" {
@@ -33,8 +33,16 @@ func TestMigrationPreservesFiveAndAppliesSixAtomically(t *testing.T) {
 				}
 				rows.AddRow(6, hash)
 				count = 2
+				if state != "upgrade-six" {
+					hash7 := migrationDigest(securityMigrations[2].sql)
+					if state == "changed-seven" {
+						hash7 = "changed"
+					}
+					rows.AddRow(7, hash7)
+					count = 3
+				}
 				if state == "future" {
-					rows.AddRow(7, "future")
+					rows.AddRow(8, "future")
 				}
 			case "changed-five":
 				rows.AddRow(5, "changed")
@@ -42,7 +50,7 @@ func TestMigrationPreservesFiveAndAppliesSixAtomically(t *testing.T) {
 				rows.AddRow(6, schemaDigest())
 			}
 			m.ExpectQuery("SELECT version, checksum FROM online_security_migrations ORDER BY version").WillReturnRows(rows)
-			validHistory := state != "future" && state != "changed-five" && state != "changed-six" && state != "gap"
+			validHistory := state != "future" && state != "changed-five" && state != "changed-six" && state != "changed-seven" && state != "gap"
 			if validHistory {
 				for _, step := range securityMigrations[count:] {
 					ddl := m.ExpectExec(regexp.QuoteMeta(step.sql))
@@ -66,7 +74,7 @@ func TestMigrationPreservesFiveAndAppliesSixAtomically(t *testing.T) {
 					}
 				}
 			}
-			good := state == "new" || state == "upgrade" || state == "already"
+			good := state == "new" || state == "upgrade" || state == "upgrade-six" || state == "already"
 			if good {
 				m.ExpectCommit()
 			} else if state == "commit-failure" {
@@ -86,7 +94,7 @@ func TestMigrationPreservesFiveAndAppliesSixAtomically(t *testing.T) {
 }
 
 func TestCheckSchemaRequiresCompleteHistoryAndPasswordTable(t *testing.T) {
-	for _, state := range []string{"complete", "only-five", "changed-five", "missing-table"} {
+	for _, state := range []string{"complete", "only-five", "only-six", "changed-five", "missing-table", "missing-recovery"} {
 		t.Run(state, func(t *testing.T) {
 			db, m, e := sqlmock.New()
 			if e != nil {
@@ -102,13 +110,22 @@ func TestCheckSchemaRequiresCompleteHistoryAndPasswordTable(t *testing.T) {
 			if state != "only-five" {
 				rows.AddRow(6, schemaDigest())
 			}
+			if state != "only-five" && state != "only-six" {
+				rows.AddRow(7, migrationDigest(securityMigrations[2].sql))
+			}
 			m.ExpectQuery("SELECT version, checksum").WillReturnRows(rows)
-			if state == "complete" || state == "missing-table" {
+			if state == "complete" || state == "missing-table" || state == "missing-recovery" {
 				q := m.ExpectQuery("SELECT .*online_password_changes")
 				if state == "missing-table" {
 					q.WillReturnError(errors.New("private"))
 				} else {
 					q.WillReturnRows(sqlmock.NewRows([]string{"id"}))
+					r := m.ExpectQuery("SELECT .*online_recovery_keys")
+					if state == "missing-recovery" {
+						r.WillReturnError(errors.New("private"))
+					} else {
+						r.WillReturnRows(sqlmock.NewRows([]string{"digest"}))
+					}
 				}
 			}
 			err := CheckSchema(context.Background(), db)

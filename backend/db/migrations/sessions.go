@@ -9,3 +9,6 @@ var OnlineSessionsSQL string
 
 //go:embed 000006_online_password_changes.sql
 var OnlinePasswordChangesSQL string
+
+//go:embed 000007_online_recovery_keys.sql
+var OnlineRecoveryKeysSQL string
