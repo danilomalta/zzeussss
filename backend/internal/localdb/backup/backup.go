@@ -213,8 +213,8 @@ func validate(ctx context.Context, path string, device identity.DeviceContext) e
 		return ErrBackup
 	}
 	var count int
-	// This release explicitly supports snapshots at schemas 25 through 28.
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || (count != 25 && count != 26 && count != 27 && count != 28) {
+	// This release explicitly supports snapshots at schemas 25 through 29.
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || (count != 25 && count != 26 && count != 27 && count != 28 && count != 29) {
 		return ErrBackup
 	}
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM tenants`).Scan(&count); err != nil || count != 1 {

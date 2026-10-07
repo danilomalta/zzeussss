@@ -1,0 +1,323 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan Local Production Orders P04",
+    "version": "1.0.0",
+    "description": "Whole reference batches planned against immutable recipe version. planned -> approved/cancelled; approved -> cancelled. Approval does not reserve or consume stock. Writes require manage_production and Production/Core/Inventory contract within transaction. Exact duplicate-free objects and stable operation IDs."
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/production/orders": {
+      "post": {
+        "operationId": "createProductionOrder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durable replay or state transition"
+          },
+          "201": {
+            "description": "Order created; no reservation or stock movement"
+          },
+          "400": {
+            "description": "Invalid input or exact quantity overflow"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission, contract or responsible denied"
+          },
+          "404": {
+            "description": "Reference not found in scope"
+          },
+          "409": {
+            "description": "ID, revision or state conflict"
+          },
+          "413": {
+            "description": "Body over 8192 bytes"
+          },
+          "500": {
+            "description": "Transaction failed"
+          },
+          "503": {
+            "description": "Trusted verifier unavailable"
+          }
+        }
+      },
+      "get": {
+        "description": "Scoped authorized read; remains available after contract expiry. Pages contain up to 50 items. Order includes frozen recipe snapshot and exact planned_output_milli. History preserves actor, states, revision, reason and time.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order or items page"
+          },
+          "400": {
+            "description": "Invalid query/ID"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "404": {
+            "description": "Order not found"
+          },
+          "500": {
+            "description": "Internal failure"
+          }
+        }
+      }
+    },
+    "/production/orders/state": {
+      "post": {
+        "operationId": "changeProductionOrderState",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeState"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durable replay or state transition"
+          },
+          "400": {
+            "description": "Invalid input or exact quantity overflow"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission, contract or responsible denied"
+          },
+          "404": {
+            "description": "Reference not found in scope"
+          },
+          "409": {
+            "description": "ID, revision or state conflict"
+          },
+          "413": {
+            "description": "Body over 8192 bytes"
+          },
+          "500": {
+            "description": "Transaction failed"
+          },
+          "503": {
+            "description": "Trusted verifier unavailable"
+          }
+        }
+      }
+    },
+    "/production/orders/{id}": {
+      "get": {
+        "description": "Scoped authorized read; remains available after contract expiry. Pages contain up to 50 items. Order includes frozen recipe snapshot and exact planned_output_milli. History preserves actor, states, revision, reason and time.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order or items page"
+          },
+          "400": {
+            "description": "Invalid query/ID"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "404": {
+            "description": "Order not found"
+          },
+          "500": {
+            "description": "Internal failure"
+          }
+        }
+      }
+    },
+    "/production/orders/{id}/history": {
+      "get": {
+        "description": "Scoped authorized read; remains available after contract expiry. Pages contain up to 50 items. Order includes frozen recipe snapshot and exact planned_output_milli. History preserves actor, states, revision, reason and time.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order or items page"
+          },
+          "400": {
+            "description": "Invalid query/ID"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "404": {
+            "description": "Order not found"
+          },
+          "500": {
+            "description": "Internal failure"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "CreateOrder": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "order_id",
+          "version_id",
+          "location_id",
+          "responsible_id",
+          "planned_batches"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "version_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "responsible_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "planned_batches": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "ChangeState": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "order_id",
+          "expected_revision",
+          "status",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "cancelled"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        }
+      }
+    }
+  }
+}

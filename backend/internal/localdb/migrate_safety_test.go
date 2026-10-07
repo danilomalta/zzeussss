@@ -46,7 +46,7 @@ func TestMigrationCrashChild(t *testing.T) {
 	if _, err := tx.Exec(`CREATE TABLE crash_probe(id INTEGER)`); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := tx.Exec(`INSERT INTO schema_migrations VALUES (29,'interrupted','now')`); err != nil {
+	if _, err := tx.Exec(`INSERT INTO schema_migrations VALUES (30,'interrupted','now')`); err != nil {
 		t.Fatal(err)
 	}
 	// Simulate abrupt termination without Rollback, Close or deferred cleanup.
@@ -79,14 +79,14 @@ func TestFutureSchemaAndHistoryDamageRefuseAllMigrationWrites(t *testing.T) {
 
 func TestFailedMigrationRollsBackDDLAndCanRetry(t *testing.T) {
 	db, _ := temporaryDB(t)
-	if err := applyMigration(context.Background(), db, 29, "test", `CREATE TABLE migration_probe(id INTEGER); INSERT INTO missing_table VALUES (1);`); err == nil {
+	if err := applyMigration(context.Background(), db, 30, "test", `CREATE TABLE migration_probe(id INTEGER); INSERT INTO missing_table VALUES (1);`); err == nil {
 		t.Fatal("accepted broken migration")
 	}
 	var count int
 	if err := db.QueryRow(`SELECT count(*) FROM sqlite_master WHERE name='migration_probe'`).Scan(&count); err != nil || count != 0 {
 		t.Fatalf("partial DDL persisted: %d %v", count, err)
 	}
-	if err := applyMigration(context.Background(), db, 29, "test", `CREATE TABLE migration_probe(id INTEGER);`); err != nil {
+	if err := applyMigration(context.Background(), db, 30, "test", `CREATE TABLE migration_probe(id INTEGER);`); err != nil {
 		t.Fatal(err)
 	}
 }
