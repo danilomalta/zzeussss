@@ -1,0 +1,1476 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — catálogo e estoque locais",
+    "version": "1.0.0",
+    "description": "Contrato do código na base 36da957. Não inclui catálogo online/PostgreSQL, fiscal, produção, importação em lote ou reconciliação comercial. Limites em bytes são descritos; maxLength OpenAPI contaria caracteres."
+  },
+  "paths": {
+    "/local/v1/products": {
+      "get": {
+        "operationId": "localListProducts",
+        "summary": "Lista produtos da empresa",
+        "description": "Permissão view_catalog. Ordena por sku,id. Cost_cents somente owner/manager/stock. Sem total ou snapshot entre páginas.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta real da API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "localCreateProduct",
+        "summary": "Cria produto local",
+        "description": "manage_stock e contrato inventory válido; sem verifier: 503. Criação não possui operation_id/idempotência. Não repetir automaticamente após perda de resposta. SKU/barcode duplicados podem resultar em 500 no legado; não se promete 409. Campos desconhecidos e duplicados não são rejeitados estritamente pelo parser legado; enviar apenas os campos documentados.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Resposta real da API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Created"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductInput"
+              },
+              "example": {
+                "sku": "FARINHA-1KG",
+                "name": "Farinha",
+                "unit": "kg",
+                "price_cents": 650,
+                "cost_cents": 450
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/locations": {
+      "get": {
+        "operationId": "localListLocations",
+        "summary": "Lista locais da loja",
+        "description": "view_catalog. Lista sem paginação; ID maiúsculo no payload existente.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta real da API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "localCreateLocation",
+        "summary": "Cria local de estoque",
+        "description": "manage_stock e contrato inventory válido. Sem idempotência de criação; consulta humana após resultado incerto.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Resposta real da API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Created"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationInput"
+              },
+              "example": {
+                "kind": "backroom",
+                "name": "Deposito"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/catalog/search": {
+      "get": {
+        "operationId": "localSearchCatalog",
+        "summary": "Busca autorizada no catálogo",
+        "description": "view_catalog; pending=cost exige visibilidade de custo. Página fixa de 50, com total. Unknown/duplicate query params são 400. Busca rejeita dinheiro fora do intervalo seguro de JavaScript. Aproximação é sinalizada por approximate; não equivale a produto substituto.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Até 240 bytes UTF-8 e oito termos normalizados. Nome, SKU ou barcode; não pesquisa marca/fornecedor inexistentes.",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          {
+            "name": "unit",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "",
+                "unit",
+                "kg",
+                "g",
+                "liter",
+                "ml",
+                "meter"
+              ]
+            }
+          },
+          {
+            "name": "pending",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "",
+                "barcode",
+                "cost",
+                "minimum"
+              ]
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta real da API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/stock/balance": {
+      "get": {
+        "operationId": "localStockBalance",
+        "summary": "Consulta saldo por produto e local",
+        "description": "manage_stock; contexto de loja/aparelho e registros são verificados. Referência ausente ou estrangeira: 400. Não agrega lojas.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": true,
+            "description": "Obrigatório, até 128 bytes UTF-8.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": true,
+            "description": "Obrigatório, até 128 bytes UTF-8.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta real da API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockBalance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/stock/operations": {
+      "post": {
+        "operationId": "localStockOperation",
+        "summary": "Registra entrada, transferência ou perda",
+        "description": "manage_stock e contrato inventory válido. Body até 16 KiB; objeto JSON estrito rejeita campos desconhecidos, duplicados e conteúdo extra. entry exige to e from vazio; loss exige from e to vazio; transfer exige ambos distintos. operation_id repete somente com contexto e conteúdo originais; divergência 409. Saldo insuficiente/overflow: 409. Movimento e outbox são atômicos. Não é recebimento de pedido entre empresas. O exemplo exige substituir IDs por referências reais; quantity_milli=4000 representa 4 unidades da unidade cadastrada (4 kg se unit=kg).",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Primeira aplicação: repeated=false",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockResult"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Mesma operação confirmada: repeated=true",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Status preservado; texto legado sem negociação ou erro genérico JSON com X-Titan-Error-Format: v1. Resultado incerto não autoriza novo POST automático.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockInput"
+              },
+              "example": {
+                "operation_id": "entrada-exemplo-01",
+                "kind": "entry",
+                "product_id": "id-real-do-produto",
+                "to_location_id": "id-real-do-local",
+                "quantity_milli": 4000,
+                "reason": "Entrada conferida"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "Session": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token opaco de sessão local; contexto deriva da sessão e estação."
+      }
+    },
+    "schemas": {
+      "Created": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "ProductInput": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "description": "Após trim: 1–100 bytes UTF-8."
+          },
+          "name": {
+            "type": "string",
+            "description": "Após trim: 1–255 bytes UTF-8."
+          },
+          "barcode": {
+            "type": "string",
+            "description": "Opcional; vazio equivale a ausência. Não há limite explícito no cadastro atual."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "",
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ],
+            "default": "unit"
+          },
+          "price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Centavos inteiros; ausência resulta em zero no parser legado."
+          },
+          "cost_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Centavos inteiros; ausência resulta em zero."
+          }
+        },
+        "required": [
+          "sku",
+          "name"
+        ]
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "barcode": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "cost_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Omitido para papéis sem visibilidade de custo; não substituir por zero."
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "name",
+          "unit",
+          "price_cents"
+        ],
+        "additionalProperties": false
+      },
+      "ProductPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "LocationInput": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "shelf",
+              "backroom",
+              "receiving",
+              "production"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Após trim: 1–255 bytes UTF-8."
+          }
+        },
+        "required": [
+          "kind",
+          "name"
+        ]
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "description": "Maiúsculo no JSON atual; não confundir com id de produto."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "shelf",
+              "backroom",
+              "receiving",
+              "production"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ID",
+          "kind",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "LocationList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "SearchProduct": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "barcode": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "cost_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Omitido para papéis sem visibilidade de custo; não substituir por zero."
+          },
+          "minimum_configured": {
+            "type": "boolean"
+          },
+          "approximate": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "name",
+          "unit",
+          "price_cents",
+          "minimum_configured",
+          "approximate"
+        ],
+        "additionalProperties": false
+      },
+      "SearchPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchProduct"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64",
+            "enum": [
+              50
+            ]
+          },
+          "cost_visible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "limit",
+          "cost_visible"
+        ],
+        "additionalProperties": false
+      },
+      "StockInput": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "description": "Após trim: 1–128 bytes UTF-8. Reutilizar em retry explícito."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "entry",
+              "loss",
+              "transfer"
+            ]
+          },
+          "product_id": {
+            "type": "string",
+            "description": "Após trim: 1–128 bytes UTF-8."
+          },
+          "from_location_id": {
+            "type": "string",
+            "description": "Até 128 bytes; vazio/ausente conforme kind."
+          },
+          "to_location_id": {
+            "type": "string",
+            "description": "Até 128 bytes; vazio/ausente conforme kind."
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "Milésimos da unidade do produto. O backend atual não exige múltiplo de 1000 para unit."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Após trim: 1–255 bytes UTF-8."
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "product_id",
+          "quantity_milli",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "StockResult": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation_id",
+          "repeated"
+        ],
+        "additionalProperties": false
+      },
+      "StockBalance": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "product_id",
+          "location_id",
+          "quantity_milli"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

@@ -349,9 +349,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/catalog.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./catalog-stock.openapi.json"
+        }
       }
     },
     "/local/v1/comparison-site-operations/{id}": {
@@ -466,9 +470,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/catalog.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./catalog-stock.openapi.json"
+        }
       },
       "post": {
         "operationId": "local_POST__local_v1_locations",
@@ -487,9 +495,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/catalog.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./catalog-stock.openapi.json"
+        }
       }
     },
     "/local/v1/login": {
@@ -598,9 +610,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/catalog.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./catalog-stock.openapi.json"
+        }
       },
       "post": {
         "operationId": "local_POST__local_v1_products",
@@ -619,9 +635,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/catalog.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./catalog-stock.openapi.json"
+        }
       }
     },
     "/local/v1/purchase-approvals": {
@@ -1156,9 +1176,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/stock.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./catalog-stock.openapi.json"
+        }
       }
     },
     "/local/v1/stock/operations": {
@@ -1179,9 +1203,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/stock.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./catalog-stock.openapi.json"
+        }
       }
     },
     "/api/v1/accounting/sped/request": {

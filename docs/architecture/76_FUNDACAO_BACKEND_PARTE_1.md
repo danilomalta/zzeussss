@@ -139,3 +139,5 @@ Entrega 10: docs/architecture/85_VALIDACAO_POSTGRESQL_ISOLADA.md. Ferramenta par
 Entrega 11: docs/architecture/86_RECUPERACAO_ONLINE_COM_CHAVE_PESSOAL.md. Migração PostgreSQL 7 aditiva; emissão autenticada com senha atual e recuperação por chave pessoal previamente guardada. Consumo, senha, revogação e auditoria transacionais. Não usa e-mail não verificado; recuperação por e-mail e interface permanecem pendentes. Teste PostgreSQL isolado ampliado, exigindo nova execução no PC. Produção e SQLite inalterados.
 
 Entrega 12: docs/architecture/87_CONTRATOS_HTTP_ERROS_E_INVENTARIO.md. Negociação opcional de erros, inventário real, mapa OpenAPI e documentação de paginação existente. Sem migração nem integração da branch de produção. Contratos de payload pendentes estão explicitamente marcados.
+
+Entrega 13: docs/architecture/88_CONTRATOS_CATALOGO_ESTOQUE_LOCAL.md. Sete operações locais com schemas detalhados e testes de payload HTTP/idempotência; nenhum handler ou schema de banco alterado.
