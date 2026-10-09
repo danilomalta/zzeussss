@@ -11,6 +11,7 @@ consumo de memória RAM (importante para hardwares limitados do PDV varejista).
 
 // Carregamento assíncrono e sob demanda de cada página/módulo
 import {LocalAccessProvider} from '../local/LocalAccess';
+const LocalStockAvailability = React.lazy(() => import('../../modules/catalog/pages/LocalStockAvailability'));
 const LocalProduction = React.lazy(() => import('../../modules/production/pages/LocalProduction'));
 const LocalComparison = React.lazy(() => import('../../modules/catalog/pages/LocalComparison'));
 const LocalOrders = React.lazy(() => import("../../modules/catalog/pages/LocalOrders"));
@@ -51,7 +52,7 @@ export const router = createBrowserRouter([
     { path: "orders", element: <SuspenseWrapper><LocalOrders /></SuspenseWrapper> },
     { index: true, element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
     { path: 'home', element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
-    { path: 'stock', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
+    { path: 'stock', element: <SuspenseWrapper><LocalStockAvailability /></SuspenseWrapper> },
     { path: 'subscription', element: <SuspenseWrapper><LocalSubscription /></SuspenseWrapper> },
     { path: 'staff', element: <SuspenseWrapper><LocalStaff /></SuspenseWrapper> },
     { path: 'catalog', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },

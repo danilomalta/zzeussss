@@ -1,0 +1,3 @@
+export interface StockBalance {product_id:string;location_id:string;unit:string;physical_milli:number;reserved_milli:number;free_milli:number}
+export interface Reservations {balance:StockBalance;total_count:number;offset:number;limit:number;has_more:boolean;items:{reservation_id:string;order_id:string;version_id:string;responsible_id:string;created_at:string;unit:string;quantity_milli:number}[]}
+export function createStockRead(fetcher?:typeof fetch):{balance(token:string,product:string,location:string):Promise<StockBalance>;reservations(token:string,product:string,location:string,offset?:number):Promise<Reservations>};
