@@ -7,4 +7,6 @@ export function validLossSummary(v:unknown,id:string):boolean;
 export function validLossHistory(v:unknown):boolean;
 export function prepareLoss(v:LossSummary,value:string,reason:string,op:string,lossID:string):LossInput;
 export function prepareVoidLoss(v:ProductionLoss,reason:string,op:string):VoidLossInput;
-export function createProductionLosses(fetcher?:typeof fetch):{summary(token:string,id:string,offset?:number):Promise<LossSummary>;loss(token:string,id:string):Promise<ProductionLoss>;history(token:string,id:string):Promise<LossEvent[]>};
+export interface LossAudit {loss:ProductionLoss;events:LossEvent[]}
+export function validLossAudit(loss:unknown,events:unknown):boolean;
+export function createProductionLosses(fetcher?:typeof fetch):{audit(token:string,id:string):Promise<LossAudit>;summary(token:string,id:string,offset?:number):Promise<LossSummary>;loss(token:string,id:string):Promise<ProductionLoss>;history(token:string,id:string):Promise<LossEvent[]>};
