@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {fixture} from './productionExecution.test.mjs';import {prepareCompletion,validExecutionTrace} from '../src/core/local/productionExecution.mjs';
+import {fixture} from './productionExecution.fixture.mjs';import {prepareCompletion,validExecutionTrace} from '../src/core/local/productionExecution.mjs';
 import {LocalAPIError} from '../src/core/local/localClient.mjs';import {persistProductionPending,resolveProductionPending,readProductionPending} from '../src/core/local/productionMutations.mjs';
 test('completion preserves measured amount revision and original order',()=>{const v=fixture('approved','consumed');assert.deepEqual(prepareCompletion(v,'27',' Medido ','op','result'),{operation_id:'op',result_id:'result',order_id:'o',expected_revision:2,produced_milli:27000,reason:'Medido'});assert.equal(prepareCompletion(v,'0','Zero','op','result').produced_milli,0);});
 test('completion refuses excess fractional units overflow and exponent',()=>{const v=fixture('approved','consumed');for(const q of ['30.001','31','0.001','-1','1e1','27.0000','9007199254740.992',''])assert.throws(()=>prepareCompletion(v,q,'Medido','op','result'));assert.throws(()=>prepareCompletion(v,'27','á'.repeat(128),'op','result'));});

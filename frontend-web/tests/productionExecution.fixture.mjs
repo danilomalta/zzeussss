@@ -1,0 +1,5 @@
+export function fixture(status='approved',materials='none'){
+ const recipe={recipe_id:'recipe',version_id:'v',revision:1,name:'Pão',output_product_id:'bread',output_unit:'unit',yield_milli:10000,ingredients:[{product_id:'flour',unit:'g',quantity_milli:500000},{product_id:'oil',unit:'ml',quantity_milli:100001}]};
+ const active=materials==='active',consumed=materials==='consumed';
+ return {order:{id:'o',version_id:'v',location_id:'room',responsible_id:'person',planned_batches:3,planned_output_milli:30000,revision:2,created_at:'2026-10-09',status,recipe},ingredients:recipe.ingredients.map(i=>({product_id:i.product_id,unit:i.unit,planned_milli:i.quantity_milli*3,reserved_milli:active?i.quantity_milli*3:0,consumed_milli:consumed?i.quantity_milli*3:0})),materials:{active_count:active?1:0,consumed_count:consumed?1:0,released_count:0,current:materials==='none'?null:{id:'res',order_id:'o',location_id:'room',status:materials,created_by:'person',created_at:'now',updated_at:'now',items:recipe.ingredients.map(i=>({...i,quantity_milli:i.quantity_milli*3}))}},stages:null,result:null};
+}

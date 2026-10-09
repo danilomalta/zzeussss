@@ -1,3 +1,4 @@
+import ProductionStagePlan from './ProductionStagePlan';
 import ProductionCompletion from './ProductionCompletion';
 import ProductionMaterials from './ProductionMaterials';
 import RecipeStateEditor from './RecipeStateEditor';
@@ -22,6 +23,7 @@ export default function LocalProduction(){
     <RecipeStateEditor/>
     <OrderPlanner/>
     <OrderStateEditor/>
+    <ProductionStagePlan/>
     <ProductionMaterials/>
     <ProductionCompletion/>
     <ReadSection title="Versões das receitas"><form className="operation-form" onSubmit={e=>{e.preventDefault();loadRecipes();}}><label className="brand-field">ID da receita (opcional)<input maxLength={128} value={recipeID} onChange={e=>{setRecipeID(e.target.value);recipes.clear();}}/></label><button className="brand-primary" disabled={recipes.busy}>Consultar versões</button></form><ReadState task={recipes}/>

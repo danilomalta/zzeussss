@@ -8,9 +8,11 @@ export interface ReserveInput {operation_id:string;reservation_id:string;order_i
 export interface MaterialsInput {operation_id:string;reservation_id:string;action:'release'|'consume';reason:string}
 export interface ResultInput {operation_id:string;result_id:string;order_id:string;expected_revision:number;produced_milli:number;reason:string}
 export interface RecipeState {recipe_id:string;status:'active'|'inactive';revision:number;repeated:boolean}
-export type ProductionOperation={kind:'recipe';input:RecipeInput}|{kind:'order';input:OrderInput}|{kind:'state';input:StateInput}|{kind:'recipe_state';input:RecipeStateInput}|{kind:'reserve';input:ReserveInput}|{kind:'materials';input:MaterialsInput}|{kind:'result';input:ResultInput};
+export interface StagePlanInput {operation_id:string;order_id:string;stages:{stage_id:string;name:string;responsible_id:string}[];reason:string}
+export interface StageStateInput {operation_id:string;order_id:string;stage_id:string;expected_revision:number;status:'running'|'completed';reason:string}
+export type ProductionOperation={kind:'recipe';input:RecipeInput}|{kind:'order';input:OrderInput}|{kind:'state';input:StateInput}|{kind:'recipe_state';input:RecipeStateInput}|{kind:'reserve';input:ReserveInput}|{kind:'materials';input:MaterialsInput}|{kind:'result';input:ResultInput}|{kind:'stage_plan';input:StagePlanInput}|{kind:'stage_state';input:StageStateInput};
 export type PendingProduction=ProductionOperation & {uncertain:boolean};
-export interface MutationResult {revision?:number;reservation_id?:string;result_id?:string;unit?:string;product_id?:string;location_id?:string;planned_milli?:number;produced_milli?:number;shortfall_milli?:number;repeated:boolean;recipe_id?:string;version_id?:string;order_id?:string;status?:string}
+export interface MutationResult {stage_id?:string;revision?:number;reservation_id?:string;result_id?:string;unit?:string;product_id?:string;location_id?:string;planned_milli?:number;produced_milli?:number;shortfall_milli?:number;repeated:boolean;recipe_id?:string;version_id?:string;order_id?:string;status?:string}
 export function validProductionInput(kind:string,v:unknown):boolean;
 export function parseProductionQuantity(v:string,allowZero?:boolean):number;
 export function parseProductionInteger(v:string,allowZero?:boolean):number;

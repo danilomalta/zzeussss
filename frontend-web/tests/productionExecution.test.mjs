@@ -1,10 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {validExecutionTrace,executionChoices,completionReady,createProductionExecution} from '../src/core/local/productionExecution.mjs';
-export function fixture(status='approved',materials='none'){
- const recipe={recipe_id:'recipe',version_id:'v',revision:1,name:'Pão',output_product_id:'bread',output_unit:'unit',yield_milli:10000,ingredients:[{product_id:'flour',unit:'g',quantity_milli:500000},{product_id:'oil',unit:'ml',quantity_milli:100001}]};
- const active=materials==='active',consumed=materials==='consumed';
- return {order:{id:'o',version_id:'v',location_id:'room',responsible_id:'person',planned_batches:3,planned_output_milli:30000,revision:2,created_at:'2026-10-09',status,recipe},ingredients:recipe.ingredients.map(i=>({product_id:i.product_id,unit:i.unit,planned_milli:i.quantity_milli*3,reserved_milli:active?i.quantity_milli*3:0,consumed_milli:consumed?i.quantity_milli*3:0})),materials:{active_count:active?1:0,consumed_count:consumed?1:0,released_count:0,current:materials==='none'?null:{id:'res',order_id:'o',location_id:'room',status:materials,created_by:'person',created_at:'now',updated_at:'now',items:recipe.ingredients.map(i=>({...i,quantity_milli:i.quantity_milli*3}))}},stages:null,result:null};
-}
+import {fixture} from './productionExecution.fixture.mjs';
+
 test('actions separate physical consumption from reservation and release',()=>{assert.deepEqual(executionChoices(fixture()),['reserve']);assert.deepEqual(executionChoices(fixture('approved','active')),['release','consume']);assert.deepEqual(executionChoices(fixture('approved','consumed')),[]);assert.deepEqual(executionChoices(fixture('planned')),[]);assert.deepEqual(executionChoices(fixture('cancelled')),[]);});
 test('trace requires exact planned material and same location and order',()=>{for(const change of [v=>v.ingredients[0].planned_milli++,v=>v.materials.current.location_id='other',v=>v.materials.current.items[1].unit='g',v=>v.materials.current.order_id='other',v=>v.materials.active_count=2,v=>v.ingredients[1].product_id='flour']){const v=fixture('approved','active');change(v);assert.ok(!validExecutionTrace(v,'o'));assert.deepEqual(executionChoices(v),[]);}});
 test('amounts never invent reservation or consumption without matching status',()=>{const v=fixture();v.ingredients[0].consumed_milli=1;assert.ok(!validExecutionTrace(v,'o'));const active=fixture('approved','active');active.ingredients[0].reserved_milli=0;assert.ok(!validExecutionTrace(active,'o'));});
