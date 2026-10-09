@@ -1,0 +1,596 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P10 human production quality assessments",
+    "version": "P10",
+    "description": "Append immutable whole-lot human quality assessments with explicit criterion, reason, authenticated actor, device and frozen lot metadata. Not a medical/food certification, automated quality test, quarantine stock ledger or sale gate. Does not change quantity, recipe, order, loss, lot state or inventory. All operations require current manage_production and approved device. Writes including replay require valid Production contract. Scope derives only from session. Strict required JSON: no unknown, duplicated or null fields, fractional revisions or trailing JSON."
+  },
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/local/v1/production/quality-reviews": {
+      "post": {
+        "operationId": "recordProductionQualityReview",
+        "description": "Append passed or failed for an entire recorded P09 lot. First expected_revision=0, then the current quality revision. Reassessment requires a new operation ID and reason; even an unchanged verdict creates new immutable history. Scoped exact replay returns original result even after later review or lot void; changed request/actor/store conflicts. A new review on a voided lot is refused. Current lot status and historical verdict are distinct.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Input"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous JSON, revision, text or query"
+          },
+          "401": {
+            "description": "Verified human session required"
+          },
+          "403": {
+            "description": "Human/device permission or active Production write contract denied"
+          },
+          "404": {
+            "description": "Lot not found in tenant/store scope"
+          },
+          "409": {
+            "description": "Expected revision, idempotency, voided lot or incomplete/inconsistent history conflict"
+          },
+          "500": {
+            "description": "Internal error; transaction rolled back"
+          },
+          "201": {
+            "description": "New assessment appended",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Authorized exact historical replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 8192 bytes"
+          },
+          "503": {
+            "description": "Contract store unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/production/lots/{id}/quality": {
+      "get": {
+        "operationId": "getProductionLotQuality",
+        "description": "Latest human verdict with current lot_status. No assessment: revision 0, not_assessed and latest null. Preserved after lot void, with explicit voided state. Readable after contract expiry by authorized user.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous JSON, revision, text or query"
+          },
+          "401": {
+            "description": "Verified human session required"
+          },
+          "403": {
+            "description": "Human/device permission or active Production write contract denied"
+          },
+          "404": {
+            "description": "Lot not found in tenant/store scope"
+          },
+          "409": {
+            "description": "Expected revision, idempotency, voided lot or incomplete/inconsistent history conflict"
+          },
+          "500": {
+            "description": "Internal error; transaction rolled back"
+          },
+          "200": {
+            "description": "Scoped historical data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Current"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/lots/{id}/quality/history": {
+      "get": {
+        "operationId": "getProductionLotQualityHistory",
+        "description": "All assessments ordered by quality revision, at most 50 per page. Historical criterion, reason, actor, device, original whole-lot definition and timestamp are preserved. Only one offset query parameter allowed.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous JSON, revision, text or query"
+          },
+          "401": {
+            "description": "Verified human session required"
+          },
+          "403": {
+            "description": "Human/device permission or active Production write contract denied"
+          },
+          "404": {
+            "description": "Lot not found in tenant/store scope"
+          },
+          "409": {
+            "description": "Expected revision, idempotency, voided lot or incomplete/inconsistent history conflict"
+          },
+          "500": {
+            "description": "Internal error; transaction rolled back"
+          },
+          "200": {
+            "description": "Scoped historical data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Input": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "lot_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483646,
+            "description": "0 before the first assessment, then the current quality revision. Separate from the P09 lot revision."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed"
+            ],
+            "description": "Human-declared verdict for the entire lot. No automatic inspection or stock release."
+          },
+          "criterion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Criterion explicitly declared by the authorized human; the server does not invent or evaluate standards."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Human observation/reason for this verdict or reassessment."
+          }
+        },
+        "required": [
+          "operation_id",
+          "lot_id",
+          "expected_revision",
+          "status",
+          "criterion",
+          "reason"
+        ]
+      },
+      "WriteResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lot_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed"
+            ],
+            "description": "Human-declared verdict for the entire lot. No automatic inspection or stock release."
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "lot_id",
+          "revision",
+          "status",
+          "repeated"
+        ]
+      },
+      "LotSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Trimmed code, at most 64 UTF-8 bytes, no control characters. Case-sensitive and unique across all lots in this tenant/store, including voided lots."
+          },
+          "manufactured_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Explicit valid calendar date YYYY-MM-DD, year 0001..9999. No automatic source or shelf-life calculation."
+          },
+          "expires_on": {
+            "type": "string",
+            "description": "Required field: empty string means unknown; otherwise valid YYYY-MM-DD calendar date >= manufactured_on. A declaration, not proof of shelf life or availability."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "result_id",
+          "product_id",
+          "unit",
+          "quantity_milli",
+          "code",
+          "manufactured_on",
+          "expires_on",
+          "reason",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Review": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lot_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed"
+            ],
+            "description": "Human-declared verdict for the entire lot. No automatic inspection or stock release."
+          },
+          "criterion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "lot_snapshot": {
+            "$ref": "#/components/schemas/LotSnapshot"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "lot_id",
+          "revision",
+          "operation_id",
+          "device_id",
+          "actor_id",
+          "status",
+          "criterion",
+          "reason",
+          "lot_snapshot",
+          "created_at"
+        ]
+      },
+      "Current": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lot_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "lot_status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ],
+            "description": "Current P09 lot state. A historical passed verdict does not reactivate a voided lot."
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_assessed",
+              "passed",
+              "failed"
+            ]
+          },
+          "latest": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lot_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "revision": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              "operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "device_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "actor_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "passed",
+                  "failed"
+                ],
+                "description": "Human-declared verdict for the entire lot. No automatic inspection or stock release."
+              },
+              "criterion": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Trimmed text, at most 255 UTF-8 bytes."
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Trimmed text, at most 255 UTF-8 bytes."
+              },
+              "lot_snapshot": {
+                "$ref": "#/components/schemas/LotSnapshot"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "lot_id",
+              "revision",
+              "operation_id",
+              "device_id",
+              "actor_id",
+              "status",
+              "criterion",
+              "reason",
+              "lot_snapshot",
+              "created_at"
+            ],
+            "nullable": true,
+            "description": "Null when not_assessed revision 0; otherwise the latest persisted assessment and original lot snapshot."
+          }
+        },
+        "required": [
+          "lot_id",
+          "lot_status",
+          "revision",
+          "status",
+          "latest"
+        ]
+      },
+      "History": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Review"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      }
+    }
+  }
+}
