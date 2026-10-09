@@ -7,6 +7,7 @@ import argparse
 from datetime import datetime, timedelta, timezone
 import json
 import os
+import re
 from pathlib import Path
 import secrets
 import shutil
@@ -15,6 +16,16 @@ import tempfile
 
 TEST = 'TestPostgresDurableRotationConcurrencyAndRollback'
 PACKAGE = 'titansystem-backend/internal/onlinesessions'
+
+SUITES = {
+    'sessions': (TEST, PACKAGE, './internal/onlinesessions',
+                 'backend/internal/onlinesessions/postgres_test.go',
+                 'TITAN_SESSION_TEST_DATABASE_URL'),
+    'catalog': ('TestPostgresCatalogCreationAndDiscountAtomicity',
+                'titansystem-backend/internal/core/routes', './internal/core/routes',
+                'backend/internal/core/routes/catalog_postgres_test.go',
+                'TITAN_CATALOG_TEST_DATABASE_URL'),
+}
 
 
 class TestFailure(Exception):
@@ -28,7 +39,7 @@ def clean_environment(source):
             and k not in ('DATABASE_URL', 'DB_PASSWORD', 'DB_HOST', 'DB_NAME')}
 
 
-def require_pass(output):
+def require_pass(output, expected_test=TEST, expected_package=PACKAGE):
     if not isinstance(output, str) or len(output.encode()) > 2_000_000:
         raise TestFailure('Saída do teste inválida ou excessiva.')
     started = passed = package_passed = False
@@ -39,12 +50,12 @@ def require_pass(output):
             raise TestFailure('O teste não produziu o relatório JSON esperado.') from None
         if not isinstance(event, dict):
             raise TestFailure('Evento de teste inválido.')
-        if event.get('Package') != PACKAGE:
+        if event.get('Package') != expected_package:
             continue
         action, test = event.get('Action'), event.get('Test')
         if action in ('fail', 'skip'):
             raise TestFailure('Teste falhou ou foi ignorado; PostgreSQL não validado.')
-        if test == TEST:
+        if test == expected_test:
             started |= action == 'run'
             passed |= action == 'pass'
         if test is None and action == 'pass':
@@ -54,17 +65,20 @@ def require_pass(output):
 
 
 def execute(repo, port, report, runner=subprocess.run, finder=shutil.which,
-            environment=None):
+            environment=None, suite='sessions'):
     repo = Path(repo)
+    if suite not in SUITES:
+        raise TestFailure('Suíte PostgreSQL inválida.')
+    test, package, package_path, source_file, url_variable = SUITES[suite]
     if not isinstance(port, int) or isinstance(port, bool) or not 1 <= port <= 65535:
         raise TestFailure('Porta PostgreSQL inválida.')
-    if not (repo / 'backend/internal/onlinesessions/postgres_test.go').is_file():
+    if not (repo / source_file).is_file():
         raise TestFailure('Execute a ferramenta dentro do projeto atualizado.')
     binaries = {name: finder(name) for name in ('go', 'psql', 'sudo')}
     if not all(binaries.values()):
         raise TestFailure('Instale Go, o cliente PostgreSQL e sudo antes de executar.')
     env = clean_environment(os.environ if environment is None else environment)
-    report.update(port=port, status='NÃO EXECUTADO', stage='preflight')
+    report.update(port=port, status='NÃO EXECUTADO', stage='preflight', suite=suite)
 
     def command(args, *, sql=None, timeout=30, command_env=None, interactive=False):
         try:
@@ -76,6 +90,23 @@ def execute(repo, port, report, runner=subprocess.run, finder=shutil.which,
         except (OSError, subprocess.TimeoutExpired):
             raise TestFailure('Comando indisponível ou prazo excedido; consulte a etapa no relatório.') from None
         if result.returncode != 0:
+            # Only retain a source filename and numeric line, never raw logs,
+            # error text, SQL, connection strings or submitted values.
+            if args[0] == binaries['go'] and '-json' in args and isinstance(result.stdout, str) and len(result.stdout) <= 2_000_000:
+                for line in result.stdout.splitlines():
+                    try:
+                        event = json.loads(line)
+                    except (ValueError, TypeError):
+                        continue
+                    if not isinstance(event, dict) or event.get('Package') != package:
+                        continue
+                    output = event.get('Output')
+                    if not isinstance(output, str):
+                        continue
+                    location = re.search(r'\b(catalog_postgres_test\.go|postgres_test\.go|recovery_postgres_test\.go):(\d+)\b', output)
+                    if location:
+                        report['failure_location'] = location.group(1) + ':' + location.group(2)
+                        break
             raise TestFailure('Comando falhou; consulte a etapa no relatório. Logs brutos foram omitidos.')
         return result.stdout
 
@@ -105,12 +136,12 @@ def execute(repo, port, report, runner=subprocess.run, finder=shutil.which,
     report['database_created'] = True
     report['stage'] = 'postgres_test'
     test_env = dict(env)
-    test_env['TITAN_SESSION_TEST_DATABASE_URL'] = (
+    test_env[url_variable] = (
         f'postgres://{role}:{password}@127.0.0.1:{port}/{database}?sslmode=disable')
     output = command([binaries['go'], 'test', '-json', '-count=1',
-                      './internal/onlinesessions', '-run', '^' + TEST + '$'],
+                      package_path, '-run', '^' + test + '$'],
                      command_env=test_env, timeout=240)
-    require_pass(output)
+    require_pass(output, test, package)
     report.update(status='PASSOU', stage='completed')
 
 
@@ -128,13 +159,14 @@ def save_report(report, parent=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--pg-port', type=int, default=5432)
+    parser.add_argument('--suite', choices=tuple(SUITES), default='sessions')
     args = parser.parse_args()
     report = {'status': 'NÃO EXECUTADO', 'stage': 'preflight'}
     error = None
     try:
         if os.geteuid() == 0:
             raise TestFailure('Execute como seu usuário normal, sem sudo no Python.')
-        execute(Path(__file__).resolve().parents[1], args.pg_port, report)
+        execute(Path(__file__).resolve().parents[1], args.pg_port, report, suite=args.suite)
     except TestFailure as failure:
         error = str(failure)
         report['status'] = 'FALHOU / NÃO VALIDADO'
@@ -149,7 +181,10 @@ def main():
     if error:
         print('Pare: ' + error)
     else:
-        print('PASSOU: migrações, concorrência, revogação e rollback em PostgreSQL real.')
+        if args.suite == 'catalog':
+            print('PASSOU: cadastro, isolamento, índice pendente, concorrência e rollback do catálogo em PostgreSQL real.')
+        else:
+            print('PASSOU: migrações, concorrência, revogação e rollback em PostgreSQL real.')
     print('Relatório privado:', path)
     if 'role' in report:
         print('Recursos de teste eventualmente criados foram preservados; senha temporária válida por uma hora.')

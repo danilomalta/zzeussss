@@ -65,3 +65,5 @@ Rotas online marcadas `unavailable` continuam bloqueadas. Saúde do processo nã
 Entrega 17: as quatro operações locais restantes receberam contrato detalhado. Essa cobertura documental não demonstra conclusão dos fluxos comerciais. Login local agora exige JSON exato até 4096 bytes; clientes de formulário precisam adotar JSON.
 
 Entrega 18: GET produtos e GET sugestões online têm limit=50 (1–100), offset=0 (até 1.000.000.000). count de sugestões refere-se à página; lista de produtos permanece array. Não confundir valores legados float64 online com centavos locais. Criação online, geração de sugestões e rotas bloqueadas ainda têm revisão própria pendente.
+
+Validação PostgreSQL do catálogo/sugestões: `python3 -B tools/test_online_postgres.py --suite catalog`; banco/schema novos, teste opt-in e relatório privado. Ver documento 96.
