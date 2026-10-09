@@ -152,6 +152,13 @@ func CreateOrder(ctx context.Context, db *sql.DB, license *entitlementstore.Stor
 	if v.VersionID != in.VersionID {
 		return OrderResult{}, ErrConflict
 	}
+	state, err := recipeStateTx(ctx, tx, a, v.RecipeID)
+	if err != nil {
+		return OrderResult{}, err
+	}
+	if state.Status != "active" {
+		return OrderResult{}, ErrConflict
+	}
 	if _, _, err = normalize(v.PublishInput); err != nil {
 		return OrderResult{}, err
 	}
