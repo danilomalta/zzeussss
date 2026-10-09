@@ -1,0 +1,845 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — funcionários, capacidades e contrato local",
+    "version": "1.0.0",
+    "description": "Contrato do código na base c2f86e5; quatro operações existentes. Cobrança online e RH completo pendentes."
+  },
+  "paths": {
+    "/local/v1/capabilities": {
+      "get": {
+        "operationId": "localCapabilities",
+        "summary": "Consulta permissões e contrato",
+        "description": "Sessão ativa, loja e aparelho aprovados. Retorna subconjunto de dez permissões operacionais; não é inventário completo de administração. Permissões independem da lista de módulos: UI deve combinar permissão, módulo e vigência; backend revalida em cada ação. Nenhuma permissão informada substitui autorização no servidor. Consulta pode avançar last_observed_unix do contrato. Ausência de verificador: unavailable; sem contrato: not_installed; assinatura inválida: invalid; relógio retrocedido: clock_blocked.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Capabilities"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/staff": {
+      "get": {
+        "operationId": "localListStaff",
+        "summary": "Lista membros da loja",
+        "description": "manage_staff e contrato Staff válido inclusive para leitura. Até 100 registros por nome,id; sem paginação, total ou has_more. Pode incluir dono e membros não ativos. Não retorna senhas/hashes. O handler não implementa filtros ou seleção de loja por query.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "localCreateStaff",
+        "summary": "Cria funcionário com senha local",
+        "description": "manage_staff e contrato Staff. JSON exato até 4096 bytes, todos os campos obrigatórios; IDs não vazios até 128 bytes sem espaços nas bordas; nome após trim 1–255 bytes. Quem não é owner só cria employee/cashier/stock; owner também manager/production/accountant/supplier. Nunca cria owner nem usa ID do autor. Novo 201; repetição idêntica 200; conflito 409. Replay confere senha atual armazenada: troca posterior impede replay da senha antiga. Transação cria identidade, vínculo, loja, hash e registro auditável. Não cadastra folha, ponto, departamento ou conta de fornecedor externo.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Funcionário criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/module-contracts": {
+      "post": {
+        "operationId": "localInstallModuleContract",
+        "summary": "Instala contrato assinado",
+        "description": "Exige manage_staff e papel owner; aparelho autorizado. JSON exato key_id/payload/signature até 64 KiB. Chave emissora deve ser previamente confiável no servidor; key_id apenas a seleciona. Assinatura, empresa, validade, dependências e revisão verificadas. Novo e replay idêntico 200; revisão obsoleta/conflitante ou relógio bloqueado 409; assinatura/claims inválidos 400; verificador ausente 503. Não emite licença, fatura, cobrança nem aplica tolerância comercial de três dias.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado em texto ou Error JSON quando negociado com X-Titan-Error-Format: v1.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContractEnvelope"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "Session": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Sessão local opaca; contexto do servidor."
+      }
+    },
+    "schemas": {
+      "StaffInput": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "identity_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "manager",
+              "employee",
+              "cashier",
+              "stock",
+              "production",
+              "accountant",
+              "supplier"
+            ]
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "writeOnly": true,
+            "description": "12–72 bytes, sem espaços nas bordas; nunca incluir em logs ou respostas."
+          }
+        },
+        "required": [
+          "operation_id",
+          "identity_id",
+          "name",
+          "role",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "StaffResult": {
+        "type": "object",
+        "properties": {
+          "identity_id": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "identity_id",
+          "repeated"
+        ],
+        "additionalProperties": false
+      },
+      "StaffMember": {
+        "type": "object",
+        "properties": {
+          "identity_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "manager",
+              "employee",
+              "cashier",
+              "stock",
+              "production",
+              "accountant",
+              "supplier"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "identity_id",
+          "name",
+          "role",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "StaffPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StaffMember"
+            },
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "License": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "expired",
+              "not_yet_valid",
+              "unavailable",
+              "not_installed",
+              "clock_blocked",
+              "invalid"
+            ]
+          },
+          "modules": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "core",
+                "inventory",
+                "pos",
+                "orders",
+                "logistics",
+                "finance",
+                "fiscal",
+                "accounting",
+                "staff",
+                "production"
+              ]
+            }
+          },
+          "expires_unix": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "remaining_days": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "state",
+          "modules",
+          "remaining_days"
+        ],
+        "additionalProperties": false,
+        "description": "Metadados assinados, não fatura. Expirado/futuro pode conservar módulos contratados; somente active indica vigência atual. remaining_days é arredondado para cima em active; zero nos demais estados. expires_unix pode ser omitido."
+      },
+      "Capabilities": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string"
+          },
+          "store_id": {
+            "type": "string"
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "identity_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "manager",
+              "employee",
+              "cashier",
+              "stock",
+              "production",
+              "accountant",
+              "supplier"
+            ]
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "view_catalog",
+                "sell",
+                "manage_stock",
+                "manage_staff",
+                "view_accounting",
+                "manage_production",
+                "view_orders",
+                "manage_replenishment",
+                "manage_cash",
+                "cancel_sale"
+              ]
+            }
+          },
+          "license": {
+            "$ref": "#/components/schemas/License"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "store_id",
+          "device_id",
+          "identity_id",
+          "role",
+          "permissions",
+          "license"
+        ],
+        "additionalProperties": false
+      },
+      "ContractEnvelope": {
+        "type": "object",
+        "properties": {
+          "key_id": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "string",
+            "format": "byte",
+            "description": "Bytes exatos do JSON de claims, codificados em base64; não objeto JSON aninhado."
+          },
+          "signature": {
+            "type": "string",
+            "format": "byte",
+            "description": "Assinatura Ed25519 em base64; chave privada nunca enviada."
+          }
+        },
+        "required": [
+          "key_id",
+          "payload",
+          "signature"
+        ],
+        "additionalProperties": false
+      },
+      "ContractResult": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "revision",
+          "repeated"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

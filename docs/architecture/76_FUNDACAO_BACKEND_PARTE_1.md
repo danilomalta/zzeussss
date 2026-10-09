@@ -145,3 +145,5 @@ Entrega 13: docs/architecture/88_CONTRATOS_CATALOGO_ESTOQUE_LOCAL.md. Sete opera
 Entrega 14: docs/architecture/89_CONTRATOS_CAIXA_VENDAS_LOCAL.md. Oito operações locais com contrato detalhado e teste do ciclo cego, venda, cancelamento e repetição. Nenhuma funcionalidade de pagamento/fiscal ou migração acrescentada.
 
 Entrega 15: contratos de quinze operações locais de reposição, fornecedores, pedidos e sites, com teste HTTP de aprovação, replay e snapshots. Ver documento 90. Não implementa integrações externas nem incorpora produção.
+
+Entrega 16: contratos HTTP de funcionários, capacidades e instalação de licença local, com testes de vigência e ausência de autorização implícita. Ver documento 91. Faturas, cobrança e RH completo permanecem pendentes.

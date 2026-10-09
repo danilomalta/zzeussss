@@ -234,9 +234,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/server.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./staff-capabilities.openapi.json"
+        }
       }
     },
     "/local/v1/cash/close": {
@@ -615,9 +619,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/server.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./staff-capabilities.openapi.json"
+        }
       }
     },
     "/local/v1/products": {
@@ -1154,9 +1162,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/server.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./staff-capabilities.openapi.json"
+        }
       },
       "post": {
         "operationId": "local_POST__local_v1_staff",
@@ -1175,9 +1187,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/server.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./staff-capabilities.openapi.json"
+        }
       }
     },
     "/local/v1/staff/{id}/password-reset": {
