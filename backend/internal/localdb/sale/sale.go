@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"strings"
 	"time"
+	"titansystem-backend/internal/localdb/catalog"
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
@@ -157,6 +158,9 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 		}
 		if err != nil {
 			return Result{}, err
+		}
+		if e := catalog.RequireActiveProductTx(ctx, tx, actor.TenantID, item.ProductID); e != nil {
+			return Result{}, e
 		}
 		if kind != "shelf" {
 			return Result{}, ErrInvalid

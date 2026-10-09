@@ -15,7 +15,7 @@ import (
 
 func (s *Server) mountCatalog(router fiber.Router) {
 	router.Get("/products", s.listProducts)
- router.Get("/catalog/search",s.searchCatalog)
+	router.Get("/catalog/search", s.searchCatalog)
 	router.Post("/products", s.createProduct)
 	router.Get("/locations", s.listLocations)
 	router.Post("/locations", s.createLocation)
@@ -88,6 +88,10 @@ func catalogError(c *fiber.Ctx, err error) error {
 		return c.SendStatus(fiber.StatusForbidden)
 	case errors.Is(err, entitlementstore.ErrClockRollback):
 		return c.SendStatus(fiber.StatusConflict)
+	case errors.Is(err, catalog.ErrProductInactive):
+		return c.SendStatus(fiber.StatusConflict)
+	case errors.Is(err, catalog.ErrEditNotFound):
+		return c.SendStatus(fiber.StatusNotFound)
 	case errors.Is(err, catalog.ErrInvalidCatalog):
 		return c.SendStatus(fiber.StatusBadRequest)
 	default:

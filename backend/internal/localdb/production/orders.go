@@ -7,6 +7,7 @@ import (
 	"errors"
 	"strings"
 	"time"
+	"titansystem-backend/internal/localdb/catalog"
 
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb"
@@ -173,6 +174,9 @@ func CreateOrder(ctx context.Context, db *sql.DB, license *entitlementstore.Stor
 		}
 		if err != nil {
 			return OrderResult{}, err
+		}
+		if e := catalog.RequireActiveProductTx(ctx, tx, a.TenantID, item.ProductID); e != nil {
+			return OrderResult{}, e
 		}
 		if unit != item.Unit {
 			return OrderResult{}, ErrConflict

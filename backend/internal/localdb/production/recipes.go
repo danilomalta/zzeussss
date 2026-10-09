@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"titansystem-backend/internal/localdb/catalog"
 
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb"
@@ -160,6 +161,9 @@ func Publish(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 			return ErrInvalid
 		}
 		if e != nil {
+			return e
+		}
+		if e := catalog.RequireActiveProductTx(ctx, tx, actor.TenantID, id); e != nil {
 			return e
 		}
 		if actual != unit {

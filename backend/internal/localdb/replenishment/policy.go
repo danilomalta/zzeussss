@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"titansystem-backend/internal/localdb/catalog"
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
@@ -79,6 +80,9 @@ func setPolicy(ctx context.Context, db *sql.DB, actor identity.Scope, device ide
 	}
 	if err != nil {
 		return PolicyResult{}, err
+	}
+	if e := catalog.RequireActiveProductTx(ctx, tx, actor.TenantID, in.ProductID); e != nil {
+		return PolicyResult{}, e
 	}
 	err = tx.QueryRowContext(ctx, `SELECT revision FROM restock_policies WHERE tenant_id=? AND store_id=? AND product_id=?`, actor.TenantID, actor.StoreID, in.ProductID).Scan(&revision)
 	if !errors.Is(err, sql.ErrNoRows) && err != nil {

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 	"titansystem-backend/internal/core/modules"
+	"titansystem-backend/internal/localdb/catalog"
 	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/identity"
 )
@@ -196,6 +197,9 @@ func Create(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a 
 	}
 	if e != nil {
 		return Result{}, e
+	}
+	if err := catalog.RequireActiveProductTx(ctx, tx, a.TenantID, item.ProductID); err != nil {
+		return Result{}, err
 	}
 	if item.Quantity <= 0 || item.Quantity > MaxQuantity {
 		return Result{}, ErrInvalid

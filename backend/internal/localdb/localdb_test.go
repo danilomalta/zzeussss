@@ -42,7 +42,7 @@ func TestCreateReopenAndRepeatMigration(t *testing.T) {
 	if err := reopened.QueryRowContext(ctx, "SELECT COUNT(*) FROM schema_migrations").Scan(&migrations); err != nil {
 		t.Fatal(err)
 	}
-	if count != 1 || migrations != 39 {
+	if count != 1 || migrations != 40 {
 		t.Fatalf("dados/migrações inesperados: tenants=%d migrations=%d", count, migrations)
 	}
 	var foreignKeys int

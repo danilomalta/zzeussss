@@ -92,6 +92,7 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 	protected.Post("/module-contracts", s.installContract)
 	s.mountCatalog(protected)
 	s.mountCatalogEdit(protected)
+	s.mountProductState(protected)
 	s.mountComparison(protected)
 	s.mountPurchases(protected)
 	s.mountSupplierEdit(protected)
