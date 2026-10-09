@@ -1,0 +1,530 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem — Lotes de catálogo online",
+    "version": "26.0",
+    "description": "Preços e ativação de 1 a 100 produtos. Não importa CSV/XML, não modifica custo/fiscal/estoque e não oferece desfazer automático. Preview_hash identifica a prévia; não é assinatura ou aprovação de supervisor."
+  },
+  "paths": {
+    "/api/v1/catalog/batches/preview": {
+      "post": {
+        "operationId": "online_batch_post__api_v1_catalog_batches_preview",
+        "description": "Prévia consistente, sem alterar produto, auditoria ou outbox. Somente owner/admin/manager. Um item sem mudança, ausente ou desatualizado recusa toda a prévia.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Resultado persistido, ou prévia sem gravação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preview"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, item repetido, sem mudança ou acima do limite"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto ou lote não encontrado neste contexto"
+          },
+          "409": {
+            "description": "Versão, prévia ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível; consulte o lote antes de repetir"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/batches/apply": {
+      "post": {
+        "operationId": "online_batch_post__api_v1_catalog_batches_apply",
+        "description": "Aplica exatamente a prévia na mesma transação. Replay estável por empresa, operador, ID e conteúdo. Versão ou hash divergentes recusam todo o lote. Preços inteiros; sem reajuste por porcentagem.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Resultado persistido, ou prévia sem gravação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchReceipt"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, item repetido, sem mudança ou acima do limite"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto ou lote não encontrado neste contexto"
+          },
+          "409": {
+            "description": "Versão, prévia ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível; consulte o lote antes de repetir"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/batches": {
+      "get": {
+        "operationId": "online_batch_get__api_v1_catalog_batches",
+        "description": "Histórico paginado de lotes da empresa, disponível a owner/admin/manager. Inclui atores e snapshots; não constitui confirmação de sincronização.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistido, ou prévia sem gravação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchHistory"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, item repetido, sem mudança ou acima do limite"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto ou lote não encontrado neste contexto"
+          },
+          "409": {
+            "description": "Versão, prévia ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível; consulte o lote antes de repetir"
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/batches/{operation_id}": {
+      "get": {
+        "operationId": "online_batch_get__api_v1_catalog_batches_operation_id",
+        "description": "Consulta do resultado original, restrita à empresa e operador que aplicou. Retorna 404 para outro operador. Uma falha de consulta nunca autoriza reenviar automaticamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistido, ou prévia sem gravação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchReceipt"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, item repetido, sem mudança ou acima do limite"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto ou lote não encontrado neste contexto"
+          },
+          "409": {
+            "description": "Versão, prévia ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível; consulte o lote antes de repetir"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Item": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "product_id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "expected_version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740990
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "price"
+                ]
+              },
+              "price_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 999999999999
+              }
+            },
+            "required": [
+              "product_id",
+              "expected_version",
+              "action",
+              "price_cents"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "product_id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "expected_version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740990
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "active"
+                ]
+              },
+              "ativo": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "product_id",
+              "expected_version",
+              "action",
+              "ativo"
+            ]
+          }
+        ]
+      },
+      "PreviewRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        },
+        "required": [
+          "operation_id",
+          "items"
+        ]
+      },
+      "ApplyRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          },
+          "preview_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "operation_id",
+          "items",
+          "preview_hash"
+        ]
+      },
+      "PreviewItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "price",
+              "active"
+            ]
+          },
+          "before": {
+            "$ref": "./online-catalog-creation.openapi.json#/components/schemas/Product"
+          },
+          "after": {
+            "$ref": "./online-catalog-creation.openapi.json#/components/schemas/Product"
+          }
+        },
+        "required": [
+          "action",
+          "before",
+          "after"
+        ]
+      },
+      "Preview": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "preview_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/PreviewItem"
+            }
+          }
+        },
+        "required": [
+          "operation_id",
+          "preview_hash",
+          "items"
+        ]
+      },
+      "BatchReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "preview_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "./online-catalog-creation.openapi.json#/components/schemas/Receipt"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "operation_id",
+          "actor_id",
+          "preview_hash",
+          "items",
+          "created_at"
+        ]
+      },
+      "BatchHistory": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/BatchReceipt"
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          }
+        },
+        "required": [
+          "items",
+          "limit",
+          "offset"
+        ]
+      }
+    }
+  }
+}

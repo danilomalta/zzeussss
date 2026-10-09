@@ -163,8 +163,20 @@ func (s Store) Mutate(ctx context.Context, a Actor, id int64, action string, c C
 		return Receipt{}, ErrUnavailable
 	}
 	defer tx.Rollback()
+	r, e := s.mutateTx(ctx, tx, a, id, action, c)
+	if e != nil {
+		return Receipt{}, e
+	}
+	if tx.Commit() != nil {
+		return Receipt{}, ErrUnavailable
+	}
+	return r, nil
+}
+
+// mutateTx also serves atomic batches; only its caller commits the transaction.
+func (s Store) mutateTx(ctx context.Context, tx *sql.Tx, a Actor, id int64, action string, c Change) (Receipt, error) {
 	var live string
-	e = tx.QueryRowContext(ctx, `SELECT s.id::text FROM online_sessions s JOIN users u ON u.id=s.user_id AND u.tenant_id=s.tenant_id JOIN tenants t ON t.id=s.tenant_id WHERE s.id=$1 AND s.tenant_id=$2 AND s.user_id=$3 AND s.role=$4 AND u.role=s.role AND t.status='active' AND s.revoked_at IS NULL AND s.expires_at>clock_timestamp() FOR SHARE OF s,u,t`, a.Session, a.Tenant, a.User, a.Role).Scan(&live)
+	e := tx.QueryRowContext(ctx, liveCatalogSQL, a.Session, a.Tenant, a.User, a.Role).Scan(&live)
 	if errors.Is(e, sql.ErrNoRows) {
 		return Receipt{}, ErrDenied
 	}
@@ -179,9 +191,6 @@ func (s Store) Mutate(ctx context.Context, a Actor, id int64, action string, c C
 	if e == nil {
 		if prior.ActorID != a.User || prior.ProductID != id || prior.Action != action || priorHash != hash {
 			return Receipt{}, ErrConflict
-		}
-		if tx.Commit() != nil {
-			return Receipt{}, ErrUnavailable
 		}
 		return prior, nil
 	}
@@ -240,8 +249,7 @@ func (s Store) Mutate(ctx context.Context, a Actor, id int64, action string, c C
 	if rows, err := eventResult.RowsAffected(); err != nil || rows != 1 {
 		return Receipt{}, ErrUnavailable
 	}
-	if tx.Commit() != nil {
-		return Receipt{}, ErrUnavailable
-	}
 	return r, nil
 }
+
+const liveCatalogSQL = `SELECT s.id::text FROM online_sessions s JOIN users u ON u.id=s.user_id AND u.tenant_id=s.tenant_id JOIN tenants t ON t.id=s.tenant_id WHERE s.id=$1 AND s.tenant_id=$2 AND s.user_id=$3 AND s.role=$4 AND u.role=s.role AND t.status='active' AND s.revoked_at IS NULL AND s.expires_at>clock_timestamp() FOR SHARE OF s,u,t`

@@ -75,6 +75,11 @@ func Registrar(app *fiber.App) {
 	produtos.Get("/:id/history", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.HistoricoProduto)
 	negocios.Get("/catalog/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.ConsultarOperacaoCatalogo)
 
+	negocios.Post("/catalog/batches/preview", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.LoteCatalogo(false))
+	negocios.Post("/catalog/batches/apply", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.LoteCatalogo(true))
+	negocios.Get("/catalog/batches", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.HistoricoLotesCatalogo)
+	negocios.Get("/catalog/batches/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ConsultarLoteCatalogo)
+
 	// Análises com Inteligência Artificial (Bounded Context: Catalog)
 	analises := negocios.Group("/analises")
 	analises.Get("/produtos-parados", Indisponivel)

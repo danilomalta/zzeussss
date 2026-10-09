@@ -567,6 +567,34 @@
       "path": "/api/v1/catalog/creations/:operation_id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/catalog/batches/preview",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/catalog/batches/apply",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/batches",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/batches/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
     }
   ]
 }

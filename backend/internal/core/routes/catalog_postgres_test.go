@@ -81,6 +81,9 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if onlinecatalog.MigrateCreation(ctx, sqlDB) != nil || onlinecatalog.MigrateCreation(ctx, sqlDB) != nil || onlinecatalog.CheckCreation(ctx, sqlDB) != nil {
 		t.Fatal("migração do cadastro falhou")
 	}
+	if onlinecatalog.MigrateBatches(ctx, sqlDB) != nil || onlinecatalog.MigrateBatches(ctx, sqlDB) != nil || onlinecatalog.CheckBatches(ctx, sqlDB) != nil {
+		t.Fatal("migração de lotes falhou")
+	}
 	tenantA, tenantB, userA, userB, sessionA, sessionB := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	for _, actor := range []struct{ tenant, user, session string }{{tenantA, userA, sessionA}, {tenantB, userB, sessionB}} {
 		exec(`INSERT INTO tenants(id,status) VALUES($1,'active')`, actor.tenant)
@@ -398,6 +401,147 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if count("products", tenantA) != beforeCount+1 {
 		t.Fatal("outbox não reverteu cadastro")
 	}
+	// Batch HTTP flow and the same SQL transaction protect two different items.
+	p1 := request("POST", "/api/v1/produtos/", `{"nome":"Batch one","sku":"batch-one","preco":2.50}`, tokenA, 201)
+	p2 := request("POST", "/api/v1/produtos/", `{"nome":"Batch two","sku":"batch-two","preco":3.50}`, tokenA, 201)
+	id1, id2 := int64(p1["ID"].(float64)), int64(p2["ID"].(float64))
+	batchOp := uuid.NewString()
+	batchBody := fmt.Sprintf(`{"operation_id":%q,"items":[{"product_id":%d,"action":"active","expected_version":1,"ativo":false},{"product_id":%d,"action":"price","expected_version":1,"price_cents":475}]}`, batchOp, id2, id1)
+	preview := request("POST", "/api/v1/catalog/batches/preview", batchBody, tokenA, 200)
+	checkProduct := func(productID, version, price int64, active bool) {
+		t.Helper()
+		p, e := store.Product(ctx, actor, productID)
+		if e != nil || p.Version != version || p.PriceCents != price || p.Active != active {
+			t.Fatal("lote alterou snapshot inesperadamente")
+		}
+	}
+	checkProduct(id1, 1, 250, true)
+	checkProduct(id2, 1, 350, true)
+	applyBody := strings.TrimSuffix(batchBody, "}") + fmt.Sprintf(`,"preview_hash":%q}`, preview["preview_hash"])
+	request("POST", "/api/v1/catalog/batches/apply", batchBody, tokenA, 400)
+	batchResult := request("POST", "/api/v1/catalog/batches/apply", applyBody, tokenA, 200)
+	if len(batchResult["items"].([]interface{})) != 2 {
+		t.Fatal("lote sem todos os recibos")
+	}
+	request("POST", "/api/v1/catalog/batches/apply", applyBody, tokenA, 200)
+	request("POST", "/api/v1/catalog/batches/apply", strings.Replace(applyBody, "475", "476", 1), tokenA, 409)
+	request("POST", "/api/v1/catalog/batches/apply", applyBody, otherToken, 409)
+	request("GET", "/api/v1/catalog/batches/"+batchOp, "", tokenA, 200)
+	request("GET", "/api/v1/catalog/batches/"+batchOp, "", otherToken, 404)
+	historyBatch := request("GET", "/api/v1/catalog/batches?limit=1&offset=0", "", tokenA, 200)
+	if len(historyBatch["items"].([]interface{})) != 1 {
+		t.Fatal("histórico de lote não paginado")
+	}
+	checkProduct(id1, 2, 475, true)
+	checkProduct(id2, 2, 350, false)
+	// A later individual change makes the original preview stale; nothing else changes.
+	staleOp := uuid.NewString()
+	staleBody := fmt.Sprintf(`{"operation_id":%q,"items":[{"product_id":%d,"action":"price","expected_version":2,"price_cents":500},{"product_id":%d,"action":"active","expected_version":2,"ativo":true}]}`, staleOp, id1, id2)
+	stalePreview := request("POST", "/api/v1/catalog/batches/preview", staleBody, tokenA, 200)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/price", id1), fmt.Sprintf(`{"operation_id":%q,"expected_version":2,"price_cents":476}`, uuid.NewString()), tokenA, 200)
+	request("POST", "/api/v1/catalog/batches/apply", strings.TrimSuffix(staleBody, "}")+fmt.Sprintf(`,"preview_hash":%q}`, stalePreview["preview_hash"]), tokenA, 409)
+	checkProduct(id2, 2, 350, false)
+	// Fault on the SECOND item's outbox must roll back both versions and all receipts.
+	failureBatch := uuid.NewString()
+	failureChild := uuid.NewSHA1(uuid.MustParse(failureBatch), []byte(fmt.Sprintf("catalog-batch:%d", id2))).String()
+	exec(fmt.Sprintf(`CREATE FUNCTION reject_batch_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture'; END $$; CREATE TRIGGER reject_batch_event BEFORE INSERT ON online_catalog_outbox FOR EACH ROW WHEN (NEW.operation_id='%s'::uuid) EXECUTE FUNCTION reject_batch_event()`, failureChild))
+	failureBody := fmt.Sprintf(`{"operation_id":%q,"items":[{"product_id":%d,"action":"price","expected_version":3,"price_cents":500},{"product_id":%d,"action":"active","expected_version":2,"ativo":true}]}`, failureBatch, id1, id2)
+	failurePreview := request("POST", "/api/v1/catalog/batches/preview", failureBody, tokenA, 200)
+	request("POST", "/api/v1/catalog/batches/apply", strings.TrimSuffix(failureBody, "}")+fmt.Sprintf(`,"preview_hash":%q}`, failurePreview["preview_hash"]), tokenA, 503)
+	request("GET", "/api/v1/catalog/batches/"+failureBatch, "", tokenA, 404)
+	checkProduct(id1, 3, 476, true)
+	checkProduct(id2, 2, 350, false)
+	var rolledBackChildren int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_operations WHERE tenant_id=$1 AND operation_id=$2`, tenantA, failureChild).Scan(&rolledBackChildren) != nil || rolledBackChildren != 0 {
+		t.Fatal("lote parcial deixou auditoria")
+	}
+	// Same request concurrently replays once, even with products submitted out of order.
+	price500 := int64(500)
+	activeTrue := true
+	concurrentBatch := onlinecatalog.BatchInput{OperationID: uuid.NewString(), Items: []onlinecatalog.BatchItem{{ProductID: id2, Action: "active", ExpectedVersion: 2, Active: &activeTrue}, {ProductID: id1, Action: "price", ExpectedVersion: 3, PriceCents: &price500}}}
+	concurrentPreview, e := store.PreviewBatch(ctx, actor, concurrentBatch)
+	if e != nil {
+		t.Fatal("prévia concorrente falhou")
+	}
+	concurrentBatch.PreviewHash = concurrentPreview.PreviewHash
+	batchErrors := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		mutationWG.Add(1)
+		go func() {
+			defer mutationWG.Done()
+			_, e := store.ApplyBatch(ctx, actor, concurrentBatch)
+			batchErrors <- e
+		}()
+	}
+	mutationWG.Wait()
+	close(batchErrors)
+	for e := range batchErrors {
+		if e != nil {
+			t.Fatal("replay concorrente do lote falhou")
+		}
+	}
+	checkProduct(id1, 4, 500, true)
+	checkProduct(id2, 3, 350, true)
+	// Independent batches competing for the same versions cannot partly apply.
+	independentBatches := make([]onlinecatalog.BatchInput, 2)
+	for i := range independentBatches {
+		p := int64(600 + i)
+		activeFalse := false
+		independentBatches[i] = onlinecatalog.BatchInput{OperationID: uuid.NewString(), Items: []onlinecatalog.BatchItem{{ProductID: id1, Action: "price", ExpectedVersion: 4, PriceCents: &p}, {ProductID: id2, Action: "active", ExpectedVersion: 3, Active: &activeFalse}}}
+		preview, e := store.PreviewBatch(ctx, actor, independentBatches[i])
+		if e != nil {
+			t.Fatal("prévia de disputa falhou")
+		}
+		independentBatches[i].PreviewHash = preview.PreviewHash
+	}
+	competition := make(chan error, 2)
+	for _, b := range independentBatches {
+		mutationWG.Add(1)
+		go func(b onlinecatalog.BatchInput) {
+			defer mutationWG.Done()
+			_, e := store.ApplyBatch(ctx, actor, b)
+			competition <- e
+		}(b)
+	}
+	mutationWG.Wait()
+	close(competition)
+	wins, conflicts = 0, 0
+	for e := range competition {
+		if e == nil {
+			wins++
+		} else if e == onlinecatalog.ErrConflict {
+			conflicts++
+		} else {
+			t.Fatal("disputa de lotes falhou")
+		}
+	}
+	if wins != 1 || conflicts != 1 {
+		t.Fatal("disputa de lotes publicou resultados parciais")
+	}
+	pAfter, e := store.Product(ctx, actor, id1)
+	if e != nil || pAfter.Version != 5 || (pAfter.PriceCents != 600 && pAfter.PriceCents != 601) {
+		t.Fatal("primeiro item não protegeu disputa")
+	}
+	checkProduct(id2, 4, 350, false)
+	// Tenant and live session checks also apply inside the batch service.
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionB)
+	request("POST", "/api/v1/catalog/batches/preview", batchBody, tokenB, 404)
+	if _, e := store.PreviewBatch(ctx, stockActor, concurrentBatch); e != onlinecatalog.ErrDenied {
+		t.Fatal("stock criou prévia de preço")
+	}
+	var batchChecksum string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_batch_migrations WHERE version=10`).Scan(&batchChecksum) != nil {
+		t.Fatal("checksum de lote ausente")
+	}
+	exec(`UPDATE online_catalog_batch_migrations SET version=11 WHERE version=10`)
+	if onlinecatalog.MigrateBatches(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.CheckBatches(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("versão futura de lote aceita")
+	}
+	exec(`UPDATE online_catalog_batch_migrations SET version=10,checksum='tampered' WHERE version=11`)
+	if onlinecatalog.MigrateBatches(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("checksum de lote adulterado aceito")
+	}
+	exec(`UPDATE online_catalog_batch_migrations SET checksum=$1 WHERE version=10`, batchChecksum)
 	var catalogChecksum string
 	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_migrations WHERE version=8`).Scan(&catalogChecksum) != nil {
 		t.Fatal("checksum ausente")

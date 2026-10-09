@@ -35,13 +35,19 @@ func run(args []string) error {
 		if err = onlinecatalog.MigrateCreation(ctx, db); err != nil {
 			return err
 		}
-		return onlinecatalog.CheckCreation(ctx, db)
+		if err = onlinecatalog.MigrateBatches(ctx, db); err != nil {
+			return err
+		}
+		return onlinecatalog.CheckBatches(ctx, db)
 	}
 	if args[0] == "check-catalog" {
 		if err = onlinecatalog.CheckSchema(ctx, db); err != nil {
 			return err
 		}
-		return onlinecatalog.CheckCreation(ctx, db)
+		if err = onlinecatalog.CheckCreation(ctx, db); err != nil {
+			return err
+		}
+		return onlinecatalog.CheckBatches(ctx, db)
 	}
 	if args[0] == "migrate-sessions" {
 		if err = onlinesessions.Migrate(ctx, db); err != nil {

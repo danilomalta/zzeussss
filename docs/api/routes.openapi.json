@@ -2175,6 +2175,306 @@
           "url": "./online-catalog-creation.openapi.json"
         }
       }
+    },
+    "/api/v1/catalog/batches/preview": {
+      "post": {
+        "operationId": "online_batch_post__api_v1_catalog_batches_preview",
+        "description": "Prévia consistente, sem alterar produto, auditoria ou outbox. Somente owner/admin/manager. Um item sem mudança, ausente ou desatualizado recusa toda a prévia.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Resultado persistido, ou prévia sem gravação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-batches.openapi.json#/components/schemas/Preview"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, item repetido, sem mudança ou acima do limite"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto ou lote não encontrado neste contexto"
+          },
+          "409": {
+            "description": "Versão, prévia ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível; consulte o lote antes de repetir"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-batches.openapi.json#/components/schemas/PreviewRequest"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Lotes online",
+          "url": "./online-catalog-batches.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/batches/apply": {
+      "post": {
+        "operationId": "online_batch_post__api_v1_catalog_batches_apply",
+        "description": "Aplica exatamente a prévia na mesma transação. Replay estável por empresa, operador, ID e conteúdo. Versão ou hash divergentes recusam todo o lote. Preços inteiros; sem reajuste por porcentagem.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Resultado persistido, ou prévia sem gravação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-batches.openapi.json#/components/schemas/BatchReceipt"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, item repetido, sem mudança ou acima do limite"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto ou lote não encontrado neste contexto"
+          },
+          "409": {
+            "description": "Versão, prévia ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível; consulte o lote antes de repetir"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-batches.openapi.json#/components/schemas/ApplyRequest"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Lotes online",
+          "url": "./online-catalog-batches.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/batches": {
+      "get": {
+        "operationId": "online_batch_get__api_v1_catalog_batches",
+        "description": "Histórico paginado de lotes da empresa, disponível a owner/admin/manager. Inclui atores e snapshots; não constitui confirmação de sincronização.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistido, ou prévia sem gravação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-batches.openapi.json#/components/schemas/BatchHistory"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, item repetido, sem mudança ou acima do limite"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto ou lote não encontrado neste contexto"
+          },
+          "409": {
+            "description": "Versão, prévia ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível; consulte o lote antes de repetir"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Lotes online",
+          "url": "./online-catalog-batches.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/batches/{operation_id}": {
+      "get": {
+        "operationId": "online_batch_get__api_v1_catalog_batches_operation_id",
+        "description": "Consulta do resultado original, restrita à empresa e operador que aplicou. Retorna 404 para outro operador. Uma falha de consulta nunca autoriza reenviar automaticamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistido, ou prévia sem gravação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-batches.openapi.json#/components/schemas/BatchReceipt"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, item repetido, sem mudança ou acima do limite"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto ou lote não encontrado neste contexto"
+          },
+          "409": {
+            "description": "Versão, prévia ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível; consulte o lote antes de repetir"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Lotes online",
+          "url": "./online-catalog-batches.openapi.json"
+        }
+      }
     }
   },
   "components": {

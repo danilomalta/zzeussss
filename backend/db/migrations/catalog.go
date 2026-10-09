@@ -16,3 +16,6 @@ var CatalogProductsSQL string
 
 //go:embed 000003_create_discount_suggestions.sql
 var CatalogDiscountsSQL string
+
+//go:embed 000010_online_catalog_batches.sql
+var CatalogBatchesSQL string
