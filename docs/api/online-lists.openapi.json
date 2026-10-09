@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Titan — catálogo e sugestões online",
-    "version": "1.1.0",
-    "description": "Paginações da entrega 18 e cadastro estrito de produto da entrega 19. Não implementa sincronização comercial, fiscal ou aprovação de descontos."
+    "version": "1.2.0",
+    "description": "Entregas 18–20: paginação, cadastro estrito e geração limitada de sugestões. Sem aplicação de descontos, sincronização comercial ou fiscal."
   },
   "paths": {
     "/api/v1/produtos/": {
@@ -321,6 +321,74 @@
           }
         }
       }
+    },
+    "/api/v1/discounts/suggest": {
+      "post": {
+        "operationId": "generateOnlineDiscountSuggestions",
+        "summary": "Gera sugestões heurísticas: admin, owner ou manager",
+        "description": "Empresa derivada da sessão persistida e vínculo vigente. Sem payload de configuração; corpo/query não selecionam empresa nem alteram critérios. Carrega até 1001 produtos ativos em ordem de ID; se houver mais de 1000, faz rollback antes de criar. Uma transação para o conjunto. Conflito apenas no índice parcial de (tenant_id, product_id) PENDING não excluído é ignorado; outras falhas anulam o lote. Geração não altera produto/preço/saldo e não aprova descontos. Não há identificador idempotente de análise, auditoria de execução ou snapshot comercial; resposta perdida não autoriza retry automático. Reexecução pode produzir novo conjunto conforme alterações intervenientes.",
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Análise concluída; somente novas sugestões, sempre PENDING. Sem alteração de preço ou saldo de produto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneratedSuggestions"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Mais de 1000 produtos ativos; nenhuma nova sugestão desta operação. Catálogo não é truncado silenciosamente."
+          },
+          "500": {
+            "description": "Falha de consulta, gravação ou confirmação de commit; sem lista parcial ou detalhes SQL. Falha de confirmação pode deixar resultado incerto: não afirma que nada foi gravado."
+          },
+          "503": {
+            "description": "Validação de sessão/vínculo indisponível."
+          }
+        }
+      }
     }
   },
   "components": {
@@ -550,6 +618,35 @@
             "maximum": 2147483647,
             "default": 0,
             "description": "Somente dígitos. Fração, expoente, sinal e string são recusados. Saldo inicial legado; não representa recebimento auditado."
+          }
+        }
+      },
+      "GeneratedSuggestions": {
+        "type": "object",
+        "required": [
+          "message",
+          "items_gerados",
+          "sugestoes"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "enum": [
+              "Análise concluída."
+            ]
+          },
+          "items_gerados": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Somente sugestões recém-criadas nesta transação; não conta conflitos de sugestão pendente."
+          },
+          "sugestoes": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/DiscountSuggestion"
+            }
           }
         }
       }

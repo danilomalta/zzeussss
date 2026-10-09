@@ -138,7 +138,7 @@ func TestOnlineReadsAndDiscountGenerationUseAuthenticatedCompany(t *testing.T) {
 				case "/api/v1/discounts/suggest":
 					method = "POST"
 					mock.ExpectBegin()
-					mock.ExpectQuery(`SELECT .* FROM "products" WHERE \(tenant_id = \$1 AND ativo = \$2\)`).WithArgs(tenant, true).WillReturnRows(sqlmock.NewRows([]string{"id", "tenant_id"}))
+					mock.ExpectQuery(`SELECT .* FROM "products" WHERE \(tenant_id = \$1 AND ativo = \$2\).*ORDER BY id ASC LIMIT \$3`).WithArgs(tenant, true, 1001).WillReturnRows(sqlmock.NewRows([]string{"id", "tenant_id"}))
 					mock.ExpectCommit()
 				}
 				app := fiber.New()

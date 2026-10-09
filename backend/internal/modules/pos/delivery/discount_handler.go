@@ -21,6 +21,11 @@ func SuggestDiscounts(c *fiber.Ctx) error {
 	}
 
 	sugestoes, err := usecase.RunDiscountEngine(tenantID)
+	if errors.Is(err, usecase.ErrDiscountAnalysisTooLarge) {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+			"error": "Catálogo excede 1000 produtos ativos; análise em lotes ainda indisponível. Nenhuma sugestão gerada nesta operação.",
+		})
+	}
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Falha ao gerar sugestões de desconto.",

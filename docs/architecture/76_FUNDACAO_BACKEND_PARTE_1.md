@@ -153,3 +153,5 @@ Entrega 17: login local com JSON estrito e limite de corpo, no-store em login/co
 Entrega 18: paginação limitada nas consultas online de produtos e sugestões, mantendo isolamento por empresa e papéis, com contrato HTTP e testes SQL simulados. Ver documento 93.
 
 Entrega 19: cadastro online de produto com JSON estrito, limites do esquema PostgreSQL e validação decimal antes da gravação. Ver documento 94. Sem migração, integração de produção ou alteração de interface. Modelo monetário legado, auditoria e idempotência de cadastro continuam pendentes.
+
+Entrega 20: geração online de sugestões com limite síncrono de 1000 produtos, conflito explícito apenas para sugestão pendente e testes de rollback/commit/isolamento. Ver documento 95. Sem migração, aprovação, aplicação de desconto ou execução em lotes maiores.

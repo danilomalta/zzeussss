@@ -16,6 +16,11 @@ var ErrSuggestionUnavailable = errors.New(
 	"sugestão não encontrada ou já revisada",
 )
 
+// A synchronous request must not scan an unbounded company catalog.
+const MaxDiscountAnalysisProducts = 1000
+
+var ErrDiscountAnalysisTooLarge = errors.New("catálogo excede o limite de análise síncrona")
+
 func RunDiscountEngine(tenantID string) ([]posDomain.DiscountSuggestion, error) {
 	if strings.TrimSpace(tenantID) == "" {
 		return nil, errors.New("empresa obrigatória")
@@ -27,8 +32,17 @@ func RunDiscountEngine(tenantID string) ([]posDomain.DiscountSuggestion, error) 
 		var produtos []catalogDomain.Product
 		if err := tx.
 			Where("tenant_id = ? AND ativo = ?", tenantID, true).
+			Order("id ASC").Limit(MaxDiscountAnalysisProducts + 1).
 			Find(&produtos).Error; err != nil {
 			return err
+		}
+		if len(produtos) > MaxDiscountAnalysisProducts {
+			return ErrDiscountAnalysisTooLarge
+		}
+		for _, p := range produtos {
+			if p.ID == 0 || p.TenantID != tenantID {
+				return errors.New("contexto inválido na análise de produtos")
+			}
 		}
 
 		for _, p := range produtos {
@@ -43,6 +57,10 @@ func RunDiscountEngine(tenantID string) ([]posDomain.DiscountSuggestion, error) 
 			// O índice da migração impede duas sugestões pendentes
 			// para o mesmo produto, inclusive em chamadas concorrentes.
 			result := tx.Clauses(clause.OnConflict{
+				Columns: []clause.Column{{Name: "tenant_id"}, {Name: "product_id"}},
+				TargetWhere: clause.Where{Exprs: []clause.Expression{
+					clause.Expr{SQL: "status = 'PENDING' AND deleted_at IS NULL"},
+				}},
 				DoNothing: true,
 			}).Create(suggestion)
 
