@@ -77,6 +77,9 @@ func Search(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Device
 		return SearchPage{}, err
 	}
 	for n := range out.Items {
+		if _, err := orderStatusTx(ctx, tx, a, &out.Items[n]); err != nil {
+			return SearchPage{}, err
+		}
 		itemRows, err := tx.QueryContext(ctx, `SELECT product_id,sku,name,unit,quantity_milli FROM purchase_order_items WHERE tenant_id=? AND store_id=? AND order_id=? ORDER BY product_id`, a.TenantID, a.StoreID, out.Items[n].ID)
 		if err != nil {
 			return SearchPage{}, err

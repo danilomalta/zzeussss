@@ -323,6 +323,11 @@ func Orders(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Device
 		return nil, e
 	}
 	rows.Close()
+	for n := range out {
+		if _, err := orderStatusTx(ctx, tx, a, &out[n]); err != nil {
+			return nil, err
+		}
+	}
 	e = tx.Commit()
 	return out, e
 }
@@ -361,6 +366,9 @@ func Get(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceCon
 	rows.Close()
 	if len(v.Items) != 1 {
 		return Order{}, ErrConflict
+	}
+	if _, err := orderStatusTx(ctx, tx, a, &v); err != nil {
+		return Order{}, err
 	}
 	e = tx.Commit()
 	return v, e

@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "TitanSystem P17 — Consulta de pedidos de compra",
-    "version": "P17",
-    "description": "Leitura autorizada view_orders na empresa/loja da sessao. Contagem, pedidos e itens preservados na mesma transacao. Referencias de fornecedores sao locais; local_not_sent nao significa enviado/confirmado. Sem escrita ou movimentacao de estoque."
+    "version": "P26",
+    "description": "Leitura autorizada view_orders na empresa/loja da sessao. Contagem, pedidos e itens preservados na mesma transacao. Referencias de fornecedores sao locais; local_not_sent nao significa enviado/confirmado. Sem escrita ou movimentacao de estoque. Estado efetivo cancelled indica decisao local; registro original, itens e aprovacao preservados."
   },
   "servers": [
     {
@@ -195,7 +195,8 @@
           "status": {
             "type": "string",
             "enum": [
-              "local_not_sent"
+              "local_not_sent",
+              "cancelled"
             ]
           },
           "items": {

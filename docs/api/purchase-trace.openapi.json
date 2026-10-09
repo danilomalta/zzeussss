@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "TitanSystem P18 — Rastreabilidade de pedido de compra",
-    "version": "P18",
-    "description": "Pedido/item preservados, aprovacao humana e auditoria de criacao em uma transacao autorizada view_orders. Fornecedor e referencia local; estado real local_not_sent. Sem escrita/envio/recebimento/estoque."
+    "version": "P26",
+    "description": "Pedido/item preservados, aprovacao humana e auditoria de criacao em uma transacao autorizada view_orders. Fornecedor e referencia local; estados efetivos local_not_sent/cancelled. Sem escrita/envio/recebimento/estoque. Estado efetivo cancelled indica decisao local; registro original, itens e aprovacao preservados."
   },
   "servers": [
     {
@@ -155,7 +155,8 @@
           "status": {
             "type": "string",
             "enum": [
-              "local_not_sent"
+              "local_not_sent",
+              "cancelled"
             ]
           },
           "items": {
@@ -252,6 +253,44 @@
           },
           "approval": {
             "$ref": "#/components/schemas/Approval"
+          },
+          "cancellation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operation_id",
+              "device_id",
+              "actor_id",
+              "reason",
+              "created_at"
+            ],
+            "properties": {
+              "operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "device_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "actor_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255
+              },
+              "created_at": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            }
           }
         }
       }
