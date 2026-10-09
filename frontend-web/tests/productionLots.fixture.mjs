@@ -1,0 +1,2 @@
+export const lot=(changes={})=>({id:'lot',result_id:'result',product_id:'product',unit:'unit',quantity_milli:2000,code:'L-1',manufactured_on:'2026-10-01',expires_on:'',reason:'Identificação humana',status:'recorded',revision:1,created_by:'operator',created_at:'2026-10-01T12:00:00.123456789Z',updated_at:'2026-10-01T12:00:00.123456789Z',...changes});
+export const summary=(changes={})=>({result_id:'result',product_id:'product',unit:'unit',produced_milli:5000,assigned_milli:4000,unassigned_milli:1000,items:[lot()],...changes});
