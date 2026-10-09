@@ -161,3 +161,5 @@ Entrega 21: suíte PostgreSQL isolada para cadastro e geração de sugestões, c
 Entrega 22: limites explícitos de corpo/conexões/I/O no servidor online, host/porta validados e erros de framework sem diagnóstico privado. Ver documento 97. Não equivale a proteção distribuída contra DDoS ou cancelamento de operação SQL.
 
 Entrega 23: encerramento online por SIGINT/SIGTERM, drain HTTP até 45 segundos e fechamento do banco somente após conclusão. Ver documento 98 para sequência, incerteza e estado real do roteiro.
+
+Entrega 24 consolidada: consulta individual, edição cadastral, preço exato com histórico e inativação/reativação online; versão esperada, recibo idempotente por ator e outbox transacional. Migração PostgreSQL 8 explícita, independente da sequência de segurança. Ver documento 99. Não sincroniza SQLite/caixas nem incorpora produção. Aceite exige teste PostgreSQL ampliado no PC.

@@ -1880,6 +1880,210 @@
           "url": "./online-health.openapi.json"
         }
       }
+    },
+    "/api/v1/produtos/{id}": {
+      "get": {
+        "operationId": "catalog_get__api_v1_produtos_id",
+        "description": "Consulta individual, inclusive inativo. Todos os papéis operacionais do catálogo. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,15}$"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em online-catalog-management.openapi.json"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Gestão transacional do catálogo online",
+          "url": "./online-catalog-management.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/details": {
+      "post": {
+        "operationId": "catalog_post__api_v1_produtos_id_details",
+        "description": "Nome, descrição e SKU; owner/admin/manager/stock. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,15}$"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em online-catalog-management.openapi.json"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Gestão transacional do catálogo online",
+          "url": "./online-catalog-management.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/price": {
+      "post": {
+        "operationId": "catalog_post__api_v1_produtos_id_price",
+        "description": "Preço exato; owner/admin/manager. Não reajusta vendas anteriores. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,15}$"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em online-catalog-management.openapi.json"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Gestão transacional do catálogo online",
+          "url": "./online-catalog-management.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/active": {
+      "post": {
+        "operationId": "catalog_post__api_v1_produtos_id_active",
+        "description": "Inativar ou reativar; owner/admin/manager. Sem exclusão. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,15}$"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em online-catalog-management.openapi.json"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Gestão transacional do catálogo online",
+          "url": "./online-catalog-management.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/history": {
+      "get": {
+        "operationId": "catalog_get__api_v1_produtos_id_history",
+        "description": "Antes/depois e operador; owner/admin/manager. Ordenação created_at e operation_id descendentes. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,15}$"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em online-catalog-management.openapi.json"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Gestão transacional do catálogo online",
+          "url": "./online-catalog-management.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/operations/{operation_id}": {
+      "get": {
+        "operationId": "catalog_get__api_v1_catalog_operations_operation_id",
+        "description": "Recibo somente do operador autenticado; owner/admin/manager/stock. Permite consultar após perda de resposta e novo login. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em online-catalog-management.openapi.json"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Gestão transacional do catálogo online",
+          "url": "./online-catalog-management.openapi.json"
+        }
+      }
     }
   },
   "components": {

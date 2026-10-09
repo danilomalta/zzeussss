@@ -1,0 +1,611 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem — gestão de catálogo online",
+    "version": "1.0.0",
+    "description": "Extensão PostgreSQL explícita 000008. Empresa, operador e papel vêm da sessão. Preço em centavos; nenhum estoque é ajustado. Não altera SQLite nem entrega preços aos caixas."
+  },
+  "paths": {
+    "/api/v1/produtos/{id}": {
+      "get": {
+        "operationId": "catalog_get__api_v1_produtos_id",
+        "description": "Consulta individual, inclusive inativo. Todos os papéis operacionais do catálogo. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,15}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot atual ou recibo durável (mesmo recibo no replay).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada, ID ou paginação inválidos."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Papel ou vínculo sem autorização."
+          },
+          "404": {
+            "description": "Produto/operação ausente neste contexto."
+          },
+          "409": {
+            "description": "Versão obsoleta, SKU duplicado ou operação reutilizada com dados diferentes."
+          },
+          "429": {
+            "description": "Limite HTTP da API."
+          },
+          "503": {
+            "description": "Banco/extensão indisponível; resultado de escrita pode ser incerto. Consulte a operação."
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/details": {
+      "post": {
+        "operationId": "catalog_post__api_v1_produtos_id_details",
+        "description": "Nome, descrição e SKU; owner/admin/manager/stock. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,15}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot atual ou recibo durável (mesmo recibo no replay).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada, ID ou paginação inválidos."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Papel ou vínculo sem autorização."
+          },
+          "404": {
+            "description": "Produto/operação ausente neste contexto."
+          },
+          "409": {
+            "description": "Versão obsoleta, SKU duplicado ou operação reutilizada com dados diferentes."
+          },
+          "429": {
+            "description": "Limite HTTP da API."
+          },
+          "503": {
+            "description": "Banco/extensão indisponível; resultado de escrita pode ser incerto. Consulte a operação."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Details"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/price": {
+      "post": {
+        "operationId": "catalog_post__api_v1_produtos_id_price",
+        "description": "Preço exato; owner/admin/manager. Não reajusta vendas anteriores. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,15}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot atual ou recibo durável (mesmo recibo no replay).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada, ID ou paginação inválidos."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Papel ou vínculo sem autorização."
+          },
+          "404": {
+            "description": "Produto/operação ausente neste contexto."
+          },
+          "409": {
+            "description": "Versão obsoleta, SKU duplicado ou operação reutilizada com dados diferentes."
+          },
+          "429": {
+            "description": "Limite HTTP da API."
+          },
+          "503": {
+            "description": "Banco/extensão indisponível; resultado de escrita pode ser incerto. Consulte a operação."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Price"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/active": {
+      "post": {
+        "operationId": "catalog_post__api_v1_produtos_id_active",
+        "description": "Inativar ou reativar; owner/admin/manager. Sem exclusão. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,15}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot atual ou recibo durável (mesmo recibo no replay).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada, ID ou paginação inválidos."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Papel ou vínculo sem autorização."
+          },
+          "404": {
+            "description": "Produto/operação ausente neste contexto."
+          },
+          "409": {
+            "description": "Versão obsoleta, SKU duplicado ou operação reutilizada com dados diferentes."
+          },
+          "429": {
+            "description": "Limite HTTP da API."
+          },
+          "503": {
+            "description": "Banco/extensão indisponível; resultado de escrita pode ser incerto. Consulte a operação."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Active"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/history": {
+      "get": {
+        "operationId": "catalog_get__api_v1_produtos_id_history",
+        "description": "Antes/depois e operador; owner/admin/manager. Ordenação created_at e operation_id descendentes. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,15}$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot atual ou recibo durável (mesmo recibo no replay).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada, ID ou paginação inválidos."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Papel ou vínculo sem autorização."
+          },
+          "404": {
+            "description": "Produto/operação ausente neste contexto."
+          },
+          "409": {
+            "description": "Versão obsoleta, SKU duplicado ou operação reutilizada com dados diferentes."
+          },
+          "429": {
+            "description": "Limite HTTP da API."
+          },
+          "503": {
+            "description": "Banco/extensão indisponível; resultado de escrita pode ser incerto. Consulte a operação."
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/operations/{operation_id}": {
+      "get": {
+        "operationId": "catalog_get__api_v1_catalog_operations_operation_id",
+        "description": "Recibo somente do operador autenticado; owner/admin/manager/stock. Permite consultar após perda de resposta e novo login. Campos desconhecidos/duplicados/nulos e seletores de empresa são recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot atual ou recibo durável (mesmo recibo no replay).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada, ID ou paginação inválidos."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Papel ou vínculo sem autorização."
+          },
+          "404": {
+            "description": "Produto/operação ausente neste contexto."
+          },
+          "409": {
+            "description": "Versão obsoleta, SKU duplicado ou operação reutilizada com dados diferentes."
+          },
+          "429": {
+            "description": "Limite HTTP da API."
+          },
+          "503": {
+            "description": "Banco/extensão indisponível; resultado de escrita pode ser incerto. Consulte a operação."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "nome",
+          "descricao",
+          "sku",
+          "price_cents",
+          "ativo",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "descricao": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 999999999999
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "product_id",
+          "actor_id",
+          "action",
+          "before",
+          "after",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "details",
+              "price",
+              "active"
+            ]
+          },
+          "before": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "after": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "History": {
+        "type": "object",
+        "required": [
+          "items",
+          "limit",
+          "offset"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Receipt"
+            }
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          }
+        }
+      },
+      "Details": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_version",
+          "nome",
+          "descricao",
+          "sku"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID não nulo canônico, persistido pelo cliente antes do envio."
+          },
+          "expected_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "descricao": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        }
+      },
+      "Price": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_version",
+          "price_cents"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID não nulo canônico, persistido pelo cliente antes do envio."
+          },
+          "expected_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 999999999999
+          }
+        }
+      },
+      "Active": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_version",
+          "ativo"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID não nulo canônico, persistido pelo cliente antes do envio."
+          },
+          "expected_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

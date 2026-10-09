@@ -71,3 +71,5 @@ Validação PostgreSQL do catálogo/sugestões: `python3 -B tools/test_online_po
 Saúde pública online e limites HTTP do cmd/api: `online-health.openapi.json` e documento 97. Liveness não substitui readiness de banco.
 
 Encerramento online durante reinícios/atualizações: documento 98. HTTP sem resposta continua incerto; drain não equivale a garantia de commit ou de rollback.
+
+- `online-catalog-management.openapi.json`: consulta, edição, preço, estado ativo, histórico e recibo idempotente. Exige manutenção explícita `titan-online migrate-catalog`; instalação do patch não migra banco comercial.

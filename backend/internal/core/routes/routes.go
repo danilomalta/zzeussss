@@ -65,6 +65,12 @@ func Registrar(app *fiber.App) {
 	produtos := negocios.Group("/produtos")
 	produtos.Get("/", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "cashier", "stock"), catalogDelivery.ListarProdutos)
 	produtos.Post("/", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.CriarProduto)
+	produtos.Get("/:id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "cashier", "stock"), catalogDelivery.ConsultarProduto)
+	produtos.Post("/:id/details", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.AlterarProduto("details"))
+	produtos.Post("/:id/price", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("price"))
+	produtos.Post("/:id/active", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("active"))
+	produtos.Get("/:id/history", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.HistoricoProduto)
+	negocios.Get("/catalog/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.ConsultarOperacaoCatalogo)
 
 	// Análises com Inteligência Artificial (Bounded Context: Catalog)
 	analises := negocios.Group("/analises")

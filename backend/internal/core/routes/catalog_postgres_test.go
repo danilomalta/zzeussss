@@ -25,6 +25,7 @@ import (
 	"titansystem-backend/db/migrations"
 	"titansystem-backend/internal/core/database"
 	posUsecase "titansystem-backend/internal/modules/pos/usecase"
+	"titansystem-backend/internal/onlinecatalog"
 )
 
 // Opt-in only. Schema, products and identities are disposable fixtures.
@@ -43,7 +44,7 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if !strings.HasSuffix(cfg.ConnConfig.Database, "_test") || (host != "localhost" && (ip == nil || !ip.IsLoopback())) {
 		t.Fatal("teste exige banco *_test em loopback")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
@@ -74,6 +75,9 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	// schema, never to the application's public schema. DDL structure is unchanged.
 	exec(migrations.CatalogProductsSQL)
 	exec(strings.ReplaceAll(migrations.CatalogDiscountsSQL, "public.", ""))
+	if onlinecatalog.Migrate(ctx, sqlDB) != nil || onlinecatalog.Migrate(ctx, sqlDB) != nil || onlinecatalog.CheckSchema(ctx, sqlDB) != nil {
+		t.Fatal("migração incremental do catálogo falhou")
+	}
 	tenantA, tenantB, userA, userB, sessionA, sessionB := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	for _, actor := range []struct{ tenant, user, session string }{{tenantA, userA, sessionA}, {tenantB, userB, sessionB}} {
 		exec(`INSERT INTO tenants(id,status) VALUES($1,'active')`, actor.tenant)
@@ -158,6 +162,124 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if sqlDB.QueryRowContext(ctx, `SELECT preco::text FROM products WHERE id=$1 AND tenant_id=$2`, int64(maximumID), tenantA).Scan(&price) != nil || price != "9999999999.99" {
 		t.Fatal("limite decimal não persistiu exatamente")
 	}
+	// Management operations use the same mounted HTTP routes and real PostgreSQL.
+	path := fmt.Sprintf("/api/v1/produtos/%d", int64(id))
+	snapshot := request("GET", path, "", tokenA, 200)
+	if snapshot["version"] != float64(1) || snapshot["price_cents"] != float64(250) {
+		t.Fatal("snapshot inicial inexato")
+	}
+	request("GET", path, "", tokenB, 404)
+	op := uuid.NewString()
+	body := fmt.Sprintf(`{"operation_id":%q,"expected_version":1,"price_cents":375}`, op)
+	first := request("POST", path+"/price", body, tokenA, 200)
+	replayed := request("POST", path+"/price", body, tokenA, 200)
+	if first["operation_id"] != replayed["operation_id"] {
+		t.Fatal("replay mudou identidade")
+	}
+	request("GET", "/api/v1/catalog/operations/"+op, "", tokenA, 200)
+	request("GET", "/api/v1/catalog/operations/"+op, "", tokenB, 404)
+	request("POST", path+"/price", strings.Replace(body, "375", "376", 1), tokenA, 409)
+	request("POST", path+"/price", strings.Replace(body, op, uuid.NewString(), 1), tokenA, 409)
+	request("POST", path+"/price", strings.Replace(body, op, uuid.NewString(), 1), tokenB, 404)
+	otherUser, otherSession := uuid.NewString(), uuid.NewString()
+	exec(`INSERT INTO users(id,tenant_id,role) VALUES($1,$2,'owner')`, otherUser, tenantA)
+	exec(`INSERT INTO online_sessions(id,tenant_id,user_id,role,created_at,expires_at) VALUES($1,$2,$3,'owner',clock_timestamp(),clock_timestamp()+interval '1 hour')`, otherSession, tenantA, otherUser)
+	otherToken := token(tenantA, otherUser, otherSession)
+	request("GET", "/api/v1/catalog/operations/"+op, "", otherToken, 404)
+	request("POST", path+"/price", body, otherToken, 409)
+	request("POST", path+"/details", fmt.Sprintf(`{"operation_id":%q,"expected_version":2,"nome":"Duplicate","descricao":"","sku":"maximum-price"}`, uuid.NewString()), tokenA, 409)
+	details := fmt.Sprintf(`{"operation_id":%q,"expected_version":2,"nome":"Renamed","descricao":"Checked","sku":"renamed-sku"}`, uuid.NewString())
+	request("POST", path+"/details", details, tokenA, 200)
+	request("POST", path+"/active", fmt.Sprintf(`{"operation_id":%q,"expected_version":3,"ativo":false}`, uuid.NewString()), tokenA, 200)
+	request("POST", path+"/active", fmt.Sprintf(`{"operation_id":%q,"expected_version":4,"ativo":true}`, uuid.NewString()), tokenA, 200)
+	// Concurrent same operation: one version increment and one event.
+	store := onlinecatalog.Store{DB: sqlDB}
+	actor := onlinecatalog.Actor{Tenant: tenantA, User: userA, Session: sessionA, Role: "owner"}
+	concurrent := onlinecatalog.Change{OperationID: uuid.NewString(), ExpectedVersion: 5, PriceCents: 401}
+	changes := make(chan error, 2)
+	var mutationWG sync.WaitGroup
+	for i := 0; i < 2; i++ {
+		mutationWG.Add(1)
+		go func() {
+			defer mutationWG.Done()
+			_, e := store.Mutate(ctx, actor, int64(id), "price", concurrent)
+			changes <- e
+		}()
+	}
+	mutationWG.Wait()
+	close(changes)
+	for e := range changes {
+		if e != nil {
+			t.Fatal("replay concorrente falhou")
+		}
+	}
+	current, e := store.Product(ctx, actor, int64(id))
+	if e != nil || current.Version != 6 || current.PriceCents != 401 {
+		t.Fatal("replay duplicou versão")
+	}
+	// Two independent operations on the same version must not overwrite each other.
+	independent := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		mutationWG.Add(1)
+		go func() {
+			defer mutationWG.Done()
+			_, e := store.Mutate(ctx, actor, int64(id), "price", onlinecatalog.Change{OperationID: uuid.NewString(), ExpectedVersion: 6, PriceCents: 402})
+			independent <- e
+		}()
+	}
+	mutationWG.Wait()
+	close(independent)
+	wins, conflicts := 0, 0
+	for e := range independent {
+		if e == nil {
+			wins++
+		} else if e == onlinecatalog.ErrConflict {
+			conflicts++
+		} else {
+			t.Fatal("concorrência indisponível")
+		}
+	}
+	if wins != 1 || conflicts != 1 {
+		t.Fatal("versão não protegeu disputa")
+	}
+	var receipts, events int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_operations WHERE tenant_id=$1 AND product_id=$2`, tenantA, int64(id)).Scan(&receipts) != nil || receipts != 6 {
+		t.Fatal("histórico duplicado")
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_outbox WHERE tenant_id=$1`, tenantA).Scan(&events) != nil || events != receipts {
+		t.Fatal("evento fora da transação")
+	}
+	failEvent := uuid.NewString()
+	exec(fmt.Sprintf(`CREATE FUNCTION reject_catalog_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture'; END $$; CREATE TRIGGER reject_catalog_event BEFORE INSERT ON online_catalog_outbox FOR EACH ROW WHEN (NEW.operation_id='%s'::uuid) EXECUTE FUNCTION reject_catalog_event()`, failEvent))
+	request("POST", path+"/price", fmt.Sprintf(`{"operation_id":%q,"expected_version":7,"price_cents":999999999999}`, failEvent), tokenA, 503)
+	request("GET", "/api/v1/catalog/operations/"+failEvent, "", tokenA, 404)
+	current, e = store.Product(ctx, actor, int64(id))
+	if e != nil || current.Version != 7 || current.PriceCents != 402 {
+		t.Fatal("falha de evento gravou alteração")
+	}
+	history := request("GET", path+"/history?limit=2&offset=0", "", tokenA, 200)
+	if len(history["items"].([]interface{})) != 2 {
+		t.Fatal("histórico não paginado")
+	}
+	// Audit failure must roll back price/version and leave no outbox intent.
+	exec(`CREATE FUNCTION reject_catalog_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture'; END $$; CREATE TRIGGER reject_catalog_audit BEFORE INSERT ON online_catalog_operations FOR EACH ROW WHEN (NEW.action='details') EXECUTE FUNCTION reject_catalog_audit()`)
+	request("POST", path+"/details", fmt.Sprintf(`{"operation_id":%q,"expected_version":7,"nome":"Must rollback","descricao":"","sku":"must-rollback"}`, uuid.NewString()), tokenA, 503)
+	current, e = store.Product(ctx, actor, int64(id))
+	if e != nil || current.Version != 7 || current.Name != "Renamed" {
+		t.Fatal("falha de auditoria gravou produto")
+	}
+	// Authorization is checked again under row locks inside the transaction.
+	stockUser, stockSession := uuid.NewString(), uuid.NewString()
+	exec(`INSERT INTO users(id,tenant_id,role) VALUES($1,$2,'stock')`, stockUser, tenantA)
+	exec(`INSERT INTO online_sessions(id,tenant_id,user_id,role,created_at,expires_at) VALUES($1,$2,$3,'stock',clock_timestamp(),clock_timestamp()+interval '1 hour')`, stockSession, tenantA, stockUser)
+	stockActor := onlinecatalog.Actor{Tenant: tenantA, User: stockUser, Session: stockSession, Role: "stock"}
+	if _, e = store.Mutate(ctx, stockActor, int64(id), "price", onlinecatalog.Change{OperationID: uuid.NewString(), ExpectedVersion: 7, PriceCents: 1}); e != onlinecatalog.ErrDenied {
+		t.Fatal("stock alterou preço")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, stockSession)
+	if _, e = store.Mutate(ctx, stockActor, int64(id), "details", onlinecatalog.Change{OperationID: uuid.NewString(), ExpectedVersion: 7, Name: "Invalid", SKU: "invalid"}); e != onlinecatalog.ErrDenied {
+		t.Fatal("revogação não bloqueou transação")
+	}
 	// Run the real transaction and partial unique index concurrently.
 	results := make(chan struct {
 		created int
@@ -217,6 +339,22 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	request("POST", "/api/v1/produtos/", `{"nome":"Revoked","sku":"revoked"}`, tokenB, 401)
 	if count("products", tenantB) != 1001 {
 		t.Fatal("sessão revogada gravou produto")
+	}
+	var catalogChecksum string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_migrations WHERE version=8`).Scan(&catalogChecksum) != nil {
+		t.Fatal("checksum ausente")
+	}
+	exec(`UPDATE online_catalog_migrations SET checksum='tampered' WHERE version=8`)
+	if onlinecatalog.CheckSchema(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.Migrate(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("histórico adulterado aceito")
+	}
+	exec(`UPDATE online_catalog_migrations SET checksum=$1,version=9 WHERE version=8`, catalogChecksum)
+	if onlinecatalog.CheckSchema(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.Migrate(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("histórico futuro aceito")
+	}
+	exec(`UPDATE online_catalog_migrations SET version=8 WHERE version=9`)
+	if onlinecatalog.CheckSchema(ctx, sqlDB) != nil {
+		t.Fatal("fixture restaurada incompatível")
 	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }
