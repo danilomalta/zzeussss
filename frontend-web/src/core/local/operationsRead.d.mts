@@ -1,0 +1,11 @@
+export function id(v:unknown):boolean;
+export function text(v:unknown):boolean;
+export function integer(v:unknown):boolean;
+export function positive(v:unknown):boolean;
+export function unit(v:unknown):boolean;
+export function array(v:unknown):boolean;
+export function requireValid(ok:unknown):asserts ok;
+export function offsetValue(v:number):number;
+export function query(v:Record<string,string|number|undefined>):string;
+export function exactQuantity(v:number|string):string;
+export function readAPI(fetcher?:typeof fetch):(path:string,token:string,valid:(v:unknown)=>boolean)=>Promise<unknown>;

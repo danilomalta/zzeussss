@@ -1,0 +1,15 @@
+.operation-page {display:grid;gap:20px;max-width:1200px;margin:auto}
+.operation-panel {display:grid;gap:14px;min-width:0}
+.operation-form,.operation-actions {display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.operation-form label {min-width:180px;flex:1}
+.operation-table-wrap {overflow:auto}
+.operation-table {width:100%;border-collapse:collapse;text-align:left}
+.operation-table th,.operation-table td {padding:12px;border-bottom:1px solid #8884;vertical-align:top}
+.operation-table caption {text-align:left;padding:8px 0}
+.operation-table small {display:block;overflow-wrap:anywhere;max-width:260px}
+.operation-id {overflow-wrap:anywhere}
+.operation-metrics {display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.operation-metrics div {padding:12px;border:1px solid #8884;border-radius:10px}
+.operation-metrics dd {margin:6px 0;font-size:1.15rem;font-weight:600}
+.operation-page details {border-top:1px solid #8884;padding:12px 0}
+@media(max-width:600px){.operation-form label{min-width:100%}.operation-table th,.operation-table td{padding:8px}.operation-actions button{flex:1}}
