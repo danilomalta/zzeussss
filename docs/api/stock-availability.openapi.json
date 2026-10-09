@@ -1,0 +1,146 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P15 — saldo fisico, reservado e livre",
+    "version": "P15",
+    "description": "Consulta por produto/local. Sem nova migracao, SQLite 35. Usa somente movimentos locais e reservas de producao ativas. Nenhuma movimentacao, reserva, auditoria ou atualizacao do relogio. Nao estima saldo fisico por lote ou producoes simultaneas."
+  },
+  "paths": {
+    "/local/v1/stock/availability": {
+      "get": {
+        "operationId": "getStockAvailability",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+            },
+            "description": "Exato, uma vez. Contexto de empresa/loja deriva da sessao."
+          },
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+            },
+            "description": "Exato, uma vez. Contexto de empresa/loja deriva da sessao."
+          }
+        ],
+        "description": "Exige manage_stock conforme API de saldo original; nao amplia permissoes de production. Queries extras recusadas. Soma com precisao arbitraria nos intermediarios e limita resultados a inteiros seguros. Retorna unidade atual sem converter; divergencias conhecidas com reservas active/consumed e resultados historicos sao 409. Nao consegue provar a unidade original de movimentos genericos sem snapshots. Escrita posterior deve revalidar saldo/reservas em sua transacao.",
+        "responses": {
+          "200": {
+            "description": "Componentes coerentes no mesmo snapshot: physical_milli = reserved_milli + free_milli. Referencias existentes sem movimentos retornam zeros.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Availability"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query ou ID invalido, ausente, vazio, repetido ou desconhecido."
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida."
+          },
+          "403": {
+            "description": "Sem manage_stock atual ou aparelho autorizado."
+          },
+          "404": {
+            "description": "Produto ou local inexistente no escopo autorizado."
+          },
+          "409": {
+            "description": "Saldo negativo, overflow final, reserva acima do fisico ou divergencia conhecida de unidade."
+          },
+          "500": {
+            "description": "Falha interna de armazenamento."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Availability": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ],
+            "description": "Unidade atual do catalogo; sem conversao automatica. Recusa contradicoes com snapshots conhecidos da producao. Movimentos genericos nao preservam unidade."
+          },
+          "physical_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Soma exata dos movimentos registrados no escopo, antes das reservas."
+          },
+          "reserved_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Soma das reservas de producao active no mesmo escopo; released/consumed nao contribuem."
+          },
+          "free_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "physical_milli - reserved_milli, calculado no mesmo snapshot; nao reserva nem autoriza escrita posterior."
+          }
+        },
+        "required": [
+          "product_id",
+          "location_id",
+          "unit",
+          "physical_milli",
+          "reserved_milli",
+          "free_milli"
+        ]
+      }
+    }
+  }
+}
