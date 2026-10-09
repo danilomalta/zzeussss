@@ -8,6 +8,26 @@ import (
 
 const ErrorFormatHeader = "X-Titan-Error-Format"
 
+// FrameworkError is an explicit opt-in for server-level failures that occur
+// before route middleware (oversized body/header, malformed HTTP, timeout).
+// It never returns parser diagnostics or an arbitrary error's text.
+func FrameworkError(c *fiber.Ctx, err error) error {
+	status := fiber.StatusInternalServerError
+	var fe *fiber.Error
+	if errors.As(err, &fe) && fe.Code >= 400 && fe.Code <= 599 {
+		status = fe.Code
+	}
+	code, message := errorText(status)
+	c.Set(fiber.HeaderCacheControl, "no-store")
+	c.Vary(ErrorFormatHeader)
+	if c.Get(ErrorFormatHeader) == "v1" {
+		var body ErrorBody
+		body.Error.Code, body.Error.Message = code, message
+		return c.Status(status).JSON(body)
+	}
+	return c.Status(status).JSON(fiber.Map{"error": message})
+}
+
 type ErrorBody struct {
 	Error struct {
 		Code    string `json:"code"`

@@ -1,0 +1,60 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — saúde e limites do servidor online",
+    "version": "1.0.0",
+    "description": "Liveness pública e configuração da entrega 22. Não comprova readiness de PostgreSQL, proteção contra DDoS ou disponibilidade de integrações."
+  },
+  "paths": {
+    "/api/v1/saude": {
+      "get": {
+        "operationId": "onlineLiveness",
+        "security": [],
+        "summary": "Liveness do processo online",
+        "description": "Público; retorna ativo sem consultar banco. Sujeito ao limitador geral por IP. Cmd/api usa limites explícitos de corpo, buffer, concorrência e I/O; ver documento 97.",
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Processo atende a requisição HTTP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ativo"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limitador geral por IP."
+          },
+          "default": {
+            "description": "Erro de transporte ou framework; pode ocorrer antes de negociação. Cliente deve tolerar conexão encerrada sem corpo."
+          }
+        }
+      }
+    }
+  },
+  "x-server-resource-limits": {
+    "body_bytes": 65536,
+    "read_buffer_bytes": 8192,
+    "concurrency": 256,
+    "read_seconds": 10,
+    "write_seconds": 30,
+    "idle_seconds": 60
+  }
+}

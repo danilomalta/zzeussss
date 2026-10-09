@@ -157,3 +157,5 @@ Entrega 19: cadastro online de produto com JSON estrito, limites do esquema Post
 Entrega 20: geração online de sugestões com limite síncrono de 1000 produtos, conflito explícito apenas para sugestão pendente e testes de rollback/commit/isolamento. Ver documento 95. Sem migração, aprovação, aplicação de desconto ou execução em lotes maiores.
 
 Entrega 21: suíte PostgreSQL isolada para cadastro e geração de sugestões, com índice parcial concorrente, FK por empresa e rollback real. Ver documento 96. Aceite real exige execução no PC; preparo sem servidor não comprova aprovação.
+
+Entrega 22: limites explícitos de corpo/conexões/I/O no servidor online, host/porta validados e erros de framework sem diagnóstico privado. Ver documento 97. Não equivale a proteção distribuída contra DDoS ou cancelamento de operação SQL.

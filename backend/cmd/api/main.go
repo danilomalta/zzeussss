@@ -39,6 +39,10 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Aviso: Arquivo .env não localizado. Usando variáveis de ambiente globais.")
 	}
+	addr, err := onlineListenAddress(os.Getenv("TITAN_API_HOST"), os.Getenv("PORT"))
+	if err != nil {
+		log.Fatal("Endereço ou porta da API inválidos. Use TITAN_API_HOST como IP literal e PORT entre 1 e 65535.")
+	}
 
 	// 2. Inicializa a conexão com o banco (PostgreSQL + pgxpool + GORM)
 	if err := database.InitDB(); err != nil {
@@ -64,9 +68,7 @@ func main() {
 		log.Fatal("Erro crítico: falha ao estabelecer o Pool de conexões pgxpool. Abortando.")
 	}
 
-	app := fiber.New(fiber.Config{
-		AppName: "TitanSystem Backend API (PostgreSQL Cores)",
-	})
+	app := fiber.New(onlineServerConfig())
 
 	app.Use(apicontract.Errors())
 
@@ -80,16 +82,8 @@ func main() {
 	routes.Registrar(app)
 
 	// 6. Servidor ouvindo na rede local (LAN/Wi-Fi)
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	addr := "0.0.0.0:" + port
-	ipLocal := ObterIPLocal()
-
 	log.Println("────────────────────────────────────────────────────────────────")
-	log.Printf("🚀 TitanSystem rodando localmente em: http://localhost:%s", port)
-	log.Printf("API disponível na rede local em: http://%s:%s (somente rotas implementadas)", ipLocal, port)
+	log.Printf("API HTTP configurada em %s (somente rotas implementadas)", addr)
 	log.Println("────────────────────────────────────────────────────────────────")
 
 	if err := app.Listen(addr); err != nil {
