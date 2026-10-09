@@ -65,6 +65,20 @@ func orderStatusTx(ctx context.Context, tx *sql.Tx, a identity.Scope, v *Order) 
 	v.ReceivingStatus = "not_authorized"
 	if auth != nil {
 		v.ReceivingStatus = "authorized"
+		var planned int64
+		if err = tx.QueryRowContext(ctx, `SELECT quantity_milli FROM purchase_order_items WHERE tenant_id=? AND store_id=? AND order_id=?`, a.TenantID, a.StoreID, v.ID).Scan(&planned); err != nil {
+			return nil, ErrConflict
+		}
+		total, err := receivedTotalTx(ctx, tx, a, v.ID, planned)
+		if err != nil {
+			return nil, err
+		}
+		if total > 0 {
+			v.ReceivingStatus = "partially_received"
+		}
+		if total == planned {
+			v.ReceivingStatus = "received"
+		}
 	}
 	if out != nil {
 		if auth != nil {
