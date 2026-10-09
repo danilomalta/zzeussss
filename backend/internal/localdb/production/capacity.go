@@ -118,6 +118,17 @@ func capacityTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, locationI
 	if _, _, err := normalize(version.PublishInput); err != nil || version.Revision < 1 || version.Revision > MaxRevision {
 		return Capacity{}, ErrCapacity
 	}
+	var outputUnit string
+	err := tx.QueryRowContext(ctx, `SELECT unit FROM products WHERE tenant_id=? AND id=?`, actor.TenantID, version.OutputProductID).Scan(&outputUnit)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Capacity{}, ErrCapacity
+	}
+	if err != nil {
+		return Capacity{}, err
+	}
+	if outputUnit != version.OutputUnit {
+		return Capacity{}, ErrCapacity
+	}
 	out := Capacity{RecipeID: version.RecipeID, VersionID: version.VersionID, Revision: version.Revision, OutputProductID: version.OutputProductID, OutputUnit: version.OutputUnit, YieldPerBatchMilli: version.YieldMilli, PossibleBatches: MaxQuantity, Materials: []MaterialCapacity{}, LimitingProductIDs: []string{}}
 	for _, item := range version.Ingredients {
 		var unit string
