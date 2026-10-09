@@ -42,6 +42,14 @@ func ReceivingTrace(ctx context.Context, db *sql.DB, a identity.Scope, d identit
 	if err = identity.CanOperateTx(ctx, tx, a, d, identity.ManageStock); err != nil {
 		return ReceivingTracePage{}, err
 	}
+	out, err := receivingTraceTx(ctx, tx, a, id, offset)
+	if err != nil {
+		return ReceivingTracePage{}, err
+	}
+	return out, tx.Commit()
+}
+func receivingTraceTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string, offset int64) (ReceivingTracePage, error) {
+	var err error
 	out := ReceivingTracePage{OrderID: id, Offset: offset, Limit: 50, Items: []Receipt{}}
 	var rawStatus, supplier string
 	err = tx.QueryRowContext(ctx, `SELECT status,supplier_id FROM purchase_orders WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, id).Scan(&rawStatus, &supplier)
@@ -136,5 +144,5 @@ func ReceivingTrace(ctx context.Context, db *sql.DB, a identity.Scope, d identit
 	out.RejectedMilli = out.DeliveredMilli - out.AcceptedMilli
 	out.RemainingMilli = out.PlannedMilli - out.AcceptedMilli
 	out.HasMore = offset < out.TotalCount && int64(len(out.Items)) < out.TotalCount-offset
-	return out, tx.Commit()
+	return out, nil
 }
