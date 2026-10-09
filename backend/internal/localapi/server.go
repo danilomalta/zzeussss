@@ -91,6 +91,7 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 	protected.Post("/account/recovery/revoke", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.revokeOwnRecovery)
 	protected.Post("/module-contracts", s.installContract)
 	s.mountCatalog(protected)
+	s.mountCatalogEdit(protected)
 	s.mountComparison(protected)
 	s.mountPurchases(protected)
 	s.mountPurchaseSearch(protected)

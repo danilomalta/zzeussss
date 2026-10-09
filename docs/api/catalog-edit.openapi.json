@@ -1,0 +1,207 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "P23 edicao auditada do catalogo",
+    "version": "P23"
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/catalog/products/{id}/update": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revisao resultante ou replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Sem permissao/contrato"
+          },
+          "404": {
+            "description": "Produto ausente"
+          },
+          "409": {
+            "description": "Conflito"
+          },
+          "413": {
+            "description": "Corpo excede 4096 bytes"
+          },
+          "500": {
+            "description": "Falha interna"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "sku",
+                  "name",
+                  "unit",
+                  "barcode",
+                  "expected_revision",
+                  "price_cents",
+                  "cost_cents"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string"
+                  },
+                  "sku": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "unit",
+                      "kg",
+                      "g",
+                      "liter",
+                      "ml",
+                      "meter"
+                    ]
+                  },
+                  "barcode": {
+                    "type": "string"
+                  },
+                  "expected_revision": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0,
+                    "maximum": 2147483646
+                  },
+                  "price_cents": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "cost_cents": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalog/products/{id}/edit-state": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revisao resultante ou replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Sem permissao/contrato"
+          },
+          "404": {
+            "description": "Produto ausente"
+          },
+          "409": {
+            "description": "Conflito"
+          },
+          "413": {
+            "description": "Corpo excede 4096 bytes"
+          },
+          "500": {
+            "description": "Falha interna"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "EditResult": {
+        "type": "object",
+        "required": [
+          "product_id",
+          "revision",
+          "repeated"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
