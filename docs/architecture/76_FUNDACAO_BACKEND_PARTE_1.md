@@ -151,3 +151,5 @@ Entrega 16: contratos HTTP de funcionários, capacidades e instalação de licen
 Entrega 17: login local com JSON estrito e limite de corpo, no-store em login/contexto e contratos/testes de saúde, sessão e logout. Ver documento 92.
 
 Entrega 18: paginação limitada nas consultas online de produtos e sugestões, mantendo isolamento por empresa e papéis, com contrato HTTP e testes SQL simulados. Ver documento 93.
+
+Entrega 19: cadastro online de produto com JSON estrito, limites do esquema PostgreSQL e validação decimal antes da gravação. Ver documento 94. Sem migração, integração de produção ou alteração de interface. Modelo monetário legado, auditoria e idempotência de cadastro continuam pendentes.

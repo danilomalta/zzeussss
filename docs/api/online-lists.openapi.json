@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Titan — listas online paginadas",
-    "version": "1.0.0",
-    "description": "Base 5019567 com paginação da entrega 18. Não implementa sincronização comercial ou aprovação de descontos."
+    "title": "Titan — catálogo e sugestões online",
+    "version": "1.1.0",
+    "description": "Paginações da entrega 18 e cadastro estrito de produto da entrega 19. Não implementa sincronização comercial, fiscal ou aprovação de descontos."
   },
   "paths": {
     "/api/v1/produtos/": {
@@ -103,6 +103,106 @@
                 }
               }
             }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createOnlineProduct",
+        "summary": "Cadastra produto: admin, owner, manager ou stock",
+        "description": "Content-Type application/json obrigatório (charset permitido). Empresa e papel derivam da sessão persistida e vínculo atual. Campos extras como tenant_id, ID, ativo ou preço fiscal são recusados. Query não seleciona empresa. Não há idempotência nesta rota: não repetir automaticamente após resposta perdida; SKU único não substitui um protocolo de operação. Esta entrega não cria auditoria de preço, outbox comercial ou integração com catálogo SQLite.",
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOnlineProduct"
+              },
+              "example": {
+                "nome": "Arroz 1 kg",
+                "sku": "ARROZ-1",
+                "descricao": "Pacote",
+                "preco": 7.5,
+                "estoque": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Produto criado na empresa da sessão. Ativo=true; tenant_id não é exposto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineProduct"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de gravação, inclusive SKU já existente; sem expor SQL. Não confirma ausência de gravação em caso de perda de resposta."
+          },
+          "503": {
+            "description": "Verificação da sessão/vínculo indisponível; nenhum cadastro permitido."
           }
         }
       }
@@ -411,6 +511,47 @@
           "sugestoes"
         ],
         "additionalProperties": false
+      },
+      "CreateOnlineProduct": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nome",
+          "sku"
+        ],
+        "description": "Objeto JSON único até 8192 bytes. Sem chaves duplicadas, null, controles ou dados após o objeto. Nome/SKU são aparados. Preço e estoque omitidos conservam o padrão zero; descrição omitida fica vazia.",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "descricao": {
+            "type": "string",
+            "maxLength": 2000,
+            "default": ""
+          },
+          "preco": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 9999999999.99,
+            "multipleOf": 0.01,
+            "default": 0,
+            "description": "Número JSON decimal não negativo com zero, uma ou duas casas. Expoente e sinal são recusados; 1.000 também é recusado, apesar de equivaler numericamente a 1. Limite NUMERIC(12,2). Entrada validada em centavos; modelo legado ainda usa float64."
+          },
+          "estoque": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "default": 0,
+            "description": "Somente dígitos. Fração, expoente, sinal e string são recusados. Saldo inicial legado; não representa recebimento auditado."
+          }
+        }
       }
     }
   }

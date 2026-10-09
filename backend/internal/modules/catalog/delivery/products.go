@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"strings"
 	"titansystem-backend/internal/apicontract"
 
 	"titansystem-backend/internal/core/database"
@@ -49,32 +48,9 @@ func CriarProduto(c *fiber.Ctx) error {
 		return err
 	}
 
-	var req CreateProductRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"erro": "json inválido",
-		})
-	}
-
-	req.Nome = strings.TrimSpace(req.Nome)
-	req.SKU = strings.TrimSpace(req.SKU)
-
-	if req.Nome == "" || req.SKU == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"erro": "campos obrigatórios: nome, sku",
-		})
-	}
-
-	if req.Preco < 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"erro": "preco não pode ser negativo",
-		})
-	}
-
-	if req.Estoque < 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"erro": "estoque não pode ser negativo",
-		})
+	req, err := decodeProductInput(c.Get("Content-Type"), c.Body())
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"erro": "cadastro de produto inválido"})
 	}
 
 	p := domain.Product{

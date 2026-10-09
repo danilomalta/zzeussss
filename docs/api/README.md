@@ -16,10 +16,10 @@ Base desta revisão: entrega 11 (`fde43f8`). A documentação separa presença d
 | `orders-replenishment-comparison.openapi.json` | Quinze operações locais de fornecedores, pedidos, reposição e sites; schemas conferidos contra HTTP. |
 | `staff-capabilities.openapi.json` | Quatro operações de funcionários, capacidades e instalação de contrato assinado; sem fatura ou pagamento. |
 | `local-session.openapi.json` | Saúde, login JSON estrito, contexto e logout locais; sessão opaca, expiração e revogação. |
-| `online-lists.openapi.json` | Listas online de produtos e sugestões com limit/offset e isolamento por empresa. |
+| `online-lists.openapi.json` | Cadastro estrito e listas online de produtos; sugestões com limit/offset e isolamento por empresa. |
 | `http-errors.openapi.json` | Negociação opcional de erros, compartilhada pelas duas APIs. |
 
-Os documentos de produção pertencem à branch separada e não são incorporados nesta entrega. Compras, comparação e reposição locais possuem contrato detalhado nesta revisão; o catálogo online ainda requer contrato próprio. O mapa de rotas não finge completar esses contratos.
+Os documentos de produção pertencem à branch separada e não são incorporados nesta entrega. Compras, comparação e reposição locais possuem contrato detalhado nesta revisão; o cadastro e a consulta online de produtos possuem contrato detalhado; geração e aprovação de descontos continuam com pendências próprias. O mapa de rotas não finge completar esses contratos.
 
 ## Endereços e segurança
 

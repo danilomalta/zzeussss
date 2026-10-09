@@ -1776,9 +1776,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/core/routes/routes.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-lists.openapi.json"
+        }
       }
     },
     "/api/v1/recompensas/indicacoes": {

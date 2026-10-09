@@ -34,7 +34,7 @@ func TestOnlineProductCreationCannotSelectAnotherCompany(t *testing.T) {
 	mock.ExpectCommit()
 	app := fiber.New()
 	Registrar(app)
-	req := httptest.NewRequest("POST", "/api/v1/produtos/", strings.NewReader(`{"nome":"Item","sku":"sku","preco":2.50,"estoque":1,"tenant_id":"company-b"}`))
+	req := httptest.NewRequest("POST", "/api/v1/produtos/", strings.NewReader(`{"nome":"Item","sku":"sku","preco":2.50,"estoque":1}`))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+onlineToken(t, "company-a", "owner"))
 	resp, err := app.Test(req)
