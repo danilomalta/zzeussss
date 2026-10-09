@@ -77,3 +77,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - `online-catalog-creation.openapi.json`: busca por nome/SKU, auditoria e recuperação de cadastro. POST existente exige Idempotency-Key (428 sem chave); ativação explícita da migração PostgreSQL 9.
 
 - `online-catalog-batches.openapi.json`: prévia, aplicação atômica, recibo e histórico paginado de lotes de preços/ativação (entrega 26).
+
+- `online-catalog-undo.openapi.json`: prévia, reversão compensatória, recibo recuperável e consulta do vínculo ao original (entrega 27).

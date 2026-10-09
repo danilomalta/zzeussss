@@ -19,3 +19,6 @@ var CatalogDiscountsSQL string
 
 //go:embed 000010_online_catalog_batches.sql
 var CatalogBatchesSQL string
+
+//go:embed 000011_online_catalog_undo.sql
+var CatalogUndoSQL string

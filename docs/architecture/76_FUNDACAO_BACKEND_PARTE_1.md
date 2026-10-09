@@ -167,3 +167,5 @@ Entrega 24 consolidada: consulta individual, edição cadastral, preço exato co
 Entrega 25 consolidada: cadastro online com Idempotency-Key obrigatório (428 sem chave), auditoria/snapshot/outbox atômicos, consulta de criação e busca por nome/SKU com filtros. Migração PostgreSQL 9 e CORS do header. Ver documento 100. Frontend online precisa persistir/enviar identidade; local e produção separados. Teste PostgreSQL real no PC é obrigatório antes do commit.
 
 - Entrega 26: lotes online de preço/ativação, prévia vinculada ao ator, aplicação atômica com versões, recibo recuperável e histórico. PostgreSQL 10 explícito; SQLite/produção/frontend preservados. Ver documento 101.
+
+- Entrega 27: reversão atômica de lote online com motivo, prévia, proteção contra edições posteriores, recibo e vínculo único ao original. PostgreSQL 11 explícito. Ver documento 102.

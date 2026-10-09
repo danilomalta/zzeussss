@@ -84,6 +84,9 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if onlinecatalog.MigrateBatches(ctx, sqlDB) != nil || onlinecatalog.MigrateBatches(ctx, sqlDB) != nil || onlinecatalog.CheckBatches(ctx, sqlDB) != nil {
 		t.Fatal("migração de lotes falhou")
 	}
+	if onlinecatalog.MigrateUndo(ctx, sqlDB) != nil || onlinecatalog.MigrateUndo(ctx, sqlDB) != nil || onlinecatalog.CheckUndo(ctx, sqlDB) != nil {
+		t.Fatal("migração de reversão falhou")
+	}
 	tenantA, tenantB, userA, userB, sessionA, sessionB := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	for _, actor := range []struct{ tenant, user, session string }{{tenantA, userA, sessionA}, {tenantB, userB, sessionB}} {
 		exec(`INSERT INTO tenants(id,status) VALUES($1,'active')`, actor.tenant)
@@ -529,6 +532,114 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if _, e := store.PreviewBatch(ctx, stockActor, concurrentBatch); e != onlinecatalog.ErrDenied {
 		t.Fatal("stock criou prévia de preço")
 	}
+	// Compensation restores values atomically while versions and history advance.
+	u1 := request("POST", "/api/v1/produtos/", `{"nome":"Undo one","sku":"undo-one","preco":2.50}`, tokenA, 201)
+	u2 := request("POST", "/api/v1/produtos/", `{"nome":"Undo two","sku":"undo-two","preco":3.50}`, tokenA, 201)
+	uid1, uid2 := int64(u1["ID"].(float64)), int64(u2["ID"].(float64))
+	makeUndoSource := func(version int64, price int64) string {
+		t.Helper()
+		op := uuid.NewString()
+		body := fmt.Sprintf(`{"operation_id":%q,"items":[{"product_id":%d,"action":"price","expected_version":%d,"price_cents":%d},{"product_id":%d,"action":"active","expected_version":%d,"ativo":false}]}`, op, uid1, version, price, uid2, version)
+		p := request("POST", "/api/v1/catalog/batches/preview", body, tokenA, 200)
+		request("POST", "/api/v1/catalog/batches/apply", strings.TrimSuffix(body, "}")+fmt.Sprintf(`,"preview_hash":%q}`, p["preview_hash"]), tokenA, 200)
+		return op
+	}
+	originalUndoBatch := makeUndoSource(1, 375)
+	undoOp := uuid.NewString()
+	undoBody := fmt.Sprintf(`{"operation_id":%q,"source_operation_id":%q,"reason":"Corrige reajuste"}`, undoOp, originalUndoBatch)
+	undoPreviewHTTP := request("POST", "/api/v1/catalog/undos/preview", undoBody, otherToken, 200)
+	checkProduct(uid1, 2, 375, true)
+	checkProduct(uid2, 2, 350, false)
+	undoApplyBody := strings.TrimSuffix(undoBody, "}") + fmt.Sprintf(`,"preview_hash":%q}`, undoPreviewHTTP["preview_hash"])
+	request("POST", "/api/v1/catalog/undos/apply", undoApplyBody, otherToken, 200)
+	request("POST", "/api/v1/catalog/undos/apply", undoApplyBody, otherToken, 200)
+	request("POST", "/api/v1/catalog/undos/apply", strings.Replace(undoApplyBody, "Corrige reajuste", "Outro motivo", 1), otherToken, 409)
+	request("GET", "/api/v1/catalog/undos/"+undoOp, "", otherToken, 200)
+	request("GET", "/api/v1/catalog/undos/"+undoOp, "", tokenA, 404)
+	undoStatus := request("GET", "/api/v1/catalog/batches/"+originalUndoBatch+"/undo", "", tokenA, 200)
+	if undoStatus["source_operation_id"] != originalUndoBatch || undoStatus["operation_id"] != undoOp {
+		t.Fatal("situação da reversão não vinculou original")
+	}
+	request("GET", "/api/v1/catalog/batches/"+originalUndoBatch, "", tokenA, 200)
+	checkProduct(uid1, 3, 250, true)
+	checkProduct(uid2, 3, 350, true)
+	request("POST", "/api/v1/catalog/undos/preview", strings.Replace(undoBody, undoOp, uuid.NewString(), 1), tokenA, 409)
+	chain := fmt.Sprintf(`{"operation_id":%q,"source_operation_id":%q,"reason":"chain"}`, uuid.NewString(), undoOp)
+	request("POST", "/api/v1/catalog/undos/preview", chain, otherToken, 409)
+	request("POST", "/api/v1/catalog/undos/preview", undoBody, tokenB, 404)
+	// Changes after a source batch refuse compensation rather than overwriting them.
+	request("POST", "/api/v1/catalog/undos/preview", fmt.Sprintf(`{"operation_id":%q,"source_operation_id":%q,"reason":"stale"}`, uuid.NewString(), batchOp), tokenA, 409)
+	lateSource := makeUndoSource(3, 425)
+	lateUndoOp := uuid.NewString()
+	lateBody := fmt.Sprintf(`{"operation_id":%q,"source_operation_id":%q,"reason":"Late rollback"}`, lateUndoOp, lateSource)
+	latePreview := request("POST", "/api/v1/catalog/undos/preview", lateBody, tokenA, 200)
+	exec(fmt.Sprintf(`CREATE FUNCTION reject_undo_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture'; END $$; CREATE TRIGGER reject_undo_event BEFORE INSERT ON online_catalog_undo_outbox FOR EACH ROW WHEN (NEW.operation_id='%s'::uuid) EXECUTE FUNCTION reject_undo_event()`, lateUndoOp))
+	request("POST", "/api/v1/catalog/undos/apply", strings.TrimSuffix(lateBody, "}")+fmt.Sprintf(`,"preview_hash":%q}`, latePreview["preview_hash"]), tokenA, 503)
+	request("GET", "/api/v1/catalog/undos/"+lateUndoOp, "", tokenA, 404)
+	request("GET", "/api/v1/catalog/batches/"+lateUndoOp, "", tokenA, 404)
+	request("GET", "/api/v1/catalog/batches/"+lateSource+"/undo", "", tokenA, 404)
+	checkProduct(uid1, 4, 425, true)
+	checkProduct(uid2, 4, 350, false)
+	failedChild1 := uuid.NewSHA1(uuid.MustParse(lateUndoOp), []byte(fmt.Sprintf("catalog-batch:%d", uid1))).String()
+	failedChild2 := uuid.NewSHA1(uuid.MustParse(lateUndoOp), []byte(fmt.Sprintf("catalog-batch:%d", uid2))).String()
+	var failedUndoAuditCount int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_operations WHERE tenant_id=$1 AND operation_id IN ($2,$3)`, tenantA, failedChild1, failedChild2).Scan(&failedUndoAuditCount) != nil || failedUndoAuditCount != 0 {
+		t.Fatal("reversão falha deixou recibos dos itens")
+	}
+	// Different reversal IDs racing for the same original can win only once.
+	raceUndos := make([]onlinecatalog.UndoInput, 2)
+	for i := range raceUndos {
+		u := onlinecatalog.UndoInput{OperationID: uuid.NewString(), SourceOperationID: lateSource, Reason: "Authorized reversal"}
+		p, e := store.PreviewUndo(ctx, actor, u)
+		if e != nil {
+			t.Fatal("prévia de reversão concorrente falhou")
+		}
+		u.PreviewHash = p.PreviewHash
+		raceUndos[i] = u
+	}
+	undoErrors := make(chan error, 2)
+	for _, u := range raceUndos {
+		mutationWG.Add(1)
+		go func(u onlinecatalog.UndoInput) {
+			defer mutationWG.Done()
+			_, e := store.ApplyUndo(ctx, actor, u)
+			undoErrors <- e
+		}(u)
+	}
+	mutationWG.Wait()
+	close(undoErrors)
+	wins, conflicts = 0, 0
+	for e := range undoErrors {
+		if e == nil {
+			wins++
+		} else if e == onlinecatalog.ErrConflict {
+			conflicts++
+		} else {
+			t.Fatal("concorrência da reversão falhou")
+		}
+	}
+	if wins != 1 || conflicts != 1 {
+		t.Fatal("reversão duplicou original")
+	}
+	checkProduct(uid1, 5, 250, true)
+	checkProduct(uid2, 5, 350, true)
+	var undoCount int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_undos WHERE tenant_id=$1 AND source_operation_id=$2`, tenantA, lateSource).Scan(&undoCount) != nil || undoCount != 1 {
+		t.Fatal("reversão não foi única")
+	}
+	var undoChecksum string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_undo_migrations WHERE version=11`).Scan(&undoChecksum) != nil {
+		t.Fatal("checksum de reversão ausente")
+	}
+	exec(`UPDATE online_catalog_undo_migrations SET version=12 WHERE version=11`)
+	if onlinecatalog.MigrateUndo(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.CheckUndo(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema futuro da reversão aceito")
+	}
+	exec(`UPDATE online_catalog_undo_migrations SET version=11,checksum='tampered' WHERE version=12`)
+	if onlinecatalog.MigrateUndo(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema adulterado da reversão aceito")
+	}
+	exec(`UPDATE online_catalog_undo_migrations SET checksum=$1 WHERE version=11`, undoChecksum)
 	var batchChecksum string
 	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_batch_migrations WHERE version=10`).Scan(&batchChecksum) != nil {
 		t.Fatal("checksum de lote ausente")

@@ -2475,6 +2475,296 @@
           "url": "./online-catalog-batches.openapi.json"
         }
       }
+    },
+    "/api/v1/catalog/undos/preview": {
+      "post": {
+        "operationId": "online_undo_post__api_v1_catalog_undos_preview",
+        "description": "Prévia da reversão: valores anteriores e novas versões. Nenhuma gravação comercial. Owner/admin/manager podem reverter lote da mesma empresa, incluindo lote aplicado por outro operador.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Prévia sem gravação ou recibo persistido/replay, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-undo.openapi.json#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "Original ou reversão ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão/hash/identidade em conflito, original já revertido ou cadeia proibida"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou commit incerto; consulte o resultado"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-undo.openapi.json#/components/schemas/PreviewRequest"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Reversão de lotes",
+          "url": "./online-catalog-undo.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/undos/apply": {
+      "post": {
+        "operationId": "online_undo_post__api_v1_catalog_undos_apply",
+        "description": "Nova operação compensatória atômica, com motivo e vínculo ao original. Só aplica se todos os produtos ainda correspondem exatamente ao resultado original. Um original pode ser revertido uma única vez.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Prévia sem gravação ou recibo persistido/replay, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-undo.openapi.json#/components/schemas/UndoReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "Original ou reversão ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão/hash/identidade em conflito, original já revertido ou cadeia proibida"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou commit incerto; consulte o resultado"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-undo.openapi.json#/components/schemas/ApplyRequest"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Reversão de lotes",
+          "url": "./online-catalog-undo.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/undos/{operation_id}": {
+      "get": {
+        "operationId": "online_undo_get__api_v1_catalog_undos_operation_id",
+        "description": "Consulta do recibo original da reversão pela empresa e operador que a aplicou; outro operador recebe 404. Resultado estável mesmo após futuras edições.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID canônico, minúsculo e diferente do UUID nulo."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prévia sem gravação ou recibo persistido/replay, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-undo.openapi.json#/components/schemas/UndoReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "Original ou reversão ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão/hash/identidade em conflito, original já revertido ou cadeia proibida"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou commit incerto; consulte o resultado"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Reversão de lotes",
+          "url": "./online-catalog-undo.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/batches/{operation_id}/undo": {
+      "get": {
+        "operationId": "online_undo_get__api_v1_catalog_batches_operation_id_undo",
+        "description": "Consulta administrativa da reversão de um lote original da empresa, por owner/admin/manager. Pode mostrar outro ator autorizado. 404 significa que não há reversão gravada nesse contexto; indisponibilidade não comprova ausência.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID canônico, minúsculo e diferente do UUID nulo."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prévia sem gravação ou recibo persistido/replay, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-undo.openapi.json#/components/schemas/UndoReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "Original ou reversão ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão/hash/identidade em conflito, original já revertido ou cadeia proibida"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou commit incerto; consulte o resultado"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Reversão de lotes",
+          "url": "./online-catalog-undo.openapi.json"
+        }
+      }
     }
   },
   "components": {

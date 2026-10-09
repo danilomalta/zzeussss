@@ -270,6 +270,19 @@ func (s Store) ApplyBatch(ctx context.Context, a Actor, b BatchInput) (BatchRece
 		return BatchReceipt{}, ErrUnavailable
 	}
 	defer tx.Rollback()
+	r, e := s.applyBatchTx(ctx, tx, a, b)
+	if e != nil {
+		return BatchReceipt{}, e
+	}
+	if tx.Commit() != nil {
+		return BatchReceipt{}, ErrUnavailable
+	}
+	return r, nil
+}
+
+// applyBatchTx leaves commit ownership to the transaction caller.
+func (s Store) applyBatchTx(ctx context.Context, tx *sql.Tx, a Actor, b BatchInput) (BatchReceipt, error) {
+	var e error
 	if e = batchLive(ctx, tx, a); e != nil {
 		return BatchReceipt{}, e
 	}
@@ -282,9 +295,6 @@ func (s Store) ApplyBatch(ctx context.Context, a Actor, b BatchInput) (BatchRece
 	if e == nil {
 		if prior.ActorID != a.User || hash != old {
 			return BatchReceipt{}, ErrConflict
-		}
-		if tx.Commit() != nil {
-			return BatchReceipt{}, ErrUnavailable
 		}
 		return prior, nil
 	}
@@ -329,9 +339,6 @@ func (s Store) ApplyBatch(ctx context.Context, a Actor, b BatchInput) (BatchRece
 		return BatchReceipt{}, conflict(e)
 	}
 	// Item outboxes and immutable audit records are already in this transaction.
-	if tx.Commit() != nil {
-		return BatchReceipt{}, ErrUnavailable
-	}
 	return r, nil
 }
 func (s Store) Batch(ctx context.Context, a Actor, op string) (BatchReceipt, error) {
