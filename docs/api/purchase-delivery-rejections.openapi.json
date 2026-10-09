@@ -1,0 +1,314 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Recusa integral local de entrega",
+    "version": "1.0.0",
+    "description": "Local human workflow only. No supplier transmission, acknowledgement or financial effect. Scope derives from session and device."
+  },
+  "paths": {
+    "/local/v1/purchase-orders/{id}/rejections": {
+      "post": {
+        "summary": "Recusa integral local de entrega",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success or exact replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "rejection",
+                    "repeated"
+                  ],
+                  "properties": {
+                    "rejection": {
+                      "type": "object",
+                      "required": [
+                        "operation_id",
+                        "delivery_reference",
+                        "unit",
+                        "delivered_milli",
+                        "reason",
+                        "order_id",
+                        "id",
+                        "device_id",
+                        "actor_id",
+                        "product_id",
+                        "created_at"
+                      ],
+                      "properties": {
+                        "operation_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "delivery_reference": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "unit": {
+                          "type": "string",
+                          "enum": [
+                            "unit",
+                            "kg",
+                            "g",
+                            "liter",
+                            "ml",
+                            "meter"
+                          ]
+                        },
+                        "delivered_milli": {
+                          "type": "integer",
+                          "format": "int64",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "order_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "device_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "actor_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "product_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "repeated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Session or device invalid"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Record outside authenticated scope"
+          },
+          "409": {
+            "description": "Conflict or inconsistent evidence"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Unexpected error"
+          },
+          "503": {
+            "description": "Issuer unavailable"
+          },
+          "201": {
+            "description": "New fully rejected delivery; no stock entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "rejection",
+                    "repeated"
+                  ],
+                  "properties": {
+                    "rejection": {
+                      "type": "object",
+                      "required": [
+                        "operation_id",
+                        "delivery_reference",
+                        "unit",
+                        "delivered_milli",
+                        "reason",
+                        "order_id",
+                        "id",
+                        "device_id",
+                        "actor_id",
+                        "product_id",
+                        "created_at"
+                      ],
+                      "properties": {
+                        "operation_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "delivery_reference": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "unit": {
+                          "type": "string",
+                          "enum": [
+                            "unit",
+                            "kg",
+                            "g",
+                            "liter",
+                            "ml",
+                            "meter"
+                          ]
+                        },
+                        "delivered_milli": {
+                          "type": "integer",
+                          "format": "int64",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "order_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "device_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "actor_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "product_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "repeated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation_id",
+                  "delivery_reference",
+                  "unit",
+                  "delivered_milli",
+                  "reason"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "delivery_reference": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "unit",
+                      "kg",
+                      "g",
+                      "liter",
+                      "ml",
+                      "meter"
+                    ]
+                  },
+                  "delivered_milli": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

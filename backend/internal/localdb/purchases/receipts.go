@@ -201,12 +201,14 @@ func RecordReceiving(ctx context.Context, db *sql.DB, license *entitlementstore.
 	if in.AcceptedMilli > planned-total || in.DeliveredMilli > MaxQuantity-deliveredTotal {
 		return ReceiptResult{}, ErrConflict
 	}
-	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM purchase_receipts WHERE tenant_id=? AND store_id=? AND supplier_id=? AND delivery_reference=?`, a.TenantID, a.StoreID, supplier, in.DeliveryReference).Scan(&n); err != nil {
+	used, err := deliveryReferenceUsedTx(ctx, tx, a, supplier, in.DeliveryReference)
+	if err != nil {
 		return ReceiptResult{}, err
 	}
-	if n != 0 {
+	if used {
 		return ReceiptResult{}, ErrConflict
 	}
+
 	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM stock_locations WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.LocationID).Scan(&n); err != nil {
 		return ReceiptResult{}, err
 	}
