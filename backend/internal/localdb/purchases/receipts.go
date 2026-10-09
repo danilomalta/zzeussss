@@ -82,6 +82,20 @@ func receiptTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (Re
 	if err != nil {
 		return Receipt{}, err
 	}
+	auth, err := receivingAuthorizationTx(ctx, tx, a, out.OrderID)
+	if err != nil {
+		return Receipt{}, err
+	}
+	if auth == nil {
+		return Receipt{}, ErrConflict
+	}
+	cancelled, err := cancellationTx(ctx, tx, a, out.OrderID)
+	if err != nil {
+		return Receipt{}, err
+	}
+	if cancelled != nil {
+		return Receipt{}, ErrConflict
+	}
 	canonical, _ := json.Marshal(out.ReceiptInput)
 	if !validReceipt(out.ReceiptInput) || body != string(canonical) {
 		return Receipt{}, ErrConflict

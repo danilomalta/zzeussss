@@ -1,4 +1,4 @@
-// Package purchases creates local orders; it neither sends them nor changes stock.
+// Package purchases manages local orders and authorized receiving. It never sends orders to suppliers.
 package purchases
 
 import (
