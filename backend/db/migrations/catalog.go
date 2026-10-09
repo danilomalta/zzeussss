@@ -31,3 +31,6 @@ var CatalogAdjustmentsSQL string
 
 //go:embed 000014_online_catalog_barcodes.sql
 var CatalogBarcodesSQL string
+
+//go:embed 000015_online_catalog_barcode_batches.sql
+var CatalogBarcodeBatchesSQL string

@@ -1,0 +1,380 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem — cadastro GTIN em lote online",
+    "version": "33.0",
+    "description": "Até 50 produtos, um novo GTIN por produto, prévia sem escrita e apply atômico. Reutiliza recibos/outbox individuais e acrescenta recibo/outbox do lote. Sem CSV, exclusão, transferência de códigos, embalagens, balança ou integração SQLite."
+  },
+  "paths": {
+    "/api/v1/catalog/barcodes/batches/preview": {
+      "post": {
+        "operationId": "online_barcode_batch_PreviewBarcodeBatch",
+        "summary": "PreviewBarcodeBatch",
+        "description": "Owner/admin/manager/stock. Tenant, ator e sessão derivados da autenticação. Query não permitida; GET sem corpo. Lote ordenado por produto. Apenas aliases da mesma unidade vendável.",
+        "parameters": [],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida/ambígua: null, extra, duplicata, GTIN inválido, produtos repetidos ou limite"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Produto ou recibo ausente no escopo empresa/ator"
+          },
+          "409": {
+            "description": "Código ocupado/capacidade/versão ou hash obsoleto; identidade diferente ou filho previamente usado"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou resultado incerto; preservar UUID e consultar antes de repetir"
+          },
+          "200": {
+            "description": "Snapshot real. Prévia não persiste nada; replay retorna recibo original sem alterar catálogo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preview"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/batches/apply": {
+      "post": {
+        "operationId": "online_barcode_batch_ApplyBarcodeBatch",
+        "summary": "ApplyBarcodeBatch",
+        "description": "Owner/admin/manager/stock. Tenant, ator e sessão derivados da autenticação. Query não permitida; GET sem corpo. Lote ordenado por produto. Apenas aliases da mesma unidade vendável.",
+        "parameters": [],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida/ambígua: null, extra, duplicata, GTIN inválido, produtos repetidos ou limite"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Produto ou recibo ausente no escopo empresa/ator"
+          },
+          "409": {
+            "description": "Código ocupado/capacidade/versão ou hash obsoleto; identidade diferente ou filho previamente usado"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou resultado incerto; preservar UUID e consultar antes de repetir"
+          },
+          "200": {
+            "description": "Snapshot real. Prévia não persiste nada; replay retorna recibo original sem alterar catálogo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/batches/{operation_id}": {
+      "get": {
+        "operationId": "online_barcode_batch_ReadBarcodeBatch",
+        "summary": "ReadBarcodeBatch",
+        "description": "Owner/admin/manager/stock. Tenant, ator e sessão derivados da autenticação. Query não permitida; GET sem corpo. Lote ordenado por produto. Apenas aliases da mesma unidade vendável.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida/ambígua: null, extra, duplicata, GTIN inválido, produtos repetidos ou limite"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Produto ou recibo ausente no escopo empresa/ator"
+          },
+          "409": {
+            "description": "Código ocupado/capacidade/versão ou hash obsoleto; identidade diferente ou filho previamente usado"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou resultado incerto; preservar UUID e consultar antes de repetir"
+          },
+          "200": {
+            "description": "Snapshot real. Prévia não persiste nada; replay retorna recibo original sem alterar catálogo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Item": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_id",
+          "expected_version",
+          "code"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^([0-9]{8}|[0-9]{12}|[0-9]{13}|[0-9]{14})$",
+            "description": "GTIN válido modulo10; equivalência canônica preserva zeros."
+          }
+        }
+      },
+      "PreviewInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason",
+          "items"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "description": "Um código por produto no mesmo lote; produtos e GTINs canônicos não podem se repetir."
+          }
+        }
+      },
+      "ApplyInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason",
+          "items",
+          "preview_hash"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "description": "Um código por produto no mesmo lote; produtos e GTINs canônicos não podem se repetir."
+          },
+          "preview_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      },
+      "PreviewItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "canonical_code",
+          "before",
+          "after"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^([0-9]{8}|[0-9]{12}|[0-9]{13}|[0-9]{14})$",
+            "description": "GTIN válido modulo10; equivalência canônica preserva zeros."
+          },
+          "canonical_code": {
+            "type": "string",
+            "pattern": "^[0-9]{14}$"
+          },
+          "before": {
+            "$ref": "./online-catalog-management.openapi.json#/components/schemas/Product"
+          },
+          "after": {
+            "$ref": "./online-catalog-management.openapi.json#/components/schemas/Product"
+          }
+        }
+      },
+      "Preview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason",
+          "preview_hash",
+          "items"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "preview_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/PreviewItem"
+            }
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "actor_id",
+          "reason",
+          "preview_hash",
+          "items",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "preview_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "$ref": "./online-catalog-barcodes.openapi.json#/components/schemas/Receipt"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

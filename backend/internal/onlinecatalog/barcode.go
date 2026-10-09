@@ -109,6 +109,19 @@ func (s Store) ChangeBarcode(ctx context.Context, a Actor, product int64, codeID
 	if e = batchLive(ctx, tx, a); e != nil {
 		return BarcodeReceipt{}, e
 	}
+	r, e := s.changeBarcodeTx(ctx, tx, a, product, codeID, action, v)
+	if e != nil {
+		return BarcodeReceipt{}, e
+	}
+	if tx.Commit() != nil {
+		return BarcodeReceipt{}, ErrUnavailable
+	}
+	return r, nil
+}
+
+// Caller owns the transaction; ordinary and batch writes use the same invariants.
+func (s Store) changeBarcodeTx(ctx context.Context, tx *sql.Tx, a Actor, product int64, codeID, action string, v BarcodeInput) (BarcodeReceipt, error) {
+	var e error
 	if _, e = tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,0))`, a.Tenant+":barcode-op:"+v.OperationID); e != nil {
 		return BarcodeReceipt{}, ErrUnavailable
 	}
@@ -122,9 +135,6 @@ func (s Store) ChangeBarcode(ctx context.Context, a Actor, product int64, codeID
 	if e == nil {
 		if prior.ActorID != a.User || old != hash {
 			return BarcodeReceipt{}, ErrConflict
-		}
-		if tx.Commit() != nil {
-			return BarcodeReceipt{}, ErrUnavailable
 		}
 		return prior, nil
 	}
@@ -215,9 +225,6 @@ func (s Store) ChangeBarcode(ctx context.Context, a Actor, product int64, codeID
 		return BarcodeReceipt{}, ErrUnavailable
 	}
 	if n, e := out.RowsAffected(); e != nil || n != 1 {
-		return BarcodeReceipt{}, ErrUnavailable
-	}
-	if tx.Commit() != nil {
 		return BarcodeReceipt{}, ErrUnavailable
 	}
 	return receipt, nil

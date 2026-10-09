@@ -79,6 +79,9 @@ func Registrar(app *fiber.App) {
 	produtos.Get("/:id/barcodes/history", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ListarCodigosProduto(true))
 	negocios.Get("/catalog/barcodes/lookup", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock", "cashier"), catalogDelivery.LocalizarCodigoProduto)
 	negocios.Get("/catalog/barcodes/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.ConsultarOperacaoCodigo)
+	negocios.Post("/catalog/barcodes/batches/preview", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CadastrarLoteCodigos(false))
+	negocios.Post("/catalog/barcodes/batches/apply", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CadastrarLoteCodigos(true))
+	negocios.Get("/catalog/barcodes/batches/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.ConsultarLoteCodigos)
 	produtos.Get("/:id/history", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.HistoricoProduto)
 	negocios.Get("/catalog/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.ConsultarOperacaoCatalogo)
 

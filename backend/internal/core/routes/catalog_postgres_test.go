@@ -96,6 +96,9 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if onlinecatalog.MigrateBarcodes(ctx, sqlDB) != nil || onlinecatalog.MigrateBarcodes(ctx, sqlDB) != nil || onlinecatalog.CheckBarcodes(ctx, sqlDB) != nil {
 		t.Fatal("migração de códigos falhou")
 	}
+	if onlinecatalog.MigrateBarcodeBatches(ctx, sqlDB) != nil || onlinecatalog.MigrateBarcodeBatches(ctx, sqlDB) != nil || onlinecatalog.CheckBarcodeBatches(ctx, sqlDB) != nil {
+		t.Fatal("migração lote de códigos falhou")
+	}
 	tenantA, tenantB, userA, userB, sessionA, sessionB := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	for _, actor := range []struct{ tenant, user, session string }{{tenantA, userA, sessionA}, {tenantB, userB, sessionB}} {
 		exec(`INSERT INTO tenants(id,status) VALUES($1,'active')`, actor.tenant)
@@ -1264,6 +1267,137 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	request("GET", "/api/v1/catalog/barcodes/lookup?code=036000291452", "", tokenA, 404)
 	request("POST", fmt.Sprintf("/api/v1/produtos/%d/active", barcodeProductID), fmt.Sprintf(`{"operation_id":%q,"expected_version":7,"ativo":true}`, uuid.NewString()), tokenA, 200)
 	request("GET", "/api/v1/catalog/barcodes/lookup?code=4006381333931", "", tokenA, 200)
+	// Atomic barcode batches: preview, apply, original receipt and rollback.
+	app = fiber.New()
+	Registrar(app)
+	gtin33 := func(base string) string {
+		total := 0
+		weight := 3
+		for i := len(base) - 1; i >= 0; i-- {
+			total += int(base[i]-'0') * weight
+			weight = 4 - weight
+		}
+		return base + fmt.Sprint((10-total%10)%10)
+	}
+	newBatchProduct33 := func(sku string) int64 {
+		result := request("POST", "/api/v1/produtos/", fmt.Sprintf(`{"nome":"Lote de etiquetas","sku":%q,"preco":1.25}`, sku), tokenA, 201)
+		return int64(result["ID"].(float64))
+	}
+	batchID33a, batchID33b := newBatchProduct33("gtin-batch-a"), newBatchProduct33("gtin-batch-b")
+	batch33 := onlinecatalog.BarcodeBatchInput{OperationID: uuid.NewString(), Reason: "Etiquetas conferidas em lote", Items: []onlinecatalog.BarcodeBatchItem{{ProductID: batchID33b, ExpectedVersion: 1, Code: gtin33("789123450002")}, {ProductID: batchID33a, ExpectedVersion: 1, Code: gtin33("789123450001")}}}
+	batchJSON33, _ := json.Marshal(batch33)
+	preview33 := request("POST", "/api/v1/catalog/barcodes/batches/preview", string(batchJSON33), tokenA, 200)
+	checkProduct(batchID33a, 1, 125, true)
+	checkProduct(batchID33b, 1, 125, true)
+	if _, e := store.BarcodeBatch(ctx, actor, batch33.OperationID); e != onlinecatalog.ErrMissing {
+		t.Fatal("prévia gravou recibo")
+	}
+	batch33.PreviewHash = preview33["preview_hash"].(string)
+	batchJSON33, _ = json.Marshal(batch33)
+	applied33 := request("POST", "/api/v1/catalog/barcodes/batches/apply", string(batchJSON33), tokenA, 200)
+	if len(applied33["items"].([]interface{})) != 2 {
+		t.Fatal("lote não registrou todos itens")
+	}
+	checkProduct(batchID33a, 2, 125, true)
+	checkProduct(batchID33b, 2, 125, true)
+	request("GET", "/api/v1/catalog/barcodes/batches/"+batch33.OperationID, "", tokenA, 200)
+	request("GET", "/api/v1/catalog/barcodes/batches/"+batch33.OperationID, "", tokenB, 404)
+	request("GET", "/api/v1/catalog/barcodes/batches/"+batch33.OperationID, "", otherToken, 404)
+	request("POST", "/api/v1/catalog/barcodes/batches/apply", string(batchJSON33), otherToken, 409)
+	request("GET", "/api/v1/catalog/barcodes/lookup?code="+gtin33("789123450001"), "", tokenA, 200)
+	item33 := applied33["items"].([]interface{})[0].(map[string]interface{})
+	request("GET", "/api/v1/catalog/barcodes/operations/"+item33["operation_id"].(string), "", tokenA, 200)
+	request("GET", fmt.Sprintf("/api/v1/produtos/%d/barcodes/history", batchID33a), "", otherToken, 200)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/price", batchID33a), fmt.Sprintf(`{"operation_id":%q,"expected_version":2,"price_cents":180}`, uuid.NewString()), tokenA, 200)
+	original33 := request("POST", "/api/v1/catalog/barcodes/batches/apply", string(batchJSON33), tokenA, 200)
+	if original33["items"].([]interface{})[0].(map[string]interface{})["product_after"].(map[string]interface{})["price_cents"] != float64(125) {
+		t.Fatal("replay mudou snapshot")
+	}
+	checkProduct(batchID33a, 3, 180, true)
+	changed33 := batch33
+	changed33.Reason = "Outro motivo"
+	changedJSON33, _ := json.Marshal(changed33)
+	request("POST", "/api/v1/catalog/barcodes/batches/apply", string(changedJSON33), tokenA, 409)
+	// Duplicate canonical code in a different product rejects the complete preview.
+	duplicate33 := onlinecatalog.BarcodeBatchInput{OperationID: uuid.NewString(), Reason: "Duplicidade", Items: []onlinecatalog.BarcodeBatchItem{{ProductID: batchID33b, ExpectedVersion: 2, Code: gtin33("789123450001")}}}
+	duplicateJSON33, _ := json.Marshal(duplicate33)
+	request("POST", "/api/v1/catalog/barcodes/batches/preview", string(duplicateJSON33), tokenA, 409)
+	// A intervening product edit invalidates the hash/version; no new code appears.
+	staleID33 := newBatchProduct33("gtin-batch-stale")
+	stale33 := onlinecatalog.BarcodeBatchInput{OperationID: uuid.NewString(), Reason: "Prévia obsoleta", Items: []onlinecatalog.BarcodeBatchItem{{ProductID: staleID33, ExpectedVersion: 1, Code: gtin33("789123450003")}}}
+	stalePreview33, e := store.PreviewBarcodeBatch(ctx, actor, stale33)
+	if e != nil {
+		t.Fatal("prévia válida recusada")
+	}
+	stale33.PreviewHash = stalePreview33.PreviewHash
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/price", staleID33), fmt.Sprintf(`{"operation_id":%q,"expected_version":1,"price_cents":150}`, uuid.NewString()), tokenA, 200)
+	if _, e = store.ApplyBarcodeBatch(ctx, actor, stale33); e != onlinecatalog.ErrConflict {
+		t.Fatal("prévia obsoleta aplicada")
+	}
+	checkProduct(staleID33, 2, 150, true)
+	// Failure after both item outboxes must undo both codes, versions and receipts.
+	rollbackID33a, rollbackID33b := newBatchProduct33("gtin-batch-rollback-a"), newBatchProduct33("gtin-batch-rollback-b")
+	rollback33 := onlinecatalog.BarcodeBatchInput{OperationID: uuid.NewString(), Reason: "Falha tardia", Items: []onlinecatalog.BarcodeBatchItem{{ProductID: rollbackID33a, ExpectedVersion: 1, Code: gtin33("789123450004")}, {ProductID: rollbackID33b, ExpectedVersion: 1, Code: gtin33("789123450005")}}}
+	rollbackPreview33, e := store.PreviewBarcodeBatch(ctx, actor, rollback33)
+	if e != nil {
+		t.Fatal("prévia rollback indisponível")
+	}
+	rollback33.PreviewHash = rollbackPreview33.PreviewHash
+	exec(`CREATE FUNCTION refuse_barcode_batch_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'isolated fixture' USING ERRCODE='23514'; END $$; CREATE TRIGGER refuse_barcode_batch_event BEFORE INSERT ON online_catalog_barcode_batch_outbox FOR EACH ROW EXECUTE FUNCTION refuse_barcode_batch_event()`)
+	if _, e = store.ApplyBarcodeBatch(ctx, actor, rollback33); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("outbox de lote falhou sem rollback")
+	}
+	checkProduct(rollbackID33a, 1, 125, true)
+	checkProduct(rollbackID33b, 1, 125, true)
+	var partial33 int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_barcodes WHERE tenant_id=$1 AND product_id IN ($2,$3)`, tenantA, rollbackID33a, rollbackID33b).Scan(&partial33) != nil || partial33 != 0 {
+		t.Fatal("código parcial do lote")
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_barcode_operations WHERE tenant_id=$1 AND product_id IN ($2,$3)`, tenantA, rollbackID33a, rollbackID33b).Scan(&partial33) != nil || partial33 != 0 {
+		t.Fatal("auditoria parcial do lote")
+	}
+	if _, e = store.BarcodeBatch(ctx, actor, rollback33.OperationID); e != onlinecatalog.ErrMissing {
+		t.Fatal("recibo parcial do lote")
+	}
+	exec(`ALTER TABLE online_catalog_barcode_batch_outbox DISABLE TRIGGER refuse_barcode_batch_event`)
+	// Two concurrent retries must publish one complete batch, not duplicate aliases.
+	batchResults33 := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		mutationWG.Add(1)
+		go func() {
+			defer mutationWG.Done()
+			_, e := store.ApplyBarcodeBatch(ctx, actor, rollback33)
+			batchResults33 <- e
+		}()
+	}
+	mutationWG.Wait()
+	close(batchResults33)
+	for e := range batchResults33 {
+		if e != nil {
+			t.Fatal("replay concorrente do lote falhou")
+		}
+	}
+	checkProduct(rollbackID33a, 2, 125, true)
+	checkProduct(rollbackID33b, 2, 125, true)
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_barcode_batch_outbox WHERE tenant_id=$1 AND operation_id=$2`, tenantA, rollback33.OperationID).Scan(&partial33) != nil || partial33 != 1 {
+		t.Fatal("outbox de lote duplicada")
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_barcodes WHERE tenant_id=$1 AND product_id IN ($2,$3)`, tenantA, rollbackID33a, rollbackID33b).Scan(&partial33) != nil || partial33 != 2 {
+		t.Fatal("replay duplicou códigos")
+	}
+	var barcodeBatchChecksum33 string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_barcode_batch_migrations WHERE version=15`).Scan(&barcodeBatchChecksum33) != nil {
+		t.Fatal("checksum lote ausente")
+	}
+	exec(`UPDATE online_catalog_barcode_batch_migrations SET version=16 WHERE version=15`)
+	if onlinecatalog.MigrateBarcodeBatches(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.CheckBarcodeBatches(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("versão futura lote aceita")
+	}
+	exec(`UPDATE online_catalog_barcode_batch_migrations SET version=15,checksum='tampered' WHERE version=16`)
+	if onlinecatalog.MigrateBarcodeBatches(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("checksum lote alterado aceito")
+	}
+	exec(`UPDATE online_catalog_barcode_batch_migrations SET checksum=$1 WHERE version=15`, barcodeBatchChecksum33)
 	var barcodeChecksum string
 	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_barcode_migrations WHERE version=14`).Scan(&barcodeChecksum) != nil {
 		t.Fatal("checksum código ausente")

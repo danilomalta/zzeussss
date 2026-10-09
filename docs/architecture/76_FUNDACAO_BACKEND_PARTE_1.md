@@ -179,3 +179,5 @@ Entrega 25 consolidada: cadastro online com Idempotency-Key obrigatório (428 se
 - Entrega 31: relatório histórico de reajustes percentuais, filtros, CSV protegido e snapshot por página. Sem migração adicional ou exportação de outras modalidades; ver documento 106.
 
 - Entrega 32: múltiplos GTINs por produto online, duplicidade canônica por empresa, lifecycle versionado e lookup real. Migração PostgreSQL 14 explícita; sem embalagem, balança, PDV SQLite ou fiscal. Ver documento 107.
+
+- Entrega 33: prévia e cadastro atômico de GTINs em até 50 produtos por lote, replay/recuperação e auditoria por item. Migração PostgreSQL 15 explícita; não altera SQLite, produção ou frontend. Ver documento 108.

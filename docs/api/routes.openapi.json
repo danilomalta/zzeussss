@@ -4427,6 +4427,195 @@
           "url": "./online-catalog-barcodes.openapi.json"
         }
       }
+    },
+    "/api/v1/catalog/barcodes/batches/preview": {
+      "post": {
+        "operationId": "online_barcode_batch_PreviewBarcodeBatch",
+        "summary": "PreviewBarcodeBatch",
+        "description": "Owner/admin/manager/stock. Tenant, ator e sessão derivados da autenticação. Query não permitida; GET sem corpo. Lote ordenado por produto. Apenas aliases da mesma unidade vendável.",
+        "parameters": [],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida/ambígua: null, extra, duplicata, GTIN inválido, produtos repetidos ou limite"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Produto ou recibo ausente no escopo empresa/ator"
+          },
+          "409": {
+            "description": "Código ocupado/capacidade/versão ou hash obsoleto; identidade diferente ou filho previamente usado"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou resultado incerto; preservar UUID e consultar antes de repetir"
+          },
+          "200": {
+            "description": "Snapshot real. Prévia não persiste nada; replay retorna recibo original sem alterar catálogo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-batches.openapi.json#/components/schemas/Preview"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-barcode-batches.openapi.json#/components/schemas/PreviewInput"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Cadastro GTIN em lote",
+          "url": "./online-catalog-barcode-batches.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/batches/apply": {
+      "post": {
+        "operationId": "online_barcode_batch_ApplyBarcodeBatch",
+        "summary": "ApplyBarcodeBatch",
+        "description": "Owner/admin/manager/stock. Tenant, ator e sessão derivados da autenticação. Query não permitida; GET sem corpo. Lote ordenado por produto. Apenas aliases da mesma unidade vendável.",
+        "parameters": [],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida/ambígua: null, extra, duplicata, GTIN inválido, produtos repetidos ou limite"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Produto ou recibo ausente no escopo empresa/ator"
+          },
+          "409": {
+            "description": "Código ocupado/capacidade/versão ou hash obsoleto; identidade diferente ou filho previamente usado"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou resultado incerto; preservar UUID e consultar antes de repetir"
+          },
+          "200": {
+            "description": "Snapshot real. Prévia não persiste nada; replay retorna recibo original sem alterar catálogo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-batches.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-barcode-batches.openapi.json#/components/schemas/ApplyInput"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Cadastro GTIN em lote",
+          "url": "./online-catalog-barcode-batches.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/batches/{operation_id}": {
+      "get": {
+        "operationId": "online_barcode_batch_ReadBarcodeBatch",
+        "summary": "ReadBarcodeBatch",
+        "description": "Owner/admin/manager/stock. Tenant, ator e sessão derivados da autenticação. Query não permitida; GET sem corpo. Lote ordenado por produto. Apenas aliases da mesma unidade vendável.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida/ambígua: null, extra, duplicata, GTIN inválido, produtos repetidos ou limite"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Produto ou recibo ausente no escopo empresa/ator"
+          },
+          "409": {
+            "description": "Código ocupado/capacidade/versão ou hash obsoleto; identidade diferente ou filho previamente usado"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou resultado incerto; preservar UUID e consultar antes de repetir"
+          },
+          "200": {
+            "description": "Snapshot real. Prévia não persiste nada; replay retorna recibo original sem alterar catálogo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-batches.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Cadastro GTIN em lote",
+          "url": "./online-catalog-barcode-batches.openapi.json"
+        }
+      }
     }
   },
   "components": {

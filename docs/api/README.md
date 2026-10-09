@@ -89,3 +89,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - `online-catalog-adjustment-export.openapi.json`: relatório paginado CSV/JSON de reajustes percentuais com período, responsável, produto e snapshots históricos (entrega 31).
 
 - `online-catalog-barcodes.openapi.json`: vários GTINs, lookup, ativação/inativação, idempotência, auditoria e outbox online (entrega 32).
+
+- `online-catalog-barcode-batches.openapi.json`: cadastro de GTIN em lote com prévia vinculada ao ator, atomicidade, auditoria/outbox, replay e consulta do recibo (entrega 33).
