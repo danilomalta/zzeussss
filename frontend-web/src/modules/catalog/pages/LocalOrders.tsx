@@ -1,3 +1,4 @@
+import {Link} from 'react-router-dom';
 import ReplenishmentPanel from './ReplenishmentPanel';
 import {useEffect,useState,useRef} from 'react';
 import type {FormEvent} from 'react';
@@ -26,7 +27,7 @@ export default function LocalOrders(){
  async function createOrder(e:FormEvent){e.preventDefault();if(!canWrite||!token)return;await locked(async()=>{persistPurchasePending(localStorage,key,{kind:'order',input:{operation_id:crypto.randomUUID(),order_id:crypto.randomUUID(),supplier_id:supplier,suggestion_id:approval}});await resolve(true);setApproval('');});}
  async function read(id:string){if(!token)return;setBusy(true);try{setDetail(await client.order(token,id));setError('');}catch(e){setError(localErrorMessage(e));}finally{setBusy(false);}}
  const blocked=busy||!!pending||!!storageError||!canWrite;
- return <main className="brand-app-content" style={{display:"grid",gap:20}}><h1>Pedidos e fornecedores</h1><p>Pedidos locais a partir de reposições aprovadas. O fornecedor ainda não recebe estes pedidos.</p>
+ return <main className="brand-app-content" style={{display:"grid",gap:20}}><h1>Pedidos e fornecedores</h1><Link className="brand-secondary" to="/local/receiving">Consultar pedidos e histórico de recebimento</Link><p>Pedidos locais a partir de reposições aprovadas. O fornecedor ainda não recebe estes pedidos.</p>
   {error&&<p className="brand-state" role="alert">{error}</p>}{storageError&&<p role="alert">{storageError}</p>}{notice&&<p role="status">{notice}</p>}
   {pending&&<section className="brand-panel"><h2>Operação pendente</h2><p>{pending.kind==='order'?'Pedido':'Fornecedor'}: {pending.kind==='order'?pending.input.order_id:pending.input.id}. Os identificadores originais estão preservados.</p><button className="brand-secondary" disabled={busy} onClick={()=>void locked(()=>resolve(false))}>Consultar resultado</button> <button className="brand-primary" disabled={busy||!canWrite} onClick={()=>void locked(()=>resolve(true))}>Repetir mesma operação</button></section>}
   <ReplenishmentPanel onChange={load}/>
@@ -41,6 +42,6 @@ export default function LocalOrders(){
    {!orders.length?<p>Nenhum pedido nesta página.</p>:<ul>{orders.map(o=><li key={o.id}><button className="brand-secondary" disabled={busy} onClick={()=>void read(o.id)}>{o.supplier_name} — {new Date(o.created_at).toLocaleString('pt-BR')}</button><p>Pedido local — não enviado · {o.id}</p></li>)}</ul>}
    <button className="brand-secondary" disabled={busy||offset===0} onClick={()=>setOffset(v=>Math.max(0,v-50))}>Anterior</button> <button className="brand-secondary" disabled={busy||orders.length<50} onClick={()=>setOffset(v=>v+50)}>Próxima</button>
   </section>
-  {detail&&<section className="brand-panel"><h2>Pedido {detail.id}</h2><p>{detail.supplier_name} · Local, não enviado</p><p>Aprovação: {detail.suggestion_id}</p>{detail.items.map(i=><p key={i.product_id}>{i.sku} · {i.name}: {quantity(i.quantity_milli)} {i.unit}</p>)}<p>Preço, frete, impostos e total ainda não negociados. Nenhuma entrada de estoque ou pagamento foi registrada.</p></section>}
+  {detail&&<section className="brand-panel"><h2>Pedido {detail.id}</h2><p>{detail.supplier_name} · Local, não enviado</p><p>Aprovação: {detail.suggestion_id}</p>{detail.items.map(i=><p key={i.product_id}>{i.sku} · {i.name}: {quantity(i.quantity_milli)} {i.unit}</p>)}<p>Preço, frete, impostos e total ainda não negociados. Criar o pedido não gera estoque ou pagamento. Consulte o histórico de recebimento para entradas posteriores.</p></section>}
  </main>;
 }
