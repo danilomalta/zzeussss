@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "test:local": "node --test tests/localClient.test.mjs tests/localPOS.test.mjs tests/localManagement.test.mjs tests/localAccess.test.mjs tests/localPurchases.test.mjs tests/localReplenishment.test.mjs tests/localCartEditing.test.mjs tests/localCatalogSearch.test.mjs tests/localComparison.test.mjs tests/productionRead.test.mjs tests/stockRead.test.mjs tests/receivingRead.test.mjs tests/productionMutations.test.mjs tests/productionPlanning.test.mjs tests/productionState.test.mjs tests/productionExecutionReceipts.test.mjs tests/productionExecution.test.mjs tests/productionCompletion.test.mjs tests/productionStages.test.mjs tests/productionStageProgress.test.mjs",
+    "test:local": "node --test tests/localClient.test.mjs tests/localPOS.test.mjs tests/localManagement.test.mjs tests/localAccess.test.mjs tests/localPurchases.test.mjs tests/localReplenishment.test.mjs tests/localCartEditing.test.mjs tests/localCatalogSearch.test.mjs tests/localComparison.test.mjs tests/productionRead.test.mjs tests/stockRead.test.mjs tests/receivingRead.test.mjs tests/productionMutations.test.mjs tests/productionPlanning.test.mjs tests/productionState.test.mjs tests/productionExecutionReceipts.test.mjs tests/productionExecution.test.mjs tests/productionCompletion.test.mjs tests/productionStages.test.mjs tests/productionStageProgress.test.mjs tests/productionStageHistory.test.mjs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
