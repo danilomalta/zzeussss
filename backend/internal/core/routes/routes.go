@@ -81,6 +81,10 @@ func Registrar(app *fiber.App) {
 	negocios.Get("/catalog/batches/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ConsultarLoteCatalogo)
 
 	negocios.Post("/catalog/undos/preview", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.DesfazerLoteCatalogo(false))
+	negocios.Post("/catalog/imports/preview", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ImportarCatalogoCSV(false))
+	negocios.Post("/catalog/imports/apply", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ImportarCatalogoCSV(true))
+	negocios.Get("/catalog/imports/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ConsultarImportacaoCatalogo(false))
+	negocios.Get("/catalog/batches/:operation_id/import", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ConsultarImportacaoCatalogo(true))
 	negocios.Post("/catalog/undos/apply", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.DesfazerLoteCatalogo(true))
 	negocios.Get("/catalog/undos/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ConsultarReversaoCatalogo(false))
 	negocios.Get("/catalog/batches/:operation_id/undo", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ConsultarReversaoCatalogo(true))

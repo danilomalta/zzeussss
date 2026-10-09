@@ -87,6 +87,9 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if onlinecatalog.MigrateUndo(ctx, sqlDB) != nil || onlinecatalog.MigrateUndo(ctx, sqlDB) != nil || onlinecatalog.CheckUndo(ctx, sqlDB) != nil {
 		t.Fatal("migração de reversão falhou")
 	}
+	if onlinecatalog.MigrateImports(ctx, sqlDB) != nil || onlinecatalog.MigrateImports(ctx, sqlDB) != nil || onlinecatalog.CheckImports(ctx, sqlDB) != nil {
+		t.Fatal("migração CSV falhou")
+	}
 	tenantA, tenantB, userA, userB, sessionA, sessionB := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	for _, actor := range []struct{ tenant, user, session string }{{tenantA, userA, sessionA}, {tenantB, userB, sessionB}} {
 		exec(`INSERT INTO tenants(id,status) VALUES($1,'active')`, actor.tenant)
@@ -627,6 +630,197 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_undos WHERE tenant_id=$1 AND source_operation_id=$2`, tenantA, lateSource).Scan(&undoCount) != nil || undoCount != 1 {
 		t.Fatal("reversão não foi única")
 	}
+	// Fresh HTTP fixture for this phase, keeping the real 100/min limiter enabled.
+	app = fiber.New()
+	Registrar(app)
+	csvProduct1 := request("POST", "/api/v1/produtos/", `{"nome":"Import price","sku":"import-price","preco":2.50}`, tokenA, 201)
+	csvProduct2 := request("POST", "/api/v1/produtos/", `{"nome":"Import active","sku":"import-active","preco":3.50}`, tokenA, 201)
+	csvID1, csvID2 := int64(csvProduct1["ID"].(float64)), int64(csvProduct2["ID"].(float64))
+	request("POST", "/api/v1/produtos/", `{"nome":"Other company","sku":"import-price","preco":9.99}`, tokenB, 201)
+	csvOp := uuid.NewString()
+	csvText := "sku;expected_version;preco;ativo\nimport-active;1;;false\nimport-price;1;4,75;\n"
+	csvInput := onlinecatalog.ImportInput{OperationID: csvOp, Reason: "Planilha conferida", CSV: csvText}
+	csvJSON, _ := json.Marshal(csvInput)
+	csvPreview := request("POST", "/api/v1/catalog/imports/preview", string(csvJSON), tokenA, 200)
+	checkProduct(csvID1, 1, 250, true)
+	checkProduct(csvID2, 1, 350, true)
+	if csvPreview["source_hash"] == "" || len(csvPreview["items"].([]interface{})) != 2 {
+		t.Fatal("prévia CSV sem fingerprint ou itens")
+	}
+	var importCount int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_imports WHERE tenant_id=$1 AND operation_id=$2`, tenantA, csvOp).Scan(&importCount) != nil || importCount != 0 {
+		t.Fatal("prévia CSV gravou resultado")
+	}
+	csvInput.PreviewHash = csvPreview["preview_hash"].(string)
+	csvJSON, _ = json.Marshal(csvInput)
+	csvApplied := request("POST", "/api/v1/catalog/imports/apply", string(csvJSON), tokenA, 200)
+	checkProduct(csvID1, 2, 475, true)
+	checkProduct(csvID2, 2, 350, false)
+	request("POST", "/api/v1/catalog/imports/apply", string(csvJSON), tokenA, 200)
+	request("GET", "/api/v1/catalog/imports/"+csvOp, "", tokenA, 200)
+	request("GET", "/api/v1/catalog/imports/"+csvOp, "", otherToken, 404)
+	request("GET", "/api/v1/catalog/imports/"+csvOp, "", tokenB, 404)
+	csvAdministrative := request("GET", "/api/v1/catalog/batches/"+csvOp+"/import", "", otherToken, 200)
+	if csvAdministrative["actor_id"] != userA || csvAdministrative["source_hash"] != csvApplied["source_hash"] {
+		t.Fatal("consulta administrativa CSV perdeu ator ou origem")
+	}
+	changedImport := csvInput
+	changedImport.Reason = "Different reason"
+	changedJSON, _ := json.Marshal(changedImport)
+	request("POST", "/api/v1/catalog/imports/apply", string(changedJSON), tokenA, 409)
+	request("POST", "/api/v1/catalog/imports/apply", string(csvJSON), otherToken, 409)
+	unknownImport := onlinecatalog.ImportInput{OperationID: uuid.NewString(), Reason: "Unknown", CSV: "sku;expected_version;preco;ativo\nmissing-import;1;2;\n"}
+	unknownJSON, _ := json.Marshal(unknownImport)
+	request("POST", "/api/v1/catalog/imports/preview", string(unknownJSON), tokenA, 404)
+	request("POST", "/api/v1/catalog/imports/preview", `{"operation_id":"x","reason":"test","csv":"x","tenant_id":"foreign"}`, tokenA, 400)
+	// An imported batch can be compensated by the existing official undo flow.
+	csvUndo := onlinecatalog.UndoInput{OperationID: uuid.NewString(), SourceOperationID: csvOp, Reason: "Correção da planilha"}
+	csvUndoPreview, e := store.PreviewUndo(ctx, actor, csvUndo)
+	if e != nil {
+		t.Fatal("prévia de reversão CSV falhou")
+	}
+	csvUndo.PreviewHash = csvUndoPreview.PreviewHash
+	if _, e = store.ApplyUndo(ctx, actor, csvUndo); e != nil {
+		t.Fatal("reversão CSV falhou")
+	}
+	checkProduct(csvID1, 3, 250, true)
+	checkProduct(csvID2, 3, 350, true)
+	// Stable replay no longer depends on the current SKU or price/version.
+	exec(`UPDATE products SET sku='import-renamed',catalog_version=catalog_version+1 WHERE tenant_id=$1 AND id=$2`, tenantA, csvID1)
+	stableCSV := request("POST", "/api/v1/catalog/imports/apply", string(csvJSON), tokenA, 200)
+	if stableCSV["source_hash"] != csvApplied["source_hash"] || stableCSV["batch"].(map[string]interface{})["items"].([]interface{})[0].(map[string]interface{})["after"].(map[string]interface{})["version"] != float64(2) {
+		t.Fatal("replay CSV consultou cadastro atual")
+	}
+	checkProduct(csvID1, 4, 250, true)
+	// Re-resolving SKU after a stale preview must refuse all rows.
+	staleCSV := onlinecatalog.ImportInput{OperationID: uuid.NewString(), Reason: "Stale CSV", CSV: "sku;expected_version;preco;ativo\nimport-renamed;4;5;\nimport-active;3;;false\n"}
+	staleCSVPreview, e := store.PreviewImport(ctx, actor, staleCSV)
+	if e != nil {
+		t.Fatal("prévia CSV stale falhou")
+	}
+	staleCSV.PreviewHash = staleCSVPreview.PreviewHash
+	exec(`UPDATE products SET sku='import-new-name',catalog_version=catalog_version+1 WHERE tenant_id=$1 AND id=$2`, tenantA, csvID1)
+	if _, e = store.ApplyImport(ctx, actor, staleCSV); e != onlinecatalog.ErrMissing {
+		t.Fatal("SKU antigo aceito")
+	}
+	checkProduct(csvID2, 3, 350, true)
+	// Fault AFTER item mutation and batch insert rolls back product, audit and metadata.
+	lateCSV := onlinecatalog.ImportInput{OperationID: uuid.NewString(), Reason: "Rollback CSV", CSV: "sku;expected_version;preco;ativo\nimport-new-name;5;6;\nimport-active;3;;false\n"}
+	lateCSVPreview, e := store.PreviewImport(ctx, actor, lateCSV)
+	if e != nil {
+		t.Fatal("prévia de rollback CSV falhou")
+	}
+	lateCSV.PreviewHash = lateCSVPreview.PreviewHash
+	exec(fmt.Sprintf(`CREATE FUNCTION reject_import_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture'; END $$; CREATE TRIGGER reject_import_event BEFORE INSERT ON online_catalog_import_outbox FOR EACH ROW WHEN (NEW.operation_id='%s'::uuid) EXECUTE FUNCTION reject_import_event()`, lateCSV.OperationID))
+	if _, e = store.ApplyImport(ctx, actor, lateCSV); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("evento CSV falho não recusou aplicação")
+	}
+	checkProduct(csvID1, 5, 250, true)
+	checkProduct(csvID2, 3, 350, true)
+	if _, e = store.Import(ctx, actor, lateCSV.OperationID, false); e != onlinecatalog.ErrMissing {
+		t.Fatal("rollback CSV deixou recibo")
+	}
+	if _, e = store.Batch(ctx, actor, lateCSV.OperationID); e != onlinecatalog.ErrMissing {
+		t.Fatal("rollback CSV deixou lote")
+	}
+	lateCSVChild := uuid.NewSHA1(uuid.MustParse(lateCSV.OperationID), []byte(fmt.Sprintf("catalog-batch:%d", csvID1))).String()
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_operations WHERE tenant_id=$1 AND operation_id=$2`, tenantA, lateCSVChild).Scan(&importCount) != nil || importCount != 0 {
+		t.Fatal("rollback CSV deixou auditoria")
+	}
+	// Identical concurrent imports have one durable result and increment once.
+	concurrentCSV := lateCSV
+	concurrentCSV.OperationID = uuid.NewString()
+	concurrentCSV.PreviewHash = ""
+	concurrentCSVPreview, e := store.PreviewImport(ctx, actor, concurrentCSV)
+	if e != nil {
+		t.Fatal("prévia concorrente CSV falhou")
+	}
+	concurrentCSV.PreviewHash = concurrentCSVPreview.PreviewHash
+	importErrors := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		mutationWG.Add(1)
+		go func() {
+			defer mutationWG.Done()
+			_, e := store.ApplyImport(ctx, actor, concurrentCSV)
+			importErrors <- e
+		}()
+	}
+	mutationWG.Wait()
+	close(importErrors)
+	for e := range importErrors {
+		if e != nil {
+			t.Fatal("replay concorrente CSV falhou")
+		}
+	}
+	checkProduct(csvID1, 6, 600, true)
+	checkProduct(csvID2, 4, 350, false)
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_import_outbox WHERE tenant_id=$1 AND operation_id=$2`, tenantA, concurrentCSV.OperationID).Scan(&importCount) != nil || importCount != 1 {
+		t.Fatal("CSV duplicou evento")
+	}
+	// An unrelated regular batch identity cannot be re-labelled as an import.
+	collisionCSV := concurrentCSV
+	collisionCSV.OperationID = csvUndo.OperationID
+	if _, e = store.ApplyImport(ctx, actor, collisionCSV); e != onlinecatalog.ErrConflict {
+		t.Fatal("CSV aceitou identidade de lote já usada")
+	}
+
+	// Independent imports competing for the same versions cannot partly apply.
+	importCompetition := make(chan error, 2)
+	independentCSV := make([]onlinecatalog.ImportInput, 2)
+	for i := range independentCSV {
+		independentCSV[i] = onlinecatalog.ImportInput{OperationID: uuid.NewString(), Reason: "Competing CSV", CSV: fmt.Sprintf("sku;expected_version;preco;ativo\nimport-new-name;6;%d;\nimport-active;4;;true\n", 7+i)}
+		p, e := store.PreviewImport(ctx, actor, independentCSV[i])
+		if e != nil {
+			t.Fatal("prévia da disputa CSV falhou")
+		}
+		independentCSV[i].PreviewHash = p.PreviewHash
+	}
+	for _, v := range independentCSV {
+		mutationWG.Add(1)
+		go func(v onlinecatalog.ImportInput) {
+			defer mutationWG.Done()
+			_, e := store.ApplyImport(ctx, actor, v)
+			importCompetition <- e
+		}(v)
+	}
+	mutationWG.Wait()
+	close(importCompetition)
+	wins, conflicts = 0, 0
+	for e := range importCompetition {
+		if e == nil {
+			wins++
+		} else if e == onlinecatalog.ErrConflict {
+			conflicts++
+		} else {
+			t.Fatal("disputa CSV falhou")
+		}
+	}
+	if wins != 1 || conflicts != 1 {
+		t.Fatal("disputa CSV não preservou versão")
+	}
+	checkProduct(csvID2, 5, 350, true)
+	var competingPrice int64
+	var competingVersion int64
+	if sqlDB.QueryRowContext(ctx, `SELECT (preco*100)::bigint,catalog_version FROM products WHERE tenant_id=$1 AND id=$2`, tenantA, csvID1).Scan(&competingPrice, &competingVersion) != nil || competingVersion != 7 || (competingPrice != 700 && competingPrice != 800) {
+		t.Fatal("CSV parcialmente aplicado na disputa")
+	}
+	var otherImportPrice string
+	if sqlDB.QueryRowContext(ctx, `SELECT preco::text FROM products WHERE tenant_id=$1 AND sku='import-price'`, tenantB).Scan(&otherImportPrice) != nil || otherImportPrice != "9.99" {
+		t.Fatal("CSV alterou outra empresa")
+	}
+	var importsChecksum string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_import_migrations WHERE version=12`).Scan(&importsChecksum) != nil {
+		t.Fatal("checksum CSV ausente")
+	}
+	exec(`UPDATE online_catalog_import_migrations SET version=13 WHERE version=12`)
+	if onlinecatalog.MigrateImports(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.CheckImports(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema CSV futuro aceito")
+	}
+	exec(`UPDATE online_catalog_import_migrations SET version=12,checksum='tampered' WHERE version=13`)
+	if onlinecatalog.MigrateImports(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema CSV adulterado aceito")
+	}
+	exec(`UPDATE online_catalog_import_migrations SET checksum=$1 WHERE version=12`, importsChecksum)
 	var undoChecksum string
 	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_undo_migrations WHERE version=11`).Scan(&undoChecksum) != nil {
 		t.Fatal("checksum de reversão ausente")

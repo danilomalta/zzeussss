@@ -169,3 +169,5 @@ Entrega 25 consolidada: cadastro online com Idempotency-Key obrigatório (428 se
 - Entrega 26: lotes online de preço/ativação, prévia vinculada ao ator, aplicação atômica com versões, recibo recuperável e histórico. PostgreSQL 10 explícito; SQLite/produção/frontend preservados. Ver documento 101.
 
 - Entrega 27: reversão atômica de lote online com motivo, prévia, proteção contra edições posteriores, recibo e vínculo único ao original. PostgreSQL 11 explícito. Ver documento 102.
+
+- Entrega 28: importação CSV de preço/ativação para SKU existente, prévia vinculada ao conteúdo, aplicação atômica, motivo auditado, recibo recuperável e origem consultável. PostgreSQL 12 explícito. Ver documento 103.

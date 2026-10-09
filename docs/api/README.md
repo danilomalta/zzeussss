@@ -79,3 +79,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - `online-catalog-batches.openapi.json`: prévia, aplicação atômica, recibo e histórico paginado de lotes de preços/ativação (entrega 26).
 
 - `online-catalog-undo.openapi.json`: prévia, reversão compensatória, recibo recuperável e consulta do vínculo ao original (entrega 27).
+
+- `online-catalog-imports.openapi.json`: validação e prévia CSV, aplicação atômica, recuperação do recibo e consulta administrativa da origem (entrega 28).

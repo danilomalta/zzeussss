@@ -2765,6 +2765,307 @@
           "url": "./online-catalog-undo.openapi.json"
         }
       }
+    },
+    "/api/v1/catalog/imports/preview": {
+      "post": {
+        "operationId": "online_csv_post__api_v1_catalog_imports_preview",
+        "description": "Valida CSV e resolve cada SKU exato da empresa. Prévia consistente, em ordem de ID; sem gravações de produtos, auditoria, importação ou outbox. Um erro, SKU ausente, no-op ou conflito de versão recusa toda a planilha.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Prévia sem gravação ou recibo durável/replay, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-imports.openapi.json#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "JSON/CSV inválido ou alteração sem efeito"
+          },
+          "401": {
+            "description": "Sessão inválida/expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "SKU ou resultado ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão, hash, SKU ambíguo ou operação em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou resultado incerto; consulte recibo"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-imports.openapi.json#/components/schemas/PreviewRequest"
+              },
+              "example": {
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reason": "Reajuste conferido",
+                "csv": "sku;expected_version;preco;ativo\nARROZ-1;1;7,90;\nCAFE-2;3;;false\n"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Importação CSV",
+          "url": "./online-catalog-imports.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/imports/apply": {
+      "post": {
+        "operationId": "online_csv_post__api_v1_catalog_imports_apply",
+        "description": "Aplica lote e metadados da importação na mesma transação. Hash vincula bytes do CSV, motivo, ator e snapshots. Replay devolve recibo original antes de consultar SKUs atuais. Mesmo ID com outro conteúdo/ator retorna 409.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Prévia sem gravação ou recibo durável/replay, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-imports.openapi.json#/components/schemas/ImportReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "JSON/CSV inválido ou alteração sem efeito"
+          },
+          "401": {
+            "description": "Sessão inválida/expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "SKU ou resultado ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão, hash, SKU ambíguo ou operação em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou resultado incerto; consulte recibo"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-imports.openapi.json#/components/schemas/ApplyRequest"
+              },
+              "example": {
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reason": "Reajuste conferido",
+                "csv": "sku;expected_version;preco;ativo\nARROZ-1;1;7,90;\nCAFE-2;3;;false\n",
+                "preview_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Importação CSV",
+          "url": "./online-catalog-imports.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/imports/{operation_id}": {
+      "get": {
+        "operationId": "online_csv_get__api_v1_catalog_imports_operation_id",
+        "description": "Consulta do resultado estável pela empresa e ator aplicador. Outro operador ou outra empresa recebe 404. Após perda de resposta consulte antes de repetir; 503 não significa ausência.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID canônico, minúsculo e não nulo."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prévia sem gravação ou recibo durável/replay, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-imports.openapi.json#/components/schemas/ImportReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "JSON/CSV inválido ou alteração sem efeito"
+          },
+          "401": {
+            "description": "Sessão inválida/expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "SKU ou resultado ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão, hash, SKU ambíguo ou operação em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou resultado incerto; consulte recibo"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Importação CSV",
+          "url": "./online-catalog-imports.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/batches/{operation_id}/import": {
+      "get": {
+        "operationId": "online_csv_get__api_v1_catalog_batches_operation_id_import",
+        "description": "Consulta administrativa da origem CSV de um lote da empresa. Owner/admin/manager podem consultar outro ator autorizado. Retorna hash da origem, motivo e snapshots; CSV bruto não é guardado.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID canônico, minúsculo e não nulo."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prévia sem gravação ou recibo durável/replay, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-imports.openapi.json#/components/schemas/ImportReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "JSON/CSV inválido ou alteração sem efeito"
+          },
+          "401": {
+            "description": "Sessão inválida/expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "SKU ou resultado ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão, hash, SKU ambíguo ou operação em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou resultado incerto; consulte recibo"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Importação CSV",
+          "url": "./online-catalog-imports.openapi.json"
+        }
+      }
     }
   },
   "components": {

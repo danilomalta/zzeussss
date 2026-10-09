@@ -41,7 +41,13 @@ func run(args []string) error {
 		if err = onlinecatalog.MigrateUndo(ctx, db); err != nil {
 			return err
 		}
-		return onlinecatalog.CheckUndo(ctx, db)
+		if err = onlinecatalog.MigrateImports(ctx, db); err != nil {
+			return err
+		}
+		if err = onlinecatalog.CheckUndo(ctx, db); err != nil {
+			return err
+		}
+		return onlinecatalog.CheckImports(ctx, db)
 	}
 	if args[0] == "check-catalog" {
 		if err = onlinecatalog.CheckSchema(ctx, db); err != nil {
@@ -53,7 +59,10 @@ func run(args []string) error {
 		if err = onlinecatalog.CheckBatches(ctx, db); err != nil {
 			return err
 		}
-		return onlinecatalog.CheckUndo(ctx, db)
+		if err = onlinecatalog.CheckUndo(ctx, db); err != nil {
+			return err
+		}
+		return onlinecatalog.CheckImports(ctx, db)
 	}
 	if args[0] == "migrate-sessions" {
 		if err = onlinesessions.Migrate(ctx, db); err != nil {
