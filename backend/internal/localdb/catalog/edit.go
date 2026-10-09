@@ -81,9 +81,28 @@ func EditState(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Dev
 	return EditResult{id, rev, false}, tx.Commit()
 }
 
-// P23 freezes unit edits; P24 enables them only for products with no dependent data.
+// Unit belongs to the company-wide product; even zero balances retain history.
 func unitEditAllowedTx(ctx context.Context, tx *sql.Tx, tenant, product string) (bool, error) {
-	return false, nil
+	for _, query := range []string{
+		`SELECT EXISTS(SELECT 1 FROM stock_movements WHERE tenant_id=? AND product_id=?)`,
+		`SELECT EXISTS(SELECT 1 FROM inventory_counts WHERE tenant_id=? AND product_id=?)`,
+		`SELECT EXISTS(SELECT 1 FROM sale_items WHERE tenant_id=? AND product_id=?)`,
+		`SELECT EXISTS(SELECT 1 FROM restock_policies WHERE tenant_id=? AND product_id=?)`,
+		`SELECT EXISTS(SELECT 1 FROM restock_suggestions WHERE tenant_id=? AND product_id=?)`,
+		`SELECT EXISTS(SELECT 1 FROM purchase_order_items WHERE tenant_id=? AND product_id=?)`,
+		`SELECT EXISTS(SELECT 1 FROM production_recipe_versions WHERE tenant_id=? AND output_product_id=?)`,
+		`SELECT EXISTS(SELECT 1 FROM production_recipe_ingredients WHERE tenant_id=? AND product_id=?)`,
+		`SELECT EXISTS(SELECT 1 FROM production_material_items WHERE tenant_id=? AND product_id=?)`,
+	} {
+		var used bool
+		if err := tx.QueryRowContext(ctx, query, tenant, product).Scan(&used); err != nil {
+			return false, err
+		}
+		if used {
+			return false, nil
+		}
+	}
+	return true, nil
 }
 func Edit(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in EditInput) (EditResult, error) {
 	in.SKU, in.Name, in.Barcode = strings.TrimSpace(in.SKU), strings.TrimSpace(in.Name), strings.TrimSpace(in.Barcode)

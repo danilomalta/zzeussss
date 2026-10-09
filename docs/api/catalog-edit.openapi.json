@@ -2,7 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "P23 edicao auditada do catalogo",
-    "version": "P23"
+    "version": "P24",
+    "description": "Unidade so pode mudar em produto sem dados dependentes em toda a empresa; historico com saldo zero e receita inativa tambem bloqueiam. Revisao, autorizacao e auditoria permanecem atomicas."
   },
   "servers": [
     {
