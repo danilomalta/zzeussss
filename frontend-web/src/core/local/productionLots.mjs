@@ -9,7 +9,10 @@ export function validLotSummary(v,resultID){
  if(v.unit==='unit'&&[v.produced_milli,v.assigned_milli,v.unassigned_milli].some(n=>n%1000))return false;
  const items=v.items||[];return new Set(items.map(l=>l?.id)).size===items.length&&items.every(l=>validLot(l)&&l.result_id===resultID&&l.product_id===v.product_id&&l.unit===v.unit&&l.quantity_milli<=v.produced_milli)&&items.filter(l=>l.status==='recorded').reduce((s,l)=>s+BigInt(l.quantity_milli),0n)<=BigInt(v.assigned_milli);
 }
+export function validLotEvents(events){return array(events)&&events.length>=1&&events.length<=2&&events.every((e,n)=>e&&['operation_id','device_id','actor_id'].every(k=>id(e[k]))&&e.revision===n+1&&e.kind===(n===0?'recorded':'voided')&&reasonText(e.reason)&&recordedTime(e.created_at))&&new Set(events.map(e=>JSON.stringify([e.device_id,e.operation_id]))).size===events.length;}
+export function validLotAudit(lot,events){return validLot(lot)&&validLotEvents(events)&&events.length===lot.revision&&events[0].actor_id===lot.created_by&&events[0].reason===lot.reason&&events[0].created_at===lot.created_at&&events.at(-1).kind===lot.status&&events.at(-1).created_at===lot.updated_at;}
 export function createProductionLots(fetcher){const get=readAPI(fetcher);return {
+ async audit(token,lotID){requireValid(id(lotID));const lot=await get(`/production/lots/${encodeURIComponent(lotID)}`,token,v=>validLot(v)&&v.id===lotID);const h=await get(`/production/lots/${encodeURIComponent(lotID)}/history`,token,v=>v&&validLotEvents(v.items));requireValid(validLotAudit(lot,h.items));return {lot,events:h.items};},
  async summary(token,resultID,offset=0){requireValid(id(resultID)&&integer(offset));const v=await get(`/production/results/${encodeURIComponent(resultID)}/lots?offset=${offset}`,token,v=>validLotSummary(v,resultID));return {...v,items:v.items||[]};},
  async lot(token,lotID){requireValid(id(lotID));return get(`/production/lots/${encodeURIComponent(lotID)}`,token,v=>validLot(v)&&v.id===lotID);}
 };}
