@@ -78,8 +78,17 @@ func AvailableBalance(ctx context.Context, db *sql.DB, a identity.Scope, d ident
 	if err = identity.CanOperateTx(ctx, tx, a, d, identity.ManageStock); err != nil {
 		return Availability{}, err
 	}
+	out, err := availableBalanceTx(ctx, tx, a, product, location)
+	if err != nil {
+		return Availability{}, err
+	}
+	return out, tx.Commit()
+}
+
+// Caller owns the transaction and must authorize before reading references.
+func availableBalanceTx(ctx context.Context, tx *sql.Tx, a identity.Scope, product, location string) (Availability, error) {
 	out := Availability{ProductID: product, LocationID: location}
-	err = tx.QueryRowContext(ctx, `SELECT p.unit FROM products p JOIN stock_locations l ON l.tenant_id=p.tenant_id WHERE p.tenant_id=? AND p.id=? AND l.store_id=? AND l.id=?`, a.TenantID, product, a.StoreID, location).Scan(&out.Unit)
+	err := tx.QueryRowContext(ctx, `SELECT p.unit FROM products p JOIN stock_locations l ON l.tenant_id=p.tenant_id WHERE p.tenant_id=? AND p.id=? AND l.store_id=? AND l.id=?`, a.TenantID, product, a.StoreID, location).Scan(&out.Unit)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Availability{}, ErrAvailabilityReference
 	}
@@ -119,5 +128,5 @@ func AvailableBalance(ctx context.Context, db *sql.DB, a identity.Scope, d ident
 		return Availability{}, ErrAvailability
 	}
 	out.FreeMilli = out.PhysicalMilli - out.ReservedMilli
-	return out, tx.Commit()
+	return out, nil
 }

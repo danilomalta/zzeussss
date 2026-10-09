@@ -107,6 +107,7 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 	s.mountProductionLotSearch(protected)
 	s.mountProductionProductUsage(protected)
 	s.mountStockAvailability(protected)
+	s.mountStockReservations(protected)
 	s.mountReplenishment(protected)
 	s.mountStock(protected)
 	s.mountCash(protected)
