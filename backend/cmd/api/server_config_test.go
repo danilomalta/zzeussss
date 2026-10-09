@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"io"
 	"net"
@@ -43,10 +44,19 @@ func TestOnlineBodyLimitStopsBeforeHandlerAndDoesNotReflectInput(t *testing.T) {
 		var invoked atomic.Bool
 		app.Post("/input", func(c *fiber.Ctx) error { invoked.Store(true); return c.SendStatus(200) })
 		base := serveOnlineFixture(t, app)
-		req, _ := http.NewRequest("POST", base+"/input", strings.NewReader(strings.Repeat("private-body", 6000)))
-		req.Header.Set(apicontract.ErrorFormatHeader, format)
-		client := &http.Client{Timeout: 2 * time.Second, Transport: &http.Transport{DisableKeepAlives: true}}
-		resp, err := client.Do(req)
+		conn, err := net.DialTimeout("tcp", strings.TrimPrefix(base, "http://"), time.Second)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer conn.Close()
+		conn.SetDeadline(time.Now().Add(2 * time.Second))
+		// Advertise excessive length without streaming a large payload: the
+		// server can reject it before the HTTP client races a write against RST.
+		_, err = io.WriteString(conn, "POST /input HTTP/1.1\r\nHost: fixture\r\nContent-Length: 66000\r\nX-Private: private-body\r\n"+apicontract.ErrorFormatHeader+": "+format+"\r\n\r\n")
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp, err := http.ReadResponse(bufio.NewReader(conn), nil)
 		if err != nil {
 			t.Fatal(err)
 		}

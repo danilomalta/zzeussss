@@ -69,3 +69,5 @@ Entrega 18: GET produtos e GET sugestões online têm limit=50 (1–100), offset
 Validação PostgreSQL do catálogo/sugestões: `python3 -B tools/test_online_postgres.py --suite catalog`; banco/schema novos, teste opt-in e relatório privado. Ver documento 96.
 
 Saúde pública online e limites HTTP do cmd/api: `online-health.openapi.json` e documento 97. Liveness não substitui readiness de banco.
+
+Encerramento online durante reinícios/atualizações: documento 98. HTTP sem resposta continua incerto; drain não equivale a garantia de commit ou de rollback.

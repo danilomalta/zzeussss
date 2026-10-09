@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 	"titansystem-backend/internal/apicontract"
 	"titansystem-backend/internal/onlinesessions"
@@ -43,12 +45,13 @@ func main() {
 	if err != nil {
 		log.Fatal("Endereço ou porta da API inválidos. Use TITAN_API_HOST como IP literal e PORT entre 1 e 65535.")
 	}
+	stopContext, stopSignals := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stopSignals()
 
 	// 2. Inicializa a conexão com o banco (PostgreSQL + pgxpool + GORM)
 	if err := database.InitDB(); err != nil {
 		log.Fatal(err)
 	}
-	defer database.Pool.Close()
 	db, err := database.DB.DB()
 	if err != nil {
 		log.Fatal("base online indisponível")
@@ -86,7 +89,20 @@ func main() {
 	log.Printf("API HTTP configurada em %s (somente rotas implementadas)", addr)
 	log.Println("────────────────────────────────────────────────────────────────")
 
-	if err := app.Listen(addr); err != nil {
-		log.Fatalf("Erro crítico: falha ao iniciar servidor HTTP: %v", err)
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		log.Fatal("Falha ao abrir o endereço HTTP configurado. Nenhum servidor iniciado.")
 	}
+	if err = serveOnline(stopContext, app, listener, onlineDrainTimeout, func() error {
+		if closeErr := db.Close(); closeErr != nil {
+			return closeErr
+		}
+		database.Pool.Close()
+		return nil
+	}); err != nil {
+		// Fatal exits without deferred database cleanup under an active handler.
+		// It never logs arbitrary listener/driver diagnostics.
+		log.Fatal("Encerramento online não concluído normalmente. Resultado de operações sem resposta pode ser incerto; não repetir automaticamente.")
+	}
+	log.Println("API HTTP encerrada após concluir requisições em curso e fechar conexões de banco.")
 }

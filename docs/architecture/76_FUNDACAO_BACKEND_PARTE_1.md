@@ -1,7 +1,7 @@
 # Parte 1 — Fundação operacional do backend
 
 Base da entrega 01: commit do usuário `294a544`. A matriz abaixo foi atualizada
-pela entrega 09 de troca de senha online; NÃO encerra os onze
+até a entrega 23, incluindo evidências PostgreSQL reais informadas pelo usuário; NÃO encerra os onze
 requisitos. Frontend inalterado.
 
 ## Matriz de conclusão
@@ -9,16 +9,16 @@ requisitos. Frontend inalterado.
 | ID | Requisito | Implementação existente / desta entrega | Trabalho em aberto e aceite |
 | --- | --- | --- | --- |
 | F01 | Banco local e atualização | Migrações transacionais/checksums; recusa de versão futura/lacunas; backup pré-upgrade, teste em cópia, ativação atômica e recuperação em fronteiras persistentes | Distribuição assinada/compatibilidade entre aparelhos; upgrade com mudança futura de esquema, queda de energia e disco cheio em equipamento real |
-| F02 | Backend online | PostgreSQL com credenciais explícitas e TLS remoto verificado; access HS256 ligado à sessão; refresh opaco de uso único e revogação; catálogo e parte de descontos | Serviços online completos; reconciliação com dados locais e testes isolados de cada operação |
+| F02 | Backend online | PostgreSQL com credenciais explícitas e TLS remoto verificado; sessões/refresh/revogação; catálogo com entrada estrita e paginação, sugestões limitadas e testes PostgreSQL reais; limites HTTP e encerramento controlado | Serviços online completos; reconciliação com dados locais; políticas online; aceites de cada operação e implantação |
 | F03 | Isolamento | Contextos tenant/loja/aparelho/ator; novas APIs revalidam sessão na transação; teste da barreira nas 45 rotas locais e quatro operações comerciais online; consultas online por empresa | Inventário e testes de isolamento de todas as APIs, workers, exportações e integrações |
 | F04 | Instalação | Gerenciador Linux por usuário, pacote local verificado, raiz separada de dados, init/check, bloqueios herdados, atualização/recuperação e desativação preservando dados | Distribuição assinada, recuperação do init incompleto, serviço automático, desinstalação formal, desktop/mobile e Windows/macOS |
 | F05 | Modos | Perfis estritos, responsabilidades descritas; local loopback e servidor de loja SQLite via HTTPS com restrição de rede | Cliente LAN/piloto, identificação de cada terminal, nuvem comercial e reconciliação híbrida; cloud/hybrid recusados neste núcleo |
-| F06 | Autenticação | Login/logout/revogação; troca da própria senha; consulta de sessões; reset/revogação administrativos restritos; recuperação local do dono com chave preparada de uso único; sessões online próprias com rotação, logout e revogação; troca da própria senha online com revogação transacional | Recuperação online; administração de outras contas; sincronização de credenciais e revogações; sessões individuais e entrada secreta interativa |
+| F06 | Autenticação | Login/logout/revogação; troca da própria senha; consulta de sessões; reset/revogação administrativos locais restritos; recuperação local do dono e recuperação online por chave pessoal preparada de uso único; sessões online com rotação e troca de senha transacional | Recuperação por e-mail validado; administração online de outras contas; sincronização de credenciais/revogações; entrada secreta interativa |
 | F07 | Autorizações | Papéis, contratos, regras allow/deny/inherit por ação/loja/pessoa/grupo; departamentos e delegação limitada auditada | Interfaces de administração; propagação e reconciliação entre aparelhos; granularidade de registros dos futuros módulos de RH/produção; políticas online |
 | F08 | Auditoria | Eventos críticos; políticas e acesso atômicos; consulta autorizada por loja/departamento com paginação para políticas, contas, funcionários, convites, pareamento, permissões de sincronização e aprovação de chaves públicas | Cobertura/consulta das demais fontes administrativas e comerciais; retenção e exportação |
 | F09 | Proteção de dados | Transporte cifrado; backup AES-256-GCM, chave separada 0600 e autenticação do arquivo | Backups remotos, proteção dos demais arquivos/certificados, rotação e recuperação de todas as chaves |
 | F10 | Backup/restauração | Snapshot SQLite consistente, restauração em arquivo novo; sessões e chaves de recuperação da cópia revogadas; snapshots 25/26/27; agendamento CLI watch | Retenção, cópia externa, serviço instalado, monitoramento, PostgreSQL e ensaio de desastre completo |
-| F11 | Documentação API | Contratos detalhados de acesso/segurança e auth online; inventário de 69 rotas comparado ao Fiber; mapa OpenAPI; erro JSON opcional compatível; limites atuais de paginação testados | Schemas completos dos demais domínios; parsers e paginação de todas as coleções; aceite de clientes e evolução por versão |
+| F11 | Documentação API | Inventário de 69 rotas comparado ao Fiber: 62 implemented/documented e 7 unavailable/pending; contratos locais/online detalhados, erro opcional, paginação e testes de payload selecionados | Contratos dos fluxos futuros; parsers/paginação de todas as coleções; aceite de clientes, evolução por versão e integração comercial completa |
 
 ## Segurança de conta local
 
@@ -159,3 +159,5 @@ Entrega 20: geração online de sugestões com limite síncrono de 1000 produtos
 Entrega 21: suíte PostgreSQL isolada para cadastro e geração de sugestões, com índice parcial concorrente, FK por empresa e rollback real. Ver documento 96. Aceite real exige execução no PC; preparo sem servidor não comprova aprovação.
 
 Entrega 22: limites explícitos de corpo/conexões/I/O no servidor online, host/porta validados e erros de framework sem diagnóstico privado. Ver documento 97. Não equivale a proteção distribuída contra DDoS ou cancelamento de operação SQL.
+
+Entrega 23: encerramento online por SIGINT/SIGTERM, drain HTTP até 45 segundos e fechamento do banco somente após conclusão. Ver documento 98 para sequência, incerteza e estado real do roteiro.
