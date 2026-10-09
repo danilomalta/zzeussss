@@ -1,0 +1,257 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P17 — Consulta de pedidos de compra",
+    "version": "P17",
+    "description": "Leitura autorizada view_orders na empresa/loja da sessao. Contagem, pedidos e itens preservados na mesma transacao. Referencias de fornecedores sao locais; local_not_sent nao significa enviado/confirmado. Sem escrita ou movimentacao de estoque."
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/purchase-order-search": {
+      "get": {
+        "operationId": "searchPurchaseOrders",
+        "summary": "Filtra pedidos locais por fornecedor e produto",
+        "parameters": [
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato, sem espacos nas bordas, NUL, CR ou LF; limite de 128 bytes no servidor."
+            },
+            "description": "Filtro exato sobre o registro historico do pedido. Combinado com os demais por AND; ID inexistente retorna pagina vazia."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato, sem espacos nas bordas, NUL, CR ou LF; limite de 128 bytes no servidor."
+            },
+            "description": "Filtro exato sobre o registro historico do pedido. Combinado com os demais por AND; ID inexistente retorna pagina vazia."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 0
+            },
+            "description": "Somente digitos decimais. Pagina fixa de 50; parametros vazios, duplicados ou desconhecidos sao rejeitados."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pagina historica ordenada por created_at DESC, id DESC. Total independente do offset. items=[] se nao houver correspondencia.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Consulta invalida, ambiguidades ou limites excedidos."
+          },
+          "401": {
+            "description": "Sessao, vinculo ou aparelho invalido/revogado."
+          },
+          "403": {
+            "description": "Sem view_orders na empresa e loja da sessao."
+          },
+          "409": {
+            "description": "Pedido com estado ou item historico inconsistente; pagina nao publicada parcialmente."
+          },
+          "500": {
+            "description": "Falha interna de leitura."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Filters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "supplier_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato, sem espacos nas bordas, NUL, CR ou LF; limite de 128 bytes no servidor."
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato, sem espacos nas bordas, NUL, CR ou LF; limite de 128 bytes no servidor."
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "required": [
+          "product_id",
+          "sku",
+          "name",
+          "unit",
+          "quantity_milli"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "required": [
+          "id",
+          "operation_id",
+          "supplier_id",
+          "supplier_name",
+          "suggestion_id",
+          "created_at",
+          "approved_by",
+          "approved_at",
+          "status",
+          "items"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "supplier_name": {
+            "type": "string"
+          },
+          "suggestion_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "approved_by": {
+            "type": "string"
+          },
+          "approved_at": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "local_not_sent"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "required": [
+          "filters",
+          "total_count",
+          "offset",
+          "limit",
+          "has_more",
+          "items"
+        ],
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/Filters"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "enum": [
+              50
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          }
+        }
+      }
+    }
+  }
+}
