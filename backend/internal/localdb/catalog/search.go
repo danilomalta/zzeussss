@@ -12,6 +12,7 @@ import (
 )
 
 type SearchInput struct {
+	Status  string
 	Query   string
 	Unit    string
 	Pending string
@@ -23,6 +24,7 @@ type SearchProduct struct {
 	Approximate       bool `json:"approximate"`
 }
 type SearchResult struct {
+	Status      string          `json:"status"`
 	Items       []SearchProduct `json:"items"`
 	Total       int             `json:"total"`
 	Offset      int             `json:"offset"`
@@ -111,6 +113,13 @@ func Search(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Device
 	if db == nil || in.Offset < 0 || in.Offset > 1000000000 || len(in.Query) > 240 || !utf8.ValidString(in.Query) || in.Unit != "" && !validUnit(in.Unit) || in.Pending != "" && in.Pending != "barcode" && in.Pending != "cost" && in.Pending != "minimum" {
 		return out, ErrInvalidCatalog
 	}
+	if in.Status == "" {
+		in.Status = "all"
+	}
+	if in.Status != "all" && in.Status != "active" && in.Status != "inactive" {
+		return out, ErrInvalidCatalog
+	}
+	out.Status = in.Status
 	query := searchFold(in.Query)
 	if len(strings.Fields(query)) > 8 {
 		return out, ErrInvalidCatalog
@@ -131,7 +140,7 @@ func Search(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Device
 	if in.Pending == "cost" && !out.CostVisible {
 		return out, identity.ErrDenied
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT p.id,p.sku,p.barcode,p.name,p.unit,p.price_cents,p.cost_cents,EXISTS(SELECT 1 FROM restock_policies r WHERE r.tenant_id=p.tenant_id AND r.product_id=p.id AND r.store_id=?) FROM products p WHERE p.tenant_id=? ORDER BY p.sku,p.id`, a.StoreID, a.TenantID)
+	rows, e := tx.QueryContext(ctx, `SELECT p.id,p.sku,p.barcode,p.name,p.unit,p.price_cents,p.cost_cents,COALESCE(s.status,'active'),COALESCE(s.revision,0),EXISTS(SELECT 1 FROM restock_policies r WHERE r.tenant_id=p.tenant_id AND r.product_id=p.id AND r.store_id=?) FROM products p LEFT JOIN catalog_product_states s ON s.tenant_id=p.tenant_id AND s.product_id=p.id WHERE p.tenant_id=? ORDER BY p.sku,p.id`, a.StoreID, a.TenantID)
 	if e != nil {
 		return out, e
 	}
@@ -139,7 +148,7 @@ func Search(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Device
 		var p SearchProduct
 		var barcode sql.NullString
 		var cost int64
-		if e = rows.Scan(&p.ID, &p.SKU, &barcode, &p.Name, &p.Unit, &p.PriceCents, &cost, &p.MinimumConfigured); e != nil {
+		if e = rows.Scan(&p.ID, &p.SKU, &barcode, &p.Name, &p.Unit, &p.PriceCents, &cost, &p.Status, &p.StateRevision, &p.MinimumConfigured); e != nil {
 			rows.Close()
 			return out, e
 		}
@@ -151,6 +160,9 @@ func Search(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Device
 		if p.PriceCents < 0 || p.PriceCents > 9007199254740991 || cost < 0 || out.CostVisible && cost > 9007199254740991 {
 			rows.Close()
 			return out, ErrInvalidCatalog
+		}
+		if in.Status != "all" && p.Status != in.Status {
+			continue
 		}
 		if in.Unit != "" && p.Unit != in.Unit || in.Pending == "barcode" && p.Barcode != "" || in.Pending == "cost" && cost != 0 || in.Pending == "minimum" && p.MinimumConfigured {
 			continue
