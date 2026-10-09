@@ -3683,6 +3683,280 @@
           "url": "./online-catalog-adjustments.openapi.json"
         }
       }
+    },
+    "/api/v1/catalog/adjustments/exports/preview": {
+      "get": {
+        "operationId": "online_adjustment_export_preview",
+        "summary": "Prévia JSON do relatório",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 10
+            },
+            "description": "Número de operações, não de linhas CSV."
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            },
+            "description": "Deslocamento em operações."
+          },
+          {
+            "in": "query",
+            "name": "actor_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID canônico do responsável; somente dentro da empresa autenticada."
+          },
+          {
+            "in": "query",
+            "name": "product_id",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "description": "Mantém operações que contenham o produto; CSV contém somente suas linhas."
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Inclusivo; exige until, RFC3339 com fuso, ano 2000..9999."
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Exclusivo; exige from, posterior, intervalo máximo 366 dias."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Relatório somente leitura. Todos os dados históricos; nenhum pagamento ou documento fiscal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-adjustment-export.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro, período ou corpo inválido; duplicatas/desconhecidos recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Dados incompatíveis ou leitura indisponível; nenhum CSV parcial"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Relatório de reajustes",
+          "url": "./online-catalog-adjustment-export.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/adjustments/exports/csv": {
+      "get": {
+        "operationId": "online_adjustment_export_csv",
+        "summary": "Download CSV da página",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 10
+            },
+            "description": "Número de operações, não de linhas CSV."
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            },
+            "description": "Deslocamento em operações."
+          },
+          {
+            "in": "query",
+            "name": "actor_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID canônico do responsável; somente dentro da empresa autenticada."
+          },
+          {
+            "in": "query",
+            "name": "product_id",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "description": "Mantém operações que contenham o produto; CSV contém somente suas linhas."
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Inclusivo; exige until, RFC3339 com fuso, ano 2000..9999."
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Exclusivo; exige from, posterior, intervalo máximo 366 dias."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Relatório somente leitura. Todos os dados históricos; nenhum pagamento ou documento fiscal.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "X-Catalog-Source-Hash": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "SHA256 dos bytes do CSV da página"
+              },
+              "X-Catalog-Total": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Operações correspondentes"
+              },
+              "X-Catalog-Row-Count": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Linhas de produtos"
+              },
+              "X-Catalog-Limit": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Limite de operações"
+              },
+              "X-Catalog-Offset": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Deslocamento de operações"
+              },
+              "X-Catalog-Has-More": {
+                "schema": {
+                  "type": "boolean"
+                },
+                "description": "Há outra página"
+              },
+              "X-Catalog-Next-Offset": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Presente somente se há outra página"
+              },
+              "X-Catalog-Text-Prefix": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Apóstrofo prefixado a cada célula textual"
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro, período ou corpo inválido; duplicatas/desconhecidos recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Dados incompatíveis ou leitura indisponível; nenhum CSV parcial"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Relatório de reajustes",
+          "url": "./online-catalog-adjustment-export.openapi.json"
+        }
+      }
     }
   },
   "components": {

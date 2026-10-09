@@ -85,6 +85,8 @@ func Registrar(app *fiber.App) {
 	negocios.Post("/catalog/adjustments/preview", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ReajustarCatalogo(false))
 	negocios.Post("/catalog/adjustments/apply", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ReajustarCatalogo(true))
 	negocios.Get("/catalog/adjustments", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.HistoricoReajustesCatalogo)
+	negocios.Get("/catalog/adjustments/exports/preview", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ExportarReajustes(false))
+	negocios.Get("/catalog/adjustments/exports/csv", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ExportarReajustes(true))
 	negocios.Get("/catalog/adjustments/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ConsultarReajusteCatalogo)
 	negocios.Get("/catalog/exports/preview", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ExportarCatalogo(false))
 	negocios.Get("/catalog/exports/csv", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ExportarCatalogo(true))

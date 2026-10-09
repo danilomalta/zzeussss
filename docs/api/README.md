@@ -85,3 +85,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - `online-catalog-export.openapi.json`: exportação CSV com filtros, paginação, preço/status separados, prévia JSON e download (entrega 29).
 
 - `online-catalog-adjustments.openapi.json`: reajuste percentual exato com seleção versionada, prévia, aplicação atômica, recuperação e histórico (entrega 30).
+
+- `online-catalog-adjustment-export.openapi.json`: relatório paginado CSV/JSON de reajustes percentuais com período, responsável, produto e snapshots históricos (entrega 31).

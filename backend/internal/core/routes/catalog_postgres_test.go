@@ -1037,6 +1037,87 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if _, e = store.PreviewAdjustment(ctx, actor, noOpAdjustment); e != onlinecatalog.ErrInput {
 		t.Fatal("reajuste sem efeito inventou versão")
 	}
+	// Historical adjustment export: read-only and independent from current prices.
+	app = fiber.New()
+	Registrar(app)
+	var reportOperationCount, reportEventCount int64
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_adjustments WHERE tenant_id=$1`, tenantA).Scan(&reportOperationCount) != nil || sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_adjustment_outbox WHERE tenant_id=$1`, tenantA).Scan(&reportEventCount) != nil {
+		t.Fatal("contagem relatório ausente")
+	}
+	if reportOperationCount != 3 {
+		t.Fatal("operações inesperadas na fixture de reajuste")
+	}
+	report := request("GET", "/api/v1/catalog/adjustments/exports/preview?limit=1", "", tokenA, 200)
+	if report["total"] != float64(reportOperationCount) || report["row_count"] != float64(1) || report["next_offset"] != float64(1) || report["text_prefix"] != "'" || !strings.Contains(report["csv"].(string), ";111;0;1.11;0.00;-10000;") {
+		t.Fatal("relatório sem valores históricos exatos")
+	}
+	request("GET", "/api/v1/catalog/adjustments/exports/preview?limit=11", "", tokenA, 400)
+	request("GET", "/api/v1/catalog/adjustments/exports/preview?actor_id=", "", tokenA, 400)
+	request("GET", "/api/v1/catalog/adjustments/exports/preview?product_id=01", "", tokenA, 400)
+	request("GET", "/api/v1/catalog/adjustments/exports/preview?tenant_id="+tenantA, "", tokenA, 400)
+	productReport := request("GET", fmt.Sprintf("/api/v1/catalog/adjustments/exports/preview?product_id=%d", adjustID2), "", tokenA, 200)
+	if productReport["total"] != float64(2) || productReport["row_count"] != float64(2) || !strings.Contains(productReport["csv"].(string), ";201;302;2.01;3.02;5000;") {
+		t.Fatal("reajuste compensado perdeu histórico")
+	}
+	// Original receipt still contains both products; filtered CSV contains only ID2.
+	if len(productReport["items"].([]interface{})[0].(map[string]interface{})["batch"].(map[string]interface{})["items"].([]interface{})) != 2 {
+		t.Fatal("recibo foi mutilado")
+	}
+	otherActorReport := request("GET", "/api/v1/catalog/adjustments/exports/preview?actor_id="+otherUser, "", tokenA, 200)
+	if otherActorReport["total"] != float64(0) || otherActorReport["items"] == nil {
+		t.Fatal("responsável sem operações inventou linhas")
+	}
+	adminReport := request("GET", "/api/v1/catalog/adjustments/exports/preview?actor_id="+userA, "", otherToken, 200)
+	if adminReport["total"] != float64(reportOperationCount) {
+		t.Fatal("administrador não consultou relatório autorizado")
+	}
+	foreignReport := request("GET", fmt.Sprintf("/api/v1/catalog/adjustments/exports/preview?actor_id=%s&product_id=%d", userA, adjustID1), "", tokenB, 200)
+	if foreignReport["total"] != float64(0) {
+		t.Fatal("relatório vazou empresa")
+	}
+	beyondReport := request("GET", "/api/v1/catalog/adjustments/exports/preview?offset=99", "", tokenA, 200)
+	if beyondReport["row_count"] != float64(0) || beyondReport["has_more"] != false || !strings.HasSuffix(beyondReport["csv"].(string), "rounding\n") {
+		t.Fatal("página vazia incorreta")
+	}
+	var originalAdjustmentAt time.Time
+	if sqlDB.QueryRowContext(ctx, `SELECT created_at FROM online_catalog_adjustments WHERE tenant_id=$1 AND operation_id=$2`, tenantA, adjust.OperationID).Scan(&originalAdjustmentAt) != nil {
+		t.Fatal("timestamp histórico ausente")
+	}
+	originalReport, e := store.ExportAdjustments(ctx, actor, onlinecatalog.AdjustmentExportQuery{Limit: 10, From: originalAdjustmentAt.UTC().Format(time.RFC3339Nano), Until: originalAdjustmentAt.Add(time.Microsecond).UTC().Format(time.RFC3339Nano)})
+	if e != nil || originalReport.Total != 1 || originalReport.RowCount != 2 || originalReport.Items[0].OperationID != adjust.OperationID {
+		t.Fatal("limites inclusivo/exclusivo históricos")
+	}
+	excludedReport, e := store.ExportAdjustments(ctx, actor, onlinecatalog.AdjustmentExportQuery{Limit: 10, From: originalAdjustmentAt.Add(-time.Microsecond).UTC().Format(time.RFC3339Nano), Until: originalAdjustmentAt.UTC().Format(time.RFC3339Nano)})
+	if e != nil || excludedReport.Total != 0 {
+		t.Fatal("until não exclusivo")
+	}
+	downloadReport, e := store.ExportAdjustments(ctx, actor, onlinecatalog.AdjustmentExportQuery{Limit: 1, ProductID: adjustID2})
+	if e != nil {
+		t.Fatal("exportação filtrada indisponível")
+	}
+	downloadRequest := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/catalog/adjustments/exports/csv?limit=1&product_id=%d", adjustID2), nil)
+	downloadRequest.Header.Set("Authorization", "Bearer "+tokenA)
+	downloadResponse, e := app.Test(downloadRequest, 5000)
+	if e != nil {
+		t.Fatal("download reajuste falhou")
+	}
+	downloadBody, e := io.ReadAll(downloadResponse.Body)
+	downloadResponse.Body.Close()
+	if e != nil || downloadResponse.StatusCode != 200 || string(downloadBody) != downloadReport.CSV || downloadResponse.Header.Get("X-Catalog-Source-Hash") != downloadReport.SourceHash || downloadResponse.Header.Get("X-Catalog-Row-Count") != "1" || downloadResponse.Header.Get("X-Catalog-Text-Prefix") != "'" || downloadResponse.Header.Get("Content-Type") != "text/csv; charset=utf-8" || downloadResponse.Header.Get("Content-Disposition") != `attachment; filename="titan-catalog-adjustment-history.csv"` || downloadResponse.Header.Get("Cache-Control") != "no-store" {
+		t.Fatal("download não correspondeu à página")
+	}
+	// Malformed durable receipt refuses the complete report; no partial data.
+	exec(`UPDATE online_catalog_adjustments SET reason='fixture mismatch' WHERE tenant_id=$1 AND operation_id=$2`, tenantA, adjust.OperationID)
+	if _, e = store.ExportAdjustments(ctx, actor, onlinecatalog.AdjustmentExportQuery{Limit: 10}); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("recibo malformado exportado")
+	}
+	exec(`UPDATE online_catalog_adjustments SET reason=$3 WHERE tenant_id=$1 AND operation_id=$2`, tenantA, adjust.OperationID, adjust.Reason)
+	var reportOperationsAfter, reportEventsAfter int64
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_adjustments WHERE tenant_id=$1`, tenantA).Scan(&reportOperationsAfter) != nil || sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_adjustment_outbox WHERE tenant_id=$1`, tenantA).Scan(&reportEventsAfter) != nil || reportOperationsAfter != reportOperationCount || reportEventsAfter != reportEventCount {
+		t.Fatal("relatório produziu escritas")
+	}
+	checkProduct(adjustID1, 5, 0, true)
+	checkProduct(adjustID2, 4, 221, true)
 	var adjustmentChecksum string
 	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_adjustment_migrations WHERE version=13`).Scan(&adjustmentChecksum) != nil {
 		t.Fatal("checksum reajuste ausente")
