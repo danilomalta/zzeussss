@@ -25,3 +25,6 @@ var CatalogUndoSQL string
 
 //go:embed 000012_online_catalog_imports.sql
 var CatalogImportsSQL string
+
+//go:embed 000013_online_catalog_adjustments.sql
+var CatalogAdjustmentsSQL string

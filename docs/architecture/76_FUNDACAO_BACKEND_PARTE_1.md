@@ -173,3 +173,5 @@ Entrega 25 consolidada: cadastro online com Idempotency-Key obrigatório (428 se
 - Entrega 28: importação CSV de preço/ativação para SKU existente, prévia vinculada ao conteúdo, aplicação atômica, motivo auditado, recibo recuperável e origem consultável. PostgreSQL 12 explícito. Ver documento 103.
 
 - Entrega 29: exportação CSV do catálogo online com versão, filtros, snapshot consistente por página e download. Round trip para importação 28, sem migração ou escrita comercial. Ver documento 104.
+
+- Entrega 30: reajuste percentual por lote explícito de produtos/versões, centavos exatos, motivo, prévia, auditoria, recibo e histórico. PostgreSQL 13 explícito; sem custo/margem ou segunda aprovação. Ver documento 105.

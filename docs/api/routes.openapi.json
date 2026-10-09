@@ -3360,6 +3360,329 @@
           "url": "./online-catalog-export.openapi.json"
         }
       }
+    },
+    "/api/v1/catalog/adjustments/preview": {
+      "post": {
+        "operationId": "online_adjustment_post__api_v1_catalog_adjustments_preview",
+        "description": "Prévia do percentual aplicada à seleção de IDs/versões. Sem escrita comercial. Um no-op, excesso do preço máximo, produto ausente ou conflito recusa a seleção completa.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Prévia, recibo/replay ou histórico, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-adjustments.openapi.json#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, no-op, preço fora do limite ou paginação inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "Produto ou recibo ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão, hash ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou commit incerto; consulte recibo"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-adjustments.openapi.json#/components/schemas/PreviewRequest"
+              },
+              "example": {
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reason": "Reajuste de tabela revisado",
+                "rate_basis_points": 500,
+                "items": [
+                  {
+                    "product_id": 1,
+                    "expected_version": 2
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Reajuste percentual",
+          "url": "./online-catalog-adjustments.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/adjustments/apply": {
+      "post": {
+        "operationId": "online_adjustment_post__api_v1_catalog_adjustments_apply",
+        "description": "Aplica preços, auditoria, lote e metadados na mesma transação. Motivo, seleção normalizada, percentual, usuário e snapshots vinculados ao hash. Identidade já ocupada em outro lote gera conflito.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Prévia, recibo/replay ou histórico, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-adjustments.openapi.json#/components/schemas/AdjustmentReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, no-op, preço fora do limite ou paginação inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "Produto ou recibo ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão, hash ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou commit incerto; consulte recibo"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-adjustments.openapi.json#/components/schemas/ApplyRequest"
+              },
+              "example": {
+                "operation_id": "11111111-1111-4111-8111-111111111111",
+                "reason": "Reajuste de tabela revisado",
+                "rate_basis_points": 500,
+                "items": [
+                  {
+                    "product_id": 1,
+                    "expected_version": 2
+                  }
+                ],
+                "preview_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Reajuste percentual",
+          "url": "./online-catalog-adjustments.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/adjustments/{operation_id}": {
+      "get": {
+        "operationId": "online_adjustment_get__api_v1_catalog_adjustments_operation_id",
+        "description": "Consulta de recibo estável pela empresa e ator aplicador. Replay retorna resultado original antes de ler preços atuais; após resposta perdida preservar UUID e pedido e consultar esta rota.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID canônico, minúsculo e não nulo."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prévia, recibo/replay ou histórico, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-adjustments.openapi.json#/components/schemas/AdjustmentReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, no-op, preço fora do limite ou paginação inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "Produto ou recibo ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão, hash ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou commit incerto; consulte recibo"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Reajuste percentual",
+          "url": "./online-catalog-adjustments.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/adjustments": {
+      "get": {
+        "operationId": "online_adjustment_get__api_v1_catalog_adjustments",
+        "description": "Histórico administrativo da empresa, incluindo outros atores autorizados. Mais recente primeiro, com snapshots, motivo e percentual originais. Limite padrão 10; máximo 10, sem limite ilimitado.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prévia, recibo/replay ou histórico, conforme a rota",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-adjustments.openapi.json#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, no-op, preço fora do limite ou paginação inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "404": {
+            "description": "Produto ou recibo ausente neste contexto"
+          },
+          "409": {
+            "description": "Versão, hash ou identidade em conflito"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível ou commit incerto; consulte recibo"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Reajuste percentual",
+          "url": "./online-catalog-adjustments.openapi.json"
+        }
+      }
     }
   },
   "components": {

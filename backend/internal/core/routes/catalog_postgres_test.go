@@ -90,6 +90,9 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if onlinecatalog.MigrateImports(ctx, sqlDB) != nil || onlinecatalog.MigrateImports(ctx, sqlDB) != nil || onlinecatalog.CheckImports(ctx, sqlDB) != nil {
 		t.Fatal("migração CSV falhou")
 	}
+	if onlinecatalog.MigrateAdjustments(ctx, sqlDB) != nil || onlinecatalog.MigrateAdjustments(ctx, sqlDB) != nil || onlinecatalog.CheckAdjustments(ctx, sqlDB) != nil {
+		t.Fatal("migração reajuste falhou")
+	}
 	tenantA, tenantB, userA, userB, sessionA, sessionB := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	for _, actor := range []struct{ tenant, user, session string }{{tenantA, userA, sessionA}, {tenantB, userB, sessionB}} {
 		exec(`INSERT INTO tenants(id,status) VALUES($1,'active')`, actor.tenant)
@@ -898,6 +901,155 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_operations WHERE tenant_id=$1 AND product_id IN ($2,$3)`, tenantA, exportID1, exportID2).Scan(&exportWrites) != nil || exportWrites != 4 {
 		t.Fatal("exportação criou auditoria de alteração")
 	}
+	// Reajuste: fresh HTTP fixture preserves the actual per-app rate limiter.
+	app = fiber.New()
+	Registrar(app)
+	adjustProduct1 := request("POST", "/api/v1/produtos/", `{"nome":"Adjust 101","sku":"adjust-101","preco":1.01}`, tokenA, 201)
+	adjustProduct2 := request("POST", "/api/v1/produtos/", `{"nome":"Adjust 201","sku":"adjust-201","preco":2.01}`, tokenA, 201)
+	adjustID1, adjustID2 := int64(adjustProduct1["ID"].(float64)), int64(adjustProduct2["ID"].(float64))
+	adjust := onlinecatalog.AdjustmentInput{OperationID: uuid.NewString(), Reason: "Reajuste revisado", RateBasisPoints: 5000, Items: []onlinecatalog.AdjustmentItem{{ProductID: adjustID2, ExpectedVersion: 1}, {ProductID: adjustID1, ExpectedVersion: 1}}}
+	adjustJSON, _ := json.Marshal(adjust)
+	adjustPreview := request("POST", "/api/v1/catalog/adjustments/preview", string(adjustJSON), tokenA, 200)
+	checkProduct(adjustID1, 1, 101, true)
+	checkProduct(adjustID2, 1, 201, true)
+	if adjustPreview["rounding"] != "half_up" || adjustPreview["items"].([]interface{})[0].(map[string]interface{})["after"].(map[string]interface{})["price_cents"] != float64(152) {
+		t.Fatal("arredondamento reajuste inexato")
+	}
+	adjust.PreviewHash = adjustPreview["preview_hash"].(string)
+	adjustJSON, _ = json.Marshal(adjust)
+	request("POST", "/api/v1/catalog/adjustments/apply", string(adjustJSON), tokenA, 200)
+	request("POST", "/api/v1/catalog/adjustments/apply", string(adjustJSON), tokenA, 200)
+	checkProduct(adjustID1, 2, 152, true)
+	checkProduct(adjustID2, 2, 302, true)
+	request("GET", "/api/v1/catalog/adjustments/"+adjust.OperationID, "", tokenA, 200)
+	request("GET", "/api/v1/catalog/adjustments/"+adjust.OperationID, "", otherToken, 404)
+	request("GET", "/api/v1/catalog/adjustments/"+adjust.OperationID, "", tokenB, 404)
+	adjustHistory := request("GET", "/api/v1/catalog/adjustments?limit=1&offset=0", "", otherToken, 200)
+	if len(adjustHistory["items"].([]interface{})) != 1 || adjustHistory["items"].([]interface{})[0].(map[string]interface{})["reason"] != "Reajuste revisado" {
+		t.Fatal("histórico reajuste perdeu motivo")
+	}
+	request("GET", "/api/v1/catalog/adjustments?limit=11", "", tokenA, 400)
+	adjustForeignHistory := request("GET", "/api/v1/catalog/adjustments", "", tokenB, 200)
+	if len(adjustForeignHistory["items"].([]interface{})) != 0 {
+		t.Fatal("histórico reajuste atravessou empresa")
+	}
+	request("POST", "/api/v1/catalog/adjustments/preview", string(strings.ReplaceAll(string(adjustJSON), `,"preview_hash":`, `,"extra":`)), tokenA, 400)
+	changedAdjust := adjust
+	changedAdjust.RateBasisPoints = 4999
+	changedAdjustJSON, _ := json.Marshal(changedAdjust)
+	request("POST", "/api/v1/catalog/adjustments/apply", string(changedAdjustJSON), tokenA, 409)
+	request("POST", "/api/v1/catalog/adjustments/apply", string(adjustJSON), otherToken, 409)
+	foreignAdjust := adjust
+	foreignAdjust.OperationID = uuid.NewString()
+	foreignAdjust.PreviewHash = ""
+	foreignJSON, _ := json.Marshal(foreignAdjust)
+	request("POST", "/api/v1/catalog/adjustments/preview", string(foreignJSON), tokenB, 404)
+	// Official batch compensation restores original prices with new versions.
+	adjustUndo := onlinecatalog.UndoInput{OperationID: uuid.NewString(), SourceOperationID: adjust.OperationID, Reason: "Corrige reajuste"}
+	adjustUndoPreview, e := store.PreviewUndo(ctx, actor, adjustUndo)
+	if e != nil {
+		t.Fatal("prévia reversão reajuste falhou")
+	}
+	adjustUndo.PreviewHash = adjustUndoPreview.PreviewHash
+	if _, e = store.ApplyUndo(ctx, actor, adjustUndo); e != nil {
+		t.Fatal("reversão reajuste falhou")
+	}
+	checkProduct(adjustID1, 3, 101, true)
+	checkProduct(adjustID2, 3, 201, true)
+	adjustReplay := request("POST", "/api/v1/catalog/adjustments/apply", string(adjustJSON), tokenA, 200)
+	if adjustReplay["batch"].(map[string]interface{})["items"].([]interface{})[0].(map[string]interface{})["after"].(map[string]interface{})["price_cents"] != float64(152) {
+		t.Fatal("replay reajuste recalculou preço atual")
+	}
+	lateAdjustment := onlinecatalog.AdjustmentInput{OperationID: uuid.NewString(), Reason: "Rollback reajuste", RateBasisPoints: 1000, Items: []onlinecatalog.AdjustmentItem{{ProductID: adjustID1, ExpectedVersion: 3}, {ProductID: adjustID2, ExpectedVersion: 3}}}
+	lateAdjustmentPreview, e := store.PreviewAdjustment(ctx, actor, lateAdjustment)
+	if e != nil {
+		t.Fatal("prévia rollback reajuste falhou")
+	}
+	lateAdjustment.PreviewHash = lateAdjustmentPreview.PreviewHash
+	exec(fmt.Sprintf(`CREATE FUNCTION reject_adjustment_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture'; END $$; CREATE TRIGGER reject_adjustment_event BEFORE INSERT ON online_catalog_adjustment_outbox FOR EACH ROW WHEN (NEW.operation_id='%s'::uuid) EXECUTE FUNCTION reject_adjustment_event()`, lateAdjustment.OperationID))
+	if _, e = store.ApplyAdjustment(ctx, actor, lateAdjustment); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("evento falho de reajuste aceito")
+	}
+	checkProduct(adjustID1, 3, 101, true)
+	checkProduct(adjustID2, 3, 201, true)
+	if _, e = store.Adjustment(ctx, actor, lateAdjustment.OperationID); e != onlinecatalog.ErrMissing {
+		t.Fatal("rollback reajuste deixou recibo")
+	}
+	if _, e = store.Batch(ctx, actor, lateAdjustment.OperationID); e != onlinecatalog.ErrMissing {
+		t.Fatal("rollback reajuste deixou lote")
+	}
+	lateAdjustmentChild := uuid.NewSHA1(uuid.MustParse(lateAdjustment.OperationID), []byte(fmt.Sprintf("catalog-batch:%d", adjustID1))).String()
+	var adjustmentCount int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_operations WHERE tenant_id=$1 AND operation_id=$2`, tenantA, lateAdjustmentChild).Scan(&adjustmentCount) != nil || adjustmentCount != 0 {
+		t.Fatal("rollback reajuste deixou auditoria")
+	}
+	concurrentAdjustment := lateAdjustment
+	concurrentAdjustment.OperationID = uuid.NewString()
+	concurrentAdjustment.PreviewHash = ""
+	concurrentAdjustmentPreview, e := store.PreviewAdjustment(ctx, actor, concurrentAdjustment)
+	if e != nil {
+		t.Fatal("prévia concorrente reajuste falhou")
+	}
+	concurrentAdjustment.PreviewHash = concurrentAdjustmentPreview.PreviewHash
+	adjustmentErrors := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		mutationWG.Add(1)
+		go func() {
+			defer mutationWG.Done()
+			_, e := store.ApplyAdjustment(ctx, actor, concurrentAdjustment)
+			adjustmentErrors <- e
+		}()
+	}
+	mutationWG.Wait()
+	close(adjustmentErrors)
+	for e := range adjustmentErrors {
+		if e != nil {
+			t.Fatal("replay concorrente reajuste falhou")
+		}
+	}
+	checkProduct(adjustID1, 4, 111, true)
+	checkProduct(adjustID2, 4, 221, true)
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_adjustment_outbox WHERE tenant_id=$1 AND operation_id=$2`, tenantA, concurrentAdjustment.OperationID).Scan(&adjustmentCount) != nil || adjustmentCount != 1 {
+		t.Fatal("reajuste duplicou evento")
+	}
+	// Stale explicit selection refuses the complete adjustment.
+	staleAdjustment := lateAdjustment
+	staleAdjustment.OperationID = uuid.NewString()
+	staleAdjustment.PreviewHash = ""
+	if _, e = store.PreviewAdjustment(ctx, actor, staleAdjustment); e != onlinecatalog.ErrConflict {
+		t.Fatal("reajuste stale aceito")
+	}
+	zeroAdjustment := onlinecatalog.AdjustmentInput{OperationID: uuid.NewString(), Reason: "Redução autorizada a zero", RateBasisPoints: -10000, Items: []onlinecatalog.AdjustmentItem{{ProductID: adjustID1, ExpectedVersion: 4}}}
+	zeroAdjustmentPreview, e := store.PreviewAdjustment(ctx, actor, zeroAdjustment)
+	if e != nil {
+		t.Fatal("prévia redução a zero falhou")
+	}
+	zeroAdjustment.PreviewHash = zeroAdjustmentPreview.PreviewHash
+	if _, e = store.ApplyAdjustment(ctx, actor, zeroAdjustment); e != nil {
+		t.Fatal("redução exata a zero falhou")
+	}
+	checkProduct(adjustID1, 5, 0, true)
+	noOpAdjustment := zeroAdjustment
+	noOpAdjustment.OperationID = uuid.NewString()
+	noOpAdjustment.PreviewHash = ""
+	noOpAdjustment.RateBasisPoints = 100
+	noOpAdjustment.Items[0].ExpectedVersion = 5
+	if _, e = store.PreviewAdjustment(ctx, actor, noOpAdjustment); e != onlinecatalog.ErrInput {
+		t.Fatal("reajuste sem efeito inventou versão")
+	}
+	var adjustmentChecksum string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_adjustment_migrations WHERE version=13`).Scan(&adjustmentChecksum) != nil {
+		t.Fatal("checksum reajuste ausente")
+	}
+	exec(`UPDATE online_catalog_adjustment_migrations SET version=14 WHERE version=13`)
+	if onlinecatalog.MigrateAdjustments(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.CheckAdjustments(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema reajuste futuro aceito")
+	}
+	exec(`UPDATE online_catalog_adjustment_migrations SET version=13,checksum='tampered' WHERE version=14`)
+	if onlinecatalog.MigrateAdjustments(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema reajuste adulterado aceito")
+	}
+	exec(`UPDATE online_catalog_adjustment_migrations SET checksum=$1 WHERE version=13`, adjustmentChecksum)
 	var importsChecksum string
 	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_import_migrations WHERE version=12`).Scan(&importsChecksum) != nil {
 		t.Fatal("checksum CSV ausente")

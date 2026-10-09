@@ -82,6 +82,10 @@ func Registrar(app *fiber.App) {
 
 	negocios.Post("/catalog/undos/preview", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.DesfazerLoteCatalogo(false))
 	negocios.Post("/catalog/imports/preview", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ImportarCatalogoCSV(false))
+	negocios.Post("/catalog/adjustments/preview", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ReajustarCatalogo(false))
+	negocios.Post("/catalog/adjustments/apply", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ReajustarCatalogo(true))
+	negocios.Get("/catalog/adjustments", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.HistoricoReajustesCatalogo)
+	negocios.Get("/catalog/adjustments/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ConsultarReajusteCatalogo)
 	negocios.Get("/catalog/exports/preview", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ExportarCatalogo(false))
 	negocios.Get("/catalog/exports/csv", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ExportarCatalogo(true))
 	negocios.Post("/catalog/imports/apply", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ImportarCatalogoCSV(true))
