@@ -1,0 +1,407 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P12 — consulta operacional de ordens",
+    "version": "P12",
+    "description": "Consulta autorizada, sem gravacoes ou movimentos. Nenhuma migracao nova; SQLite 35. Filtros exatos e combinados; completed deriva do resultado P06. Nao agrega quantidades de unidades diferentes. Sem nova interface."
+  },
+  "paths": {
+    "/local/v1/production/order-search": {
+      "get": {
+        "operationId": "searchProductionOrders",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "planned",
+                "approved",
+                "cancelled",
+                "completed"
+              ]
+            },
+            "description": "Filtro exato combinado com AND; omitir para nao filtrar. Proibido valor vazio ou duplicado."
+          },
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+            },
+            "description": "Filtro exato combinado com AND; omitir para nao filtrar. Proibido valor vazio ou duplicado."
+          },
+          {
+            "name": "responsible_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+            },
+            "description": "Filtro exato combinado com AND; omitir para nao filtrar. Proibido valor vazio ou duplicado."
+          },
+          {
+            "name": "version_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+            },
+            "description": "Filtro exato combinado com AND; omitir para nao filtrar. Proibido valor vazio ou duplicado."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "description": "Posicao na lista filtrada; digitos decimais, padrao 0. Proibido valor vazio ou duplicado."
+          }
+        ],
+        "description": "Ordem created_at DESC,id DESC. Todas as queries permitidas aparecem no contrato, uma vez. IDs ausentes no escopo retornam pagina vazia; contexto de empresa/loja vem somente da sessao. A pagina preserva snapshots das receitas. total_count conta todos os registros que atendem aos mesmos filtros. Sem garantir estabilidade entre duas requisicoes concorrentes.",
+        "responses": {
+          "200": {
+            "description": "Pagina e contagem filtradas no mesmo snapshot; pagina vazia retorna items [].",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query invalida: desconhecida, repetida, vazia, fora dos limites."
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida."
+          },
+          "403": {
+            "description": "Sem permissao atual ou aparelho autorizado."
+          },
+          "409": {
+            "description": "Planejamento preservado inconsistente nas validacoes."
+          },
+          "500": {
+            "description": "Erro interno de armazenamento."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Order": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "version_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "responsible_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "planned_batches": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "planned_output_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "recipe": {
+            "$ref": "#/components/schemas/Recipe_Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "approved",
+              "cancelled",
+              "completed"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completion_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id",
+          "version_id",
+          "location_id",
+          "responsible_id",
+          "planned_batches",
+          "planned_output_milli",
+          "recipe",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Recipe_Version": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "recipe_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "version_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "output_product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "output_unit": {
+            "$ref": "#/components/schemas/Recipe_Unit"
+          },
+          "yield_milli": {
+            "$ref": "#/components/schemas/Recipe_Quantity"
+          },
+          "ingredients": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Recipe_Ingredient"
+            }
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "recipe_id",
+          "version_id",
+          "expected_revision",
+          "name",
+          "output_product_id",
+          "output_unit",
+          "yield_milli",
+          "ingredients",
+          "revision",
+          "created_at",
+          "created_by"
+        ],
+        "additionalProperties": false
+      },
+      "Recipe_Unit": {
+        "type": "string",
+        "enum": [
+          "unit",
+          "kg",
+          "g",
+          "liter",
+          "ml",
+          "meter"
+        ]
+      },
+      "Recipe_Quantity": {
+        "type": "integer",
+        "format": "int64",
+        "minimum": 1,
+        "maximum": 9007199254740991,
+        "description": "Integer thousandths of stated unit; no implicit conversion."
+      },
+      "Recipe_Ingredient": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_id",
+          "unit",
+          "quantity_milli"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "$ref": "#/components/schemas/Recipe_Unit"
+          },
+          "quantity_milli": {
+            "$ref": "#/components/schemas/Recipe_Quantity"
+          }
+        }
+      },
+      "Filters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "approved",
+              "cancelled",
+              "completed"
+            ]
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "responsible_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "version_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "offset"
+        ]
+      },
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/Filters"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "enum": [
+              50
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          }
+        },
+        "required": [
+          "filters",
+          "total_count",
+          "limit",
+          "has_more",
+          "items"
+        ]
+      }
+    }
+  }
+}
