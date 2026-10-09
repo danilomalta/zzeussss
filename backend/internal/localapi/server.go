@@ -75,6 +75,7 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 	v1.Post("/account/recover", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.recoverOwner)
 	protected := v1.Group("", s.requireSession)
 	protected.Get("/me", func(c *fiber.Ctx) error {
+		c.Set(fiber.HeaderCacheControl, "no-store")
 		session := c.Locals("session").(localauth.Session)
 		return c.JSON(fiber.Map{"tenant_id": session.Actor.TenantID, "store_id": session.Actor.StoreID, "identity_id": session.Actor.IdentityID, "device_id": session.Device.DeviceID, "expires_unix": session.ExpiresUnix})
 	})
@@ -103,11 +104,15 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 }
 
 func (s *Server) login(c *fiber.Ctx) error {
+	c.Set(fiber.HeaderCacheControl, "no-store")
+	if len(c.Body()) > 4096 {
+		return c.SendStatus(fiber.StatusRequestEntityTooLarge)
+	}
 	var request struct {
 		IdentityID string `json:"identity_id"`
 		Password   string `json:"password"`
 	}
-	if err := c.BodyParser(&request); err != nil || request.IdentityID == "" || request.Password == "" {
+	if err := decodeCash(c.Body(), &request, []string{"identity_id", "password"}); err != nil || request.IdentityID == "" || request.Password == "" {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 	session, err := localauth.Login(c.UserContext(), s.DB, s.Device, request.IdentityID, request.Password)

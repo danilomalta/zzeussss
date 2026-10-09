@@ -479,9 +479,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/server.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./local-session.openapi.json"
+        }
       }
     },
     "/local/v1/locations": {
@@ -550,9 +554,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/server.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./local-session.openapi.json"
+        }
       }
     },
     "/local/v1/logout": {
@@ -573,9 +581,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/server.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./local-session.openapi.json"
+        }
       }
     },
     "/local/v1/me": {
@@ -596,9 +608,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/localapi/server.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./local-session.openapi.json"
+        }
       }
     },
     "/local/v1/module-contracts": {

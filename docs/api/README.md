@@ -15,6 +15,7 @@ Base desta revisão: entrega 11 (`fde43f8`). A documentação separa presença d
 | `catalog-stock.openapi.json` | Sete operações locais de catálogo/busca/locais/saldo/movimentos, com schemas conferidos contra respostas HTTP. |
 | `orders-replenishment-comparison.openapi.json` | Quinze operações locais de fornecedores, pedidos, reposição e sites; schemas conferidos contra HTTP. |
 | `staff-capabilities.openapi.json` | Quatro operações de funcionários, capacidades e instalação de contrato assinado; sem fatura ou pagamento. |
+| `local-session.openapi.json` | Saúde, login JSON estrito, contexto e logout locais; sessão opaca, expiração e revogação. |
 | `http-errors.openapi.json` | Negociação opcional de erros, compartilhada pelas duas APIs. |
 
 Os documentos de produção pertencem à branch separada e não são incorporados nesta entrega. Compras, comparação e reposição locais possuem contrato detalhado nesta revisão; o catálogo online ainda requer contrato próprio. O mapa de rotas não finge completar esses contratos.
@@ -59,3 +60,5 @@ Rotas online marcadas `unavailable` continuam bloqueadas. Saúde do processo nã
 ## Exemplos sem credenciais
 
 `curl -i -H 'X-Titan-Error-Format: v1' http://127.0.0.1:8181/local/v1/products` deve retornar 401 sem token. `curl -i http://127.0.0.1:8181/local/v1/health` verifica apenas o processo. Os testes exercitam erros, compatibilidade, inventário real e limites em bancos temporários; não usar dados reais para demonstração.
+
+Entrega 17: as quatro operações locais restantes receberam contrato detalhado. Essa cobertura documental não demonstra conclusão dos fluxos comerciais. Login local agora exige JSON exato até 4096 bytes; clientes de formulário precisam adotar JSON.

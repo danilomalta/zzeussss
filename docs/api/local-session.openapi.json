@@ -1,0 +1,513 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — sessão local",
+    "version": "1.0.0",
+    "description": "Base 911b997 com endurecimento do parser de login na entrega 17. Não implementa recuperação por e-mail ou sessão móvel offline."
+  },
+  "paths": {
+    "/local/v1/health": {
+      "get": {
+        "operationId": "localHealth",
+        "summary": "Verifica resposta do processo",
+        "description": "Público sujeito à configuração de rede. status=local não verifica banco, licença, sincronização, hardware ou prontidão comercial.",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/login": {
+      "post": {
+        "operationId": "localLogin",
+        "summary": "Abre sessão humana local",
+        "description": "JSON exato de identity_id/password até 4096 bytes; rejeita campos extras, duplicados, ausentes, null, tipos incompatíveis e JSON adicional. Formulários deixam de ser aceitos nesta revisão. Empresa/loja/aparelho derivados da estação; senha incorreta ou identidade sem acesso retornam 401. Limitador atual de 5 requisições por minuto pela chave padrão do middleware (IP), não quota global distribuída. Token de 32 bytes aleatórios em base64url sem padding; somente digest é persistido. Validade de oito horas; sem refresh local. Cache-Control: no-store. Contratação de módulo não é requisito para autenticar.",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/me": {
+      "get": {
+        "operationId": "localSessionContext",
+        "summary": "Consulta contexto da sessão",
+        "description": "Bearer opaco obrigatório; revalida expiração, revogação, membro e aparelho, incluindo estação atendida. Contexto não é selecionado pelo cliente. Cache-Control: no-store. Retorna IDs e expiração; capacidades têm endpoint próprio.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/logout": {
+      "post": {
+        "operationId": "localLogout",
+        "summary": "Revoga a sessão atual",
+        "description": "Sem corpo de resposta. Revoga apenas o token atual. Token já revogado, ausente ou expirado retorna 401, inclusive numa repetição; não é confirmação de nova sessão. Falha de transporte exige verificar a sessão, sem presumir revogação remota.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "Session": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "local"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "LoginInput": {
+        "type": "object",
+        "properties": {
+          "identity_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "format": "password",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "identity_id",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "LoginResult": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token opaco local; não é JWT. Não registrar ou publicar."
+          },
+          "expires_unix": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "token",
+          "expires_unix"
+        ],
+        "additionalProperties": false
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string"
+          },
+          "store_id": {
+            "type": "string"
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "identity_id": {
+            "type": "string"
+          },
+          "expires_unix": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "store_id",
+          "device_id",
+          "identity_id",
+          "expires_unix"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}
