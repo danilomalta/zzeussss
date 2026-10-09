@@ -149,3 +149,5 @@ Entrega 15: contratos de quinze operações locais de reposição, fornecedores,
 Entrega 16: contratos HTTP de funcionários, capacidades e instalação de licença local, com testes de vigência e ausência de autorização implícita. Ver documento 91. Faturas, cobrança e RH completo permanecem pendentes.
 
 Entrega 17: login local com JSON estrito e limite de corpo, no-store em login/contexto e contratos/testes de saúde, sessão e logout. Ver documento 92.
+
+Entrega 18: paginação limitada nas consultas online de produtos e sugestões, mantendo isolamento por empresa e papéis, com contrato HTTP e testes SQL simulados. Ver documento 93.

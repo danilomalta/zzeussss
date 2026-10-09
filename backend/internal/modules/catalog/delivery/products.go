@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"strings"
+	"titansystem-backend/internal/apicontract"
 
 	"titansystem-backend/internal/core/database"
 	"titansystem-backend/internal/modules/catalog/domain"
@@ -24,10 +25,15 @@ func ListarProdutos(c *fiber.Ctx) error {
 		return err
 	}
 
-	var produtos []domain.Product
+	limit, offset, err := apicontract.PageQuery(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"erro": "paginação inválida"})
+	}
+	produtos := make([]domain.Product, 0)
 	if err := database.DB.
 		Where("tenant_id = ?", tenantID).
 		Order("id desc").
+		Limit(limit).Offset(offset).
 		Find(&produtos).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"erro": "falha ao listar produtos",

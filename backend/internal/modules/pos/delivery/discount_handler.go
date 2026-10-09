@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
+	"titansystem-backend/internal/apicontract"
 	"titansystem-backend/internal/core/database"
 	"titansystem-backend/internal/modules/pos/domain"
 	"titansystem-backend/internal/modules/pos/usecase"
@@ -39,6 +40,10 @@ func GetSuggestions(c *fiber.Ctx) error {
 		return err
 	}
 
+	limit, offset, err := apicontract.PageQuery(c, "status")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Paginação inválida."})
+	}
 	statusFilter := c.Query("status", domain.DiscountStatusPending)
 	switch statusFilter {
 	case domain.DiscountStatusPending,
@@ -54,6 +59,7 @@ func GetSuggestions(c *fiber.Ctx) error {
 	if err := database.DB.
 		Where("tenant_id = ? AND status = ?", tenantID, statusFilter).
 		Order("id DESC").
+		Limit(limit).Offset(offset).
 		Find(&sugestoes).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Falha ao buscar sugestões.",

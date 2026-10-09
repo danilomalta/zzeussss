@@ -132,9 +132,9 @@ func TestOnlineReadsAndDiscountGenerationUseAuthenticatedCompany(t *testing.T) {
 				method := "GET"
 				switch route {
 				case "/api/v1/produtos/":
-					mock.ExpectQuery(`SELECT .* FROM "products" WHERE tenant_id = \$1`).WithArgs(tenant).WillReturnRows(sqlmock.NewRows([]string{"id", "tenant_id", "nome", "preco"}).AddRow(1, tenant, "Item da empresa", 2.5))
+					mock.ExpectQuery(`SELECT .* FROM "products" WHERE tenant_id = \$1.*LIMIT \$2`).WithArgs(tenant, 50).WillReturnRows(sqlmock.NewRows([]string{"id", "tenant_id", "nome", "preco"}).AddRow(1, tenant, "Item da empresa", 2.5))
 				case "/api/v1/discounts/suggestions":
-					mock.ExpectQuery(`SELECT .* FROM "discount_suggestions" WHERE \(tenant_id = \$1 AND status = \$2\)`).WithArgs(tenant, "PENDING").WillReturnRows(sqlmock.NewRows([]string{"id", "tenant_id", "status"}))
+					mock.ExpectQuery(`SELECT .* FROM "discount_suggestions" WHERE \(tenant_id = \$1 AND status = \$2\).*LIMIT \$3`).WithArgs(tenant, "PENDING", 50).WillReturnRows(sqlmock.NewRows([]string{"id", "tenant_id", "status"}))
 				case "/api/v1/discounts/suggest":
 					method = "POST"
 					mock.ExpectBegin()
@@ -143,7 +143,11 @@ func TestOnlineReadsAndDiscountGenerationUseAuthenticatedCompany(t *testing.T) {
 				}
 				app := fiber.New()
 				Registrar(app)
-				req := httptest.NewRequest(method, route+"?tenant_id=foreign", nil)
+				path := route
+				if method == "POST" {
+					path += "?tenant_id=foreign"
+				}
+				req := httptest.NewRequest(method, path, nil)
 				req.Header.Set("Authorization", "Bearer "+onlineToken(t, tenant, "owner"))
 				resp, err := app.Test(req)
 				if err != nil {

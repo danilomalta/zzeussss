@@ -1693,9 +1693,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/core/routes/routes.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato das listas online paginadas",
+          "url": "./online-lists.openapi.json"
+        }
       }
     },
     "/api/v1/discounts/suggestions/{id}/review": {
@@ -1747,9 +1751,13 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/core/routes/routes.go",
-        "x-state": "implemented"
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato das listas online paginadas",
+          "url": "./online-lists.openapi.json"
+        }
       },
       "post": {
         "operationId": "online_POST__api_v1_produtos_",

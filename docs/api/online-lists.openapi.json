@@ -1,0 +1,417 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — listas online paginadas",
+    "version": "1.0.0",
+    "description": "Base 5019567 com paginação da entrega 18. Não implementa sincronização comercial ou aprovação de descontos."
+  },
+  "paths": {
+    "/api/v1/produtos/": {
+      "get": {
+        "operationId": "onlineProductsPage",
+        "summary": "Lista produtos: admin, owner, manager, cashier ou stock",
+        "description": "Empresa deriva da sessão e vínculo vigente. Ordem id descendente. Página vazia retorna coleção vazia. Não há total, has_more ou snapshot entre páginas. Parâmetros desconhecidos, repetidos, vazios, sinal, fração e notação exponencial retornam 400; somente dígitos, até 10 caracteres para limit/offset. O limite passa a ser 50 por padrão; clientes que esperavam todos os registros precisam paginar.",
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 0,
+              "minimum": 0,
+              "maximum": 1000000000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página autorizada; count em sugestões é apenas o tamanho desta página.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/discounts/suggestions": {
+      "get": {
+        "operationId": "onlineDiscountSuggestionsPage",
+        "summary": "Lista sugestões: admin, owner ou manager",
+        "description": "Empresa deriva da sessão e vínculo vigente. Ordem id descendente. Página vazia retorna coleção vazia. Não há total, has_more ou snapshot entre páginas. Parâmetros desconhecidos, repetidos, vazios, sinal, fração e notação exponencial retornam 400; somente dígitos, até 10 caracteres para limit/offset. O limite passa a ser 50 por padrão; clientes que esperavam todos os registros precisam paginar.",
+        "security": [
+          {
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 0,
+              "minimum": 0,
+              "maximum": 1000000000
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "PENDING",
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED"
+              ]
+            },
+            "description": "Filtro legado; valor vazio usa PENDING. Parâmetro repetido é recusado."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página autorizada; count em sugestões é apenas o tamanho desta página.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou Error JSON opcional.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AccessToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "OnlineProduct": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "CreatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "UpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "DeletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "nome": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "preco": {
+            "type": "number",
+            "format": "double",
+            "description": "Representação legada float64 do catálogo online, não centavos do núcleo local. Migração monetária exata permanece pendente."
+          },
+          "sku": {
+            "type": "string"
+          },
+          "estoque": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "estoque_minimo": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ponto_reposicao": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "demanda_media_diaria": {
+            "type": "number",
+            "format": "double"
+          },
+          "variabilidade_demanda": {
+            "type": "number",
+            "format": "double"
+          },
+          "tempo_reposicao_dias": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "ultima_previsao_demanda_em": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "alerta_reposicao_ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ID",
+          "CreatedAt",
+          "UpdatedAt",
+          "DeletedAt",
+          "nome",
+          "descricao",
+          "preco",
+          "sku",
+          "estoque",
+          "ativo",
+          "estoque_minimo",
+          "ponto_reposicao",
+          "demanda_media_diaria",
+          "variabilidade_demanda",
+          "tempo_reposicao_dias",
+          "ultima_previsao_demanda_em",
+          "alerta_reposicao_ativo"
+        ],
+        "additionalProperties": false
+      },
+      "DiscountSuggestion": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "CreatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "UpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "DeletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "product_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "suggested_discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "suggested_range": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "criteria": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reviewed_by": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ID",
+          "CreatedAt",
+          "UpdatedAt",
+          "DeletedAt",
+          "product_id",
+          "suggested_discount",
+          "suggested_range",
+          "reason",
+          "criteria",
+          "status",
+          "reviewed_by"
+        ],
+        "additionalProperties": false
+      },
+      "ProductPage": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/OnlineProduct"
+        },
+        "maxItems": 100
+      },
+      "SuggestionPage": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "sugestoes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscountSuggestion"
+            },
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "count",
+          "sugestoes"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}
