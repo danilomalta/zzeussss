@@ -1,3 +1,4 @@
+import ProductionMaterials from './ProductionMaterials';
 import RecipeStateEditor from './RecipeStateEditor';
 import OrderStateEditor from './OrderStateEditor';
 import OrderPlanner from './OrderPlanner';
@@ -20,6 +21,7 @@ export default function LocalProduction(){
     <RecipeStateEditor/>
     <OrderPlanner/>
     <OrderStateEditor/>
+    <ProductionMaterials/>
     <ReadSection title="Versões das receitas"><form className="operation-form" onSubmit={e=>{e.preventDefault();loadRecipes();}}><label className="brand-field">ID da receita (opcional)<input maxLength={128} value={recipeID} onChange={e=>{setRecipeID(e.target.value);recipes.clear();}}/></label><button className="brand-primary" disabled={recipes.busy}>Consultar versões</button></form><ReadState task={recipes}/>
       {recipes.data&&<><p>{recipes.data.length?'Versões preservadas desta página.':'Nenhuma versão nesta página.'}</p>{recipes.data.map(v=><details key={v.version_id}><summary>{v.name} · versão {v.revision} · {q(v.yield_milli)} {v.output_unit}</summary><p className="operation-id">Receita: {v.recipe_id}<br/>Versão: {v.version_id}<br/>Produto resultante: {v.output_product_id}</p><ul>{v.ingredients.map(i=><li key={i.product_id}>{i.product_id}: {q(i.quantity_milli)} {i.unit}</li>)}</ul><button className="brand-secondary" onClick={()=>{setVersion(v.version_id);capacity.clear();}}>Usar na consulta de capacidade</button></details>)}<Pages offset={recipeOffset} more={recipes.data.length===50} busy={recipes.busy} change={loadRecipes}/></>}
     </ReadSection>
