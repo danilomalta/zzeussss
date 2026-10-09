@@ -241,6 +241,9 @@ func scanVersion(row interface{ Scan(...any) error }) (Version, error) {
 	if err = json.Unmarshal([]byte(body), &v.PublishInput); err != nil {
 		return Version{}, err
 	}
+	if _, _, err = normalize(v.PublishInput); err != nil || v.Revision < 1 || v.Revision > MaxRevision || v.ExpectedRevision != v.Revision-1 {
+		return Version{}, ErrConflict
+	}
 	return v, nil
 }
 
@@ -256,6 +259,9 @@ func Get(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.
 	v, err := scanVersion(tx.QueryRowContext(ctx, `SELECT request_json,revision,created_at,actor_id FROM production_recipe_versions WHERE tenant_id=? AND store_id=? AND version_id=?`, actor.TenantID, actor.StoreID, versionID))
 	if err != nil {
 		return Version{}, err
+	}
+	if v.VersionID != versionID {
+		return Version{}, ErrConflict
 	}
 	return v, tx.Commit()
 }
