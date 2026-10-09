@@ -707,6 +707,48 @@
       "path": "/api/v1/catalog/adjustments/exports/csv",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/produtos/:id/barcodes",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/produtos/:id/barcodes",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/produtos/:id/barcodes/:barcode_id/active",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/produtos/:id/barcodes/history",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/barcodes/lookup",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/barcodes/operations/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
     }
   ]
 }

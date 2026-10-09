@@ -72,6 +72,13 @@ func Registrar(app *fiber.App) {
 	produtos.Post("/:id/details", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.AlterarProduto("details"))
 	produtos.Post("/:id/price", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("price"))
 	produtos.Post("/:id/active", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("active"))
+
+	produtos.Get("/:id/barcodes", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock", "cashier"), catalogDelivery.ListarCodigosProduto(false))
+	produtos.Post("/:id/barcodes", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.AlterarCodigoProduto("add"))
+	produtos.Post("/:id/barcodes/:barcode_id/active", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.AlterarCodigoProduto("active"))
+	produtos.Get("/:id/barcodes/history", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ListarCodigosProduto(true))
+	negocios.Get("/catalog/barcodes/lookup", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock", "cashier"), catalogDelivery.LocalizarCodigoProduto)
+	negocios.Get("/catalog/barcodes/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.ConsultarOperacaoCodigo)
 	produtos.Get("/:id/history", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.HistoricoProduto)
 	negocios.Get("/catalog/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.ConsultarOperacaoCatalogo)
 

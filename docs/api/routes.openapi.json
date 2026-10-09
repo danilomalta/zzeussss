@@ -3957,6 +3957,476 @@
           "url": "./online-catalog-adjustment-export.openapi.json"
         }
       }
+    },
+    "/api/v1/produtos/{id}/barcodes": {
+      "get": {
+        "operationId": "online_barcode_ListarCodigos",
+        "summary": "ListarCodigos",
+        "description": "Papéis: admin/owner/manager/stock/cashier. Leitura sem escrita; query estrita e corpo GET recusado.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcodes.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Códigos de barras online",
+          "url": "./online-catalog-barcodes.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "online_barcode_AdicionarCodigo",
+        "summary": "AdicionarCodigo",
+        "description": "Papéis: admin/owner/manager/stock. Operação de escrita exige motivo e versões. Não permite mover/excluir código.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcodes.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-barcodes.openapi.json#/components/schemas/Add"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Códigos de barras online",
+          "url": "./online-catalog-barcodes.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/barcodes/{barcode_id}/active": {
+      "post": {
+        "operationId": "online_barcode_AtivarInativarCodigo",
+        "summary": "AtivarInativarCodigo",
+        "description": "Papéis: admin/owner/manager/stock. Operação de escrita exige motivo e versões. Não permite mover/excluir código.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "barcode_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID canônico minúsculo e não nulo."
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcodes.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-barcodes.openapi.json#/components/schemas/Active"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Códigos de barras online",
+          "url": "./online-catalog-barcodes.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/barcodes/history": {
+      "get": {
+        "operationId": "online_barcode_HistoricoCodigos",
+        "summary": "HistoricoCodigos",
+        "description": "Papéis: admin/owner/manager. Leitura sem escrita; query estrita e corpo GET recusado.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcodes.openapi.json#/components/schemas/History"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Códigos de barras online",
+          "url": "./online-catalog-barcodes.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/lookup": {
+      "get": {
+        "operationId": "online_barcode_BuscarPorCodigo",
+        "summary": "BuscarPorCodigo",
+        "description": "Papéis: admin/owner/manager/stock/cashier. Leitura sem escrita; query estrita e corpo GET recusado.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^([0-9]{8}|[0-9]{12}|[0-9]{13}|[0-9]{14})$",
+              "description": "GTIN como string, zeros preservados; valida dígito modulo10; não aceita todos zeros."
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcodes.openapi.json#/components/schemas/Lookup"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Códigos de barras online",
+          "url": "./online-catalog-barcodes.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/operations/{operation_id}": {
+      "get": {
+        "operationId": "online_barcode_ReciboCodigo",
+        "summary": "ReciboCodigo",
+        "description": "Papéis: admin/owner/manager/stock. Leitura sem escrita; query estrita e corpo GET recusado.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID canônico minúsculo e não nulo."
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcodes.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Códigos de barras online",
+          "url": "./online-catalog-barcodes.openapi.json"
+        }
+      }
     }
   },
   "components": {

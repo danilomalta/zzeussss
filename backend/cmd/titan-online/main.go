@@ -47,13 +47,19 @@ func run(args []string) error {
 		if err = onlinecatalog.MigrateAdjustments(ctx, db); err != nil {
 			return err
 		}
+		if err = onlinecatalog.MigrateBarcodes(ctx, db); err != nil {
+			return err
+		}
 		if err = onlinecatalog.CheckUndo(ctx, db); err != nil {
 			return err
 		}
 		if err = onlinecatalog.CheckImports(ctx, db); err != nil {
 			return err
 		}
-		return onlinecatalog.CheckAdjustments(ctx, db)
+		if err = onlinecatalog.CheckAdjustments(ctx, db); err != nil {
+			return err
+		}
+		return onlinecatalog.CheckBarcodes(ctx, db)
 	}
 	if args[0] == "check-catalog" {
 		if err = onlinecatalog.CheckSchema(ctx, db); err != nil {
@@ -71,7 +77,10 @@ func run(args []string) error {
 		if err = onlinecatalog.CheckImports(ctx, db); err != nil {
 			return err
 		}
-		return onlinecatalog.CheckAdjustments(ctx, db)
+		if err = onlinecatalog.CheckAdjustments(ctx, db); err != nil {
+			return err
+		}
+		return onlinecatalog.CheckBarcodes(ctx, db)
 	}
 	if args[0] == "migrate-sessions" {
 		if err = onlinesessions.Migrate(ctx, db); err != nil {

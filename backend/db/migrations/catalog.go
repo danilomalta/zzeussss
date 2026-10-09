@@ -28,3 +28,6 @@ var CatalogImportsSQL string
 
 //go:embed 000013_online_catalog_adjustments.sql
 var CatalogAdjustmentsSQL string
+
+//go:embed 000014_online_catalog_barcodes.sql
+var CatalogBarcodesSQL string

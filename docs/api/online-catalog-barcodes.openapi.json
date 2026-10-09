@@ -1,0 +1,772 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem — Múltiplos GTINs por produto online",
+    "version": "32.0",
+    "description": "Aliases de leitura da mesma unidade vendável: sem embalagem/multiplicador, balança, consulta GS1, fiscal ou integração com PDV SQLite. Até 50 códigos por produto incluindo inativos. Código imutável e permanentemente reservado na empresa. Produto versionado + recibo + outbox atômicos."
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Barcode": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "product_id",
+          "code",
+          "canonical_code",
+          "ativo",
+          "version",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID canônico minúsculo e não nulo."
+          },
+          "product_id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^([0-9]{8}|[0-9]{12}|[0-9]{13}|[0-9]{14})$",
+            "description": "GTIN como string, zeros preservados; valida dígito modulo10; não aceita todos zeros."
+          },
+          "canonical_code": {
+            "type": "string",
+            "pattern": "^[0-9]{14}$",
+            "description": "Preenchimento à esquerda com zeros; chave única na empresa mesmo inativada."
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Add": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_version",
+          "reason",
+          "code"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID canônico minúsculo e não nulo."
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Motivo obrigatório sem caracteres de controle; espaços externos normalizados."
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^([0-9]{8}|[0-9]{12}|[0-9]{13}|[0-9]{14})$",
+            "description": "GTIN como string, zeros preservados; valida dígito modulo10; não aceita todos zeros."
+          }
+        }
+      },
+      "Active": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_version",
+          "reason",
+          "expected_code_version",
+          "ativo"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID canônico minúsculo e não nulo."
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Motivo obrigatório sem caracteres de controle; espaços externos normalizados."
+          },
+          "expected_code_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "actor_id",
+          "action",
+          "reason",
+          "before",
+          "after",
+          "product_before",
+          "product_after",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID canônico minúsculo e não nulo."
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID canônico minúsculo e não nulo."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "add",
+              "active"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Motivo obrigatório sem caracteres de controle; espaços externos normalizados."
+          },
+          "before": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "product_id",
+              "code",
+              "canonical_code",
+              "ativo",
+              "version",
+              "created_at",
+              "updated_at"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "UUID canônico minúsculo e não nulo."
+              },
+              "product_id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "code": {
+                "type": "string",
+                "pattern": "^([0-9]{8}|[0-9]{12}|[0-9]{13}|[0-9]{14})$",
+                "description": "GTIN como string, zeros preservados; valida dígito modulo10; não aceita todos zeros."
+              },
+              "canonical_code": {
+                "type": "string",
+                "pattern": "^[0-9]{14}$",
+                "description": "Preenchimento à esquerda com zeros; chave única na empresa mesmo inativada."
+              },
+              "ativo": {
+                "type": "boolean"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "nullable": true
+          },
+          "after": {
+            "$ref": "#/components/schemas/Barcode"
+          },
+          "product_before": {
+            "$ref": "./online-catalog-management.openapi.json#/components/schemas/Product"
+          },
+          "product_after": {
+            "$ref": "./online-catalog-management.openapi.json#/components/schemas/Product"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Lookup": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "barcode",
+          "product"
+        ],
+        "properties": {
+          "barcode": {
+            "$ref": "#/components/schemas/Barcode"
+          },
+          "product": {
+            "$ref": "./online-catalog-management.openapi.json#/components/schemas/Product"
+          }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "limit",
+          "offset",
+          "total",
+          "has_more",
+          "product"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Barcode"
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "product": {
+            "$ref": "./online-catalog-management.openapi.json#/components/schemas/Product"
+          }
+        }
+      },
+      "History": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "limit",
+          "offset",
+          "total",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Receipt"
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/produtos/{id}/barcodes": {
+      "get": {
+        "operationId": "online_barcode_ListarCodigos",
+        "summary": "ListarCodigos",
+        "description": "Papéis: admin/owner/manager/stock/cashier. Leitura sem escrita; query estrita e corpo GET recusado.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "online_barcode_AdicionarCodigo",
+        "summary": "AdicionarCodigo",
+        "description": "Papéis: admin/owner/manager/stock. Operação de escrita exige motivo e versões. Não permite mover/excluir código.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Add"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/barcodes/{barcode_id}/active": {
+      "post": {
+        "operationId": "online_barcode_AtivarInativarCodigo",
+        "summary": "AtivarInativarCodigo",
+        "description": "Papéis: admin/owner/manager/stock. Operação de escrita exige motivo e versões. Não permite mover/excluir código.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "barcode_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID canônico minúsculo e não nulo."
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Active"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/barcodes/history": {
+      "get": {
+        "operationId": "online_barcode_HistoricoCodigos",
+        "summary": "HistoricoCodigos",
+        "description": "Papéis: admin/owner/manager. Leitura sem escrita; query estrita e corpo GET recusado.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/lookup": {
+      "get": {
+        "operationId": "online_barcode_BuscarPorCodigo",
+        "summary": "BuscarPorCodigo",
+        "description": "Papéis: admin/owner/manager/stock/cashier. Leitura sem escrita; query estrita e corpo GET recusado.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^([0-9]{8}|[0-9]{12}|[0-9]{13}|[0-9]{14})$",
+              "description": "GTIN como string, zeros preservados; valida dígito modulo10; não aceita todos zeros."
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Lookup"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/operations/{operation_id}": {
+      "get": {
+        "operationId": "online_barcode_ReciboCodigo",
+        "summary": "ReciboCodigo",
+        "description": "Papéis: admin/owner/manager/stock. Leitura sem escrita; query estrita e corpo GET recusado.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID canônico minúsculo e não nulo."
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita inválida; duplicatas/desconhecidos/null/coerções recusados"
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/código/recibo ausente no escopo; lookup também exige produto e código ativos"
+          },
+          "409": {
+            "description": "Versões, identidade ou GTIN duplicado/em capacidade; nenhum efeito parcial"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar UUID antes de repetir"
+          },
+          "200": {
+            "description": "Resultado real com cache no-store; no replay recibo original, não estado atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -93,6 +93,9 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if onlinecatalog.MigrateAdjustments(ctx, sqlDB) != nil || onlinecatalog.MigrateAdjustments(ctx, sqlDB) != nil || onlinecatalog.CheckAdjustments(ctx, sqlDB) != nil {
 		t.Fatal("migração reajuste falhou")
 	}
+	if onlinecatalog.MigrateBarcodes(ctx, sqlDB) != nil || onlinecatalog.MigrateBarcodes(ctx, sqlDB) != nil || onlinecatalog.CheckBarcodes(ctx, sqlDB) != nil {
+		t.Fatal("migração de códigos falhou")
+	}
 	tenantA, tenantB, userA, userB, sessionA, sessionB := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	for _, actor := range []struct{ tenant, user, session string }{{tenantA, userA, sessionA}, {tenantB, userB, sessionB}} {
 		exec(`INSERT INTO tenants(id,status) VALUES($1,'active')`, actor.tenant)
@@ -1118,6 +1121,162 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	}
 	checkProduct(adjustID1, 5, 0, true)
 	checkProduct(adjustID2, 4, 221, true)
+	// Multiple online GTINs, versioned lifecycle, duplicate protection and recovery.
+	app = fiber.New()
+	Registrar(app)
+	barcodeProductA := request("POST", "/api/v1/produtos/", `{"nome":"Leitura A","sku":"barcode-A","preco":5.25}`, tokenA, 201)
+	barcodeProductB := request("POST", "/api/v1/produtos/", `{"nome":"Leitura B","sku":"barcode-B","preco":7.50}`, tokenA, 201)
+	barcodeProductForeign := request("POST", "/api/v1/produtos/", `{"nome":"Leitura outra empresa","sku":"barcode-foreign","preco":9}`, tokenB, 201)
+	barcodeProductID := int64(barcodeProductA["ID"].(float64))
+	barcodeOtherID := int64(barcodeProductB["ID"].(float64))
+	barcodeForeignID := int64(barcodeProductForeign["ID"].(float64))
+	firstCodeInput := onlinecatalog.BarcodeInput{OperationID: uuid.NewString(), ExpectedVersion: 1, Code: "4006381333931", Reason: "Código da unidade conferido"}
+	firstCodeJSON, _ := json.Marshal(firstCodeInput)
+	firstCode := request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes", barcodeProductID), string(firstCodeJSON), tokenA, 200)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes", barcodeProductID), string(firstCodeJSON), tokenA, 200)
+	checkProduct(barcodeProductID, 2, 525, true)
+	if firstCode["after"].(map[string]interface{})["canonical_code"] != "04006381333931" {
+		t.Fatal("GTIN não normalizado")
+	}
+	barcodeLookup := request("GET", "/api/v1/catalog/barcodes/lookup?code=04006381333931", "", tokenA, 200)
+	if barcodeLookup["product"].(map[string]interface{})["id"] != float64(barcodeProductID) || barcodeLookup["product"].(map[string]interface{})["price_cents"] != float64(525) {
+		t.Fatal("leitura não resolveu produto/preço real")
+	}
+	secondCodeInput := onlinecatalog.BarcodeInput{OperationID: uuid.NewString(), ExpectedVersion: 2, Code: "036000291452", Reason: "Código alternativo conferido"}
+	secondCodeJSON, _ := json.Marshal(secondCodeInput)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes", barcodeProductID), string(secondCodeJSON), tokenA, 200)
+	checkProduct(barcodeProductID, 3, 525, true)
+	codesPage := request("GET", fmt.Sprintf("/api/v1/produtos/%d/barcodes?limit=1", barcodeProductID), "", tokenA, 200)
+	if codesPage["total"] != float64(2) || codesPage["has_more"] != true || len(codesPage["items"].([]interface{})) != 1 {
+		t.Fatal("lista de códigos não paginada")
+	}
+	dupCode := onlinecatalog.BarcodeInput{OperationID: uuid.NewString(), ExpectedVersion: 1, Code: "04006381333931", Reason: "Tentativa equivalente"}
+	dupJSON, _ := json.Marshal(dupCode)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes", barcodeOtherID), string(dupJSON), tokenA, 409)
+	checkProduct(barcodeOtherID, 1, 750, true)
+	dupCode.OperationID = uuid.NewString()
+	dupJSON, _ = json.Marshal(dupCode)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes", barcodeForeignID), string(dupJSON), tokenB, 200)
+	foreignCode := request("GET", "/api/v1/catalog/barcodes/lookup?code=4006381333931", "", tokenB, 200)
+	if foreignCode["product"].(map[string]interface{})["id"] != float64(barcodeForeignID) {
+		t.Fatal("código resolveu empresa incorreta")
+	}
+	request("GET", "/api/v1/catalog/barcodes/operations/"+firstCodeInput.OperationID, "", tokenB, 404)
+	request("GET", "/api/v1/catalog/barcodes/operations/"+firstCodeInput.OperationID, "", otherToken, 404)
+	stateFalse := false
+	disableCode := onlinecatalog.BarcodeInput{OperationID: uuid.NewString(), ExpectedVersion: 3, ExpectedCodeVersion: 1, Active: &stateFalse, Reason: "Etiqueta antiga"}
+	disableJSON, _ := json.Marshal(disableCode)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes/%s/active", barcodeProductID, firstCodeInput.OperationID), string(disableJSON), tokenA, 200)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes/%s/active", barcodeProductID, firstCodeInput.OperationID), string(disableJSON), tokenA, 200)
+	checkProduct(barcodeProductID, 4, 525, true)
+	request("GET", "/api/v1/catalog/barcodes/lookup?code=4006381333931", "", tokenA, 404)
+	request("GET", "/api/v1/catalog/barcodes/lookup?code=00036000291452", "", tokenA, 200)
+	inactiveCodes := request("GET", fmt.Sprintf("/api/v1/produtos/%d/barcodes?state=inactive", barcodeProductID), "", tokenA, 200)
+	if inactiveCodes["total"] != float64(1) {
+		t.Fatal("inativação não listada")
+	}
+	dupCode.OperationID = uuid.NewString()
+	dupJSON, _ = json.Marshal(dupCode)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes", barcodeOtherID), string(dupJSON), tokenA, 409)
+	stateTrue := true
+	reactivateCode := onlinecatalog.BarcodeInput{OperationID: uuid.NewString(), ExpectedVersion: 4, ExpectedCodeVersion: 2, Active: &stateTrue, Reason: "Etiqueta reconferida"}
+	reactivateJSON, _ := json.Marshal(reactivateCode)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes/%s/active", barcodeProductID, firstCodeInput.OperationID), string(reactivateJSON), tokenA, 200)
+	checkProduct(barcodeProductID, 5, 525, true)
+	request("GET", "/api/v1/catalog/barcodes/lookup?code=4006381333931", "", tokenA, 200)
+	reactivateCode.OperationID = uuid.NewString()
+	reactivateCode.ExpectedVersion = 5
+	reactivateCode.ExpectedCodeVersion = 3
+	reactivateJSON, _ = json.Marshal(reactivateCode)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes/%s/active", barcodeProductID, firstCodeInput.OperationID), string(reactivateJSON), tokenA, 409)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/price", barcodeProductID), fmt.Sprintf(`{"operation_id":%q,"expected_version":5,"price_cents":600}`, uuid.NewString()), tokenA, 200)
+	checkProduct(barcodeProductID, 6, 600, true)
+	originalCodeReceipt := request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes", barcodeProductID), string(firstCodeJSON), tokenA, 200)
+	if originalCodeReceipt["product_after"].(map[string]interface{})["price_cents"] != float64(525) || originalCodeReceipt["product_after"].(map[string]interface{})["version"] != float64(2) {
+		t.Fatal("replay reescreveu recibo com estado atual")
+	}
+	barcodeHistory := request("GET", fmt.Sprintf("/api/v1/produtos/%d/barcodes/history?limit=2", barcodeProductID), "", otherToken, 200)
+	if barcodeHistory["total"] != float64(4) || barcodeHistory["has_more"] != true {
+		t.Fatal("auditoria administrativa incompleta")
+	}
+	wrongProductCode := disableCode
+	wrongProductCode.OperationID = uuid.NewString()
+	wrongProductCode.ExpectedVersion = 1
+	wrongProductJSON, _ := json.Marshal(wrongProductCode)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes/%s/active", barcodeOtherID, firstCodeInput.OperationID), string(wrongProductJSON), tokenA, 404)
+	staleCode := disableCode
+	staleCode.OperationID = uuid.NewString()
+	staleCode.ExpectedVersion = 6
+	staleCode.ExpectedCodeVersion = 1
+	staleJSON, _ := json.Marshal(staleCode)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes/%s/active", barcodeProductID, firstCodeInput.OperationID), string(staleJSON), tokenA, 409)
+	exec(`CREATE FUNCTION refuse_barcode_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'isolated fixture' USING ERRCODE='23514'; END $$; CREATE TRIGGER refuse_barcode_event BEFORE INSERT ON online_catalog_barcode_outbox FOR EACH ROW EXECUTE FUNCTION refuse_barcode_event()`)
+	lateCode := onlinecatalog.BarcodeInput{OperationID: uuid.NewString(), ExpectedVersion: 6, Code: "96385074", Reason: "Rollback tardio conferido"}
+	if _, e = store.ChangeBarcode(ctx, actor, barcodeProductID, "", "add", lateCode); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("falha outbox de código publicou sucesso")
+	}
+	checkProduct(barcodeProductID, 6, 600, true)
+	var lateCodeCount int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_barcodes WHERE tenant_id=$1 AND canonical_code='00000096385074'`, tenantA).Scan(&lateCodeCount) != nil || lateCodeCount != 0 {
+		t.Fatal("rollback preservou código parcial")
+	}
+	if _, e = store.BarcodeOperation(ctx, actor, lateCode.OperationID); e != onlinecatalog.ErrMissing {
+		t.Fatal("rollback preservou recibo parcial")
+	}
+	exec(`ALTER TABLE online_catalog_barcode_outbox DISABLE TRIGGER refuse_barcode_event`)
+	// Independent operations and products racing for the same code cannot both win.
+	concurrentCodeProduct1 := request("POST", "/api/v1/produtos/", `{"nome":"Concorrência código 1","sku":"concurrent-code-1","preco":1}`, tokenA, 201)
+	concurrentCodeProduct2 := request("POST", "/api/v1/produtos/", `{"nome":"Concorrência código 2","sku":"concurrent-code-2","preco":1}`, tokenA, 201)
+	concurrentCodeProducts := []int64{int64(concurrentCodeProduct1["ID"].(float64)), int64(concurrentCodeProduct2["ID"].(float64))}
+	codeErrors := make(chan error, 2)
+	for _, id := range concurrentCodeProducts {
+		mutationWG.Add(1)
+		go func(product int64) {
+			defer mutationWG.Done()
+			input := lateCode
+			input.OperationID = uuid.NewString()
+			input.ExpectedVersion = 1
+			_, e := store.ChangeBarcode(ctx, actor, product, "", "add", input)
+			codeErrors <- e
+		}(id)
+	}
+	mutationWG.Wait()
+	close(codeErrors)
+	codeWins, codeConflicts := 0, 0
+	for e := range codeErrors {
+		if e == nil {
+			codeWins++
+		} else if e == onlinecatalog.ErrConflict {
+			codeConflicts++
+		} else {
+			t.Fatal("concorrência de código falhou")
+		}
+	}
+	if codeWins != 1 || codeConflicts != 1 {
+		t.Fatal("código atribuído a dois produtos")
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_barcodes WHERE tenant_id=$1 AND canonical_code='00000096385074'`, tenantA).Scan(&lateCodeCount) != nil || lateCodeCount != 1 {
+		t.Fatal("duplicata concorrente persistiu")
+	}
+	// Inactive product blocks every code, even if the alias remains active.
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/active", barcodeProductID), fmt.Sprintf(`{"operation_id":%q,"expected_version":6,"ativo":false}`, uuid.NewString()), tokenA, 200)
+	request("GET", "/api/v1/catalog/barcodes/lookup?code=4006381333931", "", tokenA, 404)
+	request("GET", "/api/v1/catalog/barcodes/lookup?code=036000291452", "", tokenA, 404)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/active", barcodeProductID), fmt.Sprintf(`{"operation_id":%q,"expected_version":7,"ativo":true}`, uuid.NewString()), tokenA, 200)
+	request("GET", "/api/v1/catalog/barcodes/lookup?code=4006381333931", "", tokenA, 200)
+	var barcodeChecksum string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_barcode_migrations WHERE version=14`).Scan(&barcodeChecksum) != nil {
+		t.Fatal("checksum código ausente")
+	}
+	exec(`UPDATE online_catalog_barcode_migrations SET version=15 WHERE version=14`)
+	if onlinecatalog.MigrateBarcodes(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.CheckBarcodes(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema código futuro aceito")
+	}
+	exec(`UPDATE online_catalog_barcode_migrations SET version=14,checksum='tampered' WHERE version=15`)
+	if onlinecatalog.MigrateBarcodes(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema código adulterado aceito")
+	}
+	exec(`UPDATE online_catalog_barcode_migrations SET checksum=$1 WHERE version=14`, barcodeChecksum)
 	var adjustmentChecksum string
 	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_adjustment_migrations WHERE version=13`).Scan(&adjustmentChecksum) != nil {
 		t.Fatal("checksum reajuste ausente")

@@ -177,3 +177,5 @@ Entrega 25 consolidada: cadastro online com Idempotency-Key obrigatório (428 se
 - Entrega 30: reajuste percentual por lote explícito de produtos/versões, centavos exatos, motivo, prévia, auditoria, recibo e histórico. PostgreSQL 13 explícito; sem custo/margem ou segunda aprovação. Ver documento 105.
 
 - Entrega 31: relatório histórico de reajustes percentuais, filtros, CSV protegido e snapshot por página. Sem migração adicional ou exportação de outras modalidades; ver documento 106.
+
+- Entrega 32: múltiplos GTINs por produto online, duplicidade canônica por empresa, lifecycle versionado e lookup real. Migração PostgreSQL 14 explícita; sem embalagem, balança, PDV SQLite ou fiscal. Ver documento 107.
