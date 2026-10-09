@@ -3,3 +3,6 @@ export interface ProductionOrder {id:string;version_id:string;location_id:string
 export interface OrderPage {total_count:number;limit:number;has_more:boolean;items:ProductionOrder[]}
 export interface Capacity {location_id:string;measured_at:string;alternatives:{version_id:string;revision:number;output_unit:string;yield_per_batch_milli:number;possible_batches:number;possible_output_milli:number;limiting_product_ids:string[];materials:{product_id:string;recipe_unit:string;stock_unit:string;required_milli:number;stock_milli:number;conversion_numerator:number;conversion_denominator:number;possible_batches:number;limiting:boolean}[]}[]}
 export function createProductionRead(fetcher?:typeof fetch):{versions(token:string,offset?:number,recipeID?:string):Promise<RecipeVersion[]>;orders(token:string,status?:string,offset?:number):Promise<OrderPage>;capacity(token:string,version:string,location:string):Promise<Capacity>};
+
+export function validRecipeVersion(v:unknown):boolean;
+export function validProductionOrder(v:unknown):boolean;

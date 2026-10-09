@@ -1,0 +1,80 @@
+import {LocalAPIError} from './localClient.mjs';
+import {id,integer,positive,unit,readAPI} from './operationsRead.mjs';
+import {validRecipeVersion,validProductionOrder} from './productionRead.mjs';
+const fields={recipe:['operation_id','recipe_id','version_id','expected_revision','name','output_product_id','output_unit','yield_milli','ingredients'],order:['operation_id','order_id','version_id','location_id','responsible_id','planned_batches'],state:['operation_id','order_id','expected_revision','status','reason']};
+const fail=message=>{throw new LocalAPIError(0,message || 'Dados de produção inválidos. A operação pendente foi preservada.');};
+const exactFields=(v,keys)=>v && typeof v==='object' && !Array.isArray(v) && Object.keys(v).length===keys.length && keys.every(k=>Object.hasOwn(v,k));
+const shortText=v=>typeof v==='string' && v.trim()===v && v.length>0 && new TextEncoder().encode(v).length<=255;
+export function validProductionInput(kind,v){
+ if(!fields[kind] || !exactFields(v,fields[kind]) || !id(v.operation_id))return false;
+ if(kind==='order')return ['order_id','version_id','location_id','responsible_id'].every(k=>id(v[k])) && positive(v.planned_batches);
+ if(!integer(v.expected_revision) || v.expected_revision>=2147483647)return false;
+ if(kind==='state')return id(v.order_id) && v.expected_revision>0 && ['approved','cancelled'].includes(v.status) && shortText(v.reason);
+ return id(v.recipe_id) && id(v.version_id) && id(v.output_product_id) && unit(v.output_unit) && shortText(v.name) && positive(v.yield_milli) && Array.isArray(v.ingredients) && v.ingredients.length>0 && v.ingredients.length<=100 && v.ingredients.every(i=>exactFields(i,['product_id','unit','quantity_milli']) && id(i.product_id) && i.product_id!==v.output_product_id && unit(i.unit) && positive(i.quantity_milli)) && new Set(v.ingredients.map(i=>i.product_id)).size===v.ingredients.length;
+}
+function canonical(kind,input){
+ const v=Object.fromEntries(fields[kind].map(k=>[k,input[k]]));
+ if(kind==='recipe')v.ingredients=input.ingredients.map(i=>({product_id:i.product_id,unit:i.unit,quantity_milli:i.quantity_milli})).sort((a,b)=>a.product_id<b.product_id?-1:a.product_id>b.product_id?1:0);
+ return JSON.stringify(v);
+}
+function validResult(kind,r,input){
+ if(!r || typeof r.repeated!=='boolean' || !positive(r.revision))return false;
+ if(kind==='recipe')return r.recipe_id===input.recipe_id && r.version_id===input.version_id && r.revision===input.expected_revision+1;
+ return r.order_id===input.order_id && r.revision===(kind==='order'?1:input.expected_revision+1) && r.status===(kind==='order'?'planned':input.status);
+}
+export function parseProductionQuantity(value){
+ const s=value.trim();if(s.length>32 || !/^\d+(?:[.,]\d{1,3})?$/.test(s))fail('Use quantidade positiva com até três casas decimais, sem separador de milhar.');
+ const [whole,fraction='']=s.replace(',','.').split('.'),v=BigInt(whole)*1000n+BigInt(fraction.padEnd(3,'0'));
+ if(v<1n || v>BigInt(Number.MAX_SAFE_INTEGER))fail('Quantidade fora do intervalo exato suportado.');return Number(v);
+}
+export function parseProductionInteger(value,allowZero=false){
+ if(!/^\d{1,16}$/.test(value.trim()))fail('Informe um número inteiro, sem casas decimais.');
+ const v=BigInt(value.trim());if(v<(allowZero?0n:1n)||v>BigInt(Number.MAX_SAFE_INTEGER))fail('Número inteiro fora do intervalo suportado.');return Number(v);
+}
+export function plannedPreview(recipe,batches){
+ if(!validRecipeVersion(recipe)||!positive(batches))fail();
+ const output=BigInt(recipe.yield_milli)*BigInt(batches),ingredients=recipe.ingredients.map(i=>({...i,planned_milli:BigInt(i.quantity_milli)*BigInt(batches)}));
+ if(output>BigInt(Number.MAX_SAFE_INTEGER)||ingredients.some(i=>i.planned_milli>BigInt(Number.MAX_SAFE_INTEGER)))fail('O planejamento ultrapassa o limite exato de quantidade.');
+ return {output_milli:Number(output),ingredients:ingredients.map(i=>({...i,planned_milli:Number(i.planned_milli)}))};
+}
+export function createProductionMutations(fetcher=globalThis.fetch){
+ const get=readAPI(fetcher);
+ return {
+  async version(token,versionID){if(!id(versionID))fail();return get('/production/recipe-versions/'+encodeURIComponent(versionID),token,v=>validRecipeVersion(v)&&v.version_id===versionID);},
+  async order(token,orderID){if(!id(orderID))fail();return get('/production/orders/'+encodeURIComponent(orderID),token,v=>validProductionOrder(v)&&v.id===orderID);},
+  async operation(token,kind,input){
+   if(!validProductionInput(kind,input))fail();
+   const v=await get(`/production/operations/${kind}/${encodeURIComponent(input.operation_id)}`,token,v=>v && v.kind===kind && validProductionInput(kind,v.input) && canonical(kind,v.input)===canonical(kind,input) && validResult(kind,v.result,input));return v.result;
+  },
+  async write(token,kind,input){
+   if(!token||!validProductionInput(kind,input))fail();
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
+   try {
+    const r=await fetcher('/local/v1/production/'+({recipe:'recipe-versions',order:'orders',state:'orders/state'})[kind],{method:'POST',signal:controller.signal,credentials:'omit',cache:'no-store',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(input)});
+    if(!r.ok)throw new LocalAPIError(r.status,({400:'Confira quantidades, unidades e referências da produção.',401:'Sessão expirada ou revogada.',403:'Permissão ou contrato de produção indisponível.',404:'Referência não encontrada nesta loja.',409:'Revisão, estado, referência ou operação em conflito. Consulte antes de corrigir.',503:'Verificação do contrato indisponível.'})[r.status] || 'Gravação de produção recusada.');
+    const v=await r.json();if(!validResult(kind,v,input))fail('Resposta de gravação incompatível. Consulte a operação pendente.');return v;
+   }catch(e){if(e instanceof LocalAPIError)throw e;fail('Resposta não confirmada. Consulte ou repita a mesma operação pendente.');}finally{clearTimeout(timer);}
+  },
+ };
+}
+export function productionPendingKey(s){if(!s||!['tenant_id','store_id','device_id','identity_id'].every(k=>id(s[k])))fail();return 'titan-production:'+JSON.stringify([s.tenant_id,s.store_id,s.device_id,s.identity_id]);}
+export function readProductionPending(storage,key){
+ let raw;try{raw=storage.getItem(key);}catch{fail('O navegador não permitiu ler a operação pendente. Gravações bloqueadas.');}
+ if(raw===null)return null;let v;try{v=JSON.parse(raw);}catch{fail('Operação pendente corrompida. Preserve os dados do navegador.');}
+ if(!exactFields(v,['kind','input','uncertain'])||typeof v.uncertain!=='boolean'||!validProductionInput(v.kind,v.input))fail();return v;
+}
+function save(storage,key,v){try{const raw=JSON.stringify(v);storage.setItem(key,raw);if(storage.getItem(key)!==raw)fail();}catch{fail('Não foi possível preservar a operação no navegador. Nenhuma nova gravação será enviada.');}}
+function remove(storage,key,p){try{if(storage.getItem(key)!==JSON.stringify(p))fail();storage.removeItem(key);if(storage.getItem(key)!==null)fail();}catch{fail('Não foi possível limpar a operação confirmada. Consulte novamente; não crie outra operação.');}}
+export function persistProductionPending(storage,key,operation){if(readProductionPending(storage,key))fail('Resolva a produção pendente antes de iniciar outra operação.');if(!validProductionInput(operation.kind,operation.input))fail();save(storage,key,{kind:operation.kind,input:operation.input,uncertain:false});}
+// Caller holds a Web Lock shared by all three production forms and browser tabs.
+export async function resolveProductionPending(client,token,storage,key,send=false,discard=false){
+ const p=readProductionPending(storage,key);if(!p)return null;let result;
+ try{result=await client.operation(token,p.kind,p.input);}catch(e){if(!(e instanceof LocalAPIError)||e.status!==404)throw e;}
+ if(result){remove(storage,key,p);return {state:'confirmed',result};}
+ if(discard){if(p.uncertain)fail('Resultado incerto: não descarte. Consulte ou repita a mesma operação.');remove(storage,key,p);return {state:'discarded'};}
+ if(!send)return {state:'missing'};
+ const uncertain={...p,uncertain:true};save(storage,key,uncertain);
+ try{await client.write(token,p.kind,p.input);}catch(e){if(!p.uncertain && e instanceof LocalAPIError && [400,403,404,409,413].includes(e.status))save(storage,key,p);throw e;}
+ // Successful POST alone is insufficient; confirm the immutable receipt.
+ result=await client.operation(token,p.kind,p.input);remove(storage,key,uncertain);return {state:'confirmed',result};
+}
