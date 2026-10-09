@@ -3,7 +3,7 @@
   "info": {
     "title": "TitanSystem P06 measured production result",
     "version": "P06",
-    "description": "One immutable completion per order after P05 consumption. Quantities are integer thousandths of the snapshot output unit. Product, location and plan are obtained from the immutable order. Does not consume ingredients again. Tenant/store come only from the verified session. Query parameters are refused."
+    "description": "One immutable completion per order after P05 consumption. Quantities are integer thousandths of the snapshot output unit. Product, location and plan are obtained from the immutable order. Does not consume ingredients again. Tenant/store come only from the verified session. Query parameters are refused. P08: a configured stage plan must have its complete contiguous definition and all stages completed before registering a new result. Orders without a plan retain the P06 contract. Authorized exact result replay still returns the original result."
   },
   "security": [
     {

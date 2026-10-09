@@ -171,6 +171,9 @@ func CompleteProduction(ctx context.Context, db *sql.DB, license *entitlementsto
 	if order.Status != "approved" || order.Revision != in.ExpectedRevision {
 		return CompletionResult{}, ErrConflict
 	}
+	if err = guardStagesCompleted(ctx, tx, a, order.ID); err != nil {
+		return CompletionResult{}, err
+	}
 	if _, _, err = normalize(order.Recipe.PublishInput); err != nil || order.PlannedBatches < 1 || order.PlannedBatches > MaxQuantity/order.Recipe.YieldMilli || order.PlannedOutputMilli != order.PlannedBatches*order.Recipe.YieldMilli {
 		return CompletionResult{}, ErrResult
 	}

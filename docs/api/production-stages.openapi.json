@@ -1,0 +1,585 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P08 production stages",
+    "version": "P08",
+    "description": "Optional immutable stage definitions per frozen order. Current manage_production and device authorization are always required. Writes require an active Production contract. Stage state changes require the actor to be the assigned responsible, consumed P05 ingredients, an approved order and all earlier stages completed. Stages never reserve, consume or produce stock. P06 completion now rejects incomplete configured plans; orders without plans retain the P06 contract. Strict required fields: unknown, duplicate, null and trailing JSON rejected, including nested stage definitions."
+  },
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/local/v1/production/stage-plans": {
+      "post": {
+        "operationId": "configureProductionStages",
+        "description": "Configure exactly once on a planned or approved order with no active or consumed ingredient reservation. Released reservations are allowed. Definition and assignment cannot later be edited. Authorized replay returns the original configuration result, even after execution or cancellation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid or ambiguous JSON/query"
+          },
+          "401": {
+            "description": "Verified human session required"
+          },
+          "403": {
+            "description": "Human/device permission, assigned executor, or write contract denied"
+          },
+          "404": {
+            "description": "Scoped reference or optional stage plan not found"
+          },
+          "409": {
+            "description": "State, idempotency, revision, missing consumption, incomplete sequence or existing plan conflict"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Success or authorized historical replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body too large (plan: 16384 bytes; state: 8192 bytes)"
+          },
+          "503": {
+            "description": "Contract store unavailable"
+          },
+          "201": {
+            "description": "Plan configured; no stock operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/stages/state": {
+      "post": {
+        "operationId": "changeProductionStage",
+        "description": "pending revision 1 -> running revision 2 -> completed revision 3. Only the assigned active authorized human can execute. Cannot skip, reopen or run later steps simultaneously. Same operation, store, device, author, kind and normalized request replay the original result; changed payload conflicts.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid or ambiguous JSON/query"
+          },
+          "401": {
+            "description": "Verified human session required"
+          },
+          "403": {
+            "description": "Human/device permission, assigned executor, or write contract denied"
+          },
+          "404": {
+            "description": "Scoped reference or optional stage plan not found"
+          },
+          "409": {
+            "description": "State, idempotency, revision, missing consumption, incomplete sequence or existing plan conflict"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Success or authorized historical replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body too large (plan: 16384 bytes; state: 8192 bytes)"
+          },
+          "503": {
+            "description": "Contract store unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/production/orders/{id}/stages": {
+      "get": {
+        "operationId": "getProductionStages",
+        "description": "Immutable definition with current states, ordered by position. An order without a plan returns 404. Reads remain available after contract expiry.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid or ambiguous JSON/query"
+          },
+          "401": {
+            "description": "Verified human session required"
+          },
+          "403": {
+            "description": "Human/device permission, assigned executor, or write contract denied"
+          },
+          "404": {
+            "description": "Scoped reference or optional stage plan not found"
+          },
+          "409": {
+            "description": "State, idempotency, revision, missing consumption, incomplete sequence or existing plan conflict"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Scoped historical data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plan"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/orders/{id}/stages/history": {
+      "get": {
+        "operationId": "getProductionStageHistory",
+        "description": "Configuration and transitions with exact normalized requests and original results. Up to 50 events ordered by local persisted sequence; only a single offset query parameter is allowed.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid or ambiguous JSON/query"
+          },
+          "401": {
+            "description": "Verified human session required"
+          },
+          "403": {
+            "description": "Human/device permission, assigned executor, or write contract denied"
+          },
+          "404": {
+            "description": "Scoped reference or optional stage plan not found"
+          },
+          "409": {
+            "description": "State, idempotency, revision, missing consumption, incomplete sequence or existing plan conflict"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Scoped historical data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "StageDefinition": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stage_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Trimmed name, at most 120 UTF-8 bytes."
+          },
+          "responsible_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          }
+        },
+        "required": [
+          "stage_id",
+          "name",
+          "responsible_id"
+        ]
+      },
+      "ConfigureInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "stages": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/StageDefinition"
+            },
+            "description": "Array order becomes immutable positions 1..N. Stage IDs must be unique within this order."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          }
+        },
+        "required": [
+          "operation_id",
+          "order_id",
+          "stages",
+          "reason"
+        ]
+      },
+      "StateInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "stage_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "1 to start pending; 2 to finish running. Other positive values conflict."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "completed"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          }
+        },
+        "required": [
+          "operation_id",
+          "order_id",
+          "stage_id",
+          "expected_revision",
+          "status",
+          "reason"
+        ]
+      },
+      "WriteResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "stage_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "configured",
+              "running",
+              "completed"
+            ]
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "order_id",
+          "revision",
+          "status",
+          "repeated"
+        ]
+      },
+      "Stage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stage_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Trimmed name, at most 120 UTF-8 bytes."
+          },
+          "responsible_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "completed"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "stage_id",
+          "name",
+          "responsible_id",
+          "position",
+          "status",
+          "revision",
+          "updated_at"
+        ]
+      },
+      "Plan": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/Stage"
+            }
+          }
+        },
+        "required": [
+          "order_id",
+          "created_by",
+          "created_at",
+          "items"
+        ]
+      },
+      "Event": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "Local persisted sequence, ordered within this history; gaps are allowed."
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "configured",
+              "running",
+              "completed"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "request": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ConfigureInput"
+              },
+              {
+                "$ref": "#/components/schemas/StateInput"
+              }
+            ]
+          },
+          "result": {
+            "$ref": "#/components/schemas/WriteResult"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "sequence",
+          "operation_id",
+          "device_id",
+          "actor_id",
+          "kind",
+          "reason",
+          "request",
+          "result",
+          "created_at"
+        ]
+      },
+      "History": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      }
+    }
+  }
+}
