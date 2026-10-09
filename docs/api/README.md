@@ -81,3 +81,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - `online-catalog-undo.openapi.json`: prévia, reversão compensatória, recibo recuperável e consulta do vínculo ao original (entrega 27).
 
 - `online-catalog-imports.openapi.json`: validação e prévia CSV, aplicação atômica, recuperação do recibo e consulta administrativa da origem (entrega 28).
+
+- `online-catalog-export.openapi.json`: exportação CSV com filtros, paginação, preço/status separados, prévia JSON e download (entrega 29).

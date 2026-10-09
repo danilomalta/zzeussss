@@ -1,0 +1,381 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem — Exportação paginada CSV do catálogo online",
+    "version": "29.0",
+    "description": "Leitura autorizada owner/admin/manager, snapshot consistente por página. CSV editável para importação 28, sem escrita ou auditoria fictícia. Preço e ativação em formatos separados. Não exporta outros módulos, custos, fiscal ou fornecedores."
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "ExportPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action",
+          "q",
+          "ativo",
+          "limit",
+          "offset",
+          "total",
+          "has_more",
+          "source_hash",
+          "csv",
+          "items",
+          "generated_at"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "price",
+              "active"
+            ]
+          },
+          "q": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "ativo": {
+            "type": "string",
+            "enum": [
+              "all",
+              "active",
+              "inactive"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "csv": {
+            "type": "string",
+            "description": "UTF-8 e cabeçalho sku;expected_version;preco;ativo. Uma página, sem BOM. Até 64 KiB. SKU é preservado literalmente, sem prefixo para planilha."
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "./online-catalog-management.openapi.json#/components/schemas/Product"
+            }
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "next_offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000,
+            "description": "Presente somente quando has_more é true; continue com os mesmos filtros."
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/catalog/exports/preview": {
+      "get": {
+        "operationId": "online_catalog_export_preview",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "action",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "price",
+                "active"
+              ],
+              "default": "price"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            },
+            "description": "Nome ou SKU: ILIKE com %, _ e barra tratados como literais. Sem busca aproximada por acento/erro."
+          },
+          {
+            "in": "query",
+            "name": "ativo",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "description": "Página do catálogo com filtros e ordem ascendente por ID. Parâmetros extras/duplicados, action/ativo vazios e corpo em GET são recusados. Não há snapshot global entre páginas. SKU que inicia =,+,-,@, contém controles/espaços nas bordas ou tem versão no limite bloqueia a página inteira com 409. O CSV precisa de edição dos valores antes da importação para evitar no-op.",
+        "responses": {
+          "200": {
+            "description": "Metadados, produtos e CSV da página",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "nosniff"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtros/corpo/paginação inválidos"
+          },
+          "401": {
+            "description": "Sessão ausente/expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "409": {
+            "description": "Página contém SKU/versão impróprio para round trip seguro"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Leitura, snapshot, consistência ou geração indisponível; nenhum CSV parcial"
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/exports/csv": {
+      "get": {
+        "operationId": "online_catalog_export_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "action",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "price",
+                "active"
+              ],
+              "default": "price"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            },
+            "description": "Nome ou SKU: ILIKE com %, _ e barra tratados como literais. Sem busca aproximada por acento/erro."
+          },
+          {
+            "in": "query",
+            "name": "ativo",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "description": "Página do catálogo com filtros e ordem ascendente por ID. Parâmetros extras/duplicados, action/ativo vazios e corpo em GET são recusados. Não há snapshot global entre páginas. SKU que inicia =,+,-,@, contém controles/espaços nas bordas ou tem versão no limite bloqueia a página inteira com 409. O CSV precisa de edição dos valores antes da importação para evitar no-op.",
+        "responses": {
+          "200": {
+            "description": "Página CSV para download",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "nosniff"
+                  ]
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "attachment; filename=\"titan-catalog-price.csv\" ou \"titan-catalog-active.csv\""
+              },
+              "X-Catalog-Source-Hash": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "SHA-256 dos bytes CSV entregues; não é assinatura ou recibo durável"
+              },
+              "X-Catalog-Total": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Contagem filtrada do snapshot"
+              },
+              "X-Catalog-Row-Count": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Quantidade efetiva nesta página"
+              },
+              "X-Catalog-Limit": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Limite solicitado"
+              },
+              "X-Catalog-Offset": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Offset solicitado"
+              },
+              "X-Catalog-Has-More": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "true/false"
+              },
+              "X-Catalog-Next-Offset": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Próxima página, somente se houver mais"
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtros/corpo/paginação inválidos"
+          },
+          "401": {
+            "description": "Sessão ausente/expirada"
+          },
+          "403": {
+            "description": "Sem autorização"
+          },
+          "409": {
+            "description": "Página contém SKU/versão impróprio para round trip seguro"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Leitura, snapshot, consistência ou geração indisponível; nenhum CSV parcial"
+          }
+        }
+      }
+    }
+  }
+}

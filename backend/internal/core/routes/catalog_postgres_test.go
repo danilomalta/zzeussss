@@ -808,6 +808,96 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if sqlDB.QueryRowContext(ctx, `SELECT preco::text FROM products WHERE tenant_id=$1 AND sku='import-price'`, tenantB).Scan(&otherImportPrice) != nil || otherImportPrice != "9.99" {
 		t.Fatal("CSV alterou outra empresa")
 	}
+	// Export has its own fresh HTTP fixture; the actual limiter stays enabled.
+	app = fiber.New()
+	Registrar(app)
+	exportOne := request("POST", "/api/v1/produtos/", `{"nome":"Export zero","sku":"export-round-001","preco":0}`, tokenA, 201)
+	exportTwo := request("POST", "/api/v1/produtos/", `{"nome":"Export quoted","sku":"export-round;çafé","preco":9999999999.99}`, tokenA, 201)
+	exportID1, exportID2 := int64(exportOne["ID"].(float64)), int64(exportTwo["ID"].(float64))
+	request("POST", "/api/v1/produtos/", `{"nome":"Other export","sku":"export-round-001","preco":9.99}`, tokenB, 201)
+	exportFirst := request("GET", "/api/v1/catalog/exports/preview?q=export-round&limit=1", "", tokenA, 200)
+	if exportFirst["total"] != float64(2) || exportFirst["has_more"] != true || exportFirst["next_offset"] != float64(1) || len(exportFirst["items"].([]interface{})) != 1 {
+		t.Fatal("exportação não paginou")
+	}
+	exportSecond := request("GET", "/api/v1/catalog/exports/preview?q=export-round&limit=1&offset=1", "", tokenA, 200)
+	if exportSecond["has_more"] != false || len(exportSecond["items"].([]interface{})) != 1 {
+		t.Fatal("segunda página CSV incorreta")
+	}
+	if _, present := exportSecond["next_offset"]; present {
+		t.Fatal("exportação inventou próxima página")
+	}
+	exportAll := request("GET", "/api/v1/catalog/exports/preview?q=export-round&limit=100", "", tokenA, 200)
+	csvBefore := exportAll["csv"].(string)
+	if !strings.Contains(csvBefore, "0.00") || !strings.Contains(csvBefore, "9999999999.99") || !strings.Contains(csvBefore, `"export-round;çafé"`) {
+		t.Fatal("CSV perdeu precisão ou escape")
+	}
+	exportOther := request("GET", "/api/v1/catalog/exports/preview?q=export-round", "", tokenB, 200)
+	if exportOther["total"] != float64(1) || strings.Contains(exportOther["csv"].(string), "9999999999.99") {
+		t.Fatal("exportação atravessou empresa")
+	}
+	request("GET", "/api/v1/catalog/exports/preview?tenant_id=foreign", "", tokenA, 400)
+	request("GET", "/api/v1/catalog/exports/preview?action=price&action=active", "", tokenA, 400)
+	// CSV download is raw text, so validate bytes/headers outside the JSON helper.
+	exportReq := httptest.NewRequest("GET", "/api/v1/catalog/exports/csv?q=export-round&limit=100", nil)
+	exportReq.Header.Set("Authorization", "Bearer "+tokenA)
+	exportResp, e := app.Test(exportReq, 10000)
+	if e != nil {
+		t.Fatal("download CSV falhou")
+	}
+	exportBytes, e := io.ReadAll(exportResp.Body)
+	exportResp.Body.Close()
+	if e != nil || exportResp.StatusCode != 200 || string(exportBytes) != csvBefore || exportResp.Header.Get("X-Catalog-Source-Hash") != exportAll["source_hash"] || exportResp.Header.Get("Cache-Control") != "no-store" || exportResp.Header.Get("Content-Type") != "text/csv; charset=utf-8" {
+		t.Fatal("download CSV divergiu da prévia")
+	}
+	// Export itself leaves product versions intact, and unedited CSV is a no-op.
+	checkProduct(exportID1, 1, 0, true)
+	checkProduct(exportID2, 1, onlinecatalog.MaxPrice, true)
+	roundInput := onlinecatalog.ImportInput{OperationID: uuid.NewString(), Reason: "Round trip export/import", CSV: csvBefore}
+	if _, e = store.PreviewImport(ctx, actor, roundInput); e != onlinecatalog.ErrInput {
+		t.Fatal("CSV intacto inventou alteração")
+	}
+	roundInput.CSV = strings.ReplaceAll(strings.ReplaceAll(csvBefore, "0.00;", "1.25;"), "9999999999.99;", "2,75;")
+	roundPreview, e := store.PreviewImport(ctx, actor, roundInput)
+	if e != nil {
+		t.Fatal("prévia do CSV editado falhou")
+	}
+	roundInput.PreviewHash = roundPreview.PreviewHash
+	if _, e = store.ApplyImport(ctx, actor, roundInput); e != nil {
+		t.Fatal("reimportação CSV editado falhou")
+	}
+	checkProduct(exportID1, 2, 125, true)
+	checkProduct(exportID2, 2, 275, true)
+	exportActive := request("GET", "/api/v1/catalog/exports/preview?q=export-round&action=active", "", tokenA, 200)
+	activeText := exportActive["csv"].(string)
+	if strings.Contains(activeText, "1.25") || !strings.Contains(activeText, ";2;;true") {
+		t.Fatal("exportação de status misturou preço")
+	}
+	activeRound := onlinecatalog.ImportInput{OperationID: uuid.NewString(), Reason: "Status export/import", CSV: strings.ReplaceAll(activeText, ";;true", ";;false")}
+	activeRoundPreview, e := store.PreviewImport(ctx, actor, activeRound)
+	if e != nil {
+		t.Fatal("prévia status exportado falhou")
+	}
+	activeRound.PreviewHash = activeRoundPreview.PreviewHash
+	if _, e = store.ApplyImport(ctx, actor, activeRound); e != nil {
+		t.Fatal("reimportação de status falhou")
+	}
+	checkProduct(exportID1, 3, 125, false)
+	checkProduct(exportID2, 3, 275, false)
+	exportEmpty := request("GET", "/api/v1/catalog/exports/preview?q=export-round&ativo=active", "", tokenA, 200)
+	if exportEmpty["total"] != float64(0) || exportEmpty["has_more"] != false || exportEmpty["csv"] != "sku;expected_version;preco;ativo\n" || len(exportEmpty["items"].([]interface{})) != 0 {
+		t.Fatal("exportação vazia inventou dados")
+	}
+	exportInactive := request("GET", "/api/v1/catalog/exports/preview?q=export-round&ativo=inactive&action=active", "", tokenA, 200)
+	if exportInactive["total"] != float64(2) || !strings.Contains(exportInactive["csv"].(string), ";3;;false") {
+		t.Fatal("filtro inativo não correspondeu estado real")
+	}
+	// Never export formulas or transform identifiers silently to suppress them.
+	request("POST", "/api/v1/produtos/", `{"nome":"Unsafe export","sku":"=export-formula","preco":1}`, tokenA, 201)
+	request("GET", "/api/v1/catalog/exports/preview?q=export-formula", "", tokenA, 409)
+	var exportWrites int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_operations WHERE tenant_id=$1 AND product_id IN ($2,$3)`, tenantA, exportID1, exportID2).Scan(&exportWrites) != nil || exportWrites != 4 {
+		t.Fatal("exportação criou auditoria de alteração")
+	}
 	var importsChecksum string
 	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_import_migrations WHERE version=12`).Scan(&importsChecksum) != nil {
 		t.Fatal("checksum CSV ausente")
