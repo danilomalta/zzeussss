@@ -155,6 +155,22 @@ func CreateOrder(ctx context.Context, db *sql.DB, license *entitlementstore.Stor
 	if _, _, err = normalize(v.PublishInput); err != nil {
 		return OrderResult{}, err
 	}
+	// Existing orders keep their snapshots. A NEW plan must not introduce
+	// quantities interpreted with a catalog unit different from its recipe.
+	units := append([]Ingredient{{ProductID: v.OutputProductID, Unit: v.OutputUnit}}, v.Ingredients...)
+	for _, item := range units {
+		var unit string
+		err = tx.QueryRowContext(ctx, `SELECT unit FROM products WHERE tenant_id=? AND id=?`, a.TenantID, item.ProductID).Scan(&unit)
+		if errors.Is(err, sql.ErrNoRows) {
+			return OrderResult{}, ErrConflict
+		}
+		if err != nil {
+			return OrderResult{}, err
+		}
+		if unit != item.Unit {
+			return OrderResult{}, ErrConflict
+		}
+	}
 	if in.PlannedBatches > MaxQuantity/v.YieldMilli {
 		return OrderResult{}, ErrInvalid
 	}
