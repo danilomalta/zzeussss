@@ -102,7 +102,7 @@ func CreateSupplier(ctx context.Context, db *sql.DB, license *entitlementstore.S
 		return Result{}, e
 	}
 	var id, name, status, actor, store string
-	e = tx.QueryRowContext(ctx, `SELECT id,name,status,created_by,store_id FROM purchase_suppliers WHERE tenant_id=? AND device_id=? AND operation_id=?`, a.TenantID, d.DeviceID, in.OperationID).Scan(&id, &name, &status, &actor, &store)
+	e = tx.QueryRowContext(ctx, `SELECT id,name,status,created_by,store_id FROM purchase_supplier_originals WHERE tenant_id=? AND device_id=? AND operation_id=?`, a.TenantID, d.DeviceID, in.OperationID).Scan(&id, &name, &status, &actor, &store)
 	if e == nil {
 		if id != in.ID || name != in.Name || status != in.Status || actor != a.IdentityID || store != a.StoreID {
 			return Result{}, ErrConflict
@@ -113,6 +113,13 @@ func CreateSupplier(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	if !errors.Is(e, sql.ErrNoRows) {
 		return Result{}, e
 	}
+	var used int
+	if e = tx.QueryRowContext(ctx, `SELECT count(*) FROM purchase_supplier_edits WHERE tenant_id=? AND device_id=? AND operation_id=?`, a.TenantID, d.DeviceID, in.OperationID).Scan(&used); e != nil {
+		return Result{}, e
+	}
+	if used != 0 {
+		return Result{}, ErrConflict
+	}
 	var exists int
 	if e = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM purchase_suppliers WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.ID).Scan(&exists); e != nil {
 		return Result{}, e
@@ -122,6 +129,9 @@ func CreateSupplier(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	if e = one(ctx, tx, `INSERT INTO purchase_suppliers VALUES(?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, in.ID, d.DeviceID, in.OperationID, a.IdentityID, in.Name, in.Status, now); e != nil {
+		return Result{}, e
+	}
+	if e = one(ctx, tx, `INSERT INTO purchase_supplier_originals SELECT * FROM purchase_suppliers WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.ID); e != nil {
 		return Result{}, e
 	}
 	if e = audit(ctx, tx, a, d, in.OperationID, "supplier.created", in.ID, now); e != nil {
