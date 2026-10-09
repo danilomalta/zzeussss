@@ -27,13 +27,14 @@ type ReceiptInput struct {
 }
 type Receipt struct {
 	ReceiptInput
-	ID               string `json:"id"`
-	DeviceID         string `json:"device_id"`
-	ActorID          string `json:"actor_id"`
-	ProductID        string `json:"product_id"`
-	StockOperationID string `json:"stock_operation_id"`
-	MovementID       string `json:"movement_id"`
-	CreatedAt        string `json:"created_at"`
+	ID               string       `json:"id"`
+	DeviceID         string       `json:"device_id"`
+	ActorID          string       `json:"actor_id"`
+	ProductID        string       `json:"product_id"`
+	StockOperationID string       `json:"stock_operation_id"`
+	MovementID       string       `json:"movement_id"`
+	CreatedAt        string       `json:"created_at"`
+	Void             *ReceiptVoid `json:"void,omitempty"`
 }
 type ReceiptResult struct {
 	Receipt  Receipt `json:"receipt"`
@@ -46,28 +47,50 @@ func validReceipt(in ReceiptInput) bool {
 
 // Exact accepted totals, bounded by the preserved order. No floating point or conversion.
 func receivedQuantitiesTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string, planned int64) (int64, int64, error) {
-	rows, err := tx.QueryContext(ctx, `SELECT accepted_milli,delivered_milli FROM purchase_receipts WHERE tenant_id=? AND store_id=? AND order_id=?`, a.TenantID, a.StoreID, id)
+	if planned < 1 || planned > MaxQuantity {
+		return 0, 0, ErrConflict
+	}
+	rows, err := tx.QueryContext(ctx, `SELECT id FROM purchase_receipts WHERE tenant_id=? AND store_id=? AND order_id=?`, a.TenantID, a.StoreID, id)
 	if err != nil {
 		return 0, 0, err
 	}
 	defer rows.Close()
-	if planned < 1 || planned > MaxQuantity {
-		return 0, 0, ErrConflict
-	}
-	var total, deliveredTotal int64
+	ids := []string{}
 	for rows.Next() {
-		var accepted, delivered int64
-		if err = rows.Scan(&accepted, &delivered); err != nil {
+		var rid string
+		if err = rows.Scan(&rid); err != nil {
 			return 0, 0, err
 		}
-		if accepted < 1 || delivered < accepted || delivered > MaxQuantity-deliveredTotal || accepted > planned-total {
+		ids = append(ids, rid)
+	}
+	if err = rows.Err(); err != nil {
+		return 0, 0, err
+	}
+	if err = rows.Close(); err != nil {
+		return 0, 0, err
+	}
+	var total, deliveredTotal int64
+	for _, rid := range ids {
+		r, err := receiptTx(ctx, tx, a, rid)
+		if err != nil {
+			return 0, 0, err
+		}
+		v, err := receiptVoidTx(ctx, tx, a, r)
+		if err != nil {
+			return 0, 0, err
+		}
+		if v != nil {
+			continue
+		}
+		if r.AcceptedMilli > planned-total || r.DeliveredMilli > MaxQuantity-deliveredTotal {
 			return 0, 0, ErrConflict
 		}
-		total += accepted
-		deliveredTotal += delivered
+		total += r.AcceptedMilli
+		deliveredTotal += r.DeliveredMilli
 	}
-	return total, deliveredTotal, rows.Err()
+	return total, deliveredTotal, nil
 }
+
 func receivedTotalTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string, planned int64) (int64, error) {
 	total, _, err := receivedQuantitiesTx(ctx, tx, a, id, planned)
 	return total, err
@@ -269,6 +292,6 @@ func RecordReceiving(ctx context.Context, db *sql.DB, license *entitlementstore.
 			return ReceiptResult{}, err
 		}
 	}
-	out := Receipt{in, receiptID, d.DeviceID, a.IdentityID, product, stockID, movementID, now}
+	out := Receipt{in, receiptID, d.DeviceID, a.IdentityID, product, stockID, movementID, now, nil}
 	return ReceiptResult{out, false}, tx.Commit()
 }

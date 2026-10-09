@@ -4,26 +4,29 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"math/big"
 	"titansystem-backend/internal/localdb/identity"
 )
 
 type ReceivingTracePage struct {
-	OrderID          string                  `json:"order_id"`
-	CommercialStatus string                  `json:"commercial_status"`
-	ReceivingStatus  string                  `json:"receiving_status"`
-	Authorization    *ReceivingAuthorization `json:"authorization"`
-	ProductID        string                  `json:"product_id"`
-	Unit             string                  `json:"unit"`
-	PlannedMilli     int64                   `json:"planned_milli"`
-	DeliveredMilli   int64                   `json:"delivered_milli"`
-	AcceptedMilli    int64                   `json:"accepted_milli"`
-	RejectedMilli    int64                   `json:"rejected_milli"`
-	RemainingMilli   int64                   `json:"remaining_milli"`
-	TotalCount       int64                   `json:"total_count"`
-	Offset           int64                   `json:"offset"`
-	Limit            int                     `json:"limit"`
-	HasMore          bool                    `json:"has_more"`
-	Items            []Receipt               `json:"items"`
+	OrderID                  string                  `json:"order_id"`
+	CommercialStatus         string                  `json:"commercial_status"`
+	ReceivingStatus          string                  `json:"receiving_status"`
+	Authorization            *ReceivingAuthorization `json:"authorization"`
+	ProductID                string                  `json:"product_id"`
+	Unit                     string                  `json:"unit"`
+	PlannedMilli             int64                   `json:"planned_milli"`
+	DeliveredMilli           int64                   `json:"delivered_milli"`
+	AcceptedMilli            int64                   `json:"accepted_milli"`
+	RejectedMilli            int64                   `json:"rejected_milli"`
+	RemainingMilli           int64                   `json:"remaining_milli"`
+	TotalCount               int64                   `json:"total_count"`
+	Offset                   int64                   `json:"offset"`
+	Limit                    int                     `json:"limit"`
+	HasMore                  bool                    `json:"has_more"`
+	VoidedCount              int64                   `json:"voided_count"`
+	VoidedAcceptedMilliExact string                  `json:"voided_accepted_milli_exact"`
+	Items                    []Receipt               `json:"items"`
 }
 
 // A single read transaction validates all receipts, even outside the returned page.
@@ -100,20 +103,36 @@ func ReceivingTrace(ctx context.Context, db *sql.DB, a identity.Scope, d identit
 	if out.TotalCount > MaxQuantity || (out.TotalCount > 0 && out.Authorization == nil) {
 		return ReceivingTracePage{}, ErrConflict
 	}
+	voided := new(big.Int)
 	for index, rid := range ids {
 		receipt, err := receiptTx(ctx, tx, a, rid)
 		if err != nil {
 			return ReceivingTracePage{}, err
 		}
-		if receipt.OrderID != id || receipt.ProductID != out.ProductID || receipt.Unit != out.Unit || receipt.AcceptedMilli > out.PlannedMilli-out.AcceptedMilli || receipt.DeliveredMilli > MaxQuantity-out.DeliveredMilli {
+		if receipt.OrderID != id || receipt.ProductID != out.ProductID || receipt.Unit != out.Unit {
 			return ReceivingTracePage{}, ErrConflict
 		}
-		out.AcceptedMilli += receipt.AcceptedMilli
-		out.DeliveredMilli += receipt.DeliveredMilli
+		v, err := receiptVoidTx(ctx, tx, a, receipt)
+		if err != nil {
+			return ReceivingTracePage{}, err
+		}
+		receipt.Void = v
+		if v == nil {
+			if receipt.AcceptedMilli > out.PlannedMilli-out.AcceptedMilli || receipt.DeliveredMilli > MaxQuantity-out.DeliveredMilli {
+				return ReceivingTracePage{}, ErrConflict
+			}
+			out.AcceptedMilli += receipt.AcceptedMilli
+			out.DeliveredMilli += receipt.DeliveredMilli
+		} else {
+			out.VoidedCount++
+			voided.Add(voided, big.NewInt(receipt.AcceptedMilli))
+		}
+
 		if int64(index) >= offset && len(out.Items) < out.Limit {
 			out.Items = append(out.Items, receipt)
 		}
 	}
+	out.VoidedAcceptedMilliExact = voided.String()
 	out.RejectedMilli = out.DeliveredMilli - out.AcceptedMilli
 	out.RemainingMilli = out.PlannedMilli - out.AcceptedMilli
 	out.HasMore = offset < out.TotalCount && int64(len(out.Items)) < out.TotalCount-offset
