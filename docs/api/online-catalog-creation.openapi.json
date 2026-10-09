@@ -1,0 +1,530 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem — cadastro protegido, busca e auditoria online",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/produtos/search": {
+      "get": {
+        "operationId": "online_catalog_get__api_v1_produtos_search",
+        "description": "Busca literal por nome/SKU sem diferenciar maiúsculas. active=all|active|inactive. items contém Product; nenhuma contagem total inferida.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados reais do contexto autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro, ID ou paginação inválidos"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Registro ausente neste contexto"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Banco/extensão indisponível"
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/creation": {
+      "get": {
+        "operationId": "online_catalog_get__api_v1_produtos_id_creation",
+        "description": "Auditoria da criação para owner/admin/manager. Produtos antigos não têm auditoria retroativa: 404.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados reais do contexto autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Creation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro, ID ou paginação inválidos"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Registro ausente neste contexto"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Banco/extensão indisponível"
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/creations/{operation_id}": {
+      "get": {
+        "operationId": "online_catalog_get__api_v1_catalog_creations_operation_id",
+        "description": "Consulta do cadastro por empresa e operador autenticados. Snapshot original, mesmo depois de edição.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados reais do contexto autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Creation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro, ID ou paginação inválidos"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Registro ausente neste contexto"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Banco/extensão indisponível"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "nome",
+          "descricao",
+          "sku",
+          "price_cents",
+          "ativo",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "descricao": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 999999999999
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "product_id",
+          "actor_id",
+          "action",
+          "before",
+          "after",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "details",
+              "price",
+              "active"
+            ]
+          },
+          "before": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "after": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "History": {
+        "type": "object",
+        "required": [
+          "items",
+          "limit",
+          "offset"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Receipt"
+            }
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          }
+        }
+      },
+      "Details": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_version",
+          "nome",
+          "descricao",
+          "sku"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID não nulo canônico, persistido pelo cliente antes do envio."
+          },
+          "expected_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "descricao": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        }
+      },
+      "Price": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_version",
+          "price_cents"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID não nulo canônico, persistido pelo cliente antes do envio."
+          },
+          "expected_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 999999999999
+          }
+        }
+      },
+      "Active": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_version",
+          "ativo"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID não nulo canônico, persistido pelo cliente antes do envio."
+          },
+          "expected_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreatedProduct": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "nome",
+          "descricao",
+          "sku",
+          "price_cents",
+          "ativo",
+          "version",
+          "estoque",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "descricao": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 999999999999
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "estoque": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Creation": {
+        "type": "object",
+        "required": [
+          "operation_id",
+          "actor_id",
+          "product",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product": {
+            "$ref": "#/components/schemas/CreatedProduct"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SearchPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "limit",
+          "offset"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

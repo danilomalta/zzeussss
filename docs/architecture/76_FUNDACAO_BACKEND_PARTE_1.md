@@ -163,3 +163,5 @@ Entrega 22: limites explícitos de corpo/conexões/I/O no servidor online, host/
 Entrega 23: encerramento online por SIGINT/SIGTERM, drain HTTP até 45 segundos e fechamento do banco somente após conclusão. Ver documento 98 para sequência, incerteza e estado real do roteiro.
 
 Entrega 24 consolidada: consulta individual, edição cadastral, preço exato com histórico e inativação/reativação online; versão esperada, recibo idempotente por ator e outbox transacional. Migração PostgreSQL 8 explícita, independente da sequência de segurança. Ver documento 99. Não sincroniza SQLite/caixas nem incorpora produção. Aceite exige teste PostgreSQL ampliado no PC.
+
+Entrega 25 consolidada: cadastro online com Idempotency-Key obrigatório (428 sem chave), auditoria/snapshot/outbox atômicos, consulta de criação e busca por nome/SKU com filtros. Migração PostgreSQL 9 e CORS do header. Ver documento 100. Frontend online precisa persistir/enviar identidade; local e produção separados. Teste PostgreSQL real no PC é obrigatório antes do commit.

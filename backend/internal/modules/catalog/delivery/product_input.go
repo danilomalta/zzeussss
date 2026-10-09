@@ -89,7 +89,8 @@ func decodeProductInput(contentType string, body []byte) (CreateProductRequest, 
 				return req, invalidProductInput
 			}
 		}
-		req.Preco = float64(whole*100+fraction) / 100
+		req.priceCents = int64(whole*100 + fraction)
+		req.Preco = float64(req.priceCents) / 100
 	}
 	if value, exists := fields["estoque"]; exists {
 		text := string(value)

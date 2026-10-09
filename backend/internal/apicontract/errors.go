@@ -55,6 +55,8 @@ func errorText(status int) (string, string) {
 		return "unsupported_media_type", "Formato de conteúdo não aceito."
 	case 422:
 		return "unprocessable_request", "Solicitação não pode ser processada."
+	case 428:
+		return "precondition_required", "Identidade de operação obrigatória; salve a chave antes do envio."
 	case 429:
 		return "rate_limited", "Limite de solicitações atingido; aguarde antes de tentar novamente."
 	case 501:

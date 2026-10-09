@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"database/sql/driver"
-	"errors"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/gofiber/fiber/v2"
 	"io"
@@ -45,22 +43,10 @@ func TestOnlineProductInvalidInputNeverReachesInsert(t *testing.T) {
 	}
 }
 
-func TestOnlineProductInsertFailureRollsBackWithoutPrivateDetails(t *testing.T) {
+func TestOnlineProductMissingKeyCannotBypassManagedCreation(t *testing.T) {
 	t.Setenv("JWT_SECRET", "isolated-test-secret")
 	mock := onlineMock(t)
 	mock.ExpectQuery(`SELECT EXISTS`).WithArgs("operator", "company-b", "stock", "11111111-1111-4111-8111-111111111112").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
-	mock.ExpectBegin()
-	args := make([]driver.Value, 17)
-	for i := range args {
-		args[i] = sqlmock.AnyArg()
-	}
-	args[3] = "company-b"
-	args[4] = "Item"
-	args[6] = float64(0.01)
-	args[7] = "sku"
-	args[8] = 1
-	mock.ExpectQuery(`INSERT INTO "products"`).WithArgs(args...).WillReturnError(errors.New("private-sql-secret"))
-	mock.ExpectRollback()
 	app := fiber.New()
 	Registrar(app)
 	req := httptest.NewRequest("POST", "/api/v1/produtos/", strings.NewReader(`{"nome":"Item","sku":"sku","preco":0.01,"estoque":1}`))
@@ -72,7 +58,7 @@ func TestOnlineProductInsertFailureRollsBackWithoutPrivateDetails(t *testing.T) 
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
-	if resp.StatusCode != 409 || strings.Contains(string(body), "private-sql-secret") {
+	if resp.StatusCode != 428 || strings.Contains(string(body), "private-sql-secret") {
 		t.Fatalf("unsafe failure response %d", resp.StatusCode)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {

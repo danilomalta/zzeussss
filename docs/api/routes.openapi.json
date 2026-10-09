@@ -1786,7 +1786,8 @@
         "externalDocs": {
           "description": "Contrato detalhado desta operação",
           "url": "./online-lists.openapi.json"
-        }
+        },
+        "description": "Cadastro exige Idempotency-Key; registro, auditoria e evento atômicos. Recusa ausência com 428."
       }
     },
     "/api/v1/recompensas/indicacoes": {
@@ -2082,6 +2083,96 @@
         "externalDocs": {
           "description": "Gestão transacional do catálogo online",
           "url": "./online-catalog-management.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/search": {
+      "get": {
+        "operationId": "online_catalog_get__api_v1_produtos_search",
+        "description": "Busca literal por nome/SKU sem diferenciar maiúsculas. active=all|active|inactive. items contém Product; nenhuma contagem total inferida.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado no domínio"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Cadastro e busca online",
+          "url": "./online-catalog-creation.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/creation": {
+      "get": {
+        "operationId": "online_catalog_get__api_v1_produtos_id_creation",
+        "description": "Auditoria da criação para owner/admin/manager. Produtos antigos não têm auditoria retroativa: 404.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado no domínio"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Cadastro e busca online",
+          "url": "./online-catalog-creation.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/creations/{operation_id}": {
+      "get": {
+        "operationId": "online_catalog_get__api_v1_catalog_creations_operation_id",
+        "description": "Consulta do cadastro por empresa e operador autenticados. Snapshot original, mesmo depois de edição.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado no domínio"
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "Cadastro e busca online",
+          "url": "./online-catalog-creation.openapi.json"
         }
       }
     }

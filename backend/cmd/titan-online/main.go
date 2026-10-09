@@ -32,10 +32,16 @@ func run(args []string) error {
 		if err = onlinecatalog.Migrate(ctx, db); err != nil {
 			return err
 		}
-		return onlinecatalog.CheckSchema(ctx, db)
+		if err = onlinecatalog.MigrateCreation(ctx, db); err != nil {
+			return err
+		}
+		return onlinecatalog.CheckCreation(ctx, db)
 	}
 	if args[0] == "check-catalog" {
-		return onlinecatalog.CheckSchema(ctx, db)
+		if err = onlinecatalog.CheckSchema(ctx, db); err != nil {
+			return err
+		}
+		return onlinecatalog.CheckCreation(ctx, db)
 	}
 	if args[0] == "migrate-sessions" {
 		if err = onlinesessions.Migrate(ctx, db); err != nil {

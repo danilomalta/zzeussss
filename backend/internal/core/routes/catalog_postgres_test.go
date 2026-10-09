@@ -78,6 +78,9 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if onlinecatalog.Migrate(ctx, sqlDB) != nil || onlinecatalog.Migrate(ctx, sqlDB) != nil || onlinecatalog.CheckSchema(ctx, sqlDB) != nil {
 		t.Fatal("migração incremental do catálogo falhou")
 	}
+	if onlinecatalog.MigrateCreation(ctx, sqlDB) != nil || onlinecatalog.MigrateCreation(ctx, sqlDB) != nil || onlinecatalog.CheckCreation(ctx, sqlDB) != nil {
+		t.Fatal("migração do cadastro falhou")
+	}
 	tenantA, tenantB, userA, userB, sessionA, sessionB := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	for _, actor := range []struct{ tenant, user, session string }{{tenantA, userA, sessionA}, {tenantB, userB, sessionB}} {
 		exec(`INSERT INTO tenants(id,status) VALUES($1,'active')`, actor.tenant)
@@ -102,10 +105,16 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	tokenA, tokenB := token(tenantA, userA, sessionA), token(tenantB, userB, sessionB)
 	app := fiber.New()
 	Registrar(app)
-	request := func(method, path, body, access string, want int) map[string]interface{} {
+	request := func(method, path, body, access string, want int, operation ...string) map[string]interface{} {
 		t.Helper()
 		req := httptest.NewRequest(method, path, strings.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+		if method == "POST" && path == "/api/v1/produtos/" {
+			req.Header.Set("Idempotency-Key", uuid.NewString())
+			if len(operation) > 0 {
+				req.Header.Set("Idempotency-Key", operation[0])
+			}
+		}
 		req.Header.Set("Authorization", "Bearer "+access)
 		resp, e := app.Test(req, 10000)
 		if e != nil {
@@ -339,6 +348,55 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	request("POST", "/api/v1/produtos/", `{"nome":"Revoked","sku":"revoked"}`, tokenB, 401)
 	if count("products", tenantB) != 1001 {
 		t.Fatal("sessão revogada gravou produto")
+	}
+	// Creation replay/concurrency and search use the newly protected legacy route.
+	creationOp := uuid.NewString()
+	creationBody := `{"nome":"Search 50%_item","sku":"repeat-sku","preco":0.01,"estoque":3}`
+	createdProduct := request("POST", "/api/v1/produtos/", creationBody, tokenA, 201, creationOp)
+	createdAgain := request("POST", "/api/v1/produtos/", creationBody, tokenA, 201, creationOp)
+	if createdProduct["ID"] != createdAgain["ID"] || createdProduct["price_cents"] != float64(1) {
+		t.Fatal("cadastro repetido ou preço inexato")
+	}
+	request("POST", "/api/v1/produtos/", strings.Replace(creationBody, "0.01", "0.02", 1), tokenA, 409, creationOp)
+	request("POST", "/api/v1/produtos/", creationBody, otherToken, 409, creationOp)
+	request("POST", "/api/v1/produtos/", creationBody, tokenA, 428, "")
+	request("GET", "/api/v1/catalog/creations/"+creationOp, "", tokenA, 200)
+	request("GET", "/api/v1/catalog/creations/"+creationOp, "", otherToken, 404)
+	request("GET", "/api/v1/catalog/creations/"+creationOp, "", tokenB, 401)
+	request("GET", fmt.Sprintf("/api/v1/produtos/%d/creation", int64(createdProduct["ID"].(float64))), "", tokenA, 200)
+	search := request("GET", "/api/v1/produtos/search?q=50%25_item&active=active&limit=2", "", tokenA, 200)
+	if len(search["items"].([]interface{})) != 1 {
+		t.Fatal("busca literal não isolou produto")
+	}
+	empty := request("GET", "/api/v1/produtos/search?q=not-found&active=inactive", "", tokenA, 200)
+	if len(empty["items"].([]interface{})) != 0 {
+		t.Fatal("estado vazio fabricado")
+	}
+	request("GET", "/api/v1/produtos/search?q=a&q=b", "", tokenA, 400)
+	beforeCount := count("products", tenantA)
+	newInput := onlinecatalog.NewProduct{Name: "Concurrent", SKU: "concurrent-create", PriceCents: onlinecatalog.MaxPrice}
+	newOp := uuid.NewString()
+	createResults := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		mutationWG.Add(1)
+		go func() { defer mutationWG.Done(); _, e := store.Create(ctx, actor, newOp, newInput); createResults <- e }()
+	}
+	mutationWG.Wait()
+	close(createResults)
+	for e := range createResults {
+		if e != nil {
+			t.Fatal("cadastro concorrente falhou")
+		}
+	}
+	if count("products", tenantA) != beforeCount+1 {
+		t.Fatal("cadastro concorrente duplicou produto")
+	}
+	failedCreation := uuid.NewString()
+	exec(fmt.Sprintf(`CREATE FUNCTION reject_creation_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture'; END $$; CREATE TRIGGER reject_creation_event BEFORE INSERT ON online_catalog_creation_outbox FOR EACH ROW WHEN (NEW.operation_id='%s'::uuid) EXECUTE FUNCTION reject_creation_event()`, failedCreation))
+	request("POST", "/api/v1/produtos/", `{"nome":"Rollback","sku":"creation-rollback"}`, tokenA, 503, failedCreation)
+	request("GET", "/api/v1/catalog/creations/"+failedCreation, "", tokenA, 404)
+	if count("products", tenantA) != beforeCount+1 {
+		t.Fatal("outbox não reverteu cadastro")
 	}
 	var catalogChecksum string
 	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_migrations WHERE version=8`).Scan(&catalogChecksum) != nil {

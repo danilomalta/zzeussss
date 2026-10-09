@@ -73,3 +73,5 @@ Saúde pública online e limites HTTP do cmd/api: `online-health.openapi.json` e
 Encerramento online durante reinícios/atualizações: documento 98. HTTP sem resposta continua incerto; drain não equivale a garantia de commit ou de rollback.
 
 - `online-catalog-management.openapi.json`: consulta, edição, preço, estado ativo, histórico e recibo idempotente. Exige manutenção explícita `titan-online migrate-catalog`; instalação do patch não migra banco comercial.
+
+- `online-catalog-creation.openapi.json`: busca por nome/SKU, auditoria e recuperação de cadastro. POST existente exige Idempotency-Key (428 sem chave); ativação explícita da migração PostgreSQL 9.

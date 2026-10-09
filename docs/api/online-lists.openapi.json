@@ -109,7 +109,7 @@
       "post": {
         "operationId": "createOnlineProduct",
         "summary": "Cadastra produto: admin, owner, manager ou stock",
-        "description": "Content-Type application/json obrigatório (charset permitido). Empresa e papel derivam da sessão persistida e vínculo atual. Campos extras como tenant_id, ID, ativo ou preço fiscal são recusados. Query não seleciona empresa. Não há idempotência nesta rota: não repetir automaticamente após resposta perdida; SKU único não substitui um protocolo de operação. Esta entrega não cria auditoria de preço, outbox comercial ou integração com catálogo SQLite.",
+        "description": "Content-Type application/json obrigatório (charset permitido). Empresa e papel derivam da sessão persistida e vínculo atual. Campos extras como tenant_id, ID, ativo ou preço fiscal são recusados. Query não seleciona empresa. Não há idempotência nesta rota: não repetir automaticamente após resposta perdida; SKU único não substitui um protocolo de operação. Esta entrega não cria auditoria de preço, outbox comercial ou integração com catálogo SQLite. A partir da entrega 25 exige Idempotency-Key. Registro/auditoria/outbox atômicos. Resposta 201 inclusive replay preserva ID e campos básicos; preco decimal exato, acrescenta price_cents, version e operation_id. Campos estatísticos anteriores não são prometidos nesta resposta.",
         "security": [
           {
             "AccessToken": []
@@ -118,6 +118,16 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID canônico não nulo salvo antes do envio; mesma identidade/conteúdo para repetir. Novo requisito da entrega 25."
           }
         ],
         "requestBody": {
@@ -189,20 +199,16 @@
             }
           },
           "201": {
-            "description": "Produto criado na empresa da sessão. Ativo=true; tenant_id não é exposto.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OnlineProduct"
-                }
-              }
-            }
+            "description": "Produto realmente persistido ou mesmo resultado original no replay; ID, nome, descricao, sku, preco numérico decimal exato, price_cents inteiro, estoque, ativo, version=1, operation_id e horários originais do produto. Consulta de produto fornece estado atual."
           },
           "409": {
             "description": "Falha de gravação, inclusive SKU já existente; sem expor SQL. Não confirma ausência de gravação em caso de perda de resposta."
           },
           "503": {
-            "description": "Verificação da sessão/vínculo indisponível; nenhum cadastro permitido."
+            "description": "Extensão/banco indisponível ou resultado incerto; consultar /api/v1/catalog/creations/{operation_id}"
+          },
+          "428": {
+            "description": "Identidade ausente ou inválida; nenhum cadastro iniciado"
           }
         }
       }

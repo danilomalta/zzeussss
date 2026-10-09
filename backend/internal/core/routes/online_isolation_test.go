@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"database/sql/driver"
 	"errors"
 	"net/http/httptest"
 	"strings"
@@ -17,21 +16,10 @@ import (
 	"titansystem-backend/internal/core/database"
 )
 
-func TestOnlineProductCreationCannotSelectAnotherCompany(t *testing.T) {
+func TestOnlineProductCreationRequiresPersistedOperationIdentity(t *testing.T) {
 	t.Setenv("JWT_SECRET", "isolated-test-secret")
 	mock := onlineMock(t)
 	mock.ExpectQuery(`SELECT EXISTS`).WithArgs("operator", "company-a", "owner", "11111111-1111-4111-8111-111111111112").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
-	mock.ExpectBegin()
-	args := make([]driver.Value, 17)
-	for i := range args {
-		args[i] = sqlmock.AnyArg()
-	}
-	args[3] = "company-a"
-	args[4] = "Item"
-	args[6] = float64(2.5)
-	args[7] = "sku"
-	mock.ExpectQuery(`INSERT INTO "products"`).WithArgs(args...).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-	mock.ExpectCommit()
 	app := fiber.New()
 	Registrar(app)
 	req := httptest.NewRequest("POST", "/api/v1/produtos/", strings.NewReader(`{"nome":"Item","sku":"sku","preco":2.50,"estoque":1}`))
@@ -42,7 +30,7 @@ func TestOnlineProductCreationCannotSelectAnotherCompany(t *testing.T) {
 		t.Fatal(err)
 	}
 	resp.Body.Close()
-	if resp.StatusCode != 201 {
+	if resp.StatusCode != 428 {
 		t.Fatalf("recebido %d", resp.StatusCode)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
