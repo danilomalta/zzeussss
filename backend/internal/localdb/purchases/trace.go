@@ -25,10 +25,11 @@ type HumanApproval struct {
 	DecidedAt    string `json:"decided_at"`
 }
 type OrderTrace struct {
-	Order        Order         `json:"order"`
-	Creation     CreationAudit `json:"creation"`
-	Approval     HumanApproval `json:"approval"`
-	Cancellation *Cancellation `json:"cancellation,omitempty"`
+	ReceivingAuthorization *ReceivingAuthorization `json:"receiving_authorization,omitempty"`
+	Order                  Order                   `json:"order"`
+	Creation               CreationAudit           `json:"creation"`
+	Approval               HumanApproval           `json:"approval"`
+	Cancellation           *Cancellation           `json:"cancellation,omitempty"`
 }
 
 // Trace reads the preserved order and its recorded approval/creation evidence in
@@ -108,6 +109,10 @@ func Trace(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceC
 	}
 	if r.Decision != "approved" || r.ReviewerID != v.ApprovedBy || r.DecidedAt != v.ApprovedAt {
 		return OrderTrace{}, ErrConflict
+	}
+	out.ReceivingAuthorization, err = receivingAuthorizationTx(ctx, tx, a, id)
+	if err != nil {
+		return OrderTrace{}, err
 	}
 	return out, tx.Commit()
 }

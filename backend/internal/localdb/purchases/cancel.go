@@ -58,7 +58,18 @@ func orderStatusTx(ctx context.Context, tx *sql.Tx, a identity.Scope, v *Order) 
 	if err != nil {
 		return nil, err
 	}
+	auth, err := receivingAuthorizationTx(ctx, tx, a, v.ID)
+	if err != nil {
+		return nil, err
+	}
+	v.ReceivingStatus = "not_authorized"
+	if auth != nil {
+		v.ReceivingStatus = "authorized"
+	}
 	if out != nil {
+		if auth != nil {
+			return nil, ErrConflict
+		}
 		v.Status = "cancelled"
 	}
 	return out, nil
@@ -117,6 +128,13 @@ func Cancel(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a 
 		return CancelResult{}, err
 	}
 	if prior != nil {
+		return CancelResult{}, ErrConflict
+	}
+	auth, err := receivingAuthorizationTx(ctx, tx, a, in.OrderID)
+	if err != nil {
+		return CancelResult{}, err
+	}
+	if auth != nil {
 		return CancelResult{}, ErrConflict
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)

@@ -49,16 +49,17 @@ type Item struct {
 	Quantity  int64  `json:"quantity_milli"`
 }
 type Order struct {
-	ID           string `json:"id"`
-	OperationID  string `json:"operation_id"`
-	SupplierID   string `json:"supplier_id"`
-	SupplierName string `json:"supplier_name"`
-	SuggestionID string `json:"suggestion_id"`
-	Status       string `json:"status"`
-	CreatedAt    string `json:"created_at"`
-	ApprovedBy   string `json:"approved_by"`
-	ApprovedAt   string `json:"approved_at"`
-	Items        []Item `json:"items"`
+	ID              string `json:"id"`
+	OperationID     string `json:"operation_id"`
+	SupplierID      string `json:"supplier_id"`
+	SupplierName    string `json:"supplier_name"`
+	SuggestionID    string `json:"suggestion_id"`
+	Status          string `json:"status"`
+	ReceivingStatus string `json:"receiving_status"`
+	CreatedAt       string `json:"created_at"`
+	ApprovedBy      string `json:"approved_by"`
+	ApprovedAt      string `json:"approved_at"`
+	Items           []Item `json:"items"`
 }
 type Approval struct {
 	SuggestionID string `json:"suggestion_id"`
