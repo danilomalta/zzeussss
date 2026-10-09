@@ -1,13 +1,15 @@
 import {LocalAPIError} from './localClient.mjs';
 import {id,integer,positive,unit,readAPI} from './operationsRead.mjs';
 import {validRecipeVersion,validProductionOrder} from './productionRead.mjs';
-const fields={recipe:['operation_id','recipe_id','version_id','expected_revision','name','output_product_id','output_unit','yield_milli','ingredients'],order:['operation_id','order_id','version_id','location_id','responsible_id','planned_batches'],state:['operation_id','order_id','expected_revision','status','reason'],recipe_state:['operation_id','recipe_id','expected_revision','status','reason'],reserve:['operation_id','reservation_id','order_id','reason'],materials:['operation_id','reservation_id','action','reason'],result:['operation_id','result_id','order_id','expected_revision','produced_milli','reason'],stage_plan:['operation_id','order_id','stages','reason'],stage_state:['operation_id','order_id','stage_id','expected_revision','status','reason']};
+const fields={recipe:['operation_id','recipe_id','version_id','expected_revision','name','output_product_id','output_unit','yield_milli','ingredients'],order:['operation_id','order_id','version_id','location_id','responsible_id','planned_batches'],state:['operation_id','order_id','expected_revision','status','reason'],recipe_state:['operation_id','recipe_id','expected_revision','status','reason'],reserve:['operation_id','reservation_id','order_id','reason'],materials:['operation_id','reservation_id','action','reason'],result:['operation_id','result_id','order_id','expected_revision','produced_milli','reason'],stage_plan:['operation_id','order_id','stages','reason'],stage_state:['operation_id','order_id','stage_id','expected_revision','status','reason'],loss:['operation_id','loss_id','result_id','quantity_milli','reason'],loss_void:['operation_id','loss_id','expected_revision','reason']};
 const fail=message=>{throw new LocalAPIError(0,message || 'Dados de produção inválidos. A operação pendente foi preservada.');};
 const exactFields=(v,keys)=>v && typeof v==='object' && !Array.isArray(v) && Object.keys(v).length===keys.length && keys.every(k=>Object.hasOwn(v,k));
 const shortText=v=>typeof v==='string' && v.trim()===v && v.length>0 && new TextEncoder().encode(v).length<=255;
 export function validProductionInput(kind,v){
  if(!fields[kind] || !exactFields(v,fields[kind]) || !id(v.operation_id))return false;
  if(kind==='order')return ['order_id','version_id','location_id','responsible_id'].every(k=>id(v[k])) && positive(v.planned_batches);
+ if(kind==='loss')return id(v.loss_id)&&id(v.result_id)&&positive(v.quantity_milli)&&shortText(v.reason);
+ if(kind==='loss_void')return id(v.loss_id)&&v.expected_revision===1&&shortText(v.reason);
  if(kind==='stage_plan')return id(v.order_id)&&shortText(v.reason)&&Array.isArray(v.stages)&&v.stages.length>0&&v.stages.length<=20&&v.stages.every(s=>exactFields(s,['stage_id','name','responsible_id'])&&id(s.stage_id)&&id(s.responsible_id)&&shortText(s.name)&&new TextEncoder().encode(s.name).length<=120)&&new Set(v.stages.map(s=>s.stage_id)).size===v.stages.length;
  if(kind==='reserve')return id(v.reservation_id)&&id(v.order_id)&&shortText(v.reason);
  if(kind==='materials')return id(v.reservation_id)&&['release','consume'].includes(v.action)&&shortText(v.reason);
@@ -28,6 +30,7 @@ function validResult(kind,r,input){
  if(!r || typeof r.repeated!=='boolean')return false;
  if(kind==='reserve'||kind==='materials')return r.reservation_id===input.reservation_id&&id(r.order_id)&&(kind!=='reserve'||r.order_id===input.order_id)&&r.status===(kind==='reserve'?'active':input.action==='release'?'released':'consumed');
  if(!positive(r.revision))return false;
+ if(kind==='loss'||kind==='loss_void')return r.loss_id===input.loss_id&&id(r.result_id)&&(kind!=='loss'||r.result_id===input.result_id)&&r.revision===(kind==='loss'?1:2)&&r.status===(kind==='loss'?'recorded':'voided');
  if(kind==='stage_plan')return r.order_id===input.order_id&&r.status==='configured'&&r.revision===1&&!r.stage_id;
  if(kind==='stage_state')return r.order_id===input.order_id&&r.stage_id===input.stage_id&&r.status===input.status&&r.revision===input.expected_revision+1;
  if(kind==='recipe_state')return r.recipe_id===input.recipe_id&&r.status===input.status&&r.revision===input.expected_revision+1;
@@ -64,7 +67,7 @@ export function createProductionMutations(fetcher=globalThis.fetch){
    if(!token||!validProductionInput(kind,input))fail();
    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
    try {
-    const r=await fetcher('/local/v1/production/'+({recipe:'recipe-versions',order:'orders',state:'orders/state',recipe_state:'recipe-state',reserve:'material-reservations',materials:'material-reservations/state',result:'results',stage_plan:'stage-plans',stage_state:'stages/state'})[kind],{method:'POST',signal:controller.signal,credentials:'omit',cache:'no-store',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(input)});
+    const r=await fetcher('/local/v1/production/'+({recipe:'recipe-versions',order:'orders',state:'orders/state',recipe_state:'recipe-state',reserve:'material-reservations',materials:'material-reservations/state',result:'results',stage_plan:'stage-plans',stage_state:'stages/state',loss:'losses',loss_void:'losses/void'})[kind],{method:'POST',signal:controller.signal,credentials:'omit',cache:'no-store',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(input)});
     if(!r.ok)throw new LocalAPIError(r.status,({400:'Confira quantidades, unidades e referências da produção.',401:'Sessão expirada ou revogada.',403:'Permissão ou contrato de produção indisponível.',404:'Referência não encontrada nesta loja.',409:'Revisão, estado, referência ou operação em conflito. Consulte antes de corrigir.',503:'Verificação do contrato indisponível.'})[r.status] || 'Gravação de produção recusada.');
     const v=await r.json();if(!validResult(kind,v,input))fail('Resposta de gravação incompatível. Consulte a operação pendente.');return v;
    }catch(e){if(e instanceof LocalAPIError)throw e;fail('Resposta não confirmada. Consulte ou repita a mesma operação pendente.');}finally{clearTimeout(timer);}

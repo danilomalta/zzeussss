@@ -1,0 +1,10 @@
+# P49 — Declaracao de perdas na interface
+Base do usuario 4f674e4, P48. /local/production consulta resultado e perdas em GET /production/results/{id}/losses?offset=N. Mostra planejado, produzido, diferenca, total declarado ativo e quantidade ainda sem classificacao. Lista ate 50 declaracoes por pagina, incluindo anuladas; totais globais nao sao substituidos pela soma parcial desta pagina.
+
+Quantidade positiva exata em milesimos da unidade indicada, ate tres decimais; unit aceita apenas inteiro. Registro limitado a diferenca ainda nao classificada, motivo obrigatorio. POST /production/losses existente; servidor arbitra saldo e concorrencia na transacao. Declaracao e documental, nao altera entrada do resultado, nao baixa estoque novamente nem modifica ingredientes. Nao presume classificacao de toda a diferenca.
+
+Contrato compartilhado ampliado: GET /production/operations/{kind}/{id} aceita loss/loss_void, a partir de eventos existentes. Escopo empresa/loja/aparelho/operador, readTx/manage_production; historico independente de contrato vigente. JSON canonico, referencias imutaveis, quantidade/unidade e evento conferidos. Corrupcao vira conflito; outro operador ou tipo nao revela dados. Recibo original recorded/revisao1 continua original mesmo apos anular. As gravacoes preservam contrato vigente, autorizacao e aparelho aprovado.
+
+Fila persistida preserva op/loss/result IDs, quantidade/motivo antes de POST; exige GET original confirmado para limpar. Resposta incerta mantida, sem repeticao automatica. Tipos e consultas de anulacao/historico preparados para P50/P51, ainda sem botoes nesta entrega.
+
+Schema SQLite 44 mantido; sem migracao/alteracao do backup. Testes HTTP fazem declaracao, anulacao e nova classificacao, conferem estoque inalterado e recibos originais, restaurando-os de backup em banco temporario. Isolamento/corrupcao em fixtures descartaveis. Frontend verifica precisao, unidades, limites, balancos globais e repeticao segura. aplicar.sh testa especificos, suite backend, vet/race e frontend/build antes do commit. Sem merge/push/servidor/banco real.

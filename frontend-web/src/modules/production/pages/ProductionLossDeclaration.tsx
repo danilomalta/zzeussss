@@ -1,0 +1,20 @@
+import {useState} from 'react';
+import {createProductionLosses,prepareLoss} from '../../../core/local/productionLosses.mjs';
+import type {LossSummary} from '../../../core/local/productionLosses.mjs';
+import {exactQuantity as q} from '../../../core/local/operationsRead.mjs';
+import {localErrorMessage} from '../../../core/local/useLocalSession';
+import {useReadTask,ReadState,ReadSection,Pages} from './readPanel';
+import {useProductionMutations} from './ProductionPending';
+const client=createProductionLosses();
+export default function ProductionLossDeclaration(){
+ const loaded=useReadTask<LossSummary>(),mutations=useProductionMutations();const [resultID,setResultID]=useState(''),[offset,setOffset]=useState(0),[quantity,setQuantity]=useState(''),[reason,setReason]=useState('');
+ let measured:number|undefined,error='';if(loaded.data&&quantity.trim()&&reason.trim()){try{measured=prepareLoss(loaded.data,quantity,reason,'preview','preview-loss').quantity_milli;}catch(e){error=localErrorMessage(e);}}
+ function load(n=0){setOffset(n);setQuantity('');setReason('');void loaded.run(t=>client.summary(t,resultID.trim(),n));}
+ async function save(){if(!loaded.data||measured===undefined)return;const summary=loaded.data;const ok=await mutations.submit(()=>({kind:'loss',input:prepareLoss(summary,quantity,reason,crypto.randomUUID(),crypto.randomUUID())}));if(ok){loaded.clear();setQuantity('');setReason('');}}
+ return <ReadSection title="Declarar perda de rendimento"><p>Classifique uma quantidade da diferença entre planejado e produzido. Esta declaração não baixa ingredientes nem produto acabado; a diferença já ficou fora da entrada de produção.</p>
+ <form className="operation-form" onSubmit={e=>{e.preventDefault();load();}}><label className="brand-field">ID do resultado de produção<input required maxLength={128} value={resultID} onChange={e=>{setResultID(e.target.value);loaded.clear();setOffset(0);setQuantity('');setReason('');}}/></label><button className="brand-secondary" disabled={loaded.busy||mutations.busy}>Consultar diferença e perdas</button></form><ReadState task={loaded}/>
+ {loaded.data&&<><p className="operation-id">Resultado: {loaded.data.result_id}<br/>Produto: {loaded.data.product_id}</p><dl className="operation-metrics"><div><dt>Planejado</dt><dd>{q(loaded.data.planned_milli)} {loaded.data.unit}</dd></div><div><dt>Produzido</dt><dd>{q(loaded.data.produced_milli)} {loaded.data.unit}</dd></div><div><dt>Diferença</dt><dd>{q(loaded.data.shortfall_milli)} {loaded.data.unit}</dd></div><div><dt>Perdas declaradas ativas</dt><dd>{q(loaded.data.recorded_loss_milli)} {loaded.data.unit}</dd></div><div><dt>Ainda sem classificação</dt><dd>{q(loaded.data.unclassified_shortfall_milli)} {loaded.data.unit}</dd></div></dl>
+ {loaded.data.unclassified_shortfall_milli>0?<><label className="brand-field">Quantidade declarada ({loaded.data.unit})<input inputMode="decimal" maxLength={32} value={quantity} disabled={mutations.blocked} onChange={e=>setQuantity(e.target.value)}/></label><label className="brand-field">Motivo da perda<textarea maxLength={255} value={reason} disabled={mutations.blocked} onChange={e=>setReason(e.target.value)}/></label>{error&&<p role="alert">{error}</p>}{measured!==undefined&&<p>Classificar {q(measured)} {loaded.data.unit}; nenhuma baixa adicional de estoque.</p>}<button className="brand-primary" disabled={mutations.blocked||measured===undefined} onClick={()=>void save()}>Registrar perda declarada</button></>:<p>Toda a diferença já está classificada, ou o resultado não possui diferença.</p>}
+ <ul>{loaded.data.items.map(i=><li key={i.id}><span className="operation-id">Perda: {i.id}</span> · {q(i.quantity_milli)} {i.unit} · {i.status==='recorded'?'Declarada':'Anulada'} · revisão {i.revision}<p>{i.reason}</p></li>)}</ul><Pages offset={offset} more={loaded.data.items.length===50} busy={loaded.busy} change={load}/><p>Os totais são globais deste resultado, mesmo com uma página parcial de declarações. A revisão e o saldo disponíveis são conferidos no servidor ao gravar.</p></>}
+ </ReadSection>;
+}

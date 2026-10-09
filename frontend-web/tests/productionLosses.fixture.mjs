@@ -1,0 +1,2 @@
+export function summary(unit='unit'){return {result_id:'result',product_id:'bread',unit,planned_milli:30000,produced_milli:27000,shortfall_milli:3000,recorded_loss_milli:2000,unclassified_shortfall_milli:1000,items:[loss(unit)]};}
+export function loss(unit='unit'){return {id:'loss',result_id:'result',product_id:'bread',unit,quantity_milli:2000,reason:'Declarado',status:'recorded',revision:1,created_by:'person',created_at:'now',updated_at:'now'};}
