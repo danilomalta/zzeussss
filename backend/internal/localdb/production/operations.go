@@ -18,6 +18,12 @@ type OperationReceipt struct {
 }
 
 func GetOperation(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, kind, operationID string) (OperationReceipt, error) {
+	if kind == "lot" || kind == "lot_void" {
+		return getLotOperation(ctx, db, a, d, kind, operationID)
+	}
+	if kind == "quality" {
+		return getQualityOperation(ctx, db, a, d, operationID)
+	}
 	if kind == "loss" || kind == "loss_void" {
 		return getLossOperation(ctx, db, a, d, kind, operationID)
 	}

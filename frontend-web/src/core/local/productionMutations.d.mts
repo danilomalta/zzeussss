@@ -12,9 +12,9 @@ export interface StagePlanInput {operation_id:string;order_id:string;stages:{sta
 export interface StageStateInput {operation_id:string;order_id:string;stage_id:string;expected_revision:number;status:'running'|'completed';reason:string}
 export interface LossInput {operation_id:string;loss_id:string;result_id:string;quantity_milli:number;reason:string}
 export interface VoidLossInput {operation_id:string;loss_id:string;expected_revision:number;reason:string}
-export type ProductionOperation={kind:'recipe';input:RecipeInput}|{kind:'order';input:OrderInput}|{kind:'state';input:StateInput}|{kind:'recipe_state';input:RecipeStateInput}|{kind:'reserve';input:ReserveInput}|{kind:'materials';input:MaterialsInput}|{kind:'result';input:ResultInput}|{kind:'stage_plan';input:StagePlanInput}|{kind:'stage_state';input:StageStateInput}|{kind:'loss';input:LossInput}|{kind:'loss_void';input:VoidLossInput};
+export type ProductionOperation={kind:'recipe';input:RecipeInput}|{kind:'order';input:OrderInput}|{kind:'state';input:StateInput}|{kind:'recipe_state';input:RecipeStateInput}|{kind:'reserve';input:ReserveInput}|{kind:'materials';input:MaterialsInput}|{kind:'result';input:ResultInput}|{kind:'stage_plan';input:StagePlanInput}|{kind:'stage_state';input:StageStateInput}|{kind:'loss';input:LossInput}|{kind:'loss_void';input:VoidLossInput}|{kind:'lot';input:LotInput}|{kind:'lot_void';input:VoidLotInput}|{kind:'quality';input:QualityInput};
 export type PendingProduction=ProductionOperation & {uncertain:boolean};
-export interface MutationResult {loss_id?:string;stage_id?:string;revision?:number;reservation_id?:string;result_id?:string;unit?:string;product_id?:string;location_id?:string;planned_milli?:number;produced_milli?:number;shortfall_milli?:number;repeated:boolean;recipe_id?:string;version_id?:string;order_id?:string;status?:string}
+export interface MutationResult {lot_id?:string;loss_id?:string;stage_id?:string;revision?:number;reservation_id?:string;result_id?:string;unit?:string;product_id?:string;location_id?:string;planned_milli?:number;produced_milli?:number;shortfall_milli?:number;repeated:boolean;recipe_id?:string;version_id?:string;order_id?:string;status?:string}
 export function validProductionInput(kind:string,v:unknown):boolean;
 export function parseProductionQuantity(v:string,allowZero?:boolean):number;
 export function parseProductionInteger(v:string,allowZero?:boolean):number;
@@ -24,3 +24,6 @@ export function productionPendingKey(s:LocalSession):string;
 export function readProductionPending(storage:Storage,key:string):PendingProduction|null;
 export function persistProductionPending(storage:Storage,key:string,operation:ProductionOperation):void;
 export function resolveProductionPending(client:ReturnType<typeof createProductionMutations>,token:string,storage:Storage,key:string,send?:boolean,discard?:boolean):Promise<{state:string;result?:MutationResult}|null>;
+export interface LotInput {operation_id:string;lot_id:string;result_id:string;quantity_milli:number;code:string;manufactured_on:string;expires_on:string;reason:string}
+export interface VoidLotInput {operation_id:string;lot_id:string;expected_revision:number;reason:string}
+export interface QualityInput {operation_id:string;lot_id:string;expected_revision:number;status:'passed'|'failed';criterion:string;reason:string}

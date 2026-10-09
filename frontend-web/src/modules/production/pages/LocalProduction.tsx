@@ -1,3 +1,4 @@
+import ProductionLotDeclaration from './ProductionLotDeclaration';
 import ProductionQualityHistory from './ProductionQualityHistory';
 import ProductionLotHistory from './ProductionLotHistory';
 import ProductionResultLots from './ProductionResultLots';
@@ -39,6 +40,7 @@ export default function LocalProduction(){
     <ProductionLossDeclaration/>
     <ProductionLossVoid/>
     <ProductionLossHistory/>
+    <ProductionLotDeclaration/>
     <ProductionResultLots/>
     <ProductionLotHistory/>
     <ProductionQualityHistory/>

@@ -1,0 +1,7 @@
+import {requireValid} from './operationsRead.mjs';
+import {validLotSummary,validLot} from './productionLots.mjs';
+import {validQualityAudit} from './productionQuality.mjs';
+import {parseProductionQuantity,validProductionInput} from './productionMutations.mjs';
+export function prepareLot(summary,quantity,code,made,expiry,reason,operationID,lotID){requireValid(validLotSummary(summary,summary?.result_id));const n=parseProductionQuantity(quantity);requireValid(n<=summary.unassigned_milli&&(summary.unit!=='unit'||n%1000===0));const input={operation_id:operationID,lot_id:lotID,result_id:summary.result_id,quantity_milli:n,code:code.trim(),manufactured_on:made,expires_on:expiry,reason:reason.trim()};requireValid(validProductionInput('lot',input));return input;}
+export function prepareLotVoid(lot,reason,operationID){requireValid(validLot(lot)&&lot.status==='recorded');const input={operation_id:operationID,lot_id:lot.id,expected_revision:lot.revision,reason:reason.trim()};requireValid(validProductionInput('lot_void',input));return input;}
+export function prepareQuality(audit,status,criterion,reason,operationID){requireValid(audit&&validQualityAudit(audit.lot,audit.quality,audit.items,audit.offset)&&audit.lot.status==='recorded');const input={operation_id:operationID,lot_id:audit.lot.id,expected_revision:audit.quality.revision,status,criterion:criterion.trim(),reason:reason.trim()};requireValid(validProductionInput('quality',input));return input;}

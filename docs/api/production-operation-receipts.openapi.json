@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Production immutable operation receipts",
-    "version": "P49",
+    "version": "P55",
     "description": "Read-only original receipt scoped to authenticated tenant/store/device/operator. No implicit retry. Existing production permission and approved-device checks apply; historical reads are independent of active license. Result repeated is false in the stored original receipt."
   },
   "paths": {
@@ -31,7 +31,10 @@
                 "stage_plan",
                 "stage_state",
                 "loss",
-                "loss_void"
+                "loss_void",
+                "lot",
+                "lot_void",
+                "quality"
               ]
             }
           },
@@ -1187,6 +1190,307 @@
                               "enum": [
                                 false
                               ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "lot"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "lot_id",
+                            "reason",
+                            "result_id",
+                            "quantity_milli",
+                            "code",
+                            "manufactured_on",
+                            "expires_on"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            },
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "quantity_milli": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "code": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64,
+                              "description": "Até 64 bytes UTF8, sem caracteres de controle"
+                            },
+                            "manufactured_on": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "expires_on": {
+                              "type": "string",
+                              "description": "Vazia quando desconhecida; caso informada, YYYY-MM-DD não anterior à fabricação"
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "lot_id",
+                            "result_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "enum": [
+                                1
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "recorded"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "lot_void"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "lot_id",
+                            "reason",
+                            "expected_revision"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            },
+                            "expected_revision": {
+                              "type": "integer",
+                              "enum": [
+                                1
+                              ]
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "lot_id",
+                            "result_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "enum": [
+                                2
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "voided"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "quality"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "required": [
+                            "operation_id",
+                            "lot_id",
+                            "expected_revision",
+                            "status",
+                            "criterion",
+                            "reason"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "expected_revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 2147483646
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "passed",
+                                "failed"
+                              ]
+                            },
+                            "criterion": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255,
+                              "description": "Até 255 bytes UTF8"
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255,
+                              "description": "Até 255 bytes UTF8"
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "required": [
+                            "lot_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2147483647
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "passed",
+                                "failed"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean"
                             }
                           }
                         }

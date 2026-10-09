@@ -1,0 +1,11 @@
+# P55 — declarar lotes pela interface
+
+Base confirmada P54 99c9697. Schema 44 preservado; sem migração ou compatibilidade adicional de backup.
+
+Consulta o resultado antes de atribuir quantidade já produzida, limitada ao total global ainda sem lote. Quantidades exatas, unidade explícita, unidades inteiras, código de até 64 bytes, fabricação de calendário válida, validade opcional não anterior à fabricação e motivo de até 255 bytes. Datas nunca derivadas automaticamente. Confirmação humana explícita, IDs gerados uma vez e payload persistido na fila existente antes de POST /production/lots. Operação incerta mantém bloqueio; repetição explícita conserva IDs e dados.
+
+Contrato compartilhado ampliado: GET /local/v1/production/operations/{kind}/{id} aceita lot, lot_void e quality. Recibos originais são vinculados à empresa, loja, aparelho e operador; validam payload canônico, resultado, metadados e vínculo com resultado imutável. Registro lot continua recorded revisão 1 após anulação. quality mantém parecer original mesmo após novas avaliações ou anulação do lote. Leituras usam autorização histórica existente, sem escrita de estoque. POST mantém autorização e licença existentes. Nenhum formato/criptografia/recuperação de backup foi alterado.
+
+ProductionPending e productionMutations ampliam tipos/rotas/recibos sem modificar regras da fila, locks, isolamento ou confirmação. Cliente de preparação novo valida declarações, anulações e pareceres; P56/P57 acrescentam suas telas. LocalProduction inclui formulário, package.json registra testes, OpenAPI enum documenta novos recibos; payloads de escrita permanecem nos documentos production-lots e production-quality existentes.
+
+Teste HTTP declara, reavalia, anula, substitui lote, confere recibos originais e quantidade sem alterações adicionais de estoque, e recupera os mesmos recibos após backup/restauração em banco temporário. Corrompe somente fixtures descartáveis para testar operador estrangeiro, request e result incompatíveis. Testes frontend conferem limites, datas, payload exato e resposta perdida sem segunda atribuição. Suíte backend, vet, corrida específica, suíte frontend e build antes do commit. Aceitação visual no PC permanece separada.
