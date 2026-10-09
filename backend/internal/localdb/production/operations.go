@@ -18,6 +18,9 @@ type OperationReceipt struct {
 }
 
 func GetOperation(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, kind, operationID string) (OperationReceipt, error) {
+	if kind == "recipe_state" || kind == "reserve" || kind == "materials" || kind == "result" {
+		return getExecutionOperation(ctx, db, a, d, kind, operationID)
+	}
 	if !validID(operationID) || (kind != "recipe" && kind != "order" && kind != "state") {
 		return OperationReceipt{}, ErrInvalid
 	}

@@ -1,3 +1,4 @@
+import RecipeStateEditor from './RecipeStateEditor';
 import OrderStateEditor from './OrderStateEditor';
 import OrderPlanner from './OrderPlanner';
 import RecipeEditor from './RecipeEditor';
@@ -16,6 +17,7 @@ export default function LocalProduction(){
   function loadOrders(offset=0){setOrderOffset(offset);void orders.run(t=>client.orders(t,status,offset));}
   return <main className="brand-app-content operation-page"><ProductionPending><header><p className="brand-eyebrow">PRODUÇÃO LOCAL</p><h1>Receitas e ordens</h1><p>Quantidades em milésimos da unidade indicada. Consultar capacidade não reserva ingredientes.</p></header>
     <RecipeEditor/>
+    <RecipeStateEditor/>
     <OrderPlanner/>
     <OrderStateEditor/>
     <ReadSection title="Versões das receitas"><form className="operation-form" onSubmit={e=>{e.preventDefault();loadRecipes();}}><label className="brand-field">ID da receita (opcional)<input maxLength={128} value={recipeID} onChange={e=>{setRecipeID(e.target.value);recipes.clear();}}/></label><button className="brand-primary" disabled={recipes.busy}>Consultar versões</button></form><ReadState task={recipes}/>
