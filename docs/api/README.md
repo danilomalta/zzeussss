@@ -91,3 +91,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - `online-catalog-barcodes.openapi.json`: vários GTINs, lookup, ativação/inativação, idempotência, auditoria e outbox online (entrega 32).
 
 - `online-catalog-barcode-batches.openapi.json`: cadastro de GTIN em lote com prévia vinculada ao ator, atomicidade, auditoria/outbox, replay e consulta do recibo (entrega 33).
+
+- `online-catalog-barcode-csv.openapi.json`: modelo, importação GTIN com prévia/apply, diagnóstico seguro por linha e exportação de conferência (entrega 34).

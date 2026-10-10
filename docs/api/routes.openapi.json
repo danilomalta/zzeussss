@@ -4616,6 +4616,343 @@
           "url": "./online-catalog-barcode-batches.openapi.json"
         }
       }
+    },
+    "/api/v1/catalog/barcodes/import/preview": {
+      "post": {
+        "operationId": "online_barcode_csv_PreviewBarcodeCSV",
+        "summary": "PreviewBarcodeCSV",
+        "description": "Owner/admin/manager/stock. Tenant, usuário e sessão derivados da autenticação; query não permitida e GET sem corpo. Sem alterações parciais, criação de produtos ou integração com PDV SQLite.",
+        "parameters": [],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita ou CSV inválido; csv_error seguro inclui linha/campo/código, sem valores enviados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-csv.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/recibo ausente no escopo"
+          },
+          "409": {
+            "description": "Capacidade, código ocupado, versão/hash obsoleto ou mesma operação com conteúdo diferente"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar recibo e preservar identidade"
+          },
+          "200": {
+            "description": "Resultado normalizado do lote, vinculado à empresa e responsável. Snapshot original em replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-batches.openapi.json#/components/schemas/Preview"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-barcode-csv.openapi.json#/components/schemas/PreviewInput"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "GTIN CSV online",
+          "url": "./online-catalog-barcode-csv.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/import/apply": {
+      "post": {
+        "operationId": "online_barcode_csv_ApplyBarcodeCSV",
+        "summary": "ApplyBarcodeCSV",
+        "description": "Owner/admin/manager/stock. Tenant, usuário e sessão derivados da autenticação; query não permitida e GET sem corpo. Sem alterações parciais, criação de produtos ou integração com PDV SQLite.",
+        "parameters": [],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita ou CSV inválido; csv_error seguro inclui linha/campo/código, sem valores enviados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-csv.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/recibo ausente no escopo"
+          },
+          "409": {
+            "description": "Capacidade, código ocupado, versão/hash obsoleto ou mesma operação com conteúdo diferente"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar recibo e preservar identidade"
+          },
+          "200": {
+            "description": "Resultado normalizado do lote, vinculado à empresa e responsável. Snapshot original em replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-batches.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-catalog-barcode-csv.openapi.json#/components/schemas/ApplyInput"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "GTIN CSV online",
+          "url": "./online-catalog-barcode-csv.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/import/template": {
+      "get": {
+        "operationId": "online_barcode_csv_TemplateBarcodeCSV",
+        "summary": "TemplateBarcodeCSV",
+        "description": "Owner/admin/manager/stock. Tenant, usuário e sessão derivados da autenticação; query não permitida e GET sem corpo. Sem alterações parciais, criação de produtos ou integração com PDV SQLite.",
+        "parameters": [],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita ou CSV inválido; csv_error seguro inclui linha/campo/código, sem valores enviados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-csv.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/recibo ausente no escopo"
+          },
+          "409": {
+            "description": "Capacidade, código ocupado, versão/hash obsoleto ou mesma operação com conteúdo diferente"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar recibo e preservar identidade"
+          },
+          "200": {
+            "description": "Cabeçalho product_id;expected_version;code, sem dados comerciais.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "nosniff"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "GTIN CSV online",
+          "url": "./online-catalog-barcode-csv.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/barcodes/export.csv": {
+      "get": {
+        "operationId": "online_barcode_csv_ExportBarcodeCSV",
+        "summary": "ExportBarcodeCSV",
+        "description": "Owner/admin/manager/stock. Tenant, usuário e sessão derivados da autenticação; query não permitida e GET sem corpo. Sem alterações parciais, criação de produtos ou integração com PDV SQLite.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita ou CSV inválido; csv_error seguro inclui linha/campo/código, sem valores enviados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-csv.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/recibo ausente no escopo"
+          },
+          "409": {
+            "description": "Capacidade, código ocupado, versão/hash obsoleto ou mesma operação com conteúdo diferente"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar recibo e preservar identidade"
+          },
+          "200": {
+            "description": "CSV de conferência completo por produto: product_id;product_version;barcode_id;barcode_version;code;canonical_code;barcode_active;product_active. Inclui inativos, até 50 linhas, snapshot único. Não é formato de recadastro.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "nosniff"
+                  ]
+                }
+              },
+              "X-Catalog-Product-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Catalog-Product-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Catalog-Row-Count": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Catalog-Source-Hash": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "x-payload-contract": "documented",
+        "externalDocs": {
+          "description": "GTIN CSV online",
+          "url": "./online-catalog-barcode-csv.openapi.json"
+        }
+      }
     }
   },
   "components": {

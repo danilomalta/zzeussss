@@ -1,0 +1,442 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem — GTIN CSV online",
+    "version": "34.0",
+    "description": "Modelo, prévia/apply CSV e exportação de conferência por produto. Reutiliza o lote da entrega 33, seu UUID, auditoria/outbox e recibo recuperável. Migração existente 15; nenhuma nova migração. O relatório exportado não é arquivo de recadastro; códigos cadastrados permanecem reservados, inclusive inativos."
+  },
+  "paths": {
+    "/api/v1/catalog/barcodes/import/preview": {
+      "post": {
+        "operationId": "online_barcode_csv_PreviewBarcodeCSV",
+        "summary": "PreviewBarcodeCSV",
+        "description": "Owner/admin/manager/stock. Tenant, usuário e sessão derivados da autenticação; query não permitida e GET sem corpo. Sem alterações parciais, criação de produtos ou integração com PDV SQLite.",
+        "parameters": [],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita ou CSV inválido; csv_error seguro inclui linha/campo/código, sem valores enviados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/recibo ausente no escopo"
+          },
+          "409": {
+            "description": "Capacidade, código ocupado, versão/hash obsoleto ou mesma operação com conteúdo diferente"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar recibo e preservar identidade"
+          },
+          "200": {
+            "description": "Resultado normalizado do lote, vinculado à empresa e responsável. Snapshot original em replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-batches.openapi.json#/components/schemas/Preview"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/import/apply": {
+      "post": {
+        "operationId": "online_barcode_csv_ApplyBarcodeCSV",
+        "summary": "ApplyBarcodeCSV",
+        "description": "Owner/admin/manager/stock. Tenant, usuário e sessão derivados da autenticação; query não permitida e GET sem corpo. Sem alterações parciais, criação de produtos ou integração com PDV SQLite.",
+        "parameters": [],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita ou CSV inválido; csv_error seguro inclui linha/campo/código, sem valores enviados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/recibo ausente no escopo"
+          },
+          "409": {
+            "description": "Capacidade, código ocupado, versão/hash obsoleto ou mesma operação com conteúdo diferente"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar recibo e preservar identidade"
+          },
+          "200": {
+            "description": "Resultado normalizado do lote, vinculado à empresa e responsável. Snapshot original em replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-catalog-barcode-batches.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/barcodes/import/template": {
+      "get": {
+        "operationId": "online_barcode_csv_TemplateBarcodeCSV",
+        "summary": "TemplateBarcodeCSV",
+        "description": "Owner/admin/manager/stock. Tenant, usuário e sessão derivados da autenticação; query não permitida e GET sem corpo. Sem alterações parciais, criação de produtos ou integração com PDV SQLite.",
+        "parameters": [],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita ou CSV inválido; csv_error seguro inclui linha/campo/código, sem valores enviados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/recibo ausente no escopo"
+          },
+          "409": {
+            "description": "Capacidade, código ocupado, versão/hash obsoleto ou mesma operação com conteúdo diferente"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar recibo e preservar identidade"
+          },
+          "200": {
+            "description": "Cabeçalho product_id;expected_version;code, sem dados comerciais.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "nosniff"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/barcodes/export.csv": {
+      "get": {
+        "operationId": "online_barcode_csv_ExportBarcodeCSV",
+        "summary": "ExportBarcodeCSV",
+        "description": "Owner/admin/manager/stock. Tenant, usuário e sessão derivados da autenticação; query não permitida e GET sem corpo. Sem alterações parciais, criação de produtos ou integração com PDV SQLite.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada estrita ou CSV inválido; csv_error seguro inclui linha/campo/código, sem valores enviados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada"
+          },
+          "403": {
+            "description": "Perfil sem autorização"
+          },
+          "404": {
+            "description": "Produto/recibo ausente no escopo"
+          },
+          "409": {
+            "description": "Capacidade, código ocupado, versão/hash obsoleto ou mesma operação com conteúdo diferente"
+          },
+          "429": {
+            "description": "Limite de requisições"
+          },
+          "503": {
+            "description": "Indisponível/resultado incerto; consultar recibo e preservar identidade"
+          },
+          "200": {
+            "description": "CSV de conferência completo por produto: product_id;product_version;barcode_id;barcode_version;code;canonical_code;barcode_active;product_active. Inclui inativos, até 50 linhas, snapshot único. Não é formato de recadastro.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "nosniff"
+                  ]
+                }
+              },
+              "X-Catalog-Product-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Catalog-Product-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Catalog-Row-Count": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Catalog-Source-Hash": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PreviewInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason",
+          "csv"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "csv": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16384,
+            "description": "UTF-8 até 16384 bytes. Cabeçalho product_id;expected_version;code. 1–50 produtos distintos, um GTIN string por produto. BOM inicial opcional, LF/CRLF, campos quoted e linhas físicas vazias aceitos; sem coerção/trim dos valores."
+          }
+        }
+      },
+      "ApplyInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason",
+          "csv",
+          "preview_hash"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "csv": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16384,
+            "description": "UTF-8 até 16384 bytes. Cabeçalho product_id;expected_version;code. 1–50 produtos distintos, um GTIN string por produto. BOM inicial opcional, LF/CRLF, campos quoted e linhas físicas vazias aceitos; sem coerção/trim dos valores."
+          },
+          "preview_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      },
+      "CSVError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "line",
+          "field",
+          "code"
+        ],
+        "properties": {
+          "line": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Linha física inicial do registro, 0 quando não aplicável."
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "header",
+              "product_id",
+              "expected_version",
+              "code"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "size_or_encoding",
+              "header",
+              "syntax_or_columns",
+              "row_limit",
+              "product_id",
+              "version",
+              "gtin",
+              "duplicate_product",
+              "duplicate_gtin",
+              "empty"
+            ]
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "erro"
+        ],
+        "properties": {
+          "erro": {
+            "type": "string"
+          },
+          "csv_error": {
+            "$ref": "#/components/schemas/CSVError"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

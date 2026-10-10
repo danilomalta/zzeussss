@@ -1385,6 +1385,101 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_catalog_barcodes WHERE tenant_id=$1 AND product_id IN ($2,$3)`, tenantA, rollbackID33a, rollbackID33b).Scan(&partial33) != nil || partial33 != 2 {
 		t.Fatal("replay duplicou códigos")
 	}
+	// GTIN CSV adapter reuses the exact atomic batch operation and receipt.
+	app = fiber.New()
+	Registrar(app)
+	csvRequest34 := func(path string, access string, want int) string {
+		t.Helper()
+		req := httptest.NewRequest("GET", path, nil)
+		req.Header.Set("Authorization", "Bearer "+access)
+		resp, e := app.Test(req, 10000)
+		if e != nil {
+			t.Fatal("download CSV indisponível")
+		}
+		defer resp.Body.Close()
+		data, e := io.ReadAll(resp.Body)
+		if e != nil || resp.StatusCode != want {
+			t.Fatal("status download CSV incorreto")
+		}
+		if want == 200 && (!strings.HasPrefix(resp.Header.Get("Content-Type"), "text/csv") || resp.Header.Get("Cache-Control") != "no-store" || resp.Header.Get("X-Content-Type-Options") != "nosniff" || !strings.HasPrefix(resp.Header.Get("Content-Disposition"), "attachment;")) {
+			t.Fatal("download CSV sem proteção")
+		}
+		return string(data)
+	}
+	if csvRequest34("/api/v1/catalog/barcodes/import/template", tokenA, 200) != onlinecatalog.BarcodeCSVHeader {
+		t.Fatal("modelo CSV não canônico")
+	}
+	csvID34a, csvID34b := newBatchProduct33("csv-gtin-a"), newBatchProduct33("csv-gtin-b")
+	csv34 := onlinecatalog.BarcodeCSVInput{OperationID: uuid.NewString(), Reason: "Códigos da planilha conferidos", CSV: onlinecatalog.BarcodeCSVHeader + fmt.Sprintf("%d;1;%s\n%d;1;%s\n", csvID34b, gtin33("789123450011"), csvID34a, gtin33("789123450010"))}
+	csvBody34, _ := json.Marshal(csv34)
+	csvPreview34 := request("POST", "/api/v1/catalog/barcodes/import/preview", string(csvBody34), tokenA, 200)
+	checkProduct(csvID34a, 1, 125, true)
+	checkProduct(csvID34b, 1, 125, true)
+	request("GET", "/api/v1/catalog/barcodes/batches/"+csv34.OperationID, "", tokenA, 404)
+	csv34.PreviewHash = csvPreview34["preview_hash"].(string)
+	csvBody34, _ = json.Marshal(csv34)
+	csvApplied34 := request("POST", "/api/v1/catalog/barcodes/import/apply", string(csvBody34), tokenA, 200)
+	checkProduct(csvID34a, 2, 125, true)
+	checkProduct(csvID34b, 2, 125, true)
+	request("GET", "/api/v1/catalog/barcodes/batches/"+csv34.OperationID, "", tokenA, 200)
+	request("GET", "/api/v1/catalog/barcodes/batches/"+csv34.OperationID, "", tokenB, 404)
+	request("POST", "/api/v1/catalog/barcodes/import/apply", string(csvBody34), tokenA, 200)
+	// Identical normalized JSON items and CSV share an identity, not two imports.
+	csvBatch34, e := onlinecatalog.DecodeBarcodeCSV("application/json", csvBody34, true)
+	if e != nil {
+		t.Fatal("CSV válido recusado")
+	}
+	csvBatchBody34, _ := json.Marshal(csvBatch34)
+	request("POST", "/api/v1/catalog/barcodes/batches/apply", string(csvBatchBody34), tokenA, 200)
+	csvVariant34 := csv34
+	csvVariant34.CSV = "\ufeff" + strings.ReplaceAll(csv34.CSV, "\n", "\r\n")
+	variantBody34, _ := json.Marshal(csvVariant34)
+	request("POST", "/api/v1/catalog/barcodes/import/apply", string(variantBody34), tokenA, 200)
+	changedCSV34 := csv34
+	changedCSV34.CSV = strings.Replace(csv34.CSV, gtin33("789123450010"), gtin33("789123450012"), 1)
+	changedBody34, _ := json.Marshal(changedCSV34)
+	request("POST", "/api/v1/catalog/barcodes/import/apply", string(changedBody34), tokenA, 409)
+	reportCSV34 := csvRequest34(fmt.Sprintf("/api/v1/produtos/%d/barcodes/export.csv", csvID34a), tokenA, 200)
+	if !strings.HasPrefix(reportCSV34, onlinecatalog.BarcodeCSVReportHeader) || !strings.Contains(reportCSV34, ";"+gtin33("789123450010")+";") {
+		t.Fatal("conferência não exportou código real")
+	}
+	csvRequest34(fmt.Sprintf("/api/v1/produtos/%d/barcodes/export.csv", csvID34a), tokenB, 404)
+	codeID34 := csvApplied34["items"].([]interface{})[0].(map[string]interface{})["after"].(map[string]interface{})["id"].(string)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes/%s/active", csvID34a, codeID34), fmt.Sprintf(`{"operation_id":%q,"expected_version":2,"expected_code_version":1,"ativo":false,"reason":"Etiqueta antiga"}`, uuid.NewString()), tokenA, 200)
+	reportCSV34 = csvRequest34(fmt.Sprintf("/api/v1/produtos/%d/barcodes/export.csv", csvID34a), tokenA, 200)
+	if !strings.Contains(reportCSV34, ";false;true\n") {
+		t.Fatal("exportação ocultou inativo ou confundiu estados")
+	}
+	// Invalid rows expose only controlled line/field/code diagnostics, no raw text.
+	badCSV34 := onlinecatalog.BarcodeCSVInput{OperationID: uuid.NewString(), Reason: "Conferência", CSV: onlinecatalog.BarcodeCSVHeader + fmt.Sprintf("%d;2;private-invalid\n", csvID34b)}
+	badBody34, _ := json.Marshal(badCSV34)
+	badResponse34 := request("POST", "/api/v1/catalog/barcodes/import/preview", string(badBody34), tokenA, 400)
+	diag34 := badResponse34["csv_error"].(map[string]interface{})
+	if diag34["line"] != float64(2) || diag34["code"] != "gtin" {
+		t.Fatal("diagnóstico CSV incorreto")
+	}
+	encodedDiag34, _ := json.Marshal(badResponse34)
+	if strings.Contains(string(encodedDiag34), "private-invalid") {
+		t.Fatal("diagnóstico vazou conteúdo")
+	}
+	checkProduct(csvID34b, 2, 125, true)
+	// Late failure through the CSV HTTP path must leave zero partial batch effects.
+	csvRollbackID34a, csvRollbackID34b := newBatchProduct33("csv-gtin-rollback-a"), newBatchProduct33("csv-gtin-rollback-b")
+	csvRollback34 := onlinecatalog.BarcodeCSVInput{OperationID: uuid.NewString(), Reason: "Rollback CSV", CSV: onlinecatalog.BarcodeCSVHeader + fmt.Sprintf("%d;1;%s\n%d;1;%s\n", csvRollbackID34a, gtin33("789123450013"), csvRollbackID34b, gtin33("789123450014"))}
+	rollbackCSVBody34, _ := json.Marshal(csvRollback34)
+	rollbackCSVPreview34 := request("POST", "/api/v1/catalog/barcodes/import/preview", string(rollbackCSVBody34), tokenA, 200)
+	csvRollback34.PreviewHash = rollbackCSVPreview34["preview_hash"].(string)
+	rollbackCSVBody34, _ = json.Marshal(csvRollback34)
+	exec(`ALTER TABLE online_catalog_barcode_batch_outbox ENABLE TRIGGER refuse_barcode_batch_event`)
+	request("POST", "/api/v1/catalog/barcodes/import/apply", string(rollbackCSVBody34), tokenA, 503)
+	checkProduct(csvRollbackID34a, 1, 125, true)
+	checkProduct(csvRollbackID34b, 1, 125, true)
+	request("GET", "/api/v1/catalog/barcodes/batches/"+csvRollback34.OperationID, "", tokenA, 404)
+	request("GET", "/api/v1/catalog/barcodes/lookup?code="+gtin33("789123450013"), "", tokenA, 404)
+	exec(`ALTER TABLE online_catalog_barcode_batch_outbox DISABLE TRIGGER refuse_barcode_batch_event`)
+	request("POST", "/api/v1/catalog/barcodes/import/apply", string(rollbackCSVBody34), tokenA, 200)
+	checkProduct(csvRollbackID34a, 2, 125, true)
+	checkProduct(csvRollbackID34b, 2, 125, true)
 	var barcodeBatchChecksum33 string
 	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_catalog_barcode_batch_migrations WHERE version=15`).Scan(&barcodeBatchChecksum33) != nil {
 		t.Fatal("checksum lote ausente")
