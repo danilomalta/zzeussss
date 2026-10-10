@@ -1,0 +1,11 @@
+import {useState} from 'react';
+import {createCatalogStateHistory} from '../../../core/local/catalogStateHistory.mjs';
+import type {CatalogStateHistory as History} from '../../../core/local/catalogStateHistory.mjs';
+import {useReadTask,ReadState,ReadSection,Pages} from '../../production/pages/readPanel';
+const client=createCatalogStateHistory(),label={active:'Ativo',inactive:'Inativo'};
+export default function CatalogStateHistory(){const loaded=useReadTask<History>();const [id,setID]=useState(''),[offset,setOffset]=useState(0);
+ function load(n=0){setOffset(n);void loaded.run(t=>client(t,id.trim(),n));}
+ return <ReadSection title="Histórico auditado do estado do produto"><p>Consulte decisões preservadas de ativação e inativação. O produto pertence à empresa; o histórico identifica a loja e o aparelho de cada decisão.</p><form className="operation-form" onSubmit={e=>{e.preventDefault();load();}}><label className="brand-field">ID do produto<input required maxLength={128} value={id} onChange={e=>{setID(e.target.value);setOffset(0);loaded.clear();}}/></label><button className="brand-secondary" disabled={loaded.busy}>Consultar histórico</button></form><ReadState task={loaded}/>
+ {loaded.data&&<><p className="operation-id">Produto: {loaded.data.current.product_id}</p><p>Estado consultado: {label[loaded.data.current.status]} · revisão {loaded.data.current.revision} · {loaded.data.total_count} decisões preservadas.</p>{loaded.data.total_count===0&&<p>Nenhuma mudança registrada. O estado inicial é ativo; isso não é uma aprovação comercial, de qualidade ou disponibilidade de estoque.</p>}{loaded.data.total_count>0&&loaded.data.items.length===0&&<p>Nenhuma decisão nesta página.</p>}<ol start={offset+1}>{loaded.data.items.map(e=><li key={e.revision}><strong>{label[e.before_status]} → {label[e.after_status]}</strong> · revisão {e.revision}<p>{e.reason}</p><p className="operation-id">Operador: {e.actor_id}<br/>Loja: {e.store_id}<br/>Aparelho: {e.device_id}<br/>Operação: {e.operation_id}<br/>Data: {e.created_at}</p></li>)}</ol><Pages offset={offset} more={loaded.data.has_more} busy={loaded.busy} change={load}/><p>Revisão do estado e revisão de edição são independentes. Consultar não altera cadastro ou saldos.</p></>}
+ </ReadSection>;
+}

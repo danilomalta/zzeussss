@@ -1,3 +1,4 @@
+import CatalogStateHistory from './CatalogStateHistory';
 import CatalogProductState from './CatalogProductState';
 import {CatalogPending} from './CatalogPending';
 import CatalogEdit from './CatalogEdit';
@@ -85,7 +86,7 @@ export default function LocalCatalog() {
 
   {error && <p role="alert" className="brand-message error">{error}</p>}{message && <p role="status" className="brand-message">{message}</p>}
   {tab==='products' ? <>
-   <CatalogPending><CatalogEdit/><CatalogProductState/></CatalogPending>
+   <CatalogPending><CatalogEdit/><CatalogProductState/><CatalogStateHistory/></CatalogPending>
    {canWrite && <details className="brand-panel catalog-create"><summary>Cadastrar produto</summary><p className="brand-state">Cadastro real na API. Para vender, registre também a quantidade em uma gôndola na aba de estoque.</p>
     <form className="catalog-form" onSubmit={e=>{e.preventDefault();void save(async()=>{await localClient.createProduct(token!,{sku:sku.trim(),name:name.trim(),barcode:barcode.trim(),unit,price_cents:parseMoney(price),cost_cents:parseMoney(cost)});setSKU('');setName('');setBarcode('');setPrice('');setMessage('Produto cadastrado. Registre o estoque antes de vender.');setSearch(v=>({...v,offset:0}));});}}>
      <label>Nome<input required maxLength={255} disabled={busy || !canWrite} value={name} onChange={e=>setName(e.target.value)}/></label><label>SKU / referência<input required maxLength={100} disabled={busy || !canWrite} value={sku} onChange={e=>setSKU(e.target.value)}/></label>
