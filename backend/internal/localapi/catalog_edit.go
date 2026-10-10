@@ -9,6 +9,8 @@ import (
 )
 
 func (s *Server) mountCatalogEdit(r fiber.Router) {
+	r.Get("/catalog/products/:id/edit-details", s.catalogEditingDetails)
+	r.Get("/catalog/operations/:kind/:id", s.catalogOperation)
 	r.Get("/catalog/products/:id/edit-state", s.productEditState)
 	r.Post("/catalog/products/:id/update", s.editProduct)
 }
