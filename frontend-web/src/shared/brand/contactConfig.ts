@@ -5,4 +5,6 @@ export const contactConfig = {
   phone: '', // Exemplo: +55 11 99999-9999.
   hours: '',
   website: 'https://titantecnology.com.br',
+  termsUrl: '',
+  privacyUrl: '',
 };

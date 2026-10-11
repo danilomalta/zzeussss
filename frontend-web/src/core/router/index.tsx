@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import {useTranslation} from 'react-i18next';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 import { OnlineSessionGuard, LocalSessionGuard } from '../local/SessionGuards';
 
@@ -28,17 +29,10 @@ const SupplyChain = React.lazy(() => import('../../modules/catalog/pages/SupplyC
 const AdminDashboard = React.lazy(() => import('../../modules/tenant/pages/AdminDashboard'));
 
 // Wrapper reutilizável de Suspense para renderizar um estado de carregamento leve
-const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
-  <Suspense
-    fallback={
-      <div className="flex h-screen items-center justify-center bg-slate-900 text-indigo-500 font-medium">
-        Carregando módulo...
-      </div>
-    }
-  >
-    {children}
-  </Suspense>
-);
+const SuspenseWrapper = ({children}:{children:React.ReactNode}) => {
+  const {t} = useTranslation();
+  return <Suspense fallback={<div className="flex h-screen items-center justify-center text-base" style={{background:'var(--bg)',color:'var(--text-muted)'}}>{t('common.loading')}</div>}>{children}</Suspense>;
+};
 
 // Definição da árvore de rotas modularizada do TitanSystem
 export const router = createBrowserRouter([

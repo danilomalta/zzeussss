@@ -11,6 +11,6 @@ export function planTotals(selected) {
   const chosen = plans.filter(plan => selected.includes(plan.id));
   return {monthly:chosen.reduce((sum, plan) => sum + plan.price, 0), savings:chosen.reduce((sum, plan) => sum + Math.max(0, plan.previous - plan.price), 0)};
 }
-export function formatMoney(cents) {
-  return new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(cents / 100);
+export function formatMoney(cents, locale = 'pt-BR') {
+  return new Intl.NumberFormat(locale, {style:'currency', currency:'BRL'}).format(cents / 100);
 }

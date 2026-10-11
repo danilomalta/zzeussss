@@ -1,4 +1,5 @@
 import './index.css';
+import './i18n';
 import './shared/brand/brand.css';
 import React from 'react'
 import ReactDOM from 'react-dom/client'
