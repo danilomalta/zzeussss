@@ -25,6 +25,7 @@ var (
 type Input struct {
 	OperationID    string `json:"operation_id"`
 	Kind           string `json:"kind"`
+	ExpectedUnit   string `json:"expected_unit,omitempty"`
 	ProductID      string `json:"product_id"`
 	FromLocationID string `json:"from_location_id,omitempty"`
 	ToLocationID   string `json:"to_location_id,omitempty"`
@@ -58,7 +59,7 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		return Result{}, ErrInvalidOperation
 	}
 	if in.OperationID == "" || in.ProductID == "" || in.QuantityMilli <= 0 ||
-		in.Reason == "" || len(in.Reason) > 255 || !validLocations(in) {
+		in.Reason == "" || len(in.Reason) > 255 || !validLocations(in) || (in.ExpectedUnit != "" && (!validAvailabilityUnit(in.ExpectedUnit) || in.QuantityMilli > MaxAvailabilityQuantity)) {
 		return Result{}, ErrInvalidOperation
 	}
 	tx, err := db.BeginTx(ctx, nil)
@@ -68,6 +69,17 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 	defer tx.Rollback()
 	if err := authorize(ctx, tx, actor, device); err != nil {
 		return Result{}, err
+	}
+	if in.ExpectedUnit != "" {
+		var current string
+		if err := tx.QueryRowContext(ctx, `SELECT unit FROM products WHERE tenant_id=? AND id=?`, actor.TenantID, in.ProductID).Scan(&current); errors.Is(err, sql.ErrNoRows) {
+			return Result{}, ErrInvalidOperation
+		} else if err != nil {
+			return Result{}, err
+		}
+		if current != in.ExpectedUnit {
+			return Result{}, ErrOperationConflict
+		}
 	}
 	var existing struct {
 		tenant, store, device, actor, kind, product, reason string
@@ -140,13 +152,15 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 			return Result{}, err
 		}
 	}
+	eventInput := in
+	eventInput.ExpectedUnit = "" // Request precondition does not change the stock.operation event contract.
 	payload, err := json.Marshal(struct {
 		TenantID string `json:"tenant_id"`
 		StoreID  string `json:"store_id"`
 		DeviceID string `json:"device_id"`
 		ActorID  string `json:"actor_id"`
 		Input
-	}{device.TenantID, device.StoreID, device.DeviceID, actor.IdentityID, in})
+	}{device.TenantID, device.StoreID, device.DeviceID, actor.IdentityID, eventInput})
 	if err != nil {
 		return Result{}, err
 	}

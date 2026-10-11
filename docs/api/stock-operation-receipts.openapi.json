@@ -1,0 +1,441 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P61 estoque manual",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/stock/operations/{id}/receipt": {
+      "get": {
+        "summary": "Recibo original do operador e aparelho desta empresa/loja",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Campos, unidade, quantidade ou query inválidos"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão, aparelho ou contrato recusados"
+          },
+          "404": {
+            "description": "Não encontrado no escopo"
+          },
+          "409": {
+            "description": "Conflito, unidade alterada ou saldo livre insuficiente"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          },
+          "200": {
+            "description": "Consulta autorizada; nenhuma alteração de estoque",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stock/operations/history": {
+      "get": {
+        "summary": "Operações manuais de todos os operadores da empresa nesta loja, por produto/local",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Campos, unidade, quantidade ou query inválidos"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão, aparelho ou contrato recusados"
+          },
+          "404": {
+            "description": "Não encontrado no escopo"
+          },
+          "409": {
+            "description": "Conflito, unidade alterada ou saldo livre insuficiente"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          },
+          "200": {
+            "description": "Consulta autorizada; nenhuma alteração de estoque",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stock/operations": {
+      "post": {
+        "summary": "Contrato existente de entrada, transferência e perda com expected_unit opcional",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Campos, unidade, quantidade ou query inválidos"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão, aparelho ou contrato recusados"
+          },
+          "404": {
+            "description": "Não encontrado no escopo"
+          },
+          "409": {
+            "description": "Conflito, unidade alterada ou saldo livre insuficiente"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          },
+          "200": {
+            "description": "Repetição idempotente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "operation_id",
+                    "repeated"
+                  ],
+                  "properties": {
+                    "operation_id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "repeated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Operação registrada atomicamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "operation_id",
+                    "repeated"
+                  ],
+                  "properties": {
+                    "operation_id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "repeated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "StockInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "kind",
+          "product_id",
+          "quantity_milli",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "entry",
+              "transfer",
+              "loss"
+            ]
+          },
+          "expected_unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "from_location_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "to_location_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        "description": "Expected unit opcional para clientes legados; interface P61 sempre envia. Entrada exige destino e origem vazia; perda exige origem e destino vazio; transferência exige ambos distintos. Limites de texto em bytes UTF-8."
+      },
+      "ReceiptInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "kind",
+          "expected_unit",
+          "product_id",
+          "from_location_id",
+          "to_location_id",
+          "quantity_milli",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "entry",
+              "transfer",
+              "loss"
+            ]
+          },
+          "expected_unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "from_location_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "to_location_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "required": [
+          "input",
+          "actor_id",
+          "device_id",
+          "occurred_at",
+          "unit"
+        ],
+        "properties": {
+          "input": {
+            "$ref": "#/components/schemas/ReceiptInput"
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          }
+        }
+      },
+      "History": {
+        "type": "object",
+        "required": [
+          "product_id",
+          "location_id",
+          "items",
+          "total_count",
+          "offset",
+          "limit",
+          "has_more"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Receipt"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "enum": [
+              50
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

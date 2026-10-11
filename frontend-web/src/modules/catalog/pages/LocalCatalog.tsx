@@ -1,3 +1,4 @@
+import StockOperations from './StockOperations';
 import CatalogStateHistory from './CatalogStateHistory';
 import CatalogProductState from './CatalogProductState';
 import {CatalogPending} from './CatalogPending';
@@ -9,8 +10,8 @@ import './catalogManagement.css';
 import { useLocation } from 'react-router-dom';
 import { useLocalAccess } from '../../../core/local/LocalAccess';
 import { LocalAPIError, formatLocalCents } from '../../../core/local/localClient.mjs';
-import type { LocalProduct, LocalLocation, StockEntry } from '../../../core/local/localClient.mjs';
-import { parseMoney, parseQuantity } from '../../../core/local/posModel.mjs';
+import type { LocalProduct, LocalLocation } from '../../../core/local/localClient.mjs';
+import { parseMoney } from '../../../core/local/posModel.mjs';
 import { localClient, localErrorMessage, useLocalSession } from '../../../core/local/useLocalSession';
 
 const searchCatalog = createCatalogSearch();
@@ -18,7 +19,6 @@ const units = [['unit','Unidade'],['kg','Quilograma'],['g','Grama'],['liter','Li
 
 export default function LocalCatalog() {
  const token = useLocalSession(s => s.token);
- const session = useLocalSession(s => s.session);
  const invalidate = useLocalSession(s => s.invalidate);
  const location = useLocation();
  const tab = location.pathname === '/local/stock' ? 'stock' : 'products';
@@ -44,13 +44,6 @@ export default function LocalCatalog() {
  const [sku,setSKU] = useState(''); const [name,setName] = useState(''); const [barcode,setBarcode] = useState('');
  const [unit,setUnit] = useState('unit'); const [price,setPrice] = useState(''); const [cost,setCost] = useState('0');
  const [placeName,setPlaceName] = useState(''); const [kind,setKind] = useState('shelf');
- const [productID,setProductID] = useState(''); const [placeID,setPlaceID] = useState(''); const [quantity,setQuantity] = useState(''); const [reason,setReason] = useState('Recebimento de mercadoria');
- const [pending,setPending] = useState<StockEntry|null>(null);
- const key = `titan-stock-entry:${session?.tenant_id}:${session?.store_id}:${session?.device_id}:${session?.identity_id}`;
- useEffect(() => {
-  try { const raw=localStorage.getItem(key); if(raw) { const p=JSON.parse(raw); if(!p || p.kind!=='entry' || typeof p.operation_id!=='string' || typeof p.product_id!=='string' || typeof p.to_location_id!=='string' || !Number.isSafeInteger(p.quantity_milli) || p.quantity_milli<=0 || typeof p.reason!=='string') throw new Error('Entrada pendente inválida. Não envie uma nova entrada antes da conferência técnica.'); setPending(p); } }
-  catch { setError('Não foi possível ler a entrada pendente. As entradas ficam bloqueadas; confira o armazenamento do navegador.'); setPending({} as StockEntry); }
- },[key]);
  useEffect(() => {
   if(!token || tab!=='stock') return;
   let live=true; setLoading(true);setItems([]);
@@ -69,17 +62,6 @@ export default function LocalCatalog() {
   try { await action();setReload(v=>v+1); }
   catch(e){setError(e instanceof Error ? e.message : localErrorMessage(e));if(e instanceof LocalAPIError && e.status===401)invalidate();}
   finally {latch.current=false;setBusy(false);}
- }
- async function sendEntry(input: StockEntry) {
-  if(!token || !navigator.locks) throw new Error('Entrada de estoque exige navegador com proteção entre abas em localhost.');
-  await navigator.locks.request(key,{ifAvailable:true},async lock=>{
-   if(!lock) throw new Error('Outra aba está registrando estoque.');
-   const stored=localStorage.getItem(key);
-   if(stored && stored!==JSON.stringify(input)) throw new Error('Existe outra entrada pendente nesta instalação. Atualize a página para conferir.');
-   localStorage.setItem(key,JSON.stringify(input));setPending(input);
-   await localClient.stockEntry(token,input);
-   localStorage.removeItem(key);setPending(null);setQuantity('');setMessage('Entrada confirmada no estoque. O produto já pode ser vendido neste local.');
-  });
  }
  return <main className="brand-app-content">
   <div className="brand-app-heading"><div><p className="brand-eyebrow">GESTÃO LOCAL</p><h1>{tab==='stock'?'Estoque e locais':'Catálogo de produtos'}</h1><p className="brand-subtitle">Cadastros da empresa · As permissões e o plano são conferidos pelo servidor.</p></div><button className="brand-secondary" disabled={busy || loading} onClick={()=>{setError('');setReload(v=>v+1);}}>Atualizar</button></div>
@@ -114,8 +96,7 @@ export default function LocalCatalog() {
    </section>
   </> : <>
    <section className="brand-panel"><h2>Cadastrar local de estoque</h2><form className="catalog-form" onSubmit={e=>{e.preventDefault();void save(async()=>{await localClient.createLocation(token!,{kind,name:placeName.trim()});setPlaceName('');setMessage('Local cadastrado.');});}}><label>Nome do local<input required maxLength={255} disabled={busy || !canWrite} value={placeName} onChange={e=>setPlaceName(e.target.value)}/></label><label>Tipo<select value={kind} disabled={busy || !canWrite} onChange={e=>setKind(e.target.value)}><option value="shelf">Gôndola / saída de venda</option><option value="backroom">Depósito</option><option value="receiving">Recebimento</option><option value="production">Produção</option></select></label><button className="brand-small-primary catalog-wide" disabled={busy || !canWrite}>Cadastrar local</button></form><p className="brand-state">{places.length} local(is) cadastrado(s). Se houver perda de resposta, confira a lista antes de repetir.</p></section>
-   <section className="brand-panel" style={{marginTop:20}}><h2>Entrada de estoque</h2>{pending ? <div className="brand-message"><p>Entrada pendente de confirmação. Reenvie a mesma operação para evitar duplicar estoque.</p><button className="brand-secondary" disabled={busy || !pending.operation_id} onClick={()=>void save(()=>sendEntry(pending))}>Conferir / reenviar entrada original</button></div>:<form className="catalog-form" onSubmit={e=>{e.preventDefault();void save(async()=>{const p=items.find(p=>p.id===productID);if(!p)throw new Error('Selecione o produto desta página.');await sendEntry({operation_id:crypto.randomUUID(),kind:'entry',product_id:productID,to_location_id:placeID,quantity_milli:parseQuantity(quantity,p.unit),reason:reason.trim()});});}}>
-    <label>Produto desta página<select required disabled={busy || !canWrite} value={productID} onChange={e=>setProductID(e.target.value)}><option value="">Selecione</option>{items.map(p=><option key={p.id} value={p.id}>{p.name} · {p.unit}</option>)}</select></label><label>Local de destino<select required disabled={busy || !canWrite} value={placeID} onChange={e=>setPlaceID(e.target.value)}><option value="">Selecione</option>{places.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label><label>Quantidade na unidade do produto<input required disabled={busy || !canWrite} inputMode="decimal" value={quantity} onChange={e=>setQuantity(e.target.value)}/></label><label>Motivo<input required disabled={busy || !canWrite} value={reason} onChange={e=>setReason(e.target.value)}/></label><button className="brand-small-primary catalog-wide" disabled={busy || !canWrite}>Registrar entrada</button></form>}</section>
+   <StockOperations products={items} locations={places}/>
   </>}
   {tab==='stock' && <nav className="brand-pagination" aria-label="Páginas de produtos"><button className="brand-secondary" disabled={loading || busy || offset===0} onClick={()=>setOffset(v=>Math.max(0,v-50))}>Anterior</button><span>Página {offset/50+1}</span><button className="brand-secondary" disabled={loading || busy || items.length<50} onClick={()=>setOffset(v=>v+50)}>Próxima</button></nav>}
  </main>;
