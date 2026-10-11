@@ -3589,5 +3589,152 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if queryWrites50() != queryBefore50 || writes40() != catalogBefore50 {
 		t.Fatal("consultas50 alteraram dados")
 	}
+	// Delivery51: durable internal files, no network or supplier acceptance.
+	app = fiber.New()
+	Registrar(app)
+	if onlinecatalog.MigratePurchaseDocuments(ctx, sqlDB) != nil || onlinecatalog.MigratePurchaseDocuments(ctx, sqlDB) != nil || onlinecatalog.CheckPurchaseDocuments(ctx, sqlDB) != nil {
+		t.Fatal("migração23")
+	}
+	var ledger51 string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_purchase_document_migrations WHERE version=23`).Scan(&ledger51) != nil {
+		t.Fatal("ledger51")
+	}
+	exec(`UPDATE online_purchase_document_migrations SET checksum='changed' WHERE version=23`)
+	if onlinecatalog.MigratePurchaseDocuments(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("checksum51")
+	}
+	exec(`UPDATE online_purchase_document_migrations SET checksum=$1 WHERE version=23`, ledger51)
+	docBase51 := "/api/v1/purchase-documents"
+	v51 := onlinecatalog.PurchaseDocumentInput{OperationID: uuid.NewString(), PurchaseID: idLiteral50, ExpectedPurchaseRevision: 2, Reason: "Documento interno51"}
+	jsonDoc51 := func(v onlinecatalog.PurchaseDocumentInput) string { b, _ := json.Marshal(v); return string(b) }
+	parentBefore51, catalogBefore51 := queryWrites50(), writes40()
+	prepared51 := request("POST", docBase51, jsonDoc51(v51), tokenA, 201)
+	if prepared51["after"].(map[string]interface{})["state"] != "prepared" {
+		t.Fatal("estado51")
+	}
+	request("POST", docBase51, jsonDoc51(v51), tokenA, 201)
+	changed51 := v51
+	changed51.Reason = "Outro motivo"
+	request("POST", docBase51, jsonDoc51(changed51), tokenA, 409)
+	request("POST", docBase51, jsonDoc51(v51), otherToken39, 409)
+	request("GET", docBase51+"/operations/"+v51.OperationID, "", otherToken39, 404)
+	request("GET", docBase51+"/"+v51.OperationID, "", tokenB, 404)
+	request("GET", docBase51+"/"+v51.OperationID+"/download.json", "", tokenB, 404)
+	request("POST", docBase51, jsonDoc51(v51), stockToken45, 403)
+	download51 := func(id string, want int) (string, string) {
+		t.Helper()
+		req := httptest.NewRequest("GET", docBase51+"/"+id+"/download.json", nil)
+		req.Header.Set("Authorization", "Bearer "+tokenA)
+		resp, e := app.Test(req, 10000)
+		if e != nil {
+			t.Fatal("download51")
+		}
+		data, e := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if e != nil || resp.StatusCode != want {
+			t.Fatal("status download51")
+		}
+		if want == 200 {
+			if resp.Header.Get("X-Titan-Document-Scope") != "internal-purchase" || resp.Header.Get("Cache-Control") != "no-store" || fmt.Sprintf("%x", sha256.Sum256(data)) != resp.Header.Get("X-Titan-Document-SHA256") {
+				t.Fatal("integridade download51")
+			}
+		}
+		return string(data), resp.Header.Get("X-Titan-Document-SHA256")
+	}
+	file51, digest51 := download51(v51.OperationID, 200)
+	var payload51 onlinecatalog.PurchaseFile
+	if json.Unmarshal([]byte(file51), &payload51) != nil || payload51.Purchase.TotalCents != 7500 || payload51.Kind != "internal_purchase" || payload51.DocumentID != v51.OperationID {
+		t.Fatal("conteúdo51")
+	}
+	exec(`UPDATE products SET estoque=5 WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	fileAgain51, digestAgain51 := download51(v51.OperationID, 200)
+	if fileAgain51 != file51 || digestAgain51 != digest51 {
+		t.Fatal("snapshot51 mudou")
+	}
+	exec(`UPDATE products SET estoque=4 WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	duplicateDoc51 := v51
+	duplicateDoc51.OperationID = uuid.NewString()
+	request("POST", docBase51, jsonDoc51(duplicateDoc51), tokenA, 409)
+	cancelDocOp51 := uuid.NewString()
+	cancelDoc51 := fmt.Sprintf(`{"operation_id":%q,"expected_revision":1,"reason":"Cancelar documento interno"}`, cancelDocOp51)
+	request("POST", docBase51+"/"+v51.OperationID+"/cancel", cancelDoc51, tokenA, 200)
+	request("POST", docBase51+"/"+v51.OperationID+"/cancel", cancelDoc51, tokenA, 200)
+	download51(v51.OperationID, 409)
+	if oldDoc51 := request("GET", docBase51+"/operations/"+v51.OperationID, "", tokenA, 200); oldDoc51["after"].(map[string]interface{})["state"] != "prepared" {
+		t.Fatal("recibo histórico51")
+	}
+	request("GET", docBase51+"/"+v51.OperationID, "", tokenA, 200)
+	request("POST", docBase51+"/"+v51.OperationID+"/cancel", fmt.Sprintf(`{"operation_id":%q,"expected_revision":2,"reason":"Outra vez"}`, uuid.NewString()), tokenA, 409)
+	draftDoc51 := v51
+	draftDoc51.OperationID = uuid.NewString()
+	draftDoc51.PurchaseID = idControl50
+	draftDoc51.ExpectedPurchaseRevision = 1
+	request("POST", docBase51, jsonDoc51(draftDoc51), tokenA, 409)
+	request("POST", "/api/v1/purchases/"+idControl50+"/approve", fmt.Sprintf(`{"operation_id":%q,"expected_revision":1,"reason":"Aprovar para documento51"}`, uuid.NewString()), tokenA, 200)
+	parentBefore51 = queryWrites50()
+	var wg51 sync.WaitGroup
+	results51 := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		wg51.Add(1)
+		go func() {
+			defer wg51.Done()
+			v := v51
+			v.OperationID = uuid.NewString()
+			v.PurchaseID = idControl50
+			_, e := store.PreparePurchaseDocument(ctx, actor, v)
+			results51 <- e
+		}()
+	}
+	wg51.Wait()
+	close(results51)
+	wins51, conflicts51 := 0, 0
+	for e := range results51 {
+		if e == nil {
+			wins51++
+		} else if e == onlinecatalog.ErrConflict {
+			conflicts51++
+		} else {
+			t.Fatal("corrida51")
+		}
+	}
+	if wins51 != 1 || conflicts51 != 1 {
+		t.Fatal("documento único51")
+	}
+	newPurchaseID51 := newPurchase50("Purchase51-rollback")
+	request("POST", "/api/v1/purchases/"+newPurchaseID51+"/approve", fmt.Sprintf(`{"operation_id":%q,"expected_revision":1,"reason":"Aprovar rollback51"}`, uuid.NewString()), tokenA, 200)
+	parentBefore51 = queryWrites50()
+	rollbackDoc51 := v51
+	rollbackDoc51.OperationID = uuid.NewString()
+	rollbackDoc51.PurchaseID = newPurchaseID51
+	exec(`UPDATE products SET estoque=5 WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	request("POST", docBase51, jsonDoc51(rollbackDoc51), tokenA, 409)
+	exec(`UPDATE products SET estoque=4 WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	countDoc51 := func() int64 {
+		t.Helper()
+		var n int64
+		if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_purchase_documents)+(SELECT count(*) FROM online_purchase_document_operations)+(SELECT count(*) FROM online_purchase_document_outbox)`).Scan(&n) != nil {
+			t.Fatal("contagem51")
+		}
+		return n
+	}
+	beforeDoc51 := countDoc51()
+	exec(`CREATE FUNCTION reject_document_outbox51() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END $$; CREATE TRIGGER reject_document_outbox51 BEFORE INSERT ON online_purchase_document_outbox FOR EACH ROW EXECUTE FUNCTION reject_document_outbox51()`)
+	if _, e := store.PreparePurchaseDocument(ctx, actor, rollbackDoc51); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("outbox51")
+	}
+	if countDoc51() != beforeDoc51 {
+		t.Fatal("rollback parcial51")
+	}
+	exec(`ALTER TABLE online_purchase_document_outbox DISABLE TRIGGER reject_document_outbox51`)
+	request("POST", docBase51, jsonDoc51(rollbackDoc51), tokenA, 201)
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", docBase51+"/"+rollbackDoc51.OperationID, "", tokenA, 401)
+	if _, e := store.PurchaseDocument(ctx, actor, rollbackDoc51.OperationID); e != onlinecatalog.ErrDenied {
+		t.Fatal("revogada51")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	if queryWrites50() != parentBefore51 || writes40() != catalogBefore51 {
+		t.Fatal("documento51 alterou compra ou estoque")
+	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

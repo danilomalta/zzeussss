@@ -215,3 +215,5 @@ Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de
 - Entrega49: compra interna com snapshots e total exato; ver `124_COMPRAS_INTERNAS_CINCO_FUNCOES.md`. Confirmação externa, recebimento e financeiro continuam pendentes.
 
 - Entrega50: cinco consultas de compras internas; histórico e snapshots preservados. Ver `125_CONSULTAS_COMPRAS_INTERNAS_CINCO_FUNCOES.md`.
+
+- Entrega51: documentos internos de compras aprovadas. Ver `126_DOCUMENTOS_COMPRAS_CINCO_FUNCOES.md`. Não representa integração ou aceite do fornecedor.

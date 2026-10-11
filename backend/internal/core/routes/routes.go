@@ -157,6 +157,11 @@ func Registrar(app *fiber.App) {
 	negocios.Get("/catalog/replenishment/proposals/:proposal_id/check", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConferirPropostaReposicao)
 
 	// Compra interna com snapshots, sem transmissão ou confirmação do fornecedor.
+	negocios.Get("/purchase-documents/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.OperacaoDocumentoCompra)
+	negocios.Post("/purchase-documents", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.PrepararDocumentoCompra)
+	negocios.Get("/purchase-documents/:document_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarDocumentoCompra(false))
+	negocios.Get("/purchase-documents/:document_id/download.json", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarDocumentoCompra(true))
+	negocios.Post("/purchase-documents/:document_id/cancel", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.CancelarDocumentoCompra)
 	negocios.Get("/purchases/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ResumoComprasInternas)
 	negocios.Get("/purchases/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ListarComprasInternas(true))
 	negocios.Get("/purchases", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ListarComprasInternas(false))

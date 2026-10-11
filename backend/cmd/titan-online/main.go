@@ -14,8 +14,8 @@ import (
 )
 
 func run(args []string) error {
-	if len(args) != 1 || (args[0] != "migrate-sessions" && args[0] != "check-sessions" && args[0] != "migrate-catalog" && args[0] != "check-catalog" && args[0] != "migrate-discount-reviews" && args[0] != "check-discount-reviews" && args[0] != "migrate-costs" && args[0] != "check-costs" && args[0] != "migrate-stock-settings" && args[0] != "check-stock-settings" && args[0] != "migrate-replenishment-proposals" && args[0] != "check-replenishment-proposals" && args[0] != "migrate-suppliers" && args[0] != "check-suppliers" && args[0] != "migrate-supplier-offers" && args[0] != "check-supplier-offers" && args[0] != "migrate-purchase-drafts" && args[0] != "check-purchase-drafts") {
-		return fmt.Errorf("uso: titan-online migrate-sessions | check-sessions | migrate-catalog | check-catalog | migrate-discount-reviews | check-discount-reviews | migrate-costs | check-costs | migrate-stock-settings | check-stock-settings | migrate-replenishment-proposals | check-replenishment-proposals | migrate-suppliers | check-suppliers | migrate-supplier-offers | check-supplier-offers | migrate-purchase-drafts | check-purchase-drafts")
+	if len(args) != 1 || (args[0] != "migrate-sessions" && args[0] != "check-sessions" && args[0] != "migrate-catalog" && args[0] != "check-catalog" && args[0] != "migrate-discount-reviews" && args[0] != "check-discount-reviews" && args[0] != "migrate-costs" && args[0] != "check-costs" && args[0] != "migrate-stock-settings" && args[0] != "check-stock-settings" && args[0] != "migrate-replenishment-proposals" && args[0] != "check-replenishment-proposals" && args[0] != "migrate-suppliers" && args[0] != "check-suppliers" && args[0] != "migrate-supplier-offers" && args[0] != "check-supplier-offers" && args[0] != "migrate-purchase-drafts" && args[0] != "check-purchase-drafts" && args[0] != "migrate-purchase-documents" && args[0] != "check-purchase-documents") {
+		return fmt.Errorf("uso: titan-online migrate-sessions | check-sessions | migrate-catalog | check-catalog | migrate-discount-reviews | check-discount-reviews | migrate-costs | check-costs | migrate-stock-settings | check-stock-settings | migrate-replenishment-proposals | check-replenishment-proposals | migrate-suppliers | check-suppliers | migrate-supplier-offers | check-supplier-offers | migrate-purchase-drafts | check-purchase-drafts | migrate-purchase-documents | check-purchase-documents")
 	}
 	// Only an explicit invocation of this maintenance command applies schema.
 	_ = godotenv.Load()
@@ -28,6 +28,12 @@ func run(args []string) error {
 	defer db.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+	if args[0] == "migrate-purchase-documents" {
+		return onlinecatalog.MigratePurchaseDocuments(ctx, db)
+	}
+	if args[0] == "check-purchase-documents" {
+		return onlinecatalog.CheckPurchaseDocuments(ctx, db)
+	}
 	if args[0] == "migrate-purchase-drafts" {
 		return onlinecatalog.MigratePurchaseDrafts(ctx, db)
 	}

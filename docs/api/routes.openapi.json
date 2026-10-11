@@ -12468,6 +12468,363 @@
           "url": "./online-purchase-queries.openapi.json"
         }
       }
+    },
+    "/api/v1/purchase-documents": {
+      "post": {
+        "operationId": "DocumentPrepare51",
+        "summary": "Prepara documento de compra aprovada",
+        "description": "Owner/admin/manager; empresa e autorização revalidadas na sessão persistente. Sem query; GET sem corpo. JSON estrito até8KiB. Estado prepared é documento interno, não enviado nem aceito externamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Snapshot interno preservado ou recibo histórico no replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-documents.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, campos extras/repetidos/null/trailing ou query/body não permitido"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Documento/compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Revisão/estado/snapshot divergente, compra já possui documento, replay divergente ou download cancelado"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-purchase-documents.openapi.json#/components/schemas/Prepare"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-documents.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchase-documents/{document_id}": {
+      "get": {
+        "operationId": "DocumentGet51",
+        "summary": "Consulta documento e estado",
+        "description": "Owner/admin/manager; empresa e autorização revalidadas na sessão persistente. Sem query; GET sem corpo. JSON estrito até8KiB. Estado prepared é documento interno, não enviado nem aceito externamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot interno preservado ou recibo histórico no replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-documents.openapi.json#/components/schemas/Document"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, campos extras/repetidos/null/trailing ou query/body não permitido"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Documento/compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Revisão/estado/snapshot divergente, compra já possui documento, replay divergente ou download cancelado"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-documents.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchase-documents/{document_id}/cancel": {
+      "post": {
+        "operationId": "DocumentCancel51",
+        "summary": "Cancela documento preservando histórico",
+        "description": "Owner/admin/manager; empresa e autorização revalidadas na sessão persistente. Sem query; GET sem corpo. JSON estrito até8KiB. Estado prepared é documento interno, não enviado nem aceito externamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot interno preservado ou recibo histórico no replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-documents.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, campos extras/repetidos/null/trailing ou query/body não permitido"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Documento/compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Revisão/estado/snapshot divergente, compra já possui documento, replay divergente ou download cancelado"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-purchase-documents.openapi.json#/components/schemas/Cancel"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-documents.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchase-documents/{document_id}/download.json": {
+      "get": {
+        "operationId": "DocumentDownload51",
+        "summary": "Baixa bytes JSON históricos com SHA256",
+        "description": "Owner/admin/manager; empresa e autorização revalidadas na sessão persistente. Sem query; GET sem corpo. JSON estrito até8KiB. Estado prepared é documento interno, não enviado nem aceito externamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot interno preservado ou recibo histórico no replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-documents.openapi.json#/components/schemas/File"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "description": "attachment; filename=internal-purchase-ID.json",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Document-SHA256": {
+                "description": "SHA256 dos bytes UTF8 exatos. Não é assinatura digital nem comprovação do fornecedor.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Document-Scope": {
+                "description": "internal-purchase",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "nosniff",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, campos extras/repetidos/null/trailing ou query/body não permitido"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Documento/compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Revisão/estado/snapshot divergente, compra já possui documento, replay divergente ou download cancelado"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-documents.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchase-documents/operations/{operation_id}": {
+      "get": {
+        "operationId": "DocumentOperation51",
+        "summary": "Recupera recibo do próprio ator",
+        "description": "Owner/admin/manager; empresa e autorização revalidadas na sessão persistente. Sem query; GET sem corpo. JSON estrito até8KiB. Estado prepared é documento interno, não enviado nem aceito externamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot interno preservado ou recibo histórico no replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-documents.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, campos extras/repetidos/null/trailing ou query/body não permitido"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Documento/compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Revisão/estado/snapshot divergente, compra já possui documento, replay divergente ou download cancelado"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-documents.openapi.json"
+        }
+      }
     }
   },
   "components": {

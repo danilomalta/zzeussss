@@ -1,0 +1,549 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — documentos internos de compra",
+    "version": "51.0.0",
+    "description": "Cinco funções: preparar, consultar, cancelar, baixar JSON e recuperar recibo. Preparação exige compra approved, revisão esperada e proposta/condições/fornecedor/produto atuais integralmente iguais aos snapshots sob locks. Um documento por compra, mesmo cancelado. File imutável inclui compra histórica completa e identificação da preparação, hash dos bytes JSON estáveis. O documento não depende dos pais atuais para consulta/download ou cancelamento. Download preparado preserva dados históricos mesmo se a compra mudar; não atesta validade atual. Cancelamento impede download ativo, mantém file na consulta e recibos originais. Outbox durável local sem despacho. Nenhuma transmissão, confirmação externa, reserva, recebimento, pagamento ou assinatura digital."
+  },
+  "paths": {
+    "/api/v1/purchase-documents": {
+      "post": {
+        "operationId": "DocumentPrepare51",
+        "summary": "Prepara documento de compra aprovada",
+        "description": "Owner/admin/manager; empresa e autorização revalidadas na sessão persistente. Sem query; GET sem corpo. JSON estrito até8KiB. Estado prepared é documento interno, não enviado nem aceito externamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Snapshot interno preservado ou recibo histórico no replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, campos extras/repetidos/null/trailing ou query/body não permitido"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Documento/compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Revisão/estado/snapshot divergente, compra já possui documento, replay divergente ou download cancelado"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Prepare"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/purchase-documents/{document_id}": {
+      "get": {
+        "operationId": "DocumentGet51",
+        "summary": "Consulta documento e estado",
+        "description": "Owner/admin/manager; empresa e autorização revalidadas na sessão persistente. Sem query; GET sem corpo. JSON estrito até8KiB. Estado prepared é documento interno, não enviado nem aceito externamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot interno preservado ou recibo histórico no replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, campos extras/repetidos/null/trailing ou query/body não permitido"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Documento/compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Revisão/estado/snapshot divergente, compra já possui documento, replay divergente ou download cancelado"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        }
+      }
+    },
+    "/api/v1/purchase-documents/{document_id}/cancel": {
+      "post": {
+        "operationId": "DocumentCancel51",
+        "summary": "Cancela documento preservando histórico",
+        "description": "Owner/admin/manager; empresa e autorização revalidadas na sessão persistente. Sem query; GET sem corpo. JSON estrito até8KiB. Estado prepared é documento interno, não enviado nem aceito externamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot interno preservado ou recibo histórico no replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, campos extras/repetidos/null/trailing ou query/body não permitido"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Documento/compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Revisão/estado/snapshot divergente, compra já possui documento, replay divergente ou download cancelado"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Cancel"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/purchase-documents/{document_id}/download.json": {
+      "get": {
+        "operationId": "DocumentDownload51",
+        "summary": "Baixa bytes JSON históricos com SHA256",
+        "description": "Owner/admin/manager; empresa e autorização revalidadas na sessão persistente. Sem query; GET sem corpo. JSON estrito até8KiB. Estado prepared é documento interno, não enviado nem aceito externamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot interno preservado ou recibo histórico no replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/File"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "description": "attachment; filename=internal-purchase-ID.json",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Document-SHA256": {
+                "description": "SHA256 dos bytes UTF8 exatos. Não é assinatura digital nem comprovação do fornecedor.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Document-Scope": {
+                "description": "internal-purchase",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "description": "nosniff",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, campos extras/repetidos/null/trailing ou query/body não permitido"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Documento/compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Revisão/estado/snapshot divergente, compra já possui documento, replay divergente ou download cancelado"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        }
+      }
+    },
+    "/api/v1/purchase-documents/operations/{operation_id}": {
+      "get": {
+        "operationId": "DocumentOperation51",
+        "summary": "Recupera recibo do próprio ator",
+        "description": "Owner/admin/manager; empresa e autorização revalidadas na sessão persistente. Sem query; GET sem corpo. JSON estrito até8KiB. Estado prepared é documento interno, não enviado nem aceito externamente.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot interno preservado ou recibo histórico no replay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, campos extras/repetidos/null/trailing ou query/body não permitido"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Documento/compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Revisão/estado/snapshot divergente, compra já possui documento, replay divergente ou download cancelado"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "File": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "format_version",
+          "kind",
+          "document_id",
+          "purchase",
+          "prepared_by",
+          "prepared_at"
+        ],
+        "properties": {
+          "format_version": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "internal_purchase"
+            ]
+          },
+          "document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purchase": {
+            "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Draft"
+          },
+          "prepared_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "prepared_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Document": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "purchase_id",
+          "revision",
+          "state",
+          "file",
+          "sha256",
+          "creator_id",
+          "last_actor_id",
+          "reason",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purchase_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "prepared",
+              "cancelled"
+            ]
+          },
+          "file": {
+            "$ref": "#/components/schemas/File"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "creator_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "last_actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Prepare": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "purchase_id",
+          "expected_purchase_revision",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purchase_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_purchase_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "Cancel": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "document_id",
+          "actor_id",
+          "kind",
+          "before",
+          "after"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "document_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "prepare",
+              "cancel"
+            ]
+          },
+          "before": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Document"
+              }
+            ]
+          },
+          "after": {
+            "$ref": "#/components/schemas/Document"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
