@@ -134,6 +134,11 @@ func Registrar(app *fiber.App) {
 
 	// Frente de Caixa e Motor de Descontos (Bounded Context: POS)
 	descontos := negocios.Group("/discounts")
+	descontos.Get("/report/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountReportSummary)
+	descontos.Get("/report/pending", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountReport("PENDING", false))
+	descontos.Get("/report/approved", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountReport("APPROVED", false))
+	descontos.Get("/report/rejected", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountReport("REJECTED", false))
+	descontos.Get("/report/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountReport("all", true))
 	descontos.Post("/suggest", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), posDelivery.SuggestDiscounts)
 	descontos.Get("/suggestions", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), posDelivery.GetSuggestions)
 	descontos.Post("/suggestions/:id/review", Indisponivel)

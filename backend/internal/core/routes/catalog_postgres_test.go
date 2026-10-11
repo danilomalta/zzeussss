@@ -1823,5 +1823,83 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if onlinecatalog.CheckDiscountReviews(ctx, sqlDB) != nil {
 		t.Fatal("schema de revisão restaurado incompatível")
 	}
+	// Delivery37: five read-only report functions on existing schema16.
+	reportBase37 := "/api/v1/discounts/report/"
+	pendingID37, pendingProduct37 := newReview36("report37-pending")
+	approvedID37, _ := newReview36("report37-approved")
+	rejectedID37, _ := newReview36("report37-rejected")
+	legacyID37, _ := newReview36("report37-legacy")
+	exec(`UPDATE products SET nome='Report37 =text' WHERE tenant_id=$1 AND sku LIKE 'report37-%'`, tenantA)
+	request("POST", fmt.Sprintf("/api/v1/discounts/suggestions/%d/approve", approvedID37), bodyReview36(onlinecatalog.DiscountReviewInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedDiscountBPS: 1500, Reason: "=human approval"}), tokenA, 200)
+	request("POST", fmt.Sprintf("/api/v1/discounts/suggestions/%d/reject", rejectedID37), bodyReview36(onlinecatalog.DiscountReviewInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedDiscountBPS: 1500, Reason: "Human refusal"}), tokenA, 200)
+	exec(`UPDATE discount_suggestions SET status='APPROVED',reviewed_by=$3 WHERE tenant_id=$1 AND id=$2`, tenantA, legacyID37, userA)
+	countReports37 := func() int64 {
+		var n int64
+		if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_discount_reviews)+(SELECT count(*) FROM online_discount_review_outbox)+(SELECT count(*) FROM online_catalog_operations)`).Scan(&n) != nil {
+			t.Fatal("report counters unavailable")
+		}
+		return n
+	}
+	beforeReads37 := countReports37()
+	summary37 := request("GET", reportBase37+"summary?q=report37", "", tokenA, 200)
+	if summary37["total"] != float64(4) || summary37["pending"] != float64(1) || summary37["approved"] != float64(2) || summary37["rejected"] != float64(1) || summary37["final_without_receipt"] != float64(1) {
+		t.Fatal("report counts incorrect")
+	}
+	foreign37 := request("GET", reportBase37+"summary?q=report37", "", tokenB, 200)
+	if foreign37["total"] != float64(0) {
+		t.Fatal("report tenant isolation failed")
+	}
+	for _, path37 := range []string{"pending", "approved", "rejected"} {
+		p37 := request("GET", reportBase37+path37+"?q=report37&limit=1", "", tokenA, 200)
+		if len(p37["items"].([]interface{})) != 1 || len(p37["source_hash"].(string)) != 64 {
+			t.Fatal("report page missing")
+		}
+	}
+	approved37 := request("GET", reportBase37+"approved?q=report37&limit=1", "", tokenA, 200)
+	if approved37["total"] != float64(2) || approved37["has_more"] != true || approved37["next_offset"] != float64(1) {
+		t.Fatal("report pagination incorrect")
+	}
+	legacyPage37 := request("GET", reportBase37+"approved?q=report37-legacy", "", tokenA, 200)
+	legacyItem37 := legacyPage37["items"].([]interface{})[0].(map[string]interface{})
+	if legacyItem37["has_receipt"] != false || legacyItem37["operation_id"] != "" || legacyItem37["review_reason"] != "" {
+		t.Fatal("legacy receipt fabricated")
+	}
+	empty37 := request("GET", reportBase37+"pending?q=report37&offset=1", "", tokenA, 200)
+	if len(empty37["items"].([]interface{})) != 0 || empty37["has_more"] != false {
+		t.Fatal("report empty page incorrect")
+	}
+	request("GET", reportBase37+"pending?status=APPROVED", "", tokenA, 400)
+	request("GET", reportBase37+"summary?q=a&q=b", "", tokenA, 400)
+	req37 := httptest.NewRequest("GET", reportBase37+"export.csv?q=report37&status=APPROVED&limit=1", nil)
+	req37.Header.Set("Authorization", "Bearer "+tokenA)
+	resp37, e37 := app.Test(req37, 5000)
+	if e37 != nil {
+		t.Fatal("report csv transport")
+	}
+	data37, e37 := io.ReadAll(resp37.Body)
+	resp37.Body.Close()
+	if e37 != nil || resp37.StatusCode != 200 || !strings.HasPrefix(string(data37), "suggestion_id;product_id;") || !strings.Contains(string(data37), "'=human approval") || resp37.Header.Get("Cache-Control") != "no-store" || resp37.Header.Get("X-Titan-Report-Total") != "2" || resp37.Header.Get("X-Titan-Report-Count") != "1" || resp37.Header.Get("X-Titan-Report-Has-More") != "true" || resp37.Header.Get("X-Titan-Report-Scope") != "online-discount-suggestions" {
+		t.Fatal("report csv metadata or formula protection failed")
+	}
+	if countReports37() != beforeReads37 {
+		t.Fatal("report mutated data")
+	}
+	checkProduct(pendingProduct37, 1, 1000, true)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/active", pendingProduct37), fmt.Sprintf(`{"operation_id":%q,"expected_version":1,"ativo":false}`, uuid.NewString()), tokenA, 200)
+	inactive37 := request("GET", reportBase37+"pending?q=report37&active=inactive", "", tokenA, 200)
+	if inactive37["total"] != float64(1) || int64(inactive37["items"].([]interface{})[0].(map[string]interface{})["id"].(float64)) != pendingID37 {
+		t.Fatal("inactive suggestion hidden or mismatched")
+	}
+	exec(`UPDATE products SET sku='report37-%literal' WHERE tenant_id=$1 AND id=$2`, tenantA, pendingProduct37)
+	literal37 := request("GET", reportBase37+"summary?q=%25literal", "", tokenA, 200)
+	if literal37["total"] != float64(1) {
+		t.Fatal("report wildcard was not literal")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", reportBase37+"summary", "", tokenA, 401)
+	if _, e := store.DiscountReport(ctx, actor, onlinecatalog.DiscountReportQuery{Active: "all", Status: "all", Limit: 50}); e != onlinecatalog.ErrDenied {
+		t.Fatal("report accepted revoked session")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

@@ -97,3 +97,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - Entrega 35: `online-catalog-quality.openapi.json` documenta cinco APIs de pendências operacionais (resumo, sem GTIN ativo, sem descrição, saldo online zero e CSV paginado). Schema GTIN existente; sem validação fiscal ou saldo local presumidos.
 
 - Entrega 36: `online-discount-reviews.openapi.json` documenta consulta, aprovação, recusa, histórico e recuperação de decisão humana. Schema PostgreSQL 16 por manutenção explícita; não aplica desconto a vendas.
+
+- Entrega37: [relatório de sugestões de desconto](online-discount-report.openapi.json), cinco consultas e CSV paginado, schema16 existente.

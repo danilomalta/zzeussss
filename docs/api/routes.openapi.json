@@ -5993,6 +5993,646 @@
           }
         }
       }
+    },
+    "/api/v1/discounts/report/summary": {
+      "get": {
+        "operationId": "discountReportSummary",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner/admin/manager. Filtro q literal por nome ou SKU, sem busca fiscal/fuzzy. Contagens por estado.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado real da empresa autenticada; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query inválida, extra, duplicada ou corpo GET não vazio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Papel não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco/schema indisponível ou dados inconsistentes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-discount-report.openapi.json"
+        }
+      }
+    },
+    "/api/v1/discounts/report/pending": {
+      "get": {
+        "operationId": "discountReportPending",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner/admin/manager. Filtro q literal por nome ou SKU, sem busca fiscal/fuzzy. Estado fixo PENDING. Não admite query status.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado real da empresa autenticada; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query inválida, extra, duplicada ou corpo GET não vazio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Papel não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco/schema indisponível ou dados inconsistentes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-discount-report.openapi.json"
+        }
+      }
+    },
+    "/api/v1/discounts/report/approved": {
+      "get": {
+        "operationId": "discountReportApproved",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner/admin/manager. Filtro q literal por nome ou SKU, sem busca fiscal/fuzzy. Estado fixo APPROVED. Não admite query status.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado real da empresa autenticada; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query inválida, extra, duplicada ou corpo GET não vazio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Papel não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco/schema indisponível ou dados inconsistentes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-discount-report.openapi.json"
+        }
+      }
+    },
+    "/api/v1/discounts/report/rejected": {
+      "get": {
+        "operationId": "discountReportRejected",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner/admin/manager. Filtro q literal por nome ou SKU, sem busca fiscal/fuzzy. Estado fixo REJECTED. Não admite query status.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado real da empresa autenticada; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query inválida, extra, duplicada ou corpo GET não vazio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Papel não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco/schema indisponível ou dados inconsistentes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-discount-report.openapi.json"
+        }
+      }
+    },
+    "/api/v1/discounts/report/export.csv": {
+      "get": {
+        "operationId": "discountReportExport_Csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner/admin/manager. Filtro q literal por nome ou SKU, sem busca fiscal/fuzzy. CSV somente desta página; não é importação nem desconto aplicado.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "PENDING",
+                "APPROVED",
+                "REJECTED"
+              ],
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado real da empresa autenticada; no-store.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "maxLength": 262144
+                }
+              }
+            },
+            "headers": {
+              "X-Titan-Report-Total": {
+                "description": "Total filtrado",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "X-Titan-Report-Count": {
+                "description": "Itens desta página",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              },
+              "X-Titan-Report-Has-More": {
+                "description": "Existem mais itens",
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "X-Titan-Report-Next-Offset": {
+                "description": "Próximo offset quando houver mais itens",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "X-Titan-Source-Hash": {
+                "description": "Hash desta página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Scope": {
+                "description": "online-discount-suggestions",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "description": "apostrophe: células texto protegidas contra fórmulas",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query inválida, extra, duplicada ou corpo GET não vazio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Papel não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco/schema indisponível ou dados inconsistentes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-report.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-discount-report.openapi.json"
+        }
+      }
     }
   },
   "components": {
