@@ -95,3 +95,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - `online-catalog-barcode-csv.openapi.json`: modelo, importação GTIN com prévia/apply, diagnóstico seguro por linha e exportação de conferência (entrega 34).
 
 - Entrega 35: `online-catalog-quality.openapi.json` documenta cinco APIs de pendências operacionais (resumo, sem GTIN ativo, sem descrição, saldo online zero e CSV paginado). Schema GTIN existente; sem validação fiscal ou saldo local presumidos.
+
+- Entrega 36: `online-discount-reviews.openapi.json` documenta consulta, aprovação, recusa, histórico e recuperação de decisão humana. Schema PostgreSQL 16 por manutenção explícita; não aplica desconto a vendas.

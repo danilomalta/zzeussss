@@ -1680,5 +1680,148 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	}
 	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
 
+	// Delivery36: durable human review; never changes prices, cash or stock.
+	if onlinecatalog.MigrateDiscountReviews(ctx, sqlDB) != nil || onlinecatalog.MigrateDiscountReviews(ctx, sqlDB) != nil || onlinecatalog.CheckDiscountReviews(ctx, sqlDB) != nil {
+		t.Fatal("migração de revisão de desconto falhou")
+	}
+	newReview36 := func(sku string) (int64, int64) {
+		t.Helper()
+		p := request("POST", "/api/v1/produtos/", fmt.Sprintf(`{"nome":"Revisão humana","sku":%q,"preco":10.00,"estoque":100}`, sku), tokenA, 201)
+		pid := int64(p["ID"].(float64))
+		var sid int64
+		if sqlDB.QueryRowContext(ctx, `INSERT INTO discount_suggestions(tenant_id,product_id,suggested_discount,suggested_range,reason,criteria) VALUES($1,$2,15.00,'10% - 20%','Baixo giro','PRODUTO_PARADO') RETURNING id`, tenantA, pid).Scan(&sid) != nil {
+			t.Fatal("sugestão de fixture indisponível")
+		}
+		return sid, pid
+	}
+	bodyReview36 := func(v onlinecatalog.DiscountReviewInput) string {
+		raw, er := json.Marshal(v)
+		if er != nil {
+			t.Fatal("entrada de revisão inválida")
+		}
+		return string(raw)
+	}
+	reviewID36, productID36 := newReview36("discount-review-approve")
+	reviewPath36 := fmt.Sprintf("/api/v1/discounts/suggestions/%d", reviewID36)
+	current36 := request("GET", reviewPath36, "", tokenA, 200)
+	if current36["discount_bps"] != float64(1500) || current36["status"] != "PENDING" {
+		t.Fatal("detalhes da sugestão incorretos")
+	}
+	request("GET", reviewPath36, "", tokenB, 404)
+	input36 := onlinecatalog.DiscountReviewInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedDiscountBPS: 1500, Reason: "Conferência humana"}
+	decision36 := request("POST", reviewPath36+"/approve", bodyReview36(input36), tokenA, 200)
+	replay36 := request("POST", reviewPath36+"/approve", bodyReview36(input36), tokenA, 200)
+	firstJSON36, _ := json.Marshal(decision36)
+	replayJSON36, _ := json.Marshal(replay36)
+	if string(firstJSON36) != string(replayJSON36) || decision36["after"].(map[string]interface{})["status"] != "APPROVED" {
+		t.Fatal("replay duplicou ou mudou decisão")
+	}
+	request("GET", "/api/v1/discounts/reviews/"+input36.OperationID, "", tokenA, 200)
+	request("GET", "/api/v1/discounts/reviews/"+input36.OperationID, "", tokenB, 404)
+	request("GET", "/api/v1/discounts/reviews/"+input36.OperationID, "", otherToken, 404)
+	changedInput36 := input36
+	changedInput36.Reason = "Motivo diferente"
+	request("POST", reviewPath36+"/approve", bodyReview36(changedInput36), tokenA, 409)
+	secondDecision36 := input36
+	secondDecision36.OperationID = uuid.NewString()
+	request("POST", reviewPath36+"/reject", bodyReview36(secondDecision36), tokenA, 409)
+	history36 := request("GET", reviewPath36+"/reviews?limit=1", "", tokenA, 200)
+	if len(history36["items"].([]interface{})) != 1 {
+		t.Fatal("histórico da decisão ausente")
+	}
+	request("GET", reviewPath36+"/reviews", "", tokenB, 404)
+	emptyHistory36 := request("GET", reviewPath36+"/reviews?offset=1", "", tokenA, 200)
+	if len(emptyHistory36["items"].([]interface{})) != 0 {
+		t.Fatal("histórico paginado incorreto")
+	}
+	checkProduct(productID36, 1, 1000, true)
+	var unchangedStock36 int
+	if sqlDB.QueryRowContext(ctx, `SELECT estoque FROM products WHERE tenant_id=$1 AND id=$2`, tenantA, productID36).Scan(&unchangedStock36) != nil || unchangedStock36 != 100 {
+		t.Fatal("aprovação alterou estoque")
+	}
+	rejectID36, _ := newReview36("discount-review-reject")
+	request("POST", fmt.Sprintf("/api/v1/discounts/suggestions/%d/reject", rejectID36), bodyReview36(onlinecatalog.DiscountReviewInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedDiscountBPS: 1500, Reason: "Não aplicar"}), tokenA, 200)
+	staleID36, staleProduct36 := newReview36("discount-review-stale")
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/price", staleProduct36), fmt.Sprintf(`{"operation_id":%q,"expected_version":1,"price_cents":1100}`, uuid.NewString()), tokenA, 200)
+	staleReview36 := onlinecatalog.DiscountReviewInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedDiscountBPS: 1500, Reason: "Prévia obsoleta"}
+	request("POST", fmt.Sprintf("/api/v1/discounts/suggestions/%d/approve", staleID36), bodyReview36(staleReview36), tokenA, 409)
+	staleReview36.ExpectedProductVersion = 2
+	staleReview36.ExpectedDiscountBPS = 1000
+	request("POST", fmt.Sprintf("/api/v1/discounts/suggestions/%d/approve", staleID36), bodyReview36(staleReview36), tokenA, 409)
+	rollbackID36, _ := newReview36("discount-review-rollback")
+	rollbackReview36 := onlinecatalog.DiscountReviewInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedDiscountBPS: 1500, Reason: "Recuperação explícita"}
+	exec(fmt.Sprintf(`CREATE FUNCTION refuse_discount_review36() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'isolated fixture'; END $$; CREATE TRIGGER refuse_discount_review36 BEFORE INSERT ON online_discount_review_outbox FOR EACH ROW WHEN(NEW.operation_id='%s'::uuid) EXECUTE FUNCTION refuse_discount_review36()`, rollbackReview36.OperationID))
+	request("POST", fmt.Sprintf("/api/v1/discounts/suggestions/%d/approve", rollbackID36), bodyReview36(rollbackReview36), tokenA, 503)
+	request("GET", "/api/v1/discounts/reviews/"+rollbackReview36.OperationID, "", tokenA, 404)
+	rollbackCurrent36 := request("GET", fmt.Sprintf("/api/v1/discounts/suggestions/%d", rollbackID36), "", tokenA, 200)
+	if rollbackCurrent36["status"] != "PENDING" {
+		t.Fatal("falha tardia deixou aprovação parcial")
+	}
+	exec(`ALTER TABLE online_discount_review_outbox DISABLE TRIGGER refuse_discount_review36`)
+	request("POST", fmt.Sprintf("/api/v1/discounts/suggestions/%d/approve", rollbackID36), bodyReview36(rollbackReview36), tokenA, 200)
+	concurrentID36, _ := newReview36("discount-review-concurrent")
+	concurrentReview36 := onlinecatalog.DiscountReviewInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedDiscountBPS: 1500, Reason: "Repetição simultânea"}
+	reviewErrors36 := make(chan error, 4)
+	for i := 0; i < 4; i++ {
+		go func() {
+			_, e := store.ReviewDiscount(ctx, actor, concurrentID36, "approve", concurrentReview36)
+			reviewErrors36 <- e
+		}()
+	}
+	for i := 0; i < 4; i++ {
+		if <-reviewErrors36 != nil {
+			t.Fatal("repetição concorrente falhou")
+		}
+	}
+	var reviewCounts36, eventCounts36 int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_discount_reviews WHERE tenant_id=$1 AND suggestion_id=$2`, tenantA, concurrentID36).Scan(&reviewCounts36) != nil ||
+		sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_discount_review_outbox WHERE tenant_id=$1 AND operation_id=$2`, tenantA, concurrentReview36.OperationID).Scan(&eventCounts36) != nil ||
+		reviewCounts36 != 1 || eventCounts36 != 1 {
+		t.Fatal("repetição criou decisão/evento duplicado")
+	}
+	competingID36, _ := newReview36("discount-review-competing")
+	competingInputs36 := []onlinecatalog.DiscountReviewInput{{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedDiscountBPS: 1500, Reason: "Aprovar"}, {OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedDiscountBPS: 1500, Reason: "Recusar"}}
+	for i, action36 := range []string{"approve", "reject"} {
+		go func(v onlinecatalog.DiscountReviewInput, action string) {
+			_, e := store.ReviewDiscount(ctx, actor, competingID36, action, v)
+			reviewErrors36 <- e
+		}(competingInputs36[i], action36)
+	}
+	winners36, conflicts36 := 0, 0
+	for i := 0; i < 2; i++ {
+		e := <-reviewErrors36
+		if e == nil {
+			winners36++
+		} else if e == onlinecatalog.ErrConflict {
+			conflicts36++
+		} else {
+			t.Fatal("erro inesperado na disputa")
+		}
+	}
+	if winners36 != 1 || conflicts36 != 1 {
+		t.Fatal("decisões concorrentes sobrescreveram resultado")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", reviewPath36, "", tokenA, 401)
+	if _, e := store.DiscountReview(ctx, actor, input36.OperationID); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada recuperou decisão")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	var reviewChecksum36 string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_discount_review_migrations WHERE version=16`).Scan(&reviewChecksum36) != nil {
+		t.Fatal("histórico revisão ausente")
+	}
+	exec(`UPDATE online_discount_review_migrations SET version=17 WHERE version=16`)
+	if onlinecatalog.CheckDiscountReviews(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.MigrateDiscountReviews(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema futuro de revisão aceito")
+	}
+	exec(`UPDATE online_discount_review_migrations SET version=16,checksum='changed' WHERE version=17`)
+	if onlinecatalog.CheckDiscountReviews(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("checksum de revisão adulterado aceito")
+	}
+	exec(`UPDATE online_discount_review_migrations SET checksum=$1 WHERE version=16`, reviewChecksum36)
+	if onlinecatalog.CheckDiscountReviews(ctx, sqlDB) != nil {
+		t.Fatal("schema de revisão restaurado incompatível")
+	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

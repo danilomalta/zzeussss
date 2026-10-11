@@ -185,3 +185,5 @@ Entrega 25 consolidada: cadastro online com Idempotency-Key obrigatório (428 se
 - Entrega 34: CSV de novos GTINs com modelo, diagnóstico por linha, prévia/apply atômicos e exportação de conferência por produto. Reutiliza a migração 15 e recibos da entrega 33. Ver documento 109.
 
 - Entrega 35: cinco funções de manutenção do catálogo online, filtros/paginação/snapshot, isolamento e relatório CSV. Ver `110_PENDENCIAS_CATALOGO_CINCO_FUNCOES.md`. Banco comercial e produção separados.
+
+- Entrega 36: revisão humana de sugestões online, com recibo/outbox atômicos, idempotência, concorrência e isolamento. Ver `111_REVISAO_HUMANA_DESCONTOS_CINCO_FUNCOES.md`. Integração do desconto ao PDV continua pendente.

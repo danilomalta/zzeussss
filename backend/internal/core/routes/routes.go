@@ -137,6 +137,11 @@ func Registrar(app *fiber.App) {
 	descontos.Post("/suggest", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), posDelivery.SuggestDiscounts)
 	descontos.Get("/suggestions", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), posDelivery.GetSuggestions)
 	descontos.Post("/suggestions/:id/review", Indisponivel)
+	descontos.Get("/suggestions/:id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarSugestaoDesconto)
+	descontos.Post("/suggestions/:id/approve", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RevisarSugestaoDesconto("approve"))
+	descontos.Post("/suggestions/:id/reject", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RevisarSugestaoDesconto("reject"))
+	descontos.Get("/suggestions/:id/reviews", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.HistoricoDecisaoDesconto)
+	descontos.Get("/reviews/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarDecisaoDesconto)
 
 	// O chat de demonstração não recebe autenticação; não é exposto nesta fase.
 }

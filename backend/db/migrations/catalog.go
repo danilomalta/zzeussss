@@ -34,3 +34,6 @@ var CatalogBarcodesSQL string
 
 //go:embed 000015_online_catalog_barcode_batches.sql
 var CatalogBarcodeBatchesSQL string
+
+//go:embed 000016_online_discount_reviews.sql
+var DiscountReviewsSQL string
