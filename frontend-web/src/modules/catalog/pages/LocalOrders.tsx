@@ -1,4 +1,5 @@
 import {Link} from 'react-router-dom';
+import PurchaseOrderActions from './PurchaseOrderActions';
 import SupplierManagement from './SupplierManagement';
 import ReplenishmentPanel from './ReplenishmentPanel';
 import {useEffect,useState,useRef} from 'react';
@@ -31,6 +32,7 @@ export default function LocalOrders(){
  return <main className="brand-app-content" style={{display:"grid",gap:20}}><h1>Pedidos e fornecedores</h1><Link className="brand-secondary" to="/local/receiving">Consultar pedidos e histórico de recebimento</Link><p>Pedidos locais a partir de reposições aprovadas. O fornecedor ainda não recebe estes pedidos.</p>
   {error&&<p className="brand-state" role="alert">{error}</p>}{storageError&&<p role="alert">{storageError}</p>}{notice&&<p role="status">{notice}</p>}
   {pending&&<section className="brand-panel"><h2>Operação pendente</h2><p>{pending.kind==='order'?'Pedido':'Fornecedor'}: {pending.kind==='order'?pending.input.order_id:pending.input.id}. Os identificadores originais estão preservados.</p><button className="brand-secondary" disabled={busy} onClick={()=>void locked(()=>resolve(false))}>Consultar resultado</button> <button className="brand-primary" disabled={busy||!canWrite} onClick={()=>void locked(()=>resolve(true))}>Repetir mesma operação</button></section>}
+  <PurchaseOrderActions/>
   <SupplierManagement/>
   <ReplenishmentPanel onChange={load}/>
   {manage&&<section className="brand-panel"><h2>Cadastrar fornecedor local</h2><form className="catalog-form" onSubmit={createSupplier}><label className="brand-field">Nome<input required maxLength={255} value={name} onChange={e=>setName(e.target.value)} disabled={blocked}/></label><button className="brand-primary" disabled={blocked||!name.trim()}>Cadastrar fornecedor</button></form><p>Referência comercial nesta loja; não cria login para outra empresa.</p></section>}
@@ -41,9 +43,9 @@ export default function LocalOrders(){
    {!canWrite&&<p>Gravações indisponíveis: confira a vigência do contrato de pedidos.</p>}
   </section>}
   <section className="brand-panel"><h2>Histórico de pedidos</h2><button className="brand-secondary" disabled={busy} onClick={()=>{setBusy(true);load().catch(e=>setError(localErrorMessage(e))).finally(()=>setBusy(false));}}>Atualizar</button>
-   {!orders.length?<p>Nenhum pedido nesta página.</p>:<ul>{orders.map(o=><li key={o.id}><button className="brand-secondary" disabled={busy} onClick={()=>void read(o.id)}>{o.supplier_name} — {new Date(o.created_at).toLocaleString('pt-BR')}</button><p>Pedido local — não enviado · {o.id}</p></li>)}</ul>}
+   {!orders.length?<p>Nenhum pedido nesta página.</p>:<ul>{orders.map(o=><li key={o.id}><button className="brand-secondary" disabled={busy} onClick={()=>void read(o.id)}>{o.supplier_name} — {new Date(o.created_at).toLocaleString('pt-BR')}</button><p>{o.status==='cancelled'?'Pedido cancelado':'Pedido local — não enviado'} · {o.id}</p></li>)}</ul>}
    <button className="brand-secondary" disabled={busy||offset===0} onClick={()=>setOffset(v=>Math.max(0,v-50))}>Anterior</button> <button className="brand-secondary" disabled={busy||orders.length<50} onClick={()=>setOffset(v=>v+50)}>Próxima</button>
   </section>
-  {detail&&<section className="brand-panel"><h2>Pedido {detail.id}</h2><p>{detail.supplier_name} · Local, não enviado</p><p>Aprovação: {detail.suggestion_id}</p>{detail.items.map(i=><p key={i.product_id}>{i.sku} · {i.name}: {quantity(i.quantity_milli)} {i.unit}</p>)}<p>Preço, frete, impostos e total ainda não negociados. Criar o pedido não gera estoque ou pagamento. Consulte o histórico de recebimento para entradas posteriores.</p></section>}
+  {detail&&<section className="brand-panel"><h2>Pedido {detail.id}</h2><p>{detail.supplier_name} · {detail.status==='cancelled'?'Cancelado':'Local, não enviado'}</p><p>Aprovação: {detail.suggestion_id}</p>{detail.items.map(i=><p key={i.product_id}>{i.sku} · {i.name}: {quantity(i.quantity_milli)} {i.unit}</p>)}<p>Preço, frete, impostos e total ainda não negociados. Criar o pedido não gera estoque ou pagamento. Consulte o histórico de recebimento para entradas posteriores.</p></section>}
  </main>;
 }
