@@ -1986,5 +1986,154 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 		t.Fatal("check accepted revoked session")
 	}
 	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	// Delivery39: an independent HTTP budget, with unchanged production limits.
+	app = fiber.New()
+	Registrar(app)
+	if onlinecatalog.MigrateCosts(ctx, sqlDB) != nil || onlinecatalog.MigrateCosts(ctx, sqlDB) != nil || onlinecatalog.CheckCosts(ctx, sqlDB) != nil {
+		t.Fatal("migração de custos falhou")
+	}
+	_, costProduct39 := newReview36("cost39")
+	costURL39 := fmt.Sprintf("/api/v1/produtos/%d/cost", costProduct39)
+	marginURL39 := fmt.Sprintf("/api/v1/produtos/%d/margin", costProduct39)
+	unknown39 := request("GET", costURL39, "", tokenA, 200)["cost"].(map[string]interface{})
+	if unknown39["known"] != false || unknown39["cost_cents"] != nil || unknown39["revision"] != float64(0) {
+		t.Fatal("custo desconhecido inventado")
+	}
+	if r := request("GET", marginURL39, "", tokenA, 200); r["state"] != "unknown_cost" || r["margin_bps"] != nil {
+		t.Fatal("margem desconhecida inventada")
+	}
+	costOp39 := uuid.NewString()
+	costBody39 := fmt.Sprintf(`{"operation_id":%q,"expected_product_version":1,"expected_cost_revision":0,"cost_cents":700,"reason":"Nota conferida"}`, costOp39)
+	costReceipt39 := request("POST", costURL39, costBody39, tokenA, 200)
+	if costReceipt39["after"].(map[string]interface{})["revision"] != float64(1) || costReceipt39["before"].(map[string]interface{})["known"] != false {
+		t.Fatal("revisão inicial incorreta")
+	}
+	costReceiptURL39 := "/api/v1/catalog/costs/operations/" + costOp39
+	for _, receipt39 := range []map[string]interface{}{request("POST", costURL39, costBody39, tokenA, 200), request("GET", costReceiptURL39, "", tokenA, 200)} {
+		b, _ := json.Marshal(receipt39)
+		a, _ := json.Marshal(costReceipt39)
+		if string(a) != string(b) {
+			t.Fatal("recibo perdido ou replay alterou snapshot")
+		}
+	}
+	checkProduct(costProduct39, 1, 1000, true)
+	if m := request("GET", marginURL39, "", tokenA, 200); m["margin_cents"] != float64(300) || m["margin_bps"] != "3000" {
+		t.Fatal("margem incorreta")
+	}
+	request("POST", costURL39, strings.Replace(costBody39, `"cost_cents":700`, `"cost_cents":701`, 1), tokenA, 409)
+	request("GET", costURL39, "", tokenB, 404)
+	request("GET", costReceiptURL39, "", tokenB, 404)
+	request("GET", costURL39+"/history", "", tokenB, 404)
+	if h := request("GET", costURL39+"/history?limit=1&offset=0", "", tokenA, 200); len(h["items"].([]interface{})) != 1 {
+		t.Fatal("histórico ausente")
+	}
+	if h := request("GET", costURL39+"/history?offset=1", "", tokenA, 200); len(h["items"].([]interface{})) != 0 {
+		t.Fatal("paginação incorreta")
+	}
+	otherUser39, otherSession39 := uuid.NewString(), uuid.NewString()
+	exec(`INSERT INTO users(id,tenant_id,role) VALUES($1,$2,'owner')`, otherUser39, tenantA)
+	exec(`INSERT INTO online_sessions(id,tenant_id,user_id,role,created_at,expires_at) VALUES($1,$2,$3,'owner',clock_timestamp(),clock_timestamp()+interval '1 hour')`, otherSession39, tenantA, otherUser39)
+	otherToken39 := token(tenantA, otherUser39, otherSession39)
+	request("GET", costReceiptURL39, "", otherToken39, 404)
+	request("POST", costURL39, costBody39, otherToken39, 409)
+	staleCost39 := onlinecatalog.CostInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedCostRevision: 0, CostCents: 800, Reason: "Concorrência"}
+	if _, e := store.SetCost(ctx, actor, costProduct39, staleCost39); e != onlinecatalog.ErrConflict {
+		t.Fatal("revisão antiga aceita")
+	}
+	staleCost39.ExpectedCostRevision = 1
+	staleCost39.ExpectedProductVersion = 2
+	if _, e := store.SetCost(ctx, actor, costProduct39, staleCost39); e != onlinecatalog.ErrConflict {
+		t.Fatal("versão antiga aceita")
+	}
+	// An outbox failure rolls back cost, immutable receipt and outbox together.
+	rollbackCostOp39 := uuid.NewString()
+	exec(`CREATE FUNCTION fail_cost_outbox39() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.operation_id::text='` + rollbackCostOp39 + `' THEN RAISE EXCEPTION 'fixture'; END IF; RETURN NEW; END $$`)
+	exec(`CREATE TRIGGER reject_cost39 BEFORE INSERT ON online_cost_outbox FOR EACH ROW EXECUTE FUNCTION fail_cost_outbox39()`)
+	rollbackCost39 := onlinecatalog.CostInput{OperationID: rollbackCostOp39, ExpectedProductVersion: 1, ExpectedCostRevision: 1, CostCents: 1200, Reason: "Nova nota"}
+	if _, e := store.SetCost(ctx, actor, costProduct39, rollbackCost39); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("falha tardia não interrompeu")
+	}
+	if c, e := store.ProductCost(ctx, actor, costProduct39); e != nil || c.Cost.Revision != 1 || *c.Cost.CostCents != 700 {
+		t.Fatal("rollback perdeu custo anterior")
+	}
+	var countCost39 int
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_cost_operations WHERE tenant_id=$1 AND operation_id=$2`, tenantA, rollbackCostOp39).Scan(&countCost39) != nil || countCost39 != 0 {
+		t.Fatal("rollback deixou recibo")
+	}
+	exec(`ALTER TABLE online_cost_outbox DISABLE TRIGGER reject_cost39`)
+	if _, e := store.SetCost(ctx, actor, costProduct39, rollbackCost39); e != nil {
+		t.Fatal("nova tentativa após rollback falhou")
+	}
+	if m := request("GET", marginURL39, "", tokenA, 200); m["state"] != "negative_margin" || m["margin_cents"] != float64(-200) || m["margin_bps"] != "-2000" {
+		t.Fatal("margem negativa incorreta")
+	}
+	// Concurrent replay commits only one receipt and one durable event.
+	concurrentCost39 := onlinecatalog.CostInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedCostRevision: 2, CostCents: 600, Reason: "Replay concorrente"}
+	costErrors39 := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		go func() { _, e := store.SetCost(ctx, actor, costProduct39, concurrentCost39); costErrors39 <- e }()
+	}
+	for i := 0; i < 2; i++ {
+		if e := <-costErrors39; e != nil {
+			t.Fatal("replay concorrente falhou")
+		}
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_cost_operations WHERE tenant_id=$1 AND operation_id=$2)+(SELECT count(*) FROM online_cost_outbox WHERE tenant_id=$1 AND operation_id=$2)`, tenantA, concurrentCost39.OperationID).Scan(&countCost39) != nil || countCost39 != 2 {
+		t.Fatal("recibo ou evento duplicado")
+	}
+	// Competing operations with one expected revision have exactly one winner.
+	for i := 0; i < 2; i++ {
+		v := concurrentCost39
+		v.OperationID = uuid.NewString()
+		v.ExpectedCostRevision = 3
+		v.CostCents = int64(500 + i)
+		go func(v onlinecatalog.CostInput) {
+			_, e := store.SetCost(ctx, actor, costProduct39, v)
+			costErrors39 <- e
+		}(v)
+	}
+	wonCost39, conflictCost39 := 0, 0
+	for i := 0; i < 2; i++ {
+		e := <-costErrors39
+		if e == nil {
+			wonCost39++
+		} else if e == onlinecatalog.ErrConflict {
+			conflictCost39++
+		} else {
+			t.Fatal("erro inesperado em concorrência")
+		}
+	}
+	if wonCost39 != 1 || conflictCost39 != 1 {
+		t.Fatal("última gravação venceu")
+	}
+	// Replay recovers the old receipt even after later costs and price changes.
+	exec(`UPDATE products SET preco=0,catalog_version=catalog_version+1 WHERE tenant_id=$1 AND id=$2`, tenantA, costProduct39)
+	request("POST", costURL39, costBody39, tokenA, 200)
+	if m := request("GET", marginURL39, "", tokenA, 200); m["state"] != "zero_price" || m["margin_bps"] != nil {
+		t.Fatal("percentual com preço zero")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", costURL39, "", tokenA, 401)
+	if _, e := store.CostOperation(ctx, actor, costOp39); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada consultou recibo")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	var checksumCost39 string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_cost_migrations WHERE version=17`).Scan(&checksumCost39) != nil {
+		t.Fatal("histórico 17 ausente")
+	}
+	exec(`UPDATE online_cost_migrations SET checksum='invalid' WHERE version=17`)
+	if onlinecatalog.CheckCosts(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.MigrateCosts(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("checksum alterado aceito")
+	}
+	exec(`UPDATE online_cost_migrations SET checksum=$1 WHERE version=17`, checksumCost39)
+	exec(`INSERT INTO online_cost_migrations(version,checksum) VALUES(18,$1)`, checksumCost39)
+	if onlinecatalog.MigrateCosts(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema futuro aceito")
+	}
+	exec(`DELETE FROM online_cost_migrations WHERE version=18`)
+	if onlinecatalog.CheckCosts(ctx, sqlDB) != nil {
+		t.Fatal("schema 17 não recuperado")
+	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

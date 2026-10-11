@@ -1,0 +1,562 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Custo declarado e margem online — entrega39",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/produtos/{id}/cost": {
+      "get": {
+        "operationId": "productCost39",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "JSON, ID, query ou corpo inválido."
+          },
+          "401": {
+            "description": "Sessão ausente/revogada."
+          },
+          "403": {
+            "description": "Papel negado."
+          },
+          "404": {
+            "description": "Produto não encontrado no tenant; recibo apenas do ator original."
+          },
+          "503": {
+            "description": "Banco, schema ou snapshot inconsistente."
+          },
+          "200": {
+            "description": "Estado real; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCost"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Sessão e vínculo revalidados no banco. Custo declarado por unidade, sem movimentar estoque, caixa ou preço. Tenant derivado da sessão; query extra e corpo GET recusados."
+      },
+      "post": {
+        "operationId": "setCost39",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "JSON, ID, query ou corpo inválido."
+          },
+          "401": {
+            "description": "Sessão ausente/revogada."
+          },
+          "403": {
+            "description": "Papel negado."
+          },
+          "404": {
+            "description": "Produto não encontrado no tenant; recibo apenas do ator original."
+          },
+          "503": {
+            "description": "Banco, schema ou snapshot inconsistente."
+          },
+          "200": {
+            "description": "Estado real; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revisão/versão divergente ou UUID reutilizado com outro payload/ator."
+          }
+        },
+        "description": "Owner/admin/manager. Sessão e vínculo revalidados no banco. Custo declarado por unidade, sem movimentar estoque, caixa ou preço. Tenant derivado da sessão; query extra e corpo GET recusados. JSON até 8192 bytes, cinco campos, sem null/duplicação/extra/fração. Reason aparado. Custo inexistente revisão zero. Replay devolve recibo original mesmo após outras mudanças. Recibo/outbox/custo atômicos; recuperar perda de resposta pelo operation_id.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Input"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/cost/history": {
+      "get": {
+        "operationId": "costHistory39",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "JSON, ID, query ou corpo inválido."
+          },
+          "401": {
+            "description": "Sessão ausente/revogada."
+          },
+          "403": {
+            "description": "Papel negado."
+          },
+          "404": {
+            "description": "Produto não encontrado no tenant; recibo apenas do ator original."
+          },
+          "503": {
+            "description": "Banco, schema ou snapshot inconsistente."
+          },
+          "200": {
+            "description": "Estado real; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Sessão e vínculo revalidados no banco. Custo declarado por unidade, sem movimentar estoque, caixa ou preço. Tenant derivado da sessão; query extra e corpo GET recusados."
+      }
+    },
+    "/api/v1/catalog/costs/operations/{operation_id}": {
+      "get": {
+        "operationId": "costReceipt39",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "JSON, ID, query ou corpo inválido."
+          },
+          "401": {
+            "description": "Sessão ausente/revogada."
+          },
+          "403": {
+            "description": "Papel negado."
+          },
+          "404": {
+            "description": "Produto não encontrado no tenant; recibo apenas do ator original."
+          },
+          "503": {
+            "description": "Banco, schema ou snapshot inconsistente."
+          },
+          "200": {
+            "description": "Estado real; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Sessão e vínculo revalidados no banco. Custo declarado por unidade, sem movimentar estoque, caixa ou preço. Tenant derivado da sessão; query extra e corpo GET recusados."
+      }
+    },
+    "/api/v1/produtos/{id}/margin": {
+      "get": {
+        "operationId": "costMargin39",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "JSON, ID, query ou corpo inválido."
+          },
+          "401": {
+            "description": "Sessão ausente/revogada."
+          },
+          "403": {
+            "description": "Papel negado."
+          },
+          "404": {
+            "description": "Produto não encontrado no tenant; recibo apenas do ator original."
+          },
+          "503": {
+            "description": "Banco, schema ou snapshot inconsistente."
+          },
+          "200": {
+            "description": "Estado real; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Margin"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Sessão e vínculo revalidados no banco. Custo declarado por unidade, sem movimentar estoque, caixa ou preço. Tenant derivado da sessão; query extra e corpo GET recusados."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "nome",
+          "descricao",
+          "sku",
+          "price_cents",
+          "ativo",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "nome": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 999999999999
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "Cost": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "known",
+          "revision",
+          "cost_cents",
+          "actor_id",
+          "updated_at"
+        ],
+        "properties": {
+          "known": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "cost_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 999999999999,
+            "nullable": true
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "Input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_product_version",
+          "expected_cost_revision",
+          "cost_cents",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_product_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "expected_cost_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740990
+          },
+          "cost_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 999999999999
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "ProductCost": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product",
+          "cost"
+        ],
+        "properties": {
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "cost": {
+            "$ref": "#/components/schemas/Cost"
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "product_id",
+          "actor_id",
+          "reason",
+          "before",
+          "after",
+          "product",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "before": {
+            "$ref": "#/components/schemas/Cost"
+          },
+          "after": {
+            "$ref": "#/components/schemas/Cost"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "History": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "limit",
+          "offset"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Receipt"
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 1000000000
+          }
+        }
+      },
+      "Margin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product",
+          "cost",
+          "margin_cents",
+          "margin_bps",
+          "state"
+        ],
+        "properties": {
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "cost": {
+            "$ref": "#/components/schemas/Cost"
+          },
+          "margin_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": -999999999999,
+            "maximum": 999999999999,
+            "nullable": true
+          },
+          "margin_bps": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^-?[0-9]+$",
+            "description": "Pontos-base em texto exato: (preço-custo)*10000/preço; metade arredondada para longe de zero. Null com preço zero ou custo desconhecido."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "unknown_cost",
+              "zero_price",
+              "nonnegative_margin",
+              "negative_margin"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -73,6 +73,12 @@ func Registrar(app *fiber.App) {
 	produtos.Post("/:id/price", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("price"))
 	produtos.Post("/:id/active", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("active"))
 
+	produtos.Get("/:id/cost", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarCusto)
+	produtos.Post("/:id/cost", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.AlterarCusto)
+	produtos.Get("/:id/cost/history", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.HistoricoCusto)
+	produtos.Get("/:id/margin", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarMargem)
+	negocios.Get("/catalog/costs/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarOperacaoCusto)
+
 	produtos.Get("/:id/barcodes", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock", "cashier"), catalogDelivery.ListarCodigosProduto(false))
 	produtos.Post("/:id/barcodes", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.AlterarCodigoProduto("add"))
 	produtos.Post("/:id/barcodes/:barcode_id/active", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager", "stock"), catalogDelivery.AlterarCodigoProduto("active"))

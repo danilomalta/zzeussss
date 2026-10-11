@@ -7044,6 +7044,327 @@
           "url": "./online-discount-checks.openapi.json"
         }
       }
+    },
+    "/api/v1/produtos/{id}/cost": {
+      "get": {
+        "operationId": "productCost39",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "JSON, ID, query ou corpo inválido."
+          },
+          "401": {
+            "description": "Sessão ausente/revogada."
+          },
+          "403": {
+            "description": "Papel negado."
+          },
+          "404": {
+            "description": "Produto não encontrado no tenant; recibo apenas do ator original."
+          },
+          "503": {
+            "description": "Banco, schema ou snapshot inconsistente."
+          },
+          "200": {
+            "description": "Estado real; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-product-costs.openapi.json#/components/schemas/ProductCost"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Sessão e vínculo revalidados no banco. Custo declarado por unidade, sem movimentar estoque, caixa ou preço. Tenant derivado da sessão; query extra e corpo GET recusados.",
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-product-costs.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "setCost39",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "JSON, ID, query ou corpo inválido."
+          },
+          "401": {
+            "description": "Sessão ausente/revogada."
+          },
+          "403": {
+            "description": "Papel negado."
+          },
+          "404": {
+            "description": "Produto não encontrado no tenant; recibo apenas do ator original."
+          },
+          "503": {
+            "description": "Banco, schema ou snapshot inconsistente."
+          },
+          "200": {
+            "description": "Estado real; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-product-costs.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revisão/versão divergente ou UUID reutilizado com outro payload/ator."
+          }
+        },
+        "description": "Owner/admin/manager. Sessão e vínculo revalidados no banco. Custo declarado por unidade, sem movimentar estoque, caixa ou preço. Tenant derivado da sessão; query extra e corpo GET recusados. JSON até 8192 bytes, cinco campos, sem null/duplicação/extra/fração. Reason aparado. Custo inexistente revisão zero. Replay devolve recibo original mesmo após outras mudanças. Recibo/outbox/custo atômicos; recuperar perda de resposta pelo operation_id.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-product-costs.openapi.json#/components/schemas/Input"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-product-costs.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/cost/history": {
+      "get": {
+        "operationId": "costHistory39",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "JSON, ID, query ou corpo inválido."
+          },
+          "401": {
+            "description": "Sessão ausente/revogada."
+          },
+          "403": {
+            "description": "Papel negado."
+          },
+          "404": {
+            "description": "Produto não encontrado no tenant; recibo apenas do ator original."
+          },
+          "503": {
+            "description": "Banco, schema ou snapshot inconsistente."
+          },
+          "200": {
+            "description": "Estado real; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-product-costs.openapi.json#/components/schemas/History"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Sessão e vínculo revalidados no banco. Custo declarado por unidade, sem movimentar estoque, caixa ou preço. Tenant derivado da sessão; query extra e corpo GET recusados.",
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-product-costs.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/costs/operations/{operation_id}": {
+      "get": {
+        "operationId": "costReceipt39",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "JSON, ID, query ou corpo inválido."
+          },
+          "401": {
+            "description": "Sessão ausente/revogada."
+          },
+          "403": {
+            "description": "Papel negado."
+          },
+          "404": {
+            "description": "Produto não encontrado no tenant; recibo apenas do ator original."
+          },
+          "503": {
+            "description": "Banco, schema ou snapshot inconsistente."
+          },
+          "200": {
+            "description": "Estado real; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-product-costs.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Sessão e vínculo revalidados no banco. Custo declarado por unidade, sem movimentar estoque, caixa ou preço. Tenant derivado da sessão; query extra e corpo GET recusados.",
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-product-costs.openapi.json"
+        }
+      }
+    },
+    "/api/v1/produtos/{id}/margin": {
+      "get": {
+        "operationId": "costMargin39",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "JSON, ID, query ou corpo inválido."
+          },
+          "401": {
+            "description": "Sessão ausente/revogada."
+          },
+          "403": {
+            "description": "Papel negado."
+          },
+          "404": {
+            "description": "Produto não encontrado no tenant; recibo apenas do ator original."
+          },
+          "503": {
+            "description": "Banco, schema ou snapshot inconsistente."
+          },
+          "200": {
+            "description": "Estado real; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-product-costs.openapi.json#/components/schemas/Margin"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Sessão e vínculo revalidados no banco. Custo declarado por unidade, sem movimentar estoque, caixa ou preço. Tenant derivado da sessão; query extra e corpo GET recusados.",
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-product-costs.openapi.json"
+        }
+      }
     }
   },
   "components": {

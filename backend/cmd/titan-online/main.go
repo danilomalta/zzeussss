@@ -14,8 +14,8 @@ import (
 )
 
 func run(args []string) error {
-	if len(args) != 1 || (args[0] != "migrate-sessions" && args[0] != "check-sessions" && args[0] != "migrate-catalog" && args[0] != "check-catalog" && args[0] != "migrate-discount-reviews" && args[0] != "check-discount-reviews") {
-		return fmt.Errorf("uso: titan-online migrate-sessions | check-sessions | migrate-catalog | check-catalog | migrate-discount-reviews | check-discount-reviews")
+	if len(args) != 1 || (args[0] != "migrate-sessions" && args[0] != "check-sessions" && args[0] != "migrate-catalog" && args[0] != "check-catalog" && args[0] != "migrate-discount-reviews" && args[0] != "check-discount-reviews" && args[0] != "migrate-costs" && args[0] != "check-costs") {
+		return fmt.Errorf("uso: titan-online migrate-sessions | check-sessions | migrate-catalog | check-catalog | migrate-discount-reviews | check-discount-reviews | migrate-costs | check-costs")
 	}
 	// Only an explicit invocation of this maintenance command applies schema.
 	_ = godotenv.Load()
@@ -28,6 +28,12 @@ func run(args []string) error {
 	defer db.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+	if args[0] == "migrate-costs" {
+		return onlinecatalog.MigrateCosts(ctx, db)
+	}
+	if args[0] == "check-costs" {
+		return onlinecatalog.CheckCosts(ctx, db)
+	}
 	if args[0] == "migrate-discount-reviews" {
 		return onlinecatalog.MigrateDiscountReviews(ctx, db)
 	}

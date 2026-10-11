@@ -191,3 +191,5 @@ Entrega 25 consolidada: cadastro online com Idempotency-Key obrigatório (428 se
 Entrega37: cinco consultas de acompanhamento de sugestões, preço atual identificado, decisões sem recibo explícitas e CSV protegido. Veja 112_RELATORIO_DESCONTOS_CINCO_FUNCOES.md.
 
 Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de aprovações. Veja 113_CONFERENCIA_APROVACOES_CINCO_FUNCOES.md.
+
+- Entrega39: [114_CUSTO_MARGEM_CINCO_FUNCOES.md](114_CUSTO_MARGEM_CINCO_FUNCOES.md).

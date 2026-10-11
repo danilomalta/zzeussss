@@ -101,3 +101,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - Entrega37: [relatório de sugestões de desconto](online-discount-report.openapi.json), cinco consultas e CSV paginado, schema16 existente.
 
 - Entrega38: [conferência de aprovações](online-discount-checks.openapi.json), snapshot versus produto atual, cinco consultas sem aplicar desconto.
+
+- Entrega39: `online-product-costs.openapi.json`: custo declarado, revisão, histórico, recibo e margem. PostgreSQL17 explícito; núcleo local e produção separados.
