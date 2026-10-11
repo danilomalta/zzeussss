@@ -1,0 +1,12 @@
+import type {RecipeVersion,OrderPage} from './productionRead.mjs';
+import type {Reservations} from './stockRead.mjs';
+import type {PurchaseSearch,ReceivingHistory} from './receivingRead.mjs';
+export function recipeCSV(items:RecipeVersion[],offset:number):string;
+export function productionOrdersCSV(page:OrderPage,offset:number):string;
+export function reservationsCSV(page:Reservations):string;
+export function purchasesCSV(page:PurchaseSearch):string;
+export function receivingCSV(page:ReceivingHistory):string;
+export function csvCell(value:string|number|boolean):string;
+export function csvDocument(headers:string[],rows:(string|number|boolean)[][]):string;
+export function decimalQuantity(n:number):string;
+export function downloadCSV(csv:string,name:string):void;
