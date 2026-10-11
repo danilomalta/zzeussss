@@ -295,6 +295,8 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if e != nil || current.Version != 7 || current.Name != "Renamed" {
 		t.Fatal("falha de auditoria gravou produto")
 	}
+	// Forced audit failure verified; restore normal execution for later scenarios.
+	exec(`ALTER TABLE online_catalog_operations DISABLE TRIGGER reject_catalog_audit`)
 	// Authorization is checked again under row locks inside the transaction.
 	stockUser, stockSession := uuid.NewString(), uuid.NewString()
 	exec(`INSERT INTO users(id,tenant_id,role) VALUES($1,$2,'stock')`, stockUser, tenantA)
@@ -1574,5 +1576,109 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if onlinecatalog.CheckSchema(ctx, sqlDB) != nil {
 		t.Fatal("fixture restaurada incompatível")
 	}
+
+	// Delivery35: five quality APIs against actual isolated PostgreSQL.
+	qualityIDs35 := make([]int64, 0, 4)
+	for i := 0; i < 4; i++ {
+		description := ""
+		if i == 1 || i == 3 {
+			description = "Cadastro conferido"
+		}
+		stock := 5
+		if i == 0 {
+			stock = 0
+		}
+		created := request("POST", "/api/v1/produtos/", fmt.Sprintf(`{"nome":"Quality35 %d","sku":"quality35-%d","descricao":%q,"preco":1.25,"estoque":%d}`, i, i, description, stock), tokenA, 201)
+		qualityIDs35 = append(qualityIDs35, int64(created["ID"].(float64)))
+	}
+	for i := 2; i < 4; i++ {
+		request("POST", fmt.Sprintf("/api/v1/produtos/%d/barcodes", qualityIDs35[i]), fmt.Sprintf(`{"operation_id":%q,"expected_version":1,"code":%q,"reason":"Conferência qualidade"}`, uuid.NewString(), gtin33(fmt.Sprintf("78912345990%d", i))), tokenA, 200)
+	}
+	request("POST", "/api/v1/produtos/", `{"nome":"Quality35 foreign","sku":"quality35-foreign","preco":1.25}`, tokenB, 201)
+	qualityBase35 := "/api/v1/catalog/quality/"
+	summary35 := request("GET", qualityBase35+"summary?q=Quality35", "", tokenA, 200)
+	if summary35["products"] != float64(4) || summary35["pending_products"] != float64(3) ||
+		summary35["no_active_gtin"] != float64(2) || summary35["no_description"] != float64(2) || summary35["zero_stock"] != float64(1) {
+		t.Fatal("contagens de qualidade incorretas")
+	}
+	foreignSummary35 := request("GET", qualityBase35+"summary?q=Quality35", "", tokenB, 200)
+	if foreignSummary35["products"] != float64(1) {
+		t.Fatal("qualidade vazou empresa")
+	}
+	for _, tc := range []struct {
+		path  string
+		count int
+	}{{"no-active-gtin", 2}, {"no-description", 2}, {"zero-stock", 1}} {
+		page35 := request("GET", qualityBase35+tc.path+"?q=Quality35&limit=1", "", tokenA, 200)
+		if page35["total"] != float64(tc.count) || len(page35["items"].([]interface{})) != 1 {
+			t.Fatal("lista de qualidade incompleta")
+		}
+		if tc.count == 2 {
+			if page35["has_more"] != true || page35["next_offset"] != float64(1) {
+				t.Fatal("paginação de qualidade falsa")
+			}
+			next35 := request("GET", qualityBase35+tc.path+"?q=Quality35&limit=1&offset=1", "", tokenA, 200)
+			if next35["has_more"] != false || next35["items"].([]interface{})[0].(map[string]interface{})["id"] == page35["items"].([]interface{})[0].(map[string]interface{})["id"] {
+				t.Fatal("página repetida")
+			}
+		}
+	}
+	empty35 := request("GET", qualityBase35+"zero-stock?q=Quality35&offset=99", "", tokenA, 200)
+	if len(empty35["items"].([]interface{})) != 0 || empty35["has_more"] != false {
+		t.Fatal("página vazia incorreta")
+	}
+	request("GET", qualityBase35+"summary?tenant_id="+tenantB, "", tokenA, 400)
+	request("GET", qualityBase35+"no-active-gtin?issue=zero_stock", "", tokenA, 400)
+	request("GET", qualityBase35+"summary?q=a&q=b", "", tokenA, 400)
+	var qualityWritesBefore35, qualityWritesAfter35 int
+	countQualityWrites35 := func() int {
+		var n int
+		if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_catalog_operations WHERE tenant_id=$1)+(SELECT count(*) FROM online_catalog_barcode_operations WHERE tenant_id=$1)+(SELECT count(*) FROM online_catalog_barcode_outbox WHERE tenant_id=$1)`, tenantA).Scan(&n) != nil {
+			t.Fatal("contagem de escritas indisponível")
+		}
+		return n
+	}
+	qualityWritesBefore35 = countQualityWrites35()
+	exportReq35 := httptest.NewRequest("GET", qualityBase35+"export.csv?q=Quality35&limit=1", nil)
+	exportReq35.Header.Set("Authorization", "Bearer "+tokenA)
+	exportResp35, exportErr35 := app.Test(exportReq35, 10000)
+	if exportErr35 != nil {
+		t.Fatal("CSV qualidade indisponível")
+	}
+	exportData35, exportErr35 := io.ReadAll(exportResp35.Body)
+	exportResp35.Body.Close()
+	if exportErr35 != nil || exportResp35.StatusCode != 200 || !strings.HasPrefix(string(exportData35), "product_id;version;sku;nome;") ||
+		exportResp35.Header.Get("Cache-Control") != "no-store" || exportResp35.Header.Get("X-Content-Type-Options") != "nosniff" ||
+		exportResp35.Header.Get("X-Titan-Report-Total") != "3" || exportResp35.Header.Get("X-Titan-Report-Count") != "1" ||
+		exportResp35.Header.Get("X-Titan-Report-Has-More") != "true" || exportResp35.Header.Get("X-Titan-Report-Next-Offset") != "1" || len(exportResp35.Header.Get("X-Titan-Source-Hash")) != 64 {
+		t.Fatal("metadados CSV qualidade incorretos")
+	}
+	qualityWritesAfter35 = countQualityWrites35()
+	if qualityWritesAfter35 != qualityWritesBefore35 {
+		t.Fatal("consulta alterou catálogo")
+	}
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/details", qualityIDs35[0]), fmt.Sprintf(`{"operation_id":%q,"expected_version":1,"nome":"Quality35 0","sku":"quality35-0","descricao":"Agora completo"}`, uuid.NewString()), tokenA, 200)
+	corrected35 := request("GET", qualityBase35+"summary?q=Quality35", "", tokenA, 200)
+	if corrected35["no_description"] != float64(1) || corrected35["pending_products"] != float64(3) {
+		t.Fatal("pendência não acompanhou correção")
+	}
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/active", qualityIDs35[1]), fmt.Sprintf(`{"operation_id":%q,"expected_version":1,"ativo":false}`, uuid.NewString()), tokenA, 200)
+	active35 := request("GET", qualityBase35+"summary?q=Quality35", "", tokenA, 200)
+	inactive35 := request("GET", qualityBase35+"summary?q=Quality35&active=inactive", "", tokenA, 200)
+	if active35["products"] != float64(3) || inactive35["products"] != float64(1) {
+		t.Fatal("filtro ativo incorreto")
+	}
+	request("POST", "/api/v1/produtos/", `{"nome":"Quality35 %literal","sku":"quality35-literal","preco":1.25}`, tokenA, 201)
+	literal35 := request("GET", qualityBase35+"summary?q=%25literal", "", tokenA, 200)
+	if literal35["products"] != float64(1) {
+		t.Fatal("busca percentual não literal")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", qualityBase35+"summary", "", tokenA, 401)
+	if _, err = store.QualitySummary(ctx, actor, onlinecatalog.QualityQuery{Active: "active", Issue: "any", Limit: 50}); err != onlinecatalog.ErrDenied {
+		t.Fatal("qualidade aceitou sessão revogada")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

@@ -111,6 +111,12 @@ func Registrar(app *fiber.App) {
 	negocios.Get("/catalog/undos/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ConsultarReversaoCatalogo(false))
 	negocios.Get("/catalog/batches/:operation_id/undo", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.ConsultarReversaoCatalogo(true))
 
+	negocios.Get("/catalog/quality/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CatalogQualitySummary)
+	negocios.Get("/catalog/quality/no-active-gtin", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CatalogQuality("no_active_gtin", false))
+	negocios.Get("/catalog/quality/no-description", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CatalogQuality("no_description", false))
+	negocios.Get("/catalog/quality/zero-stock", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CatalogQuality("zero_stock", false))
+	negocios.Get("/catalog/quality/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CatalogQuality("any", true))
+
 	// Análises com Inteligência Artificial (Bounded Context: Catalog)
 	analises := negocios.Group("/analises")
 	analises.Get("/produtos-parados", Indisponivel)

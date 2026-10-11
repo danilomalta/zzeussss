@@ -183,3 +183,5 @@ Entrega 25 consolidada: cadastro online com Idempotency-Key obrigatório (428 se
 - Entrega 33: prévia e cadastro atômico de GTINs em até 50 produtos por lote, replay/recuperação e auditoria por item. Migração PostgreSQL 15 explícita; não altera SQLite, produção ou frontend. Ver documento 108.
 
 - Entrega 34: CSV de novos GTINs com modelo, diagnóstico por linha, prévia/apply atômicos e exportação de conferência por produto. Reutiliza a migração 15 e recibos da entrega 33. Ver documento 109.
+
+- Entrega 35: cinco funções de manutenção do catálogo online, filtros/paginação/snapshot, isolamento e relatório CSV. Ver `110_PENDENCIAS_CATALOGO_CINCO_FUNCOES.md`. Banco comercial e produção separados.

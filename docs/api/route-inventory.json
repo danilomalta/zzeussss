@@ -798,6 +798,41 @@
       "path": "/api/v1/produtos/:id/barcodes/export.csv",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/quality/summary",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/quality/no-active-gtin",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/quality/no-description",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/quality/zero-stock",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/quality/export.csv",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
     }
   ]
 }

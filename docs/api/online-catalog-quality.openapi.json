@@ -1,0 +1,770 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem catálogo online — pendências operacionais",
+    "version": "35.0.0",
+    "description": "Cinco funções de leitura real. Empresa derivada da sessão; owner/admin/manager/stock. Cada resposta usa snapshot repeatable-read e revalida sessão, papel e empresa no banco. Sem alteração de dados, novas migrações ou backend fiscal."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/catalog/quality/summary": {
+      "get": {
+        "operationId": "catalogQualitySummary",
+        "summary": "Resumo de pendências: products é o total filtrado; pending_products conta cada produto uma vez",
+        "description": "Resumo de pendências: products é o total filtrado; pending_products conta cada produto uma vez. Contagens por categoria se sobrepõem.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal por trecho de nome ou SKU; %, _ e barra invertida não são curingas. Não ignora acentos."
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive",
+                "all"
+              ],
+              "default": "active"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resumo de pendências: products é o total filtrado; pending_products conta cada produto uma vez. Contagens por categoria se sobrepõem.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualitySummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro, paginação, parâmetro desconhecido/duplicado ou corpo GET inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticação inválida ou sessão revogada no guarda HTTP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Papel ou sessão não autorizados; revalidação do banco pode negar sessão alterada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco, schema GTIN ou dados indisponíveis; sem sucesso fabricado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalog/quality/no-active-gtin": {
+      "get": {
+        "operationId": "catalogQualityNoGTIN",
+        "summary": "Produtos sem nenhum GTIN ativo na empresa",
+        "description": "Produtos sem nenhum GTIN ativo na empresa. GTIN inativo não resolve pendência; nunca usa SKU como GTIN.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal por trecho de nome ou SKU; %, _ e barra invertida não são curingas. Não ignora acentos."
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive",
+                "all"
+              ],
+              "default": "active"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Produtos sem nenhum GTIN ativo na empresa. GTIN inativo não resolve pendência; nunca usa SKU como GTIN.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro, paginação, parâmetro desconhecido/duplicado ou corpo GET inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticação inválida ou sessão revogada no guarda HTTP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Papel ou sessão não autorizados; revalidação do banco pode negar sessão alterada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco, schema GTIN ou dados indisponíveis; sem sucesso fabricado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalog/quality/no-description": {
+      "get": {
+        "operationId": "catalogQualityNoDescription",
+        "summary": "Produtos com descrição ausente ou contendo somente espaços, tabulações e quebras de linha",
+        "description": "Produtos com descrição ausente ou contendo somente espaços, tabulações e quebras de linha. Descrição é uma tarefa editorial opcional; não comprova conformidade fiscal.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal por trecho de nome ou SKU; %, _ e barra invertida não são curingas. Não ignora acentos."
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive",
+                "all"
+              ],
+              "default": "active"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Produtos com descrição ausente ou contendo somente espaços, tabulações e quebras de linha. Descrição é uma tarefa editorial opcional; não comprova conformidade fiscal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro, paginação, parâmetro desconhecido/duplicado ou corpo GET inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticação inválida ou sessão revogada no guarda HTTP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Papel ou sessão não autorizados; revalidação do banco pode negar sessão alterada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco, schema GTIN ou dados indisponíveis; sem sucesso fabricado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalog/quality/zero-stock": {
+      "get": {
+        "operationId": "catalogQualityZeroStock",
+        "summary": "Produtos com estoque online igual a zero",
+        "description": "Produtos com estoque online igual a zero. Não representa saldo do PDV SQLite, estoque mínimo, reserva de produção ou estado da sincronização.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal por trecho de nome ou SKU; %, _ e barra invertida não são curingas. Não ignora acentos."
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive",
+                "all"
+              ],
+              "default": "active"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Produtos com estoque online igual a zero. Não representa saldo do PDV SQLite, estoque mínimo, reserva de produção ou estado da sincronização.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro, paginação, parâmetro desconhecido/duplicado ou corpo GET inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticação inválida ou sessão revogada no guarda HTTP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Papel ou sessão não autorizados; revalidação do banco pode negar sessão alterada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco, schema GTIN ou dados indisponíveis; sem sucesso fabricado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalog/quality/export.csv": {
+      "get": {
+        "operationId": "catalogQualityCSV",
+        "summary": "CSV de uma página de pendências",
+        "description": "CSV de uma página de pendências. Não é arquivo para reimportação. Nomes/SKUs com prefixo de fórmula recebem apóstrofo somente no relatório. Headers informam total, count, has-more e next-offset. Páginas independentes; alterações simultâneas podem deslocar a paginação. Não afirma exportação completa.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal por trecho de nome ou SKU; %, _ e barra invertida não são curingas. Não ignora acentos."
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive",
+                "all"
+              ],
+              "default": "active"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "issue",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "any",
+                "no_active_gtin",
+                "no_description",
+                "zero_stock"
+              ],
+              "default": "any"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV de uma página de pendências. Não é arquivo para reimportação. Nomes/SKUs com prefixo de fórmula recebem apóstrofo somente no relatório. Headers informam total, count, has-more e next-offset. Páginas independentes; alterações simultâneas podem deslocar a paginação. Não afirma exportação completa.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "X-Titan-Report-Total": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Count": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Has-More": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Next-Offset": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Source-Hash": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Scope": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro, paginação, parâmetro desconhecido/duplicado ou corpo GET inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticação inválida ou sessão revogada no guarda HTTP.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Papel ou sessão não autorizados; revalidação do banco pode negar sessão alterada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco, schema GTIN ou dados indisponíveis; sem sucesso fabricado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "QualityItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "nome",
+          "descricao",
+          "sku",
+          "price_cents",
+          "ativo",
+          "estoque",
+          "issues"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "nome": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "estoque": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "issues": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "no_active_gtin",
+                "no_description",
+                "zero_stock"
+              ]
+            }
+          }
+        }
+      },
+      "QualitySummary": {
+        "type": "object",
+        "required": [
+          "q",
+          "active",
+          "products",
+          "pending_products",
+          "no_active_gtin",
+          "no_description",
+          "zero_stock",
+          "generated_at"
+        ],
+        "properties": {
+          "q": {
+            "type": "string"
+          },
+          "active": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive",
+              "all"
+            ]
+          },
+          "products": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "pending_products": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "no_active_gtin": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "no_description": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "zero_stock": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "QualityPage": {
+        "type": "object",
+        "required": [
+          "q",
+          "active",
+          "issue",
+          "limit",
+          "offset",
+          "total",
+          "items",
+          "has_more",
+          "source_hash",
+          "generated_at"
+        ],
+        "properties": {
+          "q": {
+            "type": "string"
+          },
+          "active": {
+            "type": "string"
+          },
+          "issue": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/QualityItem"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "erro": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
