@@ -1,0 +1,9 @@
+export interface UsageLink {kind:'versions'|'orders';id:string;recipe_id:string;version_id:string;role:'ingredient'|'output';unit:string;quantity_milli:number;quantity_basis:'per_batch'|'planned_total';unit_matches_catalog:boolean;latest_version?:boolean;order_status?:string;location_id?:string}
+export interface ProductUsage {product:{id:string;name:string;unit:string};store_id:string;kind:'versions'|'orders';recipe_version_count:number;latest_recipe_version_count:number;order_count:number;offset:number;limit:number;has_more:boolean;items:UsageLink[]}
+export interface MaterialCapacity {product_id:string;recipe_unit:string;stock_unit:string;required_milli:number;stock_milli:number;conversion_numerator:number;conversion_denominator:number;possible_batches:number;limiting:boolean}
+export interface Alternative {recipe_id:string;version_id:string;revision:number;output_product_id:string;output_unit:string;yield_per_batch_milli:number;possible_batches:number;possible_output_milli:number;limiting_product_ids:string[];materials:MaterialCapacity[]}
+export interface Alternatives {location_id:string;measured_at:string;basis:string;alternatives_independent:true;simultaneous_total_available:false;alternatives:Alternative[]}
+export function validProductUsage(v:unknown,productID:string,storeID:string,kind:string,offset:number):boolean;
+export function capacitySelection(locationID:string,versions:string[]):{location_id:string;version_ids:string[]};
+export function validAlternatives(v:unknown,input:{location_id:string;version_ids:string[]}):boolean;
+export function createCatalogPlanning(fetcher?:typeof fetch):{usage(token:string,productID:string,storeID:string,kind?:'versions'|'orders',offset?:number):Promise<ProductUsage>;alternatives(token:string,locationID:string,versions:string[]):Promise<Alternatives>};

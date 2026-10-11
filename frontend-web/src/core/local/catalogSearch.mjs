@@ -6,8 +6,8 @@ const id = value => typeof value === 'string' && value.length > 0 && value.lengt
 const units = ['', 'unit', 'kg', 'g', 'liter', 'ml', 'meter'];
 
 export function createCatalogSearch(fetcher = globalThis.fetch) {
-  return async (token, { q = '', unit = '', pending = '', offset = 0 } = {}, signal) => {
-    if (!token || typeof q !== 'string' || new TextEncoder().encode(q).length > 240 ||
+  return async (token, { q = '', unit = '', pending = '', offset = 0, status } = {}, signal) => {
+    if ((status!==undefined&&!['all','active','inactive'].includes(status)) || !token || typeof q !== 'string' || new TextEncoder().encode(q).length > 240 ||
         !units.includes(unit) || !['', 'barcode', 'cost', 'minimum'].includes(pending) || !cents(offset)) invalid();
     const controller = new AbortController();
     const abort = () => controller.abort();
@@ -16,6 +16,7 @@ export function createCatalogSearch(fetcher = globalThis.fetch) {
     const timer = setTimeout(abort, 10000);
     try {
       const params = new URLSearchParams({ q, unit, pending, offset: String(offset) });
+      if(status!==undefined)params.set('status',status);
       const response = await fetcher('/local/v1/catalog/search?' + params, {
         signal: controller.signal, credentials: 'omit', cache: 'no-store',
         headers: { Authorization: `Bearer ${token}` },
@@ -26,11 +27,12 @@ export function createCatalogSearch(fetcher = globalThis.fetch) {
         400: 'Confira o texto e os filtros da busca.',
       })[response.status] || 'Não foi possível consultar o catálogo.');
       const value = await response.json();
-      if (!value || !cents(value.total) || value.offset !== offset || value.limit !== 50 ||
+      if (!value || (status!==undefined&&value.status!==status) || !cents(value.total) || value.offset !== offset || value.limit !== 50 ||
           typeof value.cost_visible !== 'boolean' || !Array.isArray(value.items) || value.items.length > 50 ||
           value.items.length !== Math.min(50, Math.max(0, value.total - offset)) ||
           !value.items.every(product => id(product?.id) &&
-            typeof product.sku === 'string' && product.sku.length > 0 &&
+            (status===undefined || ['active','inactive'].includes(product.status)&&cents(product.state_revision)&&product.state_revision<=2147483647&&(status==='all'||product.status===status)) &&
+            (!unit||product.unit===unit) && typeof product.sku === 'string' && product.sku.length > 0 &&
             typeof product.name === 'string' && product.name.length > 0 &&
             units.slice(1).includes(product.unit) && cents(product.price_cents) &&
             typeof product.minimum_configured === 'boolean' && typeof product.approximate === 'boolean' &&

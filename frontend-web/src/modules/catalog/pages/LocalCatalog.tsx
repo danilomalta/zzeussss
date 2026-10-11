@@ -1,3 +1,4 @@
+import CatalogPlanning from './CatalogPlanning';
 import StockOperations from './StockOperations';
 import CatalogStateHistory from './CatalogStateHistory';
 import CatalogProductState from './CatalogProductState';
@@ -29,9 +30,10 @@ export default function LocalCatalog() {
  const [total,setTotal] = useState(0);
  const [costVisible,setCostVisible] = useState(false);
  const [query,setQuery] = useState('');
+ const [filterStatus,setFilterStatus] = useState<'all'|'active'|'inactive'>('all');
  const [filterUnit,setFilterUnit] = useState('');
  const [filterPending,setFilterPending] = useState('');
- const [search,setSearch] = useState({q:'',unit:'',pending:'',offset:0});
+ const [search,setSearch] = useState({q:'',unit:'',pending:'',offset:0,status:'all' as 'all'|'active'|'inactive'});
  const [columns,setColumns] = useState({barcode:true,unit:true,cost:false,minimum:true});
  const [places,setPlaces] = useState<LocalLocation[]>([]);
  const [offset,setOffset] = useState(0);
@@ -79,9 +81,9 @@ export default function LocalCatalog() {
    </details>}
    {!canWrite && <p className="brand-message">Consulta autorizada. Cadastro e alterações exigem permissão de estoque e licença vigente.</p>}
    <section className="brand-panel catalog-search-panel">
-    <form className="catalog-search-form" onSubmit={e=>{e.preventDefault();setSearch({q:query.trim(),unit:filterUnit,pending:filterPending,offset:0});}}>
+    <form className="catalog-search-form" onSubmit={e=>{e.preventDefault();setSearch({q:query.trim(),unit:filterUnit,pending:filterPending,offset:0,status:filterStatus});}}>
      <label className="catalog-search-query">Buscar no catálogo da empresa<input type="search" value={query} maxLength={240} placeholder="Nome, SKU ou código de barras" onChange={e=>setQuery(e.target.value)}/></label>
-     <label>Unidade<select value={filterUnit} onChange={e=>setFilterUnit(e.target.value)}><option value="">Todas</option>{units.map(([v,n])=><option key={v} value={v}>{n}</option>)}</select></label>
+     <label>Estado<select value={filterStatus} onChange={e=>setFilterStatus(e.target.value as typeof filterStatus)}><option value="all">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></label><label>Unidade<select value={filterUnit} onChange={e=>setFilterUnit(e.target.value)}><option value="">Todas</option>{units.map(([v,n])=><option key={v} value={v}>{n}</option>)}</select></label>
      <label>Conferência<select value={filterPending} onChange={e=>setFilterPending(e.target.value)}><option value="">Todos os produtos</option><option value="barcode">Sem código de barras</option><option value="minimum">Sem política de reposição nesta loja</option>{costVisible && <option value="cost">Custo zerado</option>}</select></label>
      <button className="brand-small-primary">Buscar</button>
     </form>
@@ -91,9 +93,10 @@ export default function LocalCatalog() {
     <div className="catalog-table-heading"><div><h2>Produtos cadastrados</h2><p role="status">{loading?'Consultando catálogo…':`${total} resultado(s)${search.q?' para “'+search.q+'”':''}`}</p></div>
      <details className="catalog-columns"><summary>Colunas</summary><fieldset><legend>Informações na tabela</legend>{([['barcode','Código de barras'],['unit','Unidade'],['cost','Custo'],['minimum','Reposição']] as const).filter(([key])=>key!=='cost'||costVisible).map(([key,label])=><label key={key}><input type="checkbox" checked={columns[key]} onChange={e=>setColumns(v=>({...v,[key]:e.target.checked}))}/>{label}</label>)}</fieldset></details>
     </div>
-    {!loading && <div className="brand-table-scroll"><table className="brand-table catalog-data-table"><thead><tr><th scope="col">SKU</th><th scope="col">Produto</th>{columns.barcode && <th scope="col">Código de barras</th>}{columns.unit && <th scope="col">Unidade</th>}<th scope="col" className="catalog-money">Preço de venda</th>{columns.cost && costVisible && <th scope="col" className="catalog-money">Custo</th>}{columns.minimum && <th scope="col">Reposição nesta loja</th>}</tr></thead><tbody>{results.map(p=><tr key={p.id}><td>{p.sku}</td><td><strong>{p.name}</strong>{p.approximate && <span className="catalog-approximate">Correspondência aproximada</span>}</td>{columns.barcode && <td>{p.barcode||'Não informado'}</td>}{columns.unit && <td>{units.find(([v])=>v===p.unit)?.[1]||p.unit}</td>}<td className="catalog-money">{formatLocalCents(p.price_cents)}</td>{columns.cost && costVisible && <td className="catalog-money">{formatLocalCents(p.cost_cents!)}</td>}{columns.minimum && <td>{p.minimum_configured?'Política cadastrada':'Sem política cadastrada'}</td>}</tr>)}</tbody></table>{!results.length && !error && <p className="catalog-empty">{total===0?'Nenhum produto corresponde à consulta. Confira os filtros ou cadastre um produto.':'Esta página não tem produtos. Volte à página anterior.'}</p>}</div>}
+    {!loading && <div className="brand-table-scroll"><table className="brand-table catalog-data-table"><thead><tr><th scope="col">SKU</th><th scope="col">Produto</th><th scope="col">Estado</th>{columns.barcode && <th scope="col">Código de barras</th>}{columns.unit && <th scope="col">Unidade</th>}<th scope="col" className="catalog-money">Preço de venda</th>{columns.cost && costVisible && <th scope="col" className="catalog-money">Custo</th>}{columns.minimum && <th scope="col">Reposição nesta loja</th>}</tr></thead><tbody>{results.map(p=><tr key={p.id}><td>{p.sku}</td><td><strong>{p.name}</strong>{p.approximate && <span className="catalog-approximate">Correspondência aproximada</span>}</td><td>{p.status==='active'?'Ativo':'Inativo'} · revisão {p.state_revision}</td>{columns.barcode && <td>{p.barcode||'Não informado'}</td>}{columns.unit && <td>{units.find(([v])=>v===p.unit)?.[1]||p.unit}</td>}<td className="catalog-money">{formatLocalCents(p.price_cents)}</td>{columns.cost && costVisible && <td className="catalog-money">{formatLocalCents(p.cost_cents!)}</td>}{columns.minimum && <td>{p.minimum_configured?'Política cadastrada':'Sem política cadastrada'}</td>}</tr>)}</tbody></table>{!results.length && !error && <p className="catalog-empty">{total===0?'Nenhum produto corresponde à consulta. Confira os filtros ou cadastre um produto.':'Esta página não tem produtos. Volte à página anterior.'}</p>}</div>}
     <nav className="brand-pagination" aria-label="Páginas dos resultados"><button className="brand-secondary" disabled={loading || busy || search.offset===0} onClick={()=>setSearch(v=>({...v,offset:Math.max(0,v.offset-50)}))}>Anterior</button><span>Página {search.offset/50+1} · até 50 produtos por página</span><button className="brand-secondary" disabled={loading || busy || search.offset+50>=total} onClick={()=>setSearch(v=>({...v,offset:v.offset+50}))}>Próxima</button></nav>
    </section>
+   <CatalogPlanning/>
   </> : <>
    <section className="brand-panel"><h2>Cadastrar local de estoque</h2><form className="catalog-form" onSubmit={e=>{e.preventDefault();void save(async()=>{await localClient.createLocation(token!,{kind,name:placeName.trim()});setPlaceName('');setMessage('Local cadastrado.');});}}><label>Nome do local<input required maxLength={255} disabled={busy || !canWrite} value={placeName} onChange={e=>setPlaceName(e.target.value)}/></label><label>Tipo<select value={kind} disabled={busy || !canWrite} onChange={e=>setKind(e.target.value)}><option value="shelf">Gôndola / saída de venda</option><option value="backroom">Depósito</option><option value="receiving">Recebimento</option><option value="production">Produção</option></select></label><button className="brand-small-primary catalog-wide" disabled={busy || !canWrite}>Cadastrar local</button></form><p className="brand-state">{places.length} local(is) cadastrado(s). Se houver perda de resposta, confira a lista antes de repetir.</p></section>
    <StockOperations products={items} locations={places}/>
