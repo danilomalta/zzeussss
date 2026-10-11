@@ -115,3 +115,5 @@ Entrega43: `online-stock-settings.openapi.json` cobre consulta, prévia, gravaç
 Entrega44: `online-replenishment.openapi.json` documenta resumo, recomendações paginadas, projeção por produto, simulação de saldo hipotético e CSV por página. Demanda arredondada para cima com cálculo exato; sem gravação de estoque, reserva ou pedido.
 
 - `online-replenishment-proposals.openapi.json`: entrega45, criação de proposta, consulta, aprovação, cancelamento e recuperação de recibo; PostgreSQL19 explícito, sem movimentar estoque.
+
+- `online-replenishment-proposal-queries.openapi.json`: entrega46, resumo, lista, histórico, conferência e CSV de propostas45; sem nova migração ou mutação.

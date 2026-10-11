@@ -2906,5 +2906,111 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 		t.Fatal("sessão revogada45 gravou proposta")
 	}
 	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	// Delivery46: bounded proposal queries, audit history, freshness check and CSV.
+	app = fiber.New()
+	Registrar(app)
+	// Unique literal/control snapshots keep this search test independent of earlier deliveries.
+	exec(`UPDATE products SET nome='=Proposal46',sku='proposal46-%literal' WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	literalID46 := uuid.NewString()
+	request("POST", proposalBase45, proposalInput45(literalID46), tokenA, 201)
+	exec(`UPDATE products SET sku='proposal46-Xliteral' WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	controlID46 := uuid.NewString()
+	request("POST", proposalBase45, proposalInput45(controlID46), tokenA, 201)
+	exec(`UPDATE products SET nome='Proposal45',sku='proposal45' WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	readWrites46 := writes40()
+	var auditBefore46 int64
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_replenishment_operations)+(SELECT count(*) FROM online_replenishment_outbox)`).Scan(&auditBefore46) != nil {
+		t.Fatal("auditoria46 indisponível")
+	}
+	filter46 := fmt.Sprintf("?product_id=%d", product45)
+	summary46 := request("GET", proposalBase45+"/summary"+filter46, "", tokenA, 200)
+	if summary46["total"] != float64(6) || summary46["planned"] != float64(3) || summary46["approved"].(float64)+summary46["cancelled"].(float64) != float64(3) {
+		t.Fatal("resumo46 incorreto")
+	}
+	page46 := request("GET", proposalBase45+filter46+"&limit=2", "", tokenA, 200)
+	if page46["total"] != float64(6) || len(page46["items"].([]interface{})) != 2 || page46["has_more"] != true || page46["next_offset"] != float64(2) {
+		t.Fatal("paginação46 incorreta")
+	}
+	seen46 := map[string]bool{}
+	for offset46 := 0; offset46 < 6; offset46 += 2 {
+		page := request("GET", fmt.Sprintf("%s%s&limit=2&offset=%d", proposalBase45, filter46, offset46), "", tokenA, 200)
+		for _, item := range page["items"].([]interface{}) {
+			id := item.(map[string]interface{})["id"].(string)
+			if seen46[id] {
+				t.Fatal("pagina46 repetiu proposta")
+			}
+			seen46[id] = true
+		}
+	}
+	if len(seen46) != 6 {
+		t.Fatal("pagina46 omitiu proposta")
+	}
+	if page := request("GET", proposalBase45+filter46+"&state=planned", "", tokenA, 200); page["total"] != float64(3) {
+		t.Fatal("estado46 incorreto")
+	}
+	if page := request("GET", proposalBase45+filter46+"&offset=100", "", tokenA, 200); len(page["items"].([]interface{})) != 0 || page["has_more"] != false {
+		t.Fatal("página vazia46 inventou linhas")
+	}
+	if page := request("GET", proposalBase45+"?q=proposal46-%25literal", "", tokenA, 200); page["total"] != float64(1) || page["items"].([]interface{})[0].(map[string]interface{})["id"] != literalID46 {
+		t.Fatal("busca46 tratou percentagem como curinga")
+	}
+	request("GET", proposalBase45+"/summary?state=all", "", tokenA, 400)
+	request("GET", proposalBase45+"?limit=1&limit=2", "", tokenA, 400)
+	request("GET", proposalBase45+"?product_id=01", "", tokenA, 400)
+	if history := request("GET", proposalURL45+"/history?limit=1", "", tokenA, 200); history["total"] != float64(3) || history["has_more"] != true || history["items"].([]interface{})[0].(map[string]interface{})["after"].(map[string]interface{})["revision"] != float64(3) {
+		t.Fatal("histórico46 perdeu revisão")
+	}
+	if history := request("GET", proposalURL45+"/history?offset=2", "", otherToken39, 200); history["items"].([]interface{})[0].(map[string]interface{})["kind"] != "create" {
+		t.Fatal("histórico46 não preservou criação")
+	}
+	request("GET", proposalURL45+"/history", "", tokenB, 404)
+	request("GET", proposalURL45+"/check", "", tokenB, 404)
+	if summary := request("GET", proposalBase45+"/summary", "", tokenB, 200); summary["total"] != float64(0) {
+		t.Fatal("resumo46 vazou empresa")
+	}
+	if page := request("GET", proposalBase45, "", tokenB, 200); len(page["items"].([]interface{})) != 0 {
+		t.Fatal("lista46 vazou empresa")
+	}
+	checkURL46 := proposalBase45 + "/" + concurrentCreate45.OperationID + "/check"
+	if check := request("GET", checkURL46, "", tokenA, 200); check["status"] != "matches" || check["can_approve"] != true {
+		t.Fatal("conferência46 rejeitou snapshot atual")
+	}
+	if check := request("GET", proposalURL45+"/check", "", tokenA, 200); check["can_approve"] != false || check["snapshot_matches"] != true {
+		t.Fatal("cancelada46 indicou aprovação disponível")
+	}
+	exec(`UPDATE products SET estoque=3 WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	if check := request("GET", checkURL46, "", tokenA, 200); check["status"] != "changed" || check["can_approve"] != false || check["proposal"].(map[string]interface{})["snapshot"].(map[string]interface{})["stock_units"] != float64(4) {
+		t.Fatal("conferência46 alterou snapshot")
+	}
+	exec(`UPDATE products SET estoque=4,deleted_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	if check := request("GET", checkURL46, "", tokenA, 200); check["status"] != "product_unavailable" || check["current"] != nil || check["can_approve"] != false {
+		t.Fatal("produto excluído46 indicado como disponível")
+	}
+	request("GET", proposalURL45+"/history", "", tokenA, 200)
+	exec(`UPDATE products SET deleted_at=NULL WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	csvReq46 := httptest.NewRequest("GET", proposalBase45+"/export.csv?q=proposal46-%25literal&limit=1", nil)
+	csvReq46.Header.Set("Authorization", "Bearer "+tokenA)
+	csvResp46, e46 := app.Test(csvReq46, 10000)
+	if e46 != nil {
+		t.Fatal("CSV46 indisponível")
+	}
+	csvData46, e46 := io.ReadAll(csvResp46.Body)
+	csvResp46.Body.Close()
+	if e46 != nil || csvResp46.StatusCode != 200 || csvResp46.Header.Get("X-Titan-Report-Total") != "1" || csvResp46.Header.Get("X-Titan-Report-Scope") != "online-replenishment-proposals" || !strings.Contains(string(csvData46), "'=Proposal46") || strings.Contains(string(csvData46), controlID46) {
+		t.Fatal("CSV46 sem proteção ou isolamento")
+	}
+	for _, url46 := range []string{proposalBase45 + "/summary", proposalBase45, proposalURL45 + "/history", proposalURL45 + "/check", proposalBase45 + "/export.csv"} {
+		request("GET", url46, "", stockToken45, 403)
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", proposalBase45, "", tokenA, 401)
+	if _, e := store.ReplenishmentProposals(ctx, actor, onlinecatalog.ProposalQuery{State: "all", Limit: 50}); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada46 consultou propostas")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	var auditAfter46 int64
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_replenishment_operations)+(SELECT count(*) FROM online_replenishment_outbox)`).Scan(&auditAfter46) != nil || auditBefore46 != auditAfter46 || writes40() != readWrites46 {
+		t.Fatal("consulta46 alterou registros")
+	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

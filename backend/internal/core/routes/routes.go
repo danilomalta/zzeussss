@@ -150,6 +150,12 @@ func Registrar(app *fiber.App) {
 	negocios.Get("/catalog/quality/zero-stock", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CatalogQuality("zero_stock", false))
 	negocios.Get("/catalog/quality/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CatalogQuality("any", true))
 
+	negocios.Get("/catalog/replenishment/proposals/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ResumoPropostasReposicao)
+	negocios.Get("/catalog/replenishment/proposals", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ListarPropostasReposicao(false))
+	negocios.Get("/catalog/replenishment/proposals/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ListarPropostasReposicao(true))
+	negocios.Get("/catalog/replenishment/proposals/:proposal_id/history", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.HistoricoPropostaReposicao)
+	negocios.Get("/catalog/replenishment/proposals/:proposal_id/check", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConferirPropostaReposicao)
+
 	// Propostas duráveis: aprovação humana sem movimentação de estoque.
 	negocios.Post("/catalog/replenishment/proposals", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.CriarPropostaReposicao)
 	negocios.Get("/catalog/replenishment/proposals/:proposal_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarPropostaReposicao)

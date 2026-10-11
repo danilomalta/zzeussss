@@ -1,0 +1,676 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — cinco consultas de propostas de reposição",
+    "version": "46.0.0",
+    "description": "Resumo de estados, listagem filtrada, histórico por proposta, conferência de snapshot e CSV paginado. Quantidades de produtos diferentes não são somadas. Histórico de decisões visível aos gestores da empresa, mesmo quando a recuperação por operação45 é restrita ao próprio ator. Conferência não aprova nem reserva; can_approve é informativo neste instante e a decisão45 revalida com locks. Produto excluído/não localizado é product_unavailable. Proposta aprovada/cancelada não pode ser aprovada novamente. CSV contém o estado atual da proposta e identificação histórica do produto no snapshot; uma página até100 linhas e256KiB. Entre páginas, mudanças concorrentes podem deslocar registros: não se promete exportação completa imutável."
+  },
+  "paths": {
+    "/api/v1/catalog/replenishment/proposals/summary": {
+      "get": {
+        "operationId": "ProposalSummary46",
+        "summary": "Resumo das propostas por estado",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal aparada nos nomes/SKUs do snapshot e motivo atual; % e _ não são curingas."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "format": "int64"
+            },
+            "description": "Filtro por produto; não aceita0 nem zeros à esquerda. Sem parâmetro, todos os produtos."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Proposta fora da empresa ou inexistente"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/proposals": {
+      "get": {
+        "operationId": "ProposalList46",
+        "summary": "Lista paginada de propostas",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal aparada nos nomes/SKUs do snapshot e motivo atual; % e _ não são curingas."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "format": "int64"
+            },
+            "description": "Filtro por produto; não aceita0 nem zeros à esquerda. Sem parâmetro, todos os produtos."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "planned",
+                "approved",
+                "cancelled"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "format": "int64",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "format": "int64",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Proposta fora da empresa ou inexistente"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/proposals/{proposal_id}/history": {
+      "get": {
+        "operationId": "ProposalHistory46",
+        "summary": "Histórico auditado da proposta",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "format": "int64",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "format": "int64",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Proposta fora da empresa ou inexistente"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/proposals/{proposal_id}/check": {
+      "get": {
+        "operationId": "ProposalSnapshotCheck46",
+        "summary": "Comparação do snapshot com o produto atual",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Check"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Proposta fora da empresa ou inexistente"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/proposals/export.csv": {
+      "get": {
+        "operationId": "ProposalCSV46",
+        "summary": "CSV protegido de uma página de propostas",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal aparada nos nomes/SKUs do snapshot e motivo atual; % e _ não são curingas."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "format": "int64"
+            },
+            "description": "Filtro por produto; não aceita0 nem zeros à esquerda. Sem parâmetro, todos os produtos."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "planned",
+                "approved",
+                "cancelled"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "format": "int64",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "format": "int64",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "X-Titan-Report-Total": {
+                "description": "Total de propostas filtradas",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Limit": {
+                "description": "Limite da página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Offset": {
+                "description": "Offset da página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Has-More": {
+                "description": "true se existem mais registros",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Next-Offset": {
+                "description": "Próximo offset quando houver mais",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Source-Hash": {
+                "description": "SHA256 do conteúdo e filtros da página, sem timestamp",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Scope": {
+                "description": "online-replenishment-proposals",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "description": "apostrophe: proteção de texto para planilhas",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Proposta fora da empresa ou inexistente"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "state",
+          "product_id",
+          "limit",
+          "offset",
+          "items",
+          "total",
+          "has_more",
+          "generated_at",
+          "source_hash"
+        ],
+        "properties": {
+          "q": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "all",
+              "planned",
+              "approved",
+              "cancelled"
+            ]
+          },
+          "product_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "format": "int64"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000,
+            "format": "int64"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/Proposal"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "product_id",
+          "total",
+          "planned",
+          "approved",
+          "cancelled",
+          "generated_at"
+        ],
+        "properties": {
+          "q": {
+            "type": "string"
+          },
+          "product_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "planned": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "approved": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "cancelled": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "History": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/Receipt"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "format": "int64"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000,
+            "format": "int64"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          }
+        }
+      },
+      "Check": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "proposal",
+          "current",
+          "status",
+          "snapshot_matches",
+          "can_approve",
+          "checked_at"
+        ],
+        "properties": {
+          "proposal": {
+            "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/Proposal"
+          },
+          "current": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "./online-stock-settings.openapi.json#/components/schemas/Plan"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "matches",
+              "changed",
+              "product_unavailable"
+            ]
+          },
+          "snapshot_matches": {
+            "type": "boolean"
+          },
+          "can_approve": {
+            "type": "boolean"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
