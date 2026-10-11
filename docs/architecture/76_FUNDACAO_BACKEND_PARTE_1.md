@@ -197,3 +197,5 @@ Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de
 - Entrega40: [115_RELATORIO_MARGENS_CINCO_FUNCOES.md](115_RELATORIO_MARGENS_CINCO_FUNCOES.md).
 
 - Entrega41: cinco consultas de histórico de custos online, com snapshots históricos, classificação exata e CSV por página; aceite exige PostgreSQL isolado. Ver `116_HISTORICO_CUSTOS_CINCO_FUNCOES.md`.
+
+- Entrega42: cinco consultas do estoque online e cobertura estimada sobre demanda registrada, sem movimentar estoque ou gerar pedidos. Ver `117_ESTOQUE_ONLINE_CINCO_FUNCOES.md`; aceite exige PostgreSQL isolado.

@@ -73,6 +73,11 @@ func Registrar(app *fiber.App) {
 	produtos.Post("/:id/price", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("price"))
 	produtos.Post("/:id/active", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("active"))
 
+	negocios.Get("/catalog/stock/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.ResumoEstoqueOnline)
+	negocios.Get("/catalog/stock/zero", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.RelatorioEstoqueOnline("zero_stock", false))
+	negocios.Get("/catalog/stock/below-minimum", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.RelatorioEstoqueOnline("below_minimum", false))
+	negocios.Get("/catalog/stock/coverage", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.RelatorioEstoqueOnline("all", false))
+	negocios.Get("/catalog/stock/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.RelatorioEstoqueOnline("all", true))
 	negocios.Get("/catalog/cost-history/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ResumoHistoricoCustos)
 	negocios.Get("/catalog/cost-history/entries", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RelatorioHistoricoCustos(false, false))
 	negocios.Get("/catalog/cost-history/entries/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DetalheHistoricoCustos)

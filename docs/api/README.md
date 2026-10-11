@@ -107,3 +107,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - Entrega40: `online-margin-report.openapi.json`: resumo, falta de custo, margem negativa, meta e CSV por página.
 
 - Entrega41: [histórico auditável de custos](online-cost-history.openapi.json): resumo, lista, detalhe, produto e CSV; sessão/empresa revalidadas, snapshots preservados.
+
+- Entrega42: [análise de estoque online](online-stock-analysis.openapi.json): resumo, zero, mínimo, cobertura e CSV. Dados PostgreSQL; não é estoque sincronizado do PDV local.

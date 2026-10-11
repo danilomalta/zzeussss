@@ -2327,5 +2327,105 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 		t.Fatal("sessão revogada41 consultou histórico")
 	}
 	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	// Delivery42: online stock read models; no SQLite/POS movement or forecast writes.
+	app = fiber.New()
+	Registrar(app)
+	stockBase42 := "/api/v1/catalog/stock/"
+	stockIDs42 := make([]int64, 5)
+	stockValues42 := []int64{0, 4, 7, 10, 1}
+	minimumValues42 := []int64{5, 5, 7, 0, 0}
+	demandValues42 := []string{"2.0000", "1.0000", "1.0000", "0.0000", "0.1429"}
+	for i := range stockIDs42 {
+		sku42 := fmt.Sprintf("stock42-%d", i)
+		if i == 0 {
+			sku42 = "stock42-%literal"
+		}
+		if i == 1 {
+			sku42 = "stock42-Xliteral"
+		}
+		p42 := request("POST", "/api/v1/produtos/", fmt.Sprintf(`{"nome":%q,"sku":%q,"preco":10}`, fmt.Sprintf("=StockAnalysis42 %d", i), sku42), tokenA, 201)
+		stockIDs42[i] = int64(p42["ID"].(float64))
+		exec(`UPDATE products SET estoque=$3,estoque_minimo=$4,ponto_reposicao=$4,demanda_media_diaria=$5::numeric WHERE tenant_id=$1 AND id=$2`, tenantA, stockIDs42[i], stockValues42[i], minimumValues42[i], demandValues42[i])
+	}
+	pForeign42 := request("POST", "/api/v1/produtos/", `{"nome":"StockAnalysis42 foreign","sku":"stock42-foreign","preco":10}`, tokenB, 201)
+	_ = pForeign42
+	beforeReads42 := writes40()
+	summary42 := request("GET", stockBase42+"summary?q=StockAnalysis42", "", tokenA, 200)
+	if summary42["products"] != float64(5) || summary42["zero_stock"] != float64(1) || summary42["below_minimum"] != float64(2) || summary42["low_coverage"] != float64(3) || summary42["no_positive_demand"] != float64(1) {
+		t.Fatal("resumo42 incorreto")
+	}
+	zero42 := request("GET", stockBase42+"zero?q=StockAnalysis42", "", tokenA, 200)
+	if zero42["total"] != float64(1) || zero42["items"].([]interface{})[0].(map[string]interface{})["stock_units"] != float64(0) {
+		t.Fatal("estoque zero42 incorreto")
+	}
+	literal42 := request("GET", stockBase42+"coverage?q=stock42-%25literal", "", tokenA, 200)
+	if literal42["total"] != float64(1) {
+		t.Fatal("busca42 tratou porcentagem como curinga")
+	}
+	below42 := request("GET", stockBase42+"below-minimum?q=StockAnalysis42&limit=1", "", tokenA, 200)
+	if below42["total"] != float64(2) || below42["has_more"] != true || below42["next_offset"] != float64(1) || below42["items"].([]interface{})[0].(map[string]interface{})["missing_to_minimum"] != float64(5) {
+		t.Fatal("paginação e falta42 incorretas")
+	}
+	belowNext42 := request("GET", stockBase42+"below-minimum?q=StockAnalysis42&limit=1&offset=1", "", tokenA, 200)
+	if belowNext42["has_more"] != false || belowNext42["items"].([]interface{})[0].(map[string]interface{})["missing_to_minimum"] != float64(1) {
+		t.Fatal("segunda página42 incorreta")
+	}
+	coverage42 := request("GET", stockBase42+"coverage?q=StockAnalysis42", "", tokenA, 200)
+	items42 := coverage42["items"].([]interface{})
+	if len(items42) != 5 || items42[2].(map[string]interface{})["coverage_days"] != "7.0000" || items42[2].(map[string]interface{})["low_coverage"] != false || items42[3].(map[string]interface{})["coverage_days"] != nil || items42[3].(map[string]interface{})["coverage_state"] != "no_positive_demand" || items42[4].(map[string]interface{})["coverage_days"] != "6.9979" || items42[4].(map[string]interface{})["low_coverage"] != true {
+		t.Fatal("cobertura42 inventada ou arredondada para classificação")
+	}
+	if r42 := request("GET", stockBase42+"summary?q=StockAnalysis42&horizon_days=6", "", tokenA, 200); r42["low_coverage"] != float64(2) {
+		t.Fatal("horizonte42 ignorado")
+	}
+	if r42 := request("GET", stockBase42+"coverage?q=StockAnalysis42&offset=50", "", tokenA, 200); len(r42["items"].([]interface{})) != 0 || r42["has_more"] != false {
+		t.Fatal("página vazia42 fabricada")
+	}
+	if r42 := request("GET", stockBase42+"summary?q=StockAnalysis42", "", tokenB, 200); r42["products"] != float64(1) || r42["no_positive_demand"] != float64(1) {
+		t.Fatal("resumo42 atravessou empresa")
+	}
+	stockSession42 := uuid.NewString()
+	exec(`INSERT INTO online_sessions(id,tenant_id,user_id,role,created_at,expires_at) VALUES($1,$2,$3,'stock',clock_timestamp(),clock_timestamp()+interval '1 hour')`, stockSession42, tenantA, stockUser)
+	stockToken42, errStock42 := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": stockUser, "tenant_id": tenantA, "role": "stock", "sid": stockSession42, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("catalog-fixture-only-secret"))
+	if errStock42 != nil {
+		t.Fatal("token stock42 indisponível")
+	}
+	request("GET", stockBase42+"summary?q=StockAnalysis42", "", stockToken42, 200)
+	req42 := httptest.NewRequest("GET", stockBase42+"export.csv?q=StockAnalysis42&limit=2", nil)
+	req42.Header.Set("Authorization", "Bearer "+stockToken42)
+	resp42, e42 := app.Test(req42, 10000)
+	if e42 != nil {
+		t.Fatal("CSV42 indisponível")
+	}
+	data42, e42 := io.ReadAll(resp42.Body)
+	resp42.Body.Close()
+	if e42 != nil || resp42.StatusCode != 200 || !strings.HasPrefix(string(data42), "product_id;sku;nome;") || !strings.Contains(string(data42), "'=StockAnalysis42") || resp42.Header.Get("X-Titan-Report-Total") != "5" || resp42.Header.Get("X-Titan-Report-Count") != "2" || resp42.Header.Get("X-Titan-Report-Has-More") != "true" || resp42.Header.Get("Cache-Control") != "no-store" || len(resp42.Header.Get("X-Titan-Source-Hash")) != 64 {
+		t.Fatal("CSV42 sem proteção ou metadados")
+	}
+	if writes40() != beforeReads42 {
+		t.Fatal("relatório42 alterou estoque ou registros")
+	}
+	exec(`UPDATE products SET ativo=false WHERE tenant_id=$1 AND id=$2`, tenantA, stockIDs42[2])
+	if r42 := request("GET", stockBase42+"summary?q=StockAnalysis42", "", tokenA, 200); r42["products"] != float64(4) {
+		t.Fatal("ativo padrão42 incorreto")
+	}
+	if r42 := request("GET", stockBase42+"summary?q=StockAnalysis42&active=false", "", tokenA, 200); r42["products"] != float64(1) {
+		t.Fatal("inativos42 ignorados")
+	}
+	exec(`UPDATE products SET deleted_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, stockIDs42[3])
+	if r42 := request("GET", stockBase42+"summary?q=StockAnalysis42&active=all", "", tokenA, 200); r42["products"] != float64(4) || r42["no_positive_demand"] != float64(0) {
+		t.Fatal("excluído42 incluído")
+	}
+	// Invalid persisted demand must fail closed, not silently become zero demand.
+	exec(`UPDATE products SET demanda_media_diaria=-1 WHERE tenant_id=$1 AND id=$2`, tenantA, stockIDs42[0])
+	request("GET", stockBase42+"summary?q=StockAnalysis42", "", tokenA, 503)
+	request("GET", stockBase42+"coverage?q=StockAnalysis42", "", tokenA, 503)
+	exec(`UPDATE products SET demanda_media_diaria=2 WHERE tenant_id=$1 AND id=$2`, tenantA, stockIDs42[0])
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, stockSession42)
+	request("GET", stockBase42+"summary", "", stockToken42, 401)
+	stockReportActor42 := onlinecatalog.Actor{Tenant: tenantA, User: stockUser, Session: stockSession42, Role: "stock"}
+	if _, e := store.StockReport(ctx, stockReportActor42, onlinecatalog.StockReportQuery{Active: "true", Issue: "all", HorizonDays: 7, Limit: 50}); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada42 consultou estoque")
+	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

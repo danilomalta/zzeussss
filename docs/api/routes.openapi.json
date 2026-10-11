@@ -8536,6 +8536,585 @@
           }
         }
       }
+    },
+    "/api/v1/catalog/stock/summary": {
+      "get": {
+        "operationId": "onlineStockSummary42",
+        "summary": "Resumo de estoque e indicadores",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal em nome/SKU. % e _ não são curingas; q vazio permite todos.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false",
+                "all"
+              ],
+              "default": "true"
+            }
+          },
+          {
+            "name": "horizon_days",
+            "in": "query",
+            "required": false,
+            "description": "Horizonte para comparação exata; igualdade não é baixa cobertura. Não é prazo de entrega prometido.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 7
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Query inválida/repetida/extra ou corpo em GET."
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada."
+          },
+          "403": {
+            "description": "Papel sem permissão."
+          },
+          "429": {
+            "description": "Limite de requisições."
+          },
+          "503": {
+            "description": "Banco indisponível ou demanda/resultado inconsistente."
+          },
+          "200": {
+            "description": "Snapshot consistente por requisição, limitado à empresa e filtros. Não é inventário do PDV local.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-stock-analysis.openapi.json#/components/schemas/Summary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/stock/zero": {
+      "get": {
+        "operationId": "onlineStockZero42",
+        "summary": "Produtos com estoque zero",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal em nome/SKU. % e _ não são curingas; q vazio permite todos.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false",
+                "all"
+              ],
+              "default": "true"
+            }
+          },
+          {
+            "name": "horizon_days",
+            "in": "query",
+            "required": false,
+            "description": "Horizonte para comparação exata; igualdade não é baixa cobertura. Não é prazo de entrega prometido.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 7
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Query inválida/repetida/extra ou corpo em GET."
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada."
+          },
+          "403": {
+            "description": "Papel sem permissão."
+          },
+          "429": {
+            "description": "Limite de requisições."
+          },
+          "503": {
+            "description": "Banco indisponível ou demanda/resultado inconsistente."
+          },
+          "200": {
+            "description": "Snapshot consistente por requisição, limitado à empresa e filtros. Não é inventário do PDV local.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-stock-analysis.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/stock/below-minimum": {
+      "get": {
+        "operationId": "onlineStockBelowMinimum42",
+        "summary": "Produtos abaixo do mínimo registrado",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal em nome/SKU. % e _ não são curingas; q vazio permite todos.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false",
+                "all"
+              ],
+              "default": "true"
+            }
+          },
+          {
+            "name": "horizon_days",
+            "in": "query",
+            "required": false,
+            "description": "Horizonte para comparação exata; igualdade não é baixa cobertura. Não é prazo de entrega prometido.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 7
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Query inválida/repetida/extra ou corpo em GET."
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada."
+          },
+          "403": {
+            "description": "Papel sem permissão."
+          },
+          "429": {
+            "description": "Limite de requisições."
+          },
+          "503": {
+            "description": "Banco indisponível ou demanda/resultado inconsistente."
+          },
+          "200": {
+            "description": "Snapshot consistente por requisição, limitado à empresa e filtros. Não é inventário do PDV local.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-stock-analysis.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/stock/coverage": {
+      "get": {
+        "operationId": "onlineStockCoverage42",
+        "summary": "Cobertura estimada pela demanda registrada",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal em nome/SKU. % e _ não são curingas; q vazio permite todos.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false",
+                "all"
+              ],
+              "default": "true"
+            }
+          },
+          {
+            "name": "horizon_days",
+            "in": "query",
+            "required": false,
+            "description": "Horizonte para comparação exata; igualdade não é baixa cobertura. Não é prazo de entrega prometido.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 7
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Query inválida/repetida/extra ou corpo em GET."
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada."
+          },
+          "403": {
+            "description": "Papel sem permissão."
+          },
+          "429": {
+            "description": "Limite de requisições."
+          },
+          "503": {
+            "description": "Banco indisponível ou demanda/resultado inconsistente."
+          },
+          "200": {
+            "description": "Snapshot consistente por requisição, limitado à empresa e filtros. Não é inventário do PDV local.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-stock-analysis.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/stock/export.csv": {
+      "get": {
+        "operationId": "onlineStockCSV42",
+        "summary": "CSV de uma página da análise de estoque",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal em nome/SKU. % e _ não são curingas; q vazio permite todos.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false",
+                "all"
+              ],
+              "default": "true"
+            }
+          },
+          {
+            "name": "issue",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "zero_stock",
+                "below_minimum",
+                "low_coverage",
+                "no_positive_demand"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "horizon_days",
+            "in": "query",
+            "required": false,
+            "description": "Horizonte para comparação exata; igualdade não é baixa cobertura. Não é prazo de entrega prometido.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 7
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Opcional. Valores vazios, repetidos e parâmetros extras são recusados.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Query inválida/repetida/extra ou corpo em GET."
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada."
+          },
+          "403": {
+            "description": "Papel sem permissão."
+          },
+          "429": {
+            "description": "Limite de requisições."
+          },
+          "503": {
+            "description": "Banco indisponível ou demanda/resultado inconsistente."
+          },
+          "200": {
+            "description": "Snapshot consistente por requisição, limitado à empresa e filtros. Não é inventário do PDV local.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "maxLength": 262144
+                }
+              }
+            },
+            "headers": {
+              "X-Titan-Report-Total": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Total dos produtos sob o filtro"
+              },
+              "X-Titan-Report-Count": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Linhas da página"
+              },
+              "X-Titan-Report-Has-More": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Páginas seguintes existem"
+              },
+              "X-Titan-Report-Next-Offset": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Presente quando has_more"
+              },
+              "X-Titan-Source-Hash": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Identificador SHA256 da página, não uma assinatura"
+              },
+              "X-Titan-Report-Scope": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "online-stock-analysis"
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "apostrophe"
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "no-store"
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "nosniff"
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "attachment; filename=\"online-stock-analysis.csv\""
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
