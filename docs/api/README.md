@@ -111,3 +111,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - Entrega42: [análise de estoque online](online-stock-analysis.openapi.json): resumo, zero, mínimo, cobertura e CSV. Dados PostgreSQL; não é estoque sincronizado do PDV local.
 
 Entrega43: `online-stock-settings.openapi.json` cobre consulta, prévia, gravação versionada, recuperação do próprio recibo e histórico paginado do planejamento online. Migração18 explícita; não altera saldos nem o módulo de produção.
+
+Entrega44: `online-replenishment.openapi.json` documenta resumo, recomendações paginadas, projeção por produto, simulação de saldo hipotético e CSV por página. Demanda arredondada para cima com cálculo exato; sem gravação de estoque, reserva ou pedido.

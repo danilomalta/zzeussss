@@ -73,6 +73,11 @@ func Registrar(app *fiber.App) {
 	produtos.Post("/:id/price", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("price"))
 	produtos.Post("/:id/active", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("active"))
 
+	negocios.Get("/catalog/replenishment/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.ResumoReposicaoOnline)
+	negocios.Get("/catalog/replenishment/items", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.ListarReposicaoOnline(false))
+	negocios.Get("/catalog/replenishment/products/:id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.ConsultarReposicaoOnline)
+	negocios.Post("/catalog/replenishment/products/:id/simulate", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.SimularReposicaoOnline)
+	negocios.Get("/catalog/replenishment/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.ListarReposicaoOnline(true))
 	negocios.Get("/catalog/stock/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.ResumoEstoqueOnline)
 	negocios.Get("/catalog/stock/zero", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.RelatorioEstoqueOnline("zero_stock", false))
 	negocios.Get("/catalog/stock/below-minimum", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.RelatorioEstoqueOnline("below_minimum", false))

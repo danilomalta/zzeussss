@@ -1,0 +1,919 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Reposição online — cinco funções44",
+    "version": "1.0.0",
+    "description": "Planejamento sobre parâmetros registrados. Alvo=max(mínimo,ponto de reposição,ceil(demanda diária*(prazo+revisão))); sugestão=max(alvo-saldo,0). Requer revisão humana. Não cria ordem, reserva, mensagem a fornecedor ou movimento de estoque. CSV por página, sem snapshot global entre páginas."
+  },
+  "paths": {
+    "/api/v1/catalog/replenishment/summary": {
+      "get": {
+        "operationId": "onlineReplenishment44_1",
+        "summary": "Resumo da necessidade de reposição",
+        "description": "Empresa derivada da sessão e revalidada na leitura. GET sem corpo; parâmetros extras/repetidos e números inválidos recusados. Inativos não recebem suggested_units. ",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal em nome/SKU, espaços aparados. % e _ não são curingas.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false",
+                "all"
+              ],
+              "default": "true"
+            }
+          },
+          {
+            "name": "review_days",
+            "in": "query",
+            "required": false,
+            "description": "Dias até nova revisão de estoque. Soma-se ao prazo declarado de reposição. Não é data prometida pelo fornecedor.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 7
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Planejamento calculado, sem gravações. CSV representa apenas a página e contém cabeçalho mesmo quando vazia.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, extra, vazia, repetida ou fora do limite."
+          },
+          "401": {
+            "description": "Sessão revogada/expirada ou autenticação inválida."
+          },
+          "403": {
+            "description": "Permitido apenas owner/admin/manager/stock."
+          },
+          "404": {
+            "description": "Produto excluído, inexistente ou de outra empresa."
+          },
+          "409": {
+            "description": "expected_version desatualizada na simulação."
+          },
+          "429": {
+            "description": "Limite HTTP: aguarde Retry-After."
+          },
+          "503": {
+            "description": "Dados persistidos inválidos ou dependência indisponível; não fabricar valores."
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/items": {
+      "get": {
+        "operationId": "onlineReplenishment44_2",
+        "summary": "Recomendações paginadas",
+        "description": "Empresa derivada da sessão e revalidada na leitura. GET sem corpo; parâmetros extras/repetidos e números inválidos recusados. Inativos não recebem suggested_units. ",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal em nome/SKU, espaços aparados. % e _ não são curingas.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false",
+                "all"
+              ],
+              "default": "true"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "needs_replenishment",
+                "within_target",
+                "inactive",
+                "quantity_exceeds_limit"
+              ],
+              "default": "needs_replenishment"
+            }
+          },
+          {
+            "name": "review_days",
+            "in": "query",
+            "required": false,
+            "description": "Dias até nova revisão de estoque. Soma-se ao prazo declarado de reposição. Não é data prometida pelo fornecedor.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 7
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Planejamento calculado, sem gravações. CSV representa apenas a página e contém cabeçalho mesmo quando vazia.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, extra, vazia, repetida ou fora do limite."
+          },
+          "401": {
+            "description": "Sessão revogada/expirada ou autenticação inválida."
+          },
+          "403": {
+            "description": "Permitido apenas owner/admin/manager/stock."
+          },
+          "404": {
+            "description": "Produto excluído, inexistente ou de outra empresa."
+          },
+          "409": {
+            "description": "expected_version desatualizada na simulação."
+          },
+          "429": {
+            "description": "Limite HTTP: aguarde Retry-After."
+          },
+          "503": {
+            "description": "Dados persistidos inválidos ou dependência indisponível; não fabricar valores."
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/products/{id}": {
+      "get": {
+        "operationId": "onlineReplenishment44_3",
+        "summary": "Projeção individual de reposição",
+        "description": "Empresa derivada da sessão e revalidada na leitura. GET sem corpo; parâmetros extras/repetidos e números inválidos recusados. Inativos não recebem suggested_units. Detalhe pode retornar produto inativo com state=inactive.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "review_days",
+            "in": "query",
+            "required": false,
+            "description": "Dias até nova revisão de estoque. Soma-se ao prazo declarado de reposição. Não é data prometida pelo fornecedor.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 7
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Planejamento calculado, sem gravações. CSV representa apenas a página e contém cabeçalho mesmo quando vazia.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, extra, vazia, repetida ou fora do limite."
+          },
+          "401": {
+            "description": "Sessão revogada/expirada ou autenticação inválida."
+          },
+          "403": {
+            "description": "Permitido apenas owner/admin/manager/stock."
+          },
+          "404": {
+            "description": "Produto excluído, inexistente ou de outra empresa."
+          },
+          "409": {
+            "description": "expected_version desatualizada na simulação."
+          },
+          "429": {
+            "description": "Limite HTTP: aguarde Retry-After."
+          },
+          "503": {
+            "description": "Dados persistidos inválidos ou dependência indisponível; não fabricar valores."
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/products/{id}/simulate": {
+      "post": {
+        "operationId": "onlineReplenishment44_4",
+        "summary": "Simular saldo hipotético sem gravar",
+        "description": "Empresa derivada da sessão e revalidada na leitura. GET sem corpo; parâmetros extras/repetidos e números inválidos recusados. Inativos não recebem suggested_units. Corpo e resultado identificados como cenário; não altera parâmetros nem saldo.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Planejamento calculado, sem gravações. CSV representa apenas a página e contém cabeçalho mesmo quando vazia.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Simulation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, extra, vazia, repetida ou fora do limite."
+          },
+          "401": {
+            "description": "Sessão revogada/expirada ou autenticação inválida."
+          },
+          "403": {
+            "description": "Permitido apenas owner/admin/manager/stock."
+          },
+          "404": {
+            "description": "Produto excluído, inexistente ou de outra empresa."
+          },
+          "409": {
+            "description": "expected_version desatualizada na simulação."
+          },
+          "429": {
+            "description": "Limite HTTP: aguarde Retry-After."
+          },
+          "503": {
+            "description": "Dados persistidos inválidos ou dependência indisponível; não fabricar valores."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "description": "Exatamente três campos; JSON até4096 bytes. stock_units é somente saldo hipotético; expected_version não é incrementada.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/export.csv": {
+      "get": {
+        "operationId": "onlineReplenishment44_5",
+        "summary": "Exportar uma página de planejamento CSV",
+        "description": "Empresa derivada da sessão e revalidada na leitura. GET sem corpo; parâmetros extras/repetidos e números inválidos recusados. Inativos não recebem suggested_units. ",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal em nome/SKU, espaços aparados. % e _ não são curingas.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false",
+                "all"
+              ],
+              "default": "true"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "needs_replenishment",
+                "within_target",
+                "inactive",
+                "quantity_exceeds_limit"
+              ],
+              "default": "needs_replenishment"
+            }
+          },
+          {
+            "name": "review_days",
+            "in": "query",
+            "required": false,
+            "description": "Dias até nova revisão de estoque. Soma-se ao prazo declarado de reposição. Não é data prometida pelo fornecedor.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 7
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Planejamento calculado, sem gravações. CSV representa apenas a página e contém cabeçalho mesmo quando vazia.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "nosniff"
+                  ]
+                }
+              },
+              "X-Titan-Report-Total": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "X-Titan-Report-Count": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              },
+              "X-Titan-Report-Has-More": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "X-Titan-Report-Next-Offset": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 1,
+                  "maximum": 1000000100
+                }
+              },
+              "X-Titan-Source-Hash": {
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "X-Titan-Report-Scope": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "online-replenishment-planning"
+                  ]
+                }
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "apostrophe"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "maxLength": 262144
+                },
+                "example": "product_id;sku;nome;version;ativo;stock_units;minimum_units;reorder_point_units;lead_time_days;review_days;daily_demand;planning_days;demand_units;target_units;gap_units;suggested_units;state;no_positive_demand;requires_approval;planning_only\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, extra, vazia, repetida ou fora do limite."
+          },
+          "401": {
+            "description": "Sessão revogada/expirada ou autenticação inválida."
+          },
+          "403": {
+            "description": "Permitido apenas owner/admin/manager/stock."
+          },
+          "404": {
+            "description": "Produto excluído, inexistente ou de outra empresa."
+          },
+          "409": {
+            "description": "expected_version desatualizada na simulação."
+          },
+          "429": {
+            "description": "Limite HTTP: aguarde Retry-After."
+          },
+          "503": {
+            "description": "Dados persistidos inválidos ou dependência indisponível; não fabricar valores."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Item": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product",
+          "stock_units",
+          "settings",
+          "review_days",
+          "planning_days",
+          "demand_units",
+          "target_units",
+          "gap_units",
+          "suggested_units",
+          "no_positive_demand",
+          "state",
+          "planning_only",
+          "requires_approval"
+        ],
+        "properties": {
+          "product": {
+            "$ref": "online-stock-settings.openapi.json#/components/schemas/Product"
+          },
+          "stock_units": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "settings": {
+            "$ref": "online-stock-settings.openapi.json#/components/schemas/Settings"
+          },
+          "review_days": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "planning_days": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 730
+          },
+          "demand_units": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 73000000000
+          },
+          "target_units": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 73000000000
+          },
+          "gap_units": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 73000000000
+          },
+          "suggested_units": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "no_positive_demand": {
+            "type": "boolean"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "needs_replenishment",
+              "within_target",
+              "inactive",
+              "quantity_exceeds_limit"
+            ]
+          },
+          "planning_only": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "requires_approval": {
+            "type": "boolean",
+            "description": "True apenas para sugestão ativa dentro do limite. Ainda não é ordem aprovada nem pedido enviado."
+          }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "active",
+          "state",
+          "review_days",
+          "limit",
+          "offset",
+          "items",
+          "total",
+          "has_more",
+          "generated_at",
+          "source_hash"
+        ],
+        "properties": {
+          "q": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "active": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false",
+              "all"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "all",
+              "needs_replenishment",
+              "within_target",
+              "inactive",
+              "quantity_exceeds_limit"
+            ]
+          },
+          "review_days": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 1000000100
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "active",
+          "review_days",
+          "products",
+          "needs_replenishment",
+          "within_target",
+          "inactive",
+          "quantity_exceeds_limit",
+          "no_positive_demand",
+          "generated_at"
+        ],
+        "properties": {
+          "q": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "active": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false",
+              "all"
+            ]
+          },
+          "review_days": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "products": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "needs_replenishment": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "within_target": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "inactive": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "quantity_exceeds_limit": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "no_positive_demand": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SimulationInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expected_version",
+          "review_days",
+          "stock_units"
+        ],
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "review_days": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "stock_units": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        }
+      },
+      "Simulation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "simulated",
+          "current",
+          "scenario"
+        ],
+        "properties": {
+          "simulated": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "current": {
+            "$ref": "#/components/schemas/Item"
+          },
+          "scenario": {
+            "$ref": "#/components/schemas/Item"
+          }
+        }
+      }
+    }
+  }
+}

@@ -2606,5 +2606,130 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 		t.Fatal("schema43 futuro aceito")
 	}
 	exec(`DELETE FROM online_stock_setting_migrations WHERE version=19`)
+	// Delivery44: exact replenishment planning, marked simulations and no order/stock writes.
+	app = fiber.New()
+	Registrar(app)
+	restockBase44 := "/api/v1/catalog/replenishment/"
+	restockIDs44 := make([]int64, 6)
+	stock44 := []int64{4, 7, 0, 1, 1, 0}
+	minimum44 := []int64{5, 0, 3, 0, 0, 10}
+	reorder44 := []int64{8, 0, 0, 0, 0, 0}
+	lead44 := []int64{2, 0, 0, 0, 365, 0}
+	demand44 := []string{"1.0000", "1.0000", "0.0000", "0.1429", "99999999.9999", "0.0000"}
+	for i := range restockIDs44 {
+		sku44 := fmt.Sprintf("restock44-%d", i)
+		if i == 0 {
+			sku44 = "restock44-%literal"
+		}
+		if i == 1 {
+			sku44 = "restock44-Xliteral"
+		}
+		p44 := request("POST", "/api/v1/produtos/", fmt.Sprintf(`{"nome":%q,"sku":%q,"preco":10}`, fmt.Sprintf("=Replenishment44 %d", i), sku44), tokenA, 201)
+		restockIDs44[i] = int64(p44["ID"].(float64))
+		exec(`UPDATE products SET estoque=$3,estoque_minimo=$4,ponto_reposicao=$5,tempo_reposicao_dias=$6,demanda_media_diaria=$7::numeric,ativo=$8 WHERE tenant_id=$1 AND id=$2`, tenantA, restockIDs44[i], stock44[i], minimum44[i], reorder44[i], lead44[i], demand44[i], i != 5)
+	}
+	foreign44 := request("POST", "/api/v1/produtos/", `{"nome":"Replenishment44 foreign","sku":"restock44-foreign","preco":10}`, tokenB, 201)
+	foreignID44 := int64(foreign44["ID"].(float64))
+	before44 := writes40()
+	var auditBefore44, auditAfter44 int
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_stock_setting_operations)+(SELECT count(*) FROM online_stock_setting_outbox)`).Scan(&auditBefore44) != nil {
+		t.Fatal("auditoria44 indisponível")
+	}
+	summary44 := request("GET", restockBase44+"summary?q=Replenishment44", "", tokenA, 200)
+	if summary44["products"] != float64(5) || summary44["needs_replenishment"] != float64(3) || summary44["within_target"] != float64(1) || summary44["quantity_exceeds_limit"] != float64(1) || summary44["no_positive_demand"] != float64(1) {
+		t.Fatal("resumo44 incorreto")
+	}
+	if r44 := request("GET", restockBase44+"summary?q=Replenishment44&active=all", "", tokenA, 200); r44["products"] != float64(6) || r44["inactive"] != float64(1) || r44["no_positive_demand"] != float64(2) {
+		t.Fatal("inativos44 omitidos")
+	}
+	page44 := request("GET", restockBase44+"items?q=Replenishment44&limit=1", "", tokenA, 200)
+	first44 := page44["items"].([]interface{})[0].(map[string]interface{})
+	if page44["total"] != float64(3) || page44["has_more"] != true || page44["next_offset"] != float64(1) || first44["suggested_units"] != float64(5) || first44["target_units"] != float64(9) || first44["planning_only"] != true || first44["requires_approval"] != true {
+		t.Fatal("sugestão44 ou paginação incorreta")
+	}
+	pageNext44 := request("GET", restockBase44+"items?q=Replenishment44&limit=1&offset=1", "", tokenA, 200)
+	if pageNext44["items"].([]interface{})[0].(map[string]interface{})["suggested_units"] != float64(3) {
+		t.Fatal("segunda página44 incorreta")
+	}
+	if r44 := request("GET", restockBase44+"items?q=Replenishment44&offset=50", "", tokenA, 200); len(r44["items"].([]interface{})) != 0 || r44["has_more"] != false {
+		t.Fatal("página44 fabricada")
+	}
+	if r44 := request("GET", restockBase44+"items?q=restock44-%25literal", "", tokenA, 200); r44["total"] != float64(1) {
+		t.Fatal("busca44 tratou porcentagem como curinga")
+	}
+	if r44 := request("GET", restockBase44+"summary?q=Replenishment44&review_days=1", "", tokenA, 200); r44["needs_replenishment"] != float64(2) {
+		t.Fatal("prazo de revisão44 ignorado")
+	}
+	productURL44 := fmt.Sprintf("%sproducts/%d", restockBase44, restockIDs44[0])
+	detail44 := request("GET", productURL44, "", stockToken43, 200)
+	if detail44["planning_days"] != float64(9) || detail44["demand_units"] != float64(9) || detail44["suggested_units"] != float64(5) {
+		t.Fatal("detalhe44 perdeu prazo registrado43")
+	}
+	fraction44 := request("GET", fmt.Sprintf("%sproducts/%d", restockBase44, restockIDs44[3]), "", tokenA, 200)
+	if fraction44["target_units"] != float64(2) || fraction44["suggested_units"] != float64(1) {
+		t.Fatal("arredondamento44 perdeu fração")
+	}
+	blocked44 := request("GET", restockBase44+"items?q=Replenishment44&state=quantity_exceeds_limit", "", tokenA, 200)
+	blockedItem44 := blocked44["items"].([]interface{})[0].(map[string]interface{})
+	if blocked44["total"] != float64(1) || blockedItem44["target_units"] != float64(37200000000) || blockedItem44["suggested_units"] != float64(0) || blockedItem44["requires_approval"] != false {
+		t.Fatal("limite44 liberou quantidade impossível")
+	}
+	inactive44 := request("GET", restockBase44+"items?q=Replenishment44&active=false&state=inactive", "", tokenA, 200)
+	if inactive44["total"] != float64(1) || inactive44["items"].([]interface{})[0].(map[string]interface{})["suggested_units"] != float64(0) {
+		t.Fatal("inativo44 recebeu compra sugerida")
+	}
+	simulation44 := request("POST", productURL44+"/simulate", `{"expected_version":1,"review_days":7,"stock_units":0}`, stockToken43, 200)
+	if simulation44["simulated"] != true || simulation44["current"].(map[string]interface{})["stock_units"] != float64(4) || simulation44["scenario"].(map[string]interface{})["suggested_units"] != float64(9) {
+		t.Fatal("simulação44 sem identificação ou cálculo")
+	}
+	if r44 := request("POST", productURL44+"/simulate", `{"expected_version":1,"review_days":7,"stock_units":10}`, tokenA, 200); r44["scenario"].(map[string]interface{})["state"] != "within_target" {
+		t.Fatal("simulação44 ignorou estoque hipotético")
+	}
+	request("POST", productURL44+"/simulate", `{"expected_version":2,"review_days":7,"stock_units":0}`, tokenA, 409)
+	request("GET", productURL44, "", tokenB, 404)
+	request("GET", fmt.Sprintf("%sproducts/%d", restockBase44, foreignID44), "", tokenA, 404)
+	request("POST", productURL44+"/simulate", `{"expected_version":1,"review_days":7,"stock_units":0}`, tokenB, 404)
+	if r44 := request("GET", restockBase44+"summary?q=Replenishment44", "", tokenB, 200); r44["products"] != float64(1) || r44["no_positive_demand"] != float64(1) {
+		t.Fatal("resumo44 atravessou empresa")
+	}
+	req44 := httptest.NewRequest("GET", restockBase44+"export.csv?q=Replenishment44&limit=1", nil)
+	req44.Header.Set("Authorization", "Bearer "+stockToken43)
+	resp44, e44 := app.Test(req44, 10000)
+	if e44 != nil {
+		t.Fatal("CSV44 indisponível")
+	}
+	data44, e44 := io.ReadAll(resp44.Body)
+	resp44.Body.Close()
+	if e44 != nil || resp44.StatusCode != 200 || !strings.HasPrefix(string(data44), "product_id;sku;nome;") || !strings.Contains(string(data44), "'=Replenishment44") || !strings.Contains(string(data44), "needs_replenishment") || resp44.Header.Get("X-Titan-Report-Total") != "3" || resp44.Header.Get("X-Titan-Report-Count") != "1" || resp44.Header.Get("X-Titan-Report-Has-More") != "true" || resp44.Header.Get("X-Titan-Report-Scope") != "online-replenishment-planning" || resp44.Header.Get("Cache-Control") != "no-store" || len(resp44.Header.Get("X-Titan-Source-Hash")) != 64 {
+		t.Fatal("CSV44 sem proteção ou metadados")
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_stock_setting_operations)+(SELECT count(*) FROM online_stock_setting_outbox)`).Scan(&auditAfter44) != nil || auditAfter44 != auditBefore44 || writes40() != before44 {
+		t.Fatal("consultas ou simulação44 alteraram dados")
+	}
+	// A real settings43 registration is reflected in the next recommendation; stale simulation refuses it.
+	settings44 := onlinecatalog.StockSettingsInput{OperationID: uuid.NewString(), ExpectedVersion: 1, MinimumUnits: 20, ReorderPointUnits: 8, LeadTimeDays: 2, DailyDemand: "1.0000", Reason: "Revisão44 do planejamento"}
+	if _, e := store.SetStockSettings(ctx, actor, restockIDs44[0], settings44); e != nil {
+		t.Fatal("registro43 para fluxo44 falhou")
+	}
+	if r44 := request("GET", productURL44, "", tokenA, 200); r44["target_units"] != float64(20) || r44["suggested_units"] != float64(16) || r44["product"].(map[string]interface{})["version"] != float64(2) {
+		t.Fatal("reposição44 não usou parâmetros atualizados")
+	}
+	request("POST", productURL44+"/simulate", `{"expected_version":1,"review_days":7,"stock_units":0}`, tokenA, 409)
+	// Invalid persisted planning cannot masquerade as no demand or a safe zero suggestion.
+	exec(`UPDATE products SET demanda_media_diaria=-1 WHERE tenant_id=$1 AND id=$2`, tenantA, restockIDs44[0])
+	request("GET", restockBase44+"summary?q=Replenishment44", "", tokenA, 503)
+	request("GET", restockBase44+"items?q=Replenishment44&state=within_target", "", tokenA, 503)
+	request("GET", productURL44, "", tokenA, 503)
+	exec(`UPDATE products SET demanda_media_diaria=1 WHERE tenant_id=$1 AND id=$2`, tenantA, restockIDs44[0])
+	exec(`UPDATE products SET deleted_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, restockIDs44[3])
+	if r44 := request("GET", restockBase44+"summary?q=Replenishment44", "", tokenA, 200); r44["products"] != float64(4) || r44["needs_replenishment"] != float64(2) {
+		t.Fatal("excluído44 incluído")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, stockSession43)
+	request("GET", restockBase44+"summary", "", stockToken43, 401)
+	stockActor44 := onlinecatalog.Actor{Tenant: tenantA, User: stockUser, Session: stockSession43, Role: "stock"}
+	if _, e := store.Replenishments(ctx, stockActor44, onlinecatalog.ReplenishmentQuery{Active: "true", State: "all", ReviewDays: 7, Limit: 50}); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada44 consultou reposição")
+	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }
