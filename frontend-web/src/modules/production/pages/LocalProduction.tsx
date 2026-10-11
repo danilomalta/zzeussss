@@ -1,3 +1,4 @@
+import RecipeComparison from './RecipeComparison';
 import ProductionTrace from './ProductionTrace';
 import ProductionLotSearch from './ProductionLotSearch';
 import OrderPageSummary from './OrderPageSummary';
@@ -37,6 +38,7 @@ export default function LocalProduction(){
   function loadOrders(offset=0){setOrderOffset(offset);void orders.run(t=>client.orders(t,status,offset,{version_id:orderVersion.trim(),location_id:orderLocation.trim(),responsible_id:orderResponsible.trim()}));}
   return <main className="brand-app-content operation-page"><ProductionPending><header><p className="brand-eyebrow">PRODUÇÃO LOCAL</p><h1>Receitas e ordens</h1><p>Quantidades em milésimos da unidade indicada. Consultar capacidade não reserva ingredientes.</p></header>
     <RecipeEditor/>
+    <RecipeComparison/>
     <RecipeStateEditor/>
     <OrderPlanner/>
     <OrderStateEditor/>
