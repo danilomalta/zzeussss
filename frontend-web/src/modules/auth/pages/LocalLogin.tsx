@@ -7,8 +7,9 @@ export default function LocalLogin() {
   const notice = useLocalSession((state) => state.notice);
   const navigate = useNavigate();
   return <SignInCard
-    credentialLabel="ID do operador"
-    credentialPlaceholder="ID recebido na instalação local"
+    credentialLabel="Usuário desta instalação"
+    credentialPlaceholder="Código de acesso fornecido pela empresa"
+    credentialHelp="Use o código do seu usuário local. O acesso por e-mail fica na área online."
     credentialType="text"
     subtitle="Tudo para sua empresa, em um só lugar."
     notice={notice}
@@ -16,6 +17,6 @@ export default function LocalLogin() {
     recoveryHelp="A recuperação da senha local exige verificação do dono ou administrador desta instalação. O fluxo automático ainda não está disponível."
     errorMessage={localErrorMessage}
     onSubmit={async (id, password) => { await login(id, password); navigate('/local/home', { replace: true }); }}
-    secondary={<>Acesso à API online? <Link to="/login">Entrar aqui</Link></>}
+    secondary={<Link to="/login">Área online · acesso por e-mail</Link>}
   />;
 }

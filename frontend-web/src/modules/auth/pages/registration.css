@@ -1,26 +1,64 @@
-.registration { width:min(1180px,100%); margin:0 auto 40px; }
-.registration h1 { font-size:clamp(28px,4vw,42px); letter-spacing:-.04em; margin:10px 0; }
-.registration-tabs { display:flex; width:280px; border-radius:14px; background:var(--brand-input); border:1px solid var(--brand-border); margin-bottom:28px; padding:5px; }
-.registration-tabs > * { flex:1; text-align:center; padding:12px; border-radius:10px; color:var(--brand-muted); text-decoration:none; }
-.registration-tabs .active { color:white; background:var(--brand-blue); box-shadow:0 6px 20px rgba(23,103,245,.24); }
-.registration-heading { margin:28px 0 18px; }
-.plan-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin:24px 0; }
-.plan-card { display:flex; flex-direction:column; align-items:flex-start; text-align:left; padding:26px; border:1px solid var(--brand-border); border-radius:22px; background:var(--brand-surface); color:var(--brand-ink); cursor:pointer; transition:background .22s ease,transform .22s ease,box-shadow .22s ease; }
-.plan-card:hover { transform:translateY(-3px); }
-.plan-card.selected { border-color:var(--brand-blue); background:linear-gradient(140deg,rgba(23,103,245,.13),var(--brand-surface)); box-shadow:inset 0 0 0 1px var(--brand-blue),0 10px 30px rgba(23,103,245,.1); }
-.plan-card .plan-price { font-size:30px; margin:10px 0; font-weight:700; }
-.plan-price small { font-size:12px; color:var(--brand-muted); }
-.plan-previous { text-decoration:line-through; color:var(--brand-muted); margin:0; }
-.plan-card > p:last-child { color:var(--brand-muted); font-size:13px; line-height:1.6; }
-.plan-badge { font-size:11px; color:var(--brand-blue); padding:5px 9px; border-radius:999px; background:rgba(23,103,245,.1); }
-.registration-summary { margin:26px 0; }
-.registration-summary > strong, .license-days { font-size:28px; }
-.area-card { color:var(--brand-ink); text-decoration:none; }
-.area-card p { color:var(--brand-muted); }
-.area-card span { color:var(--brand-blue); }
-.brand-tabs button.active { box-shadow:0 4px 14px rgba(23,103,245,.3); }
-.brand-input-wrap:focus-within { transform:translateY(-1px); box-shadow:0 0 0 4px rgba(23,103,245,.14); }
-.registration .catalog-form label { font-size:13px; color:var(--brand-muted); }
-.registration .catalog-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
-.registration .catalog-form select,.registration .catalog-form input { width:100%; display:block; margin-top:8px; padding:13px; border:1px solid var(--brand-border); border-radius:12px; background:var(--brand-input); color:var(--brand-ink); }
-@media(max-width:650px){ .registration .catalog-form { grid-template-columns:1fr; } }
+
+.registration {width:min(1000px,100%); margin:0 auto 40px;}
+.registration-intro {text-align:center; margin-bottom:30px;}
+.registration-back-login {display:inline-block; font-size:14px; margin-bottom:24px;}
+.registration h1 {font-size:clamp(28px,4vw,40px); font-weight:700; letter-spacing:-.04em; line-height:1.2; margin:12px 0;}
+.registration .brand-eyebrow {font-size:13px; color:var(--brand-link);}
+.registration .brand-state {font-size:14px; line-height:1.6;}
+.registration-progress {display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; padding:18px; margin:26px 0; list-style:none; border:1px solid var(--brand-border); background:var(--brand-surface); border-radius:16px;}
+.registration-progress li {display:flex; gap:10px; align-items:center; font-size:14px; color:var(--brand-muted);}
+.registration-progress li > span:first-child {display:grid; place-items:center; width:32px; height:32px; flex:none; border-radius:50%; border:1px solid var(--brand-border);}
+.registration-progress .current {color:var(--brand-ink); font-weight:650;}
+.registration-progress .current > span:first-child {background:#1d4ed8; border-color:#1d4ed8; color:white;}
+.registration-progress .completed > span:first-child {background:var(--brand-input); color:var(--brand-link); border-color:var(--brand-link);}
+.registration-heading {margin:26px 0 18px; font-size:23px; font-weight:650;}
+.registration .catalog-form {display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px;}
+.registration .catalog-form label {font-size:14px; font-weight:600; color:var(--brand-ink);}
+.registration .catalog-form select, .registration .catalog-form input {width:100%; display:block; margin-top:8px; padding:13px; min-height:48px; border:1px solid var(--brand-border); border-radius:12px; background:var(--brand-input); color:var(--brand-ink); font-size:16px;}
+.registration-field-help {display:block; color:var(--brand-muted); font-size:13px; font-weight:400; line-height:1.6; margin-top:8px;}
+.registration-full-field {grid-column:1 / -1;}
+.plan-grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:18px; margin:22px 0;}
+.plan-card {display:flex; flex-direction:column; align-items:flex-start; text-align:left; padding:26px; border:1px solid var(--brand-border); border-radius:20px; background:var(--brand-surface); color:var(--brand-ink); cursor:pointer; transition:box-shadow .18s ease,border-color .18s ease;}
+.plan-card:hover {box-shadow:0 8px 22px rgb(0 0 0 / .08);}
+.plan-card.selected {border-color:#2563eb; background:linear-gradient(140deg,rgb(37 99 235 / .09),var(--brand-surface)); box-shadow:inset 0 0 0 1px #2563eb;}
+.plan-card-top {display:flex; justify-content:space-between; align-items:center; width:100%; gap:12px;}
+.plan-badge {color:var(--brand-link); font-size:13px; font-weight:600;}
+.plan-check {display:grid; place-items:center; width:30px; height:30px; border:1px solid var(--brand-border); border-radius:8px;}
+.plan-card.selected .plan-check {background:#1d4ed8; color:white; border-color:#1d4ed8;}
+.plan-card h3 {font-size:21px; margin:22px 0 8px; font-weight:650;}
+.plan-price {font-size:32px; margin:4px 0 12px; font-weight:700; letter-spacing:-.03em;}
+.plan-price small {display:inline-block; font-size:14px; font-weight:400; color:var(--brand-muted); margin-left:4px; letter-spacing:0;}
+.plan-previous {font-size:13px; color:var(--brand-muted); text-decoration:line-through;}
+.plan-savings {color:var(--brand-success); font-size:14px; font-weight:600;}
+.plan-description {color:var(--brand-muted); font-size:14px; line-height:1.6; margin:18px 0;}
+.plan-selection {color:var(--brand-link); font-size:14px; font-weight:600; margin-top:auto;}
+.registration-more {min-height:44px; font-size:14px;}
+.registration-review h3 {font-size:20px; font-weight:650;}
+.registration-review dl {margin:22px 0;}
+.registration-review dl > div {display:grid; grid-template-columns:150px minmax(0,1fr); gap:18px; padding:14px 0; border-bottom:1px solid var(--brand-border); font-size:15px;}
+.registration-review dt {color:var(--brand-muted);}
+.registration-review dd {margin:0; overflow-wrap:anywhere;}
+.registration-confirm {display:flex; gap:12px; align-items:flex-start; font-size:14px; line-height:1.6; margin-top:22px; cursor:pointer;}
+.registration-confirm input {width:20px; height:20px; flex:none; margin-top:2px; accent-color:#1d4ed8;}
+.registration-sticky {position:sticky; bottom:12px; z-index:5; display:flex; justify-content:space-between; align-items:center; gap:20px; padding:20px 24px; margin-top:26px; border:1px solid var(--brand-border); border-radius:18px; background:var(--brand-bg); box-shadow:0 8px 36px rgb(0 0 0 / .12);}
+.registration-total {display:flex; flex-direction:column; gap:4px; font-size:14px;}
+.registration-total > span:first-child {color:var(--brand-muted);}
+.registration-total strong {font-size:28px; font-weight:700; letter-spacing:-.03em;}
+.registration-total small {font-size:14px; font-weight:400; color:var(--brand-muted); margin-left:6px; letter-spacing:0;}
+.registration-sticky-actions {display:flex; align-items:center; gap:12px;}
+.registration-sticky .brand-primary {margin:0; width:auto; min-width:160px;}
+.registration-sticky .brand-secondary {min-height:48px; font-size:14px;}
+.area-card {color:var(--brand-ink); text-decoration:none;}
+.area-card p {color:var(--brand-muted);}
+.area-card span {color:var(--brand-link);}
+.license-days {font-size:28px;}
+@media(max-width:650px) {
+ .registration .catalog-form {grid-template-columns:1fr;}
+ .registration-progress {gap:8px; padding:12px 8px;}
+ .registration-progress li {flex-direction:column; text-align:center; font-size:12px; gap:8px;}
+ .registration-sticky {padding:16px; gap:12px; bottom:8px; flex-wrap:wrap;}
+ .registration-sticky-actions {flex:1; justify-content:flex-end;}
+ .registration-sticky .brand-primary {min-width:130px; font-size:15px;}
+ .registration-total strong {font-size:24px;}
+ .registration-review dl > div {grid-template-columns:1fr; gap:4px;}
+}
