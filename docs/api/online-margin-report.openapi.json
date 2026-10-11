@@ -1,0 +1,693 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Relatórios de custo e margem online — entrega40",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/catalog/margins/summary": {
+      "get": {
+        "operationId": "marginSummary40",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "true",
+                "false"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "target_bps",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 3000
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Query/corpo inválido, repetido ou extra."
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada."
+          },
+          "403": {
+            "description": "Papel não autorizado."
+          },
+          "503": {
+            "description": "Schema17 indisponível ou estado inconsistente."
+          },
+          "200": {
+            "description": "Relatório real da empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Empresa e sessão derivadas da autenticação e revalidadas no banco. Somente leitura. Produtos logicamente excluídos não entram. q busca literal em nome/SKU, sem interpretar % ou _ como curingas. active filtra ativos/inativos. Meta padrão 3000 pontos-base (30%). Margem abaixo da meta compara razão EXATA, estritamente menor, antes de arredondar; custo desconhecido e preço zero não entram nessa classificação. Preço zero com custo positivo entra em negativa. Corpo GET, query extra e duplicações recusados."
+      }
+    },
+    "/api/v1/catalog/margins/missing-cost": {
+      "get": {
+        "operationId": "missingCosts40",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "true",
+                "false"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "target_bps",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 3000
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Query/corpo inválido, repetido ou extra."
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada."
+          },
+          "403": {
+            "description": "Papel não autorizado."
+          },
+          "503": {
+            "description": "Schema17 indisponível ou estado inconsistente."
+          },
+          "200": {
+            "description": "Relatório real da empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Empresa e sessão derivadas da autenticação e revalidadas no banco. Somente leitura. Produtos logicamente excluídos não entram. q busca literal em nome/SKU, sem interpretar % ou _ como curingas. active filtra ativos/inativos. Meta padrão 3000 pontos-base (30%). Margem abaixo da meta compara razão EXATA, estritamente menor, antes de arredondar; custo desconhecido e preço zero não entram nessa classificação. Preço zero com custo positivo entra em negativa. Corpo GET, query extra e duplicações recusados."
+      }
+    },
+    "/api/v1/catalog/margins/negative": {
+      "get": {
+        "operationId": "negativeMargins40",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "true",
+                "false"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "target_bps",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 3000
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Query/corpo inválido, repetido ou extra."
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada."
+          },
+          "403": {
+            "description": "Papel não autorizado."
+          },
+          "503": {
+            "description": "Schema17 indisponível ou estado inconsistente."
+          },
+          "200": {
+            "description": "Relatório real da empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Empresa e sessão derivadas da autenticação e revalidadas no banco. Somente leitura. Produtos logicamente excluídos não entram. q busca literal em nome/SKU, sem interpretar % ou _ como curingas. active filtra ativos/inativos. Meta padrão 3000 pontos-base (30%). Margem abaixo da meta compara razão EXATA, estritamente menor, antes de arredondar; custo desconhecido e preço zero não entram nessa classificação. Preço zero com custo positivo entra em negativa. Corpo GET, query extra e duplicações recusados."
+      }
+    },
+    "/api/v1/catalog/margins/below-target": {
+      "get": {
+        "operationId": "belowTargetMargins40",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "true",
+                "false"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "target_bps",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 3000
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Query/corpo inválido, repetido ou extra."
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada."
+          },
+          "403": {
+            "description": "Papel não autorizado."
+          },
+          "503": {
+            "description": "Schema17 indisponível ou estado inconsistente."
+          },
+          "200": {
+            "description": "Relatório real da empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Empresa e sessão derivadas da autenticação e revalidadas no banco. Somente leitura. Produtos logicamente excluídos não entram. q busca literal em nome/SKU, sem interpretar % ou _ como curingas. active filtra ativos/inativos. Meta padrão 3000 pontos-base (30%). Margem abaixo da meta compara razão EXATA, estritamente menor, antes de arredondar; custo desconhecido e preço zero não entram nessa classificação. Preço zero com custo positivo entra em negativa. Corpo GET, query extra e duplicações recusados."
+      }
+    },
+    "/api/v1/catalog/margins/export.csv": {
+      "get": {
+        "operationId": "marginCSV40",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "true",
+                "false"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "target_bps",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 3000
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "issue",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "missing_cost",
+                "negative",
+                "below_target"
+              ],
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Query/corpo inválido, repetido ou extra."
+          },
+          "401": {
+            "description": "Sessão ausente ou revogada."
+          },
+          "403": {
+            "description": "Papel não autorizado."
+          },
+          "503": {
+            "description": "Schema17 indisponível ou estado inconsistente."
+          },
+          "200": {
+            "description": "Relatório real da empresa; no-store.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "X-Titan-Report-Total": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "X-Titan-Report-Count": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              },
+              "X-Titan-Report-Has-More": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "X-Titan-Report-Next-Offset": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 1000000100
+                }
+              },
+              "X-Titan-Source-Hash": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Scope": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "online-product-margins"
+                  ]
+                }
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "apostrophe"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Owner/admin/manager. Empresa e sessão derivadas da autenticação e revalidadas no banco. Somente leitura. Produtos logicamente excluídos não entram. q busca literal em nome/SKU, sem interpretar % ou _ como curingas. active filtra ativos/inativos. Meta padrão 3000 pontos-base (30%). Margem abaixo da meta compara razão EXATA, estritamente menor, antes de arredondar; custo desconhecido e preço zero não entram nessa classificação. Preço zero com custo positivo entra em negativa. Corpo GET, query extra e duplicações recusados. CSV delimitado por ponto-e-vírgula, apenas uma página, limite100 e tamanho262144 bytes. SKU/nome com risco de fórmula recebem apóstrofo. Campos financeiros desconhecidos ficam vazios, não zero. margin_bps é inteiro decimal textual exato; não é lucro contábil."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "active",
+          "target_bps",
+          "issue",
+          "limit",
+          "offset",
+          "total",
+          "items",
+          "has_more",
+          "generated_at",
+          "source_hash"
+        ],
+        "properties": {
+          "q": {
+            "type": "string",
+            "maxLength": 120,
+            "default": ""
+          },
+          "active": {
+            "type": "string",
+            "enum": [
+              "all",
+              "true",
+              "false"
+            ],
+            "default": "all"
+          },
+          "target_bps": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 10000,
+            "default": 3000
+          },
+          "issue": {
+            "type": "string",
+            "enum": [
+              "all",
+              "missing_cost",
+              "negative",
+              "below_target"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "./online-product-costs.openapi.json#/components/schemas/Margin"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 1000000100
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "active",
+          "target_bps",
+          "total",
+          "known_cost",
+          "missing_cost",
+          "negative_margin",
+          "below_target",
+          "zero_price",
+          "generated_at"
+        ],
+        "properties": {
+          "q": {
+            "type": "string",
+            "maxLength": 120,
+            "default": ""
+          },
+          "active": {
+            "type": "string",
+            "enum": [
+              "all",
+              "true",
+              "false"
+            ],
+            "default": "all"
+          },
+          "target_bps": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 10000,
+            "default": 3000
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "known_cost": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "missing_cost": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "negative_margin": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "below_target": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "zero_price": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

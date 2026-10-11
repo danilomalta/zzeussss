@@ -2135,5 +2135,102 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if onlinecatalog.CheckCosts(ctx, sqlDB) != nil {
 		t.Fatal("schema 17 não recuperado")
 	}
+	// Delivery40: independent HTTP budget, unchanged real limiter and shared DB.
+	app = fiber.New()
+	Registrar(app)
+	marginBase40 := "/api/v1/catalog/margins/"
+	marginIDs40 := make([]int64, 5)
+	for i := range marginIDs40 {
+		sku40 := fmt.Sprintf("margin40-%d", i)
+		if i == 0 {
+			sku40 = "escape40-%literal"
+		}
+		body40 := fmt.Sprintf(`{"nome":%q,"sku":%q,"preco":10.00}`, fmt.Sprintf("=Margin40 %d", i), sku40)
+		p40 := request("POST", "/api/v1/produtos/", body40, tokenA, 201)
+		marginIDs40[i] = int64(p40["ID"].(float64))
+		if i > 0 {
+			cost40 := []int64{0, 600, 1200, 800, 100}[i]
+			v40 := onlinecatalog.CostInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedCostRevision: 0, CostCents: cost40, Reason: "Nota Margin40"}
+			if _, e := store.SetCost(ctx, actor, marginIDs40[i], v40); e != nil {
+				t.Fatal("custo de fixture40 falhou")
+			}
+		}
+	}
+	exec(`UPDATE products SET preco=0 WHERE tenant_id=$1 AND id=$2`, tenantA, marginIDs40[4])
+	request("POST", "/api/v1/produtos/", `{"nome":"Margin40 outra empresa","sku":"margin40-foreign","preco":10.00}`, tokenB, 201)
+	// Unique prefix isolates this assertion from earlier %literal fixtures.
+	// The decoy must not match: treating % as a wildcard would return two rows.
+	request("POST", "/api/v1/produtos/", `{"nome":"Escape40 decoy","sku":"escape40-Xliteral","preco":10.00}`, tokenA, 201)
+	writes40 := func() string {
+		t.Helper()
+		var h string
+		if sqlDB.QueryRowContext(ctx, `SELECT md5(jsonb_build_array((SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM products p),(SELECT jsonb_agg(to_jsonb(c) ORDER BY tenant_id,product_id) FROM online_product_costs c),(SELECT count(*) FROM online_cost_operations),(SELECT count(*) FROM online_cost_outbox))::text)`).Scan(&h) != nil {
+			t.Fatal("verificação de leituras40 falhou")
+		}
+		return h
+	}
+	beforeReads40 := writes40()
+	summary40 := request("GET", marginBase40+"summary?q=Margin40", "", tokenA, 200)
+	if summary40["total"] != float64(5) || summary40["known_cost"] != float64(4) || summary40["missing_cost"] != float64(1) || summary40["negative_margin"] != float64(2) || summary40["below_target"] != float64(2) || summary40["zero_price"] != float64(1) {
+		t.Fatal("contagens de margem incorretas")
+	}
+	foreignSummary40 := request("GET", marginBase40+"summary?q=Margin40", "", tokenB, 200)
+	if foreignSummary40["total"] != float64(1) || foreignSummary40["known_cost"] != float64(0) {
+		t.Fatal("resumo atravessou empresa")
+	}
+	missing40 := request("GET", marginBase40+"missing-cost?q=Margin40", "", tokenA, 200)
+	if missing40["total"] != float64(1) || missing40["items"].([]interface{})[0].(map[string]interface{})["state"] != "unknown_cost" {
+		t.Fatal("custo desconhecido inventado")
+	}
+	literal40 := request("GET", marginBase40+"missing-cost?q=escape40-%25literal", "", tokenA, 200)
+	if literal40["total"] != float64(1) {
+		t.Fatal("busca não escapou porcentagem literal")
+	}
+	negative40 := request("GET", marginBase40+"negative?q=Margin40&limit=1", "", tokenA, 200)
+	if negative40["total"] != float64(2) || negative40["has_more"] != true || negative40["next_offset"] != float64(1) {
+		t.Fatal("paginação negativa incorreta")
+	}
+	negativeNext40 := request("GET", marginBase40+"negative?q=Margin40&limit=1&offset=1", "", tokenA, 200)
+	if negativeNext40["has_more"] != false || negativeNext40["items"].([]interface{})[0].(map[string]interface{})["state"] != "zero_price" {
+		t.Fatal("preço zero omitido")
+	}
+	if r40 := request("GET", marginBase40+"below-target?q=Margin40&target_bps=0", "", tokenA, 200); r40["total"] != float64(1) {
+		t.Fatal("meta zero incluiu preço zero ou custo desconhecido")
+	}
+	if r40 := request("GET", marginBase40+"below-target?q=Margin40&target_bps=4000", "", tokenA, 200); r40["total"] != float64(2) {
+		t.Fatal("margem igual à meta entrou")
+	}
+	if r40 := request("GET", marginBase40+"negative?q=Margin40&offset=20", "", tokenA, 200); len(r40["items"].([]interface{})) != 0 || r40["has_more"] != false {
+		t.Fatal("página vazia fabricada")
+	}
+	req40 := httptest.NewRequest("GET", marginBase40+"export.csv?q=Margin40&limit=2", nil)
+	req40.Header.Set("Authorization", "Bearer "+tokenA)
+	resp40, e40 := app.Test(req40, 10000)
+	if e40 != nil {
+		t.Fatal("CSV40 indisponível")
+	}
+	data40, e40 := io.ReadAll(resp40.Body)
+	resp40.Body.Close()
+	if e40 != nil || resp40.StatusCode != 200 || !strings.HasPrefix(string(data40), "product_id;sku;nome;") || !strings.Contains(string(data40), "'=Margin40") || !strings.Contains(string(data40), ";unknown_cost") || resp40.Header.Get("X-Titan-Report-Total") != "5" || resp40.Header.Get("X-Titan-Report-Count") != "2" || resp40.Header.Get("X-Titan-Report-Has-More") != "true" || resp40.Header.Get("Cache-Control") != "no-store" || len(resp40.Header.Get("X-Titan-Source-Hash")) != 64 {
+		t.Fatal("CSV40 sem isolamento, proteção ou metadados")
+	}
+	if writes40() != beforeReads40 {
+		t.Fatal("relatório alterou dados")
+	}
+	exec(`UPDATE products SET ativo=false WHERE tenant_id=$1 AND id=$2`, tenantA, marginIDs40[3])
+	if r40 := request("GET", marginBase40+"below-target?q=Margin40&active=false", "", tokenA, 200); r40["total"] != float64(1) {
+		t.Fatal("filtro de inativos incorreto")
+	}
+	exec(`UPDATE products SET deleted_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, marginIDs40[1])
+	if r40 := request("GET", marginBase40+"summary?q=Margin40", "", tokenA, 200); r40["total"] != float64(4) {
+		t.Fatal("produto excluído em resumo")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", marginBase40+"summary?q=Margin40", "", tokenA, 401)
+	q40 := onlinecatalog.MarginQuery{Active: "all", Issue: "all", TargetBPS: 3000, Limit: 50}
+	if _, e := store.Margins(ctx, actor, q40); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada em relatório")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

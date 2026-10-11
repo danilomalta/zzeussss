@@ -193,3 +193,5 @@ Entrega37: cinco consultas de acompanhamento de sugestões, preço atual identif
 Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de aprovações. Veja 113_CONFERENCIA_APROVACOES_CINCO_FUNCOES.md.
 
 - Entrega39: [114_CUSTO_MARGEM_CINCO_FUNCOES.md](114_CUSTO_MARGEM_CINCO_FUNCOES.md).
+
+- Entrega40: [115_RELATORIO_MARGENS_CINCO_FUNCOES.md](115_RELATORIO_MARGENS_CINCO_FUNCOES.md).
