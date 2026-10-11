@@ -1,0 +1,621 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem — P63 fornecedores locais",
+    "version": "P63",
+    "description": "Cinco funções de interface; SQLite 44. GETs somente leitura; escritor existente exige manage_replenishment e orders ativo. IDs de escopo vêm da sessão. Recibo é original e result.repeated é sempre false."
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/purchase-supplier-operations/{operation_id}/receipt": {
+      "get": {
+        "summary": "Recibo original da alteração, restrito ao operador e aparelho; não aceita query string.",
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato; até 128 bytes UTF-8 no servidor."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão ou contrato indisponível"
+          },
+          "404": {
+            "description": "Ausente no escopo autorizado"
+          },
+          "409": {
+            "description": "Revisão ou dados preservados inconsistentes"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          }
+        }
+      }
+    },
+    "/purchase-suppliers/{id}/edit-state": {
+      "get": {
+        "summary": "Cadastro atual com revisão; consulta sem query string.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato; até 128 bytes UTF-8 no servidor."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/State"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão ou contrato indisponível"
+          },
+          "404": {
+            "description": "Ausente no escopo autorizado"
+          },
+          "409": {
+            "description": "Revisão ou dados preservados inconsistentes"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          }
+        }
+      }
+    },
+    "/purchase-suppliers/{id}/history": {
+      "get": {
+        "summary": "Histórico auditado paginado em ordem crescente.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato; até 128 bytes UTF-8 no servidor."
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão ou contrato indisponível"
+          },
+          "404": {
+            "description": "Ausente no escopo autorizado"
+          },
+          "409": {
+            "description": "Revisão ou dados preservados inconsistentes"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          }
+        }
+      }
+    },
+    "/purchase-suppliers/{id}/update": {
+      "post": {
+        "summary": "Escritor existente de nome e estado; revisão otimista, motivo e idempotência.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato; até 128 bytes UTF-8 no servidor."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/State"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão ou contrato indisponível"
+          },
+          "404": {
+            "description": "Ausente no escopo autorizado"
+          },
+          "409": {
+            "description": "Revisão ou dados preservados inconsistentes"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          },
+          "413": {
+            "description": "Corpo maior que 4096 bytes"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "expected_revision",
+                  "name",
+                  "status",
+                  "reason"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "description": "ID exato; até 128 bytes UTF-8 no servidor."
+                  },
+                  "expected_revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483646
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "description": "Texto sem espaços nas extremidades, NUL ou quebras de linha; até 255 bytes UTF-8."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "inactive"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "description": "Texto sem espaços nas extremidades, NUL ou quebras de linha; até 255 bytes UTF-8."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "supplier_id",
+          "expected_revision",
+          "name",
+          "status",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "supplier_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Texto sem espaços nas extremidades, NUL ou quebras de linha; até 255 bytes UTF-8."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Texto sem espaços nas extremidades, NUL ou quebras de linha; até 255 bytes UTF-8."
+          }
+        }
+      },
+      "State": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "status",
+          "revision",
+          "repeated"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Texto sem espaços nas extremidades, NUL ou quebras de linha; até 255 bytes UTF-8."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "input",
+          "result",
+          "before_name",
+          "before_status",
+          "actor_id",
+          "device_id",
+          "created_at"
+        ],
+        "properties": {
+          "input": {
+            "$ref": "#/components/schemas/Input"
+          },
+          "result": {
+            "$ref": "#/components/schemas/State"
+          },
+          "before_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Texto sem espaços nas extremidades, NUL ou quebras de linha; até 255 bytes UTF-8."
+          },
+          "before_status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Creation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "operation_id",
+          "actor_id",
+          "device_id",
+          "created_at"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "supplier.created"
+            ]
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Change": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "operation_id",
+          "device_id",
+          "actor_id",
+          "before_name",
+          "before_status",
+          "name",
+          "status",
+          "reason",
+          "created_at"
+        ],
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato; até 128 bytes UTF-8 no servidor."
+          },
+          "before_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Texto sem espaços nas extremidades, NUL ou quebras de linha; até 255 bytes UTF-8."
+          },
+          "before_status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Texto sem espaços nas extremidades, NUL ou quebras de linha; até 255 bytes UTF-8."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Texto sem espaços nas extremidades, NUL ou quebras de linha; até 255 bytes UTF-8."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "History": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "current",
+          "origin",
+          "offset",
+          "limit",
+          "total_count",
+          "has_more",
+          "items"
+        ],
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/State"
+          },
+          "origin": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "name",
+              "status",
+              "creation"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "ID exato; até 128 bytes UTF-8 no servidor."
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Texto sem espaços nas extremidades, NUL ou quebras de linha; até 255 bytes UTF-8."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "inactive"
+                ]
+              },
+              "creation": {
+                "$ref": "#/components/schemas/Creation"
+              }
+            }
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "enum": [
+              50
+            ]
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Change"
+            }
+          }
+        }
+      }
+    }
+  }
+}

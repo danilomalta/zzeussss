@@ -1,4 +1,5 @@
 import {Link} from 'react-router-dom';
+import SupplierManagement from './SupplierManagement';
 import ReplenishmentPanel from './ReplenishmentPanel';
 import {useEffect,useState,useRef} from 'react';
 import type {FormEvent} from 'react';
@@ -30,6 +31,7 @@ export default function LocalOrders(){
  return <main className="brand-app-content" style={{display:"grid",gap:20}}><h1>Pedidos e fornecedores</h1><Link className="brand-secondary" to="/local/receiving">Consultar pedidos e histórico de recebimento</Link><p>Pedidos locais a partir de reposições aprovadas. O fornecedor ainda não recebe estes pedidos.</p>
   {error&&<p className="brand-state" role="alert">{error}</p>}{storageError&&<p role="alert">{storageError}</p>}{notice&&<p role="status">{notice}</p>}
   {pending&&<section className="brand-panel"><h2>Operação pendente</h2><p>{pending.kind==='order'?'Pedido':'Fornecedor'}: {pending.kind==='order'?pending.input.order_id:pending.input.id}. Os identificadores originais estão preservados.</p><button className="brand-secondary" disabled={busy} onClick={()=>void locked(()=>resolve(false))}>Consultar resultado</button> <button className="brand-primary" disabled={busy||!canWrite} onClick={()=>void locked(()=>resolve(true))}>Repetir mesma operação</button></section>}
+  <SupplierManagement/>
   <ReplenishmentPanel onChange={load}/>
   {manage&&<section className="brand-panel"><h2>Cadastrar fornecedor local</h2><form className="catalog-form" onSubmit={createSupplier}><label className="brand-field">Nome<input required maxLength={255} value={name} onChange={e=>setName(e.target.value)} disabled={blocked}/></label><button className="brand-primary" disabled={blocked||!name.trim()}>Cadastrar fornecedor</button></form><p>Referência comercial nesta loja; não cria login para outra empresa.</p></section>}
   {manage&&<section className="brand-panel"><h2>Criar pedido de reposição</h2><form className="catalog-form" onSubmit={createOrder}><label className="brand-field">Fornecedor ativo<select required value={supplier} onChange={e=>setSupplier(e.target.value)} disabled={blocked}><option value="">Selecione</option>{suppliers.filter(s=>s.status==='active').map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label><label className="brand-field">Reposição aprovada<select required value={approval} onChange={e=>setApproval(e.target.value)} disabled={blocked}><option value="">Selecione</option>{approvals.map(a=><option key={a.suggestion_id} value={a.suggestion_id}>{a.name} — {quantity(a.quantity_milli)} {a.unit}</option>)}</select></label><button className="brand-primary" disabled={blocked||!supplier||!approval}>Criar pedido local</button></form>
