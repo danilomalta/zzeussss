@@ -143,3 +143,33 @@
 .pos-shortcut-items span {white-space:nowrap;}
 .pos-shortcut-items kbd {display:inline-block;min-width:32px;padding:5px 7px;text-align:center;border:1px solid var(--accent);border-radius:8px;color:var(--brand-ink);font-size:14px;font-weight:700;}
 @media(max-width:520px){.pos-primary-actions {grid-template-columns:minmax(0,1fr) 112px;}.pos-content .pos-primary-actions .pos-checkout {font-size:16px;}.pos-shortcut-items {gap:6px;}}
+/* Full-screen operation occupies the viewport; only bounded lists scroll. */
+.workspace-pos-focused .workspace-scroll {overflow:hidden;}
+.workspace-pos-focused .pos-page {height:100%;overflow:hidden;}
+.workspace-pos-focused .pos-content {height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;overflow:hidden;}
+.workspace-pos-focused .pos-heading {flex:none;margin:0;padding:0;}
+.workspace-pos-focused .pos-heading h1 {font-size:24px;margin:0;}
+.workspace-pos-focused .pos-heading .brand-subtitle {margin:4px 0 0;}
+.workspace-pos-focused .pos-content > .brand-message {flex:none;margin:0;max-height:64px;overflow:auto;}
+.workspace-pos-focused .pos-content .pos-retail-grid {flex:1;min-height:0;grid-template-columns:minmax(0,1fr) minmax(300px,340px);grid-template-rows:minmax(0,1fr);align-items:stretch;overflow:hidden;}
+.workspace-pos-focused .pos-selling {display:flex;flex-direction:column;min-height:0;gap:8px;}
+.workspace-pos-focused .pos-scan {flex:none;padding:10px;}
+.workspace-pos-focused .pos-stock-source {flex:none;}
+.workspace-pos-focused .pos-quick {flex:none;max-height:100px;overflow:auto;padding:8px;box-sizing:border-box;}
+.workspace-pos-focused .pos-search-results {flex:none;max-height:140px;}
+.workspace-pos-focused .pos-basket {flex:1;min-height:0;display:flex;flex-direction:column;}
+.workspace-pos-focused .pos-basket-heading {flex:none;padding:10px 14px;}
+.workspace-pos-focused .pos-table-scroll {flex:1;min-height:0;max-height:none;}
+.workspace-pos-focused .pos-last-item {flex:none;padding:8px 12px;}
+.workspace-pos-focused .pos-catalog-browser {display:none;}
+.workspace-pos-focused .brand-pagination {flex:none;display:flex;flex-wrap:wrap;margin:0;gap:8px;}
+.workspace-pos-focused .pos-summary {position:static;min-height:0;overflow:auto;padding:16px!important;}
+.workspace-pos-focused .pos-summary-lines {gap:8px;padding:10px 0;}
+.workspace-pos-focused .pos-grand-total {margin:8px 0 12px;font-size:48px;}
+.workspace-pos-focused .pos-status-stack {gap:6px;padding:10px 0;margin-top:10px;}
+.workspace-pos-focused .pos-summary > .pos-note {font-size:13px;}
+.workspace-pos-focused .pos-primary-actions .brand-primary {margin-top:0;}
+.workspace-pos-focused .pos-statusbar {flex:none;position:static;margin:0;padding:6px 0;}
+.workspace-pos-focused .pos-pending {flex:none;margin:0;max-height:120px;overflow:auto;}
+.workspace-pos-focused .pos-help {position:fixed;inset:15% 10%;z-index:10;overflow:auto;background:var(--brand-bg);border:2px solid var(--accent);box-shadow:var(--brand-shadow);}
+@media(max-width:700px){.workspace-pos-focused .pos-content .pos-retail-grid {grid-template-columns:minmax(0,1fr) minmax(220px,.8fr);gap:8px;}.workspace-pos-focused .pos-grand-total {font-size:36px;}.workspace-pos-focused .pos-heading {gap:8px;}.workspace-pos-focused .pos-quick small {display:none;}}
