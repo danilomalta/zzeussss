@@ -209,3 +209,5 @@ Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de
 - Entrega46: consultas e conferência de propostas45 com histórico, filtros e CSV protegido. Ver `121_CONSULTAS_PROPOSTAS_CINCO_FUNCOES.md`.
 
 - Entrega47: cadastro interno de contatos fornecedores com revisão, auditoria/outbox e recibos. Ver `122_FORNECEDORES_CINCO_FUNCOES.md`. Vínculo autenticado entre empresas permanece pendente.
+
+- Entrega48: vínculo interno de fornecedores/produtos e condições declaradas. Ver `123_CONDICOES_FORNECEDORES_CINCO_FUNCOES.md`; sem confirmação externa ou compra.

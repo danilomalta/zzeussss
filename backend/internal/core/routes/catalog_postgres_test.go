@@ -3142,5 +3142,177 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if writes40() != stockBefore47 {
 		t.Fatal("fornecedores alteraram catálogo/estoque")
 	}
+	// Delivery48: internal declared supplier/product conditions, not remote confirmation.
+	app = fiber.New()
+	Registrar(app)
+	if onlinecatalog.MigrateSupplierOffers(ctx, sqlDB) != nil || onlinecatalog.MigrateSupplierOffers(ctx, sqlDB) != nil || onlinecatalog.CheckSupplierOffers(ctx, sqlDB) != nil {
+		t.Fatal("migração21")
+	}
+	var hash48 string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_supplier_offer_migrations WHERE version=21`).Scan(&hash48) != nil {
+		t.Fatal("ledger48")
+	}
+	exec(`UPDATE online_supplier_offer_migrations SET checksum='changed' WHERE version=21`)
+	if onlinecatalog.MigrateSupplierOffers(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("checksum48 aceito")
+	}
+	exec(`UPDATE online_supplier_offer_migrations SET checksum=$1 WHERE version=21`, hash48)
+	offerBase48 := "/api/v1/supplier-offers"
+	offerInput48 := onlinecatalog.SupplierOfferInput{OperationID: uuid.NewString(), SupplierID: supplierID47, ProductID: product45, SupplierSKU: "Declared48", UnitPriceCents: 1234, MinimumUnits: 2, LeadTimeDays: 5, Active: true, Reason: "Condições internas declaradas"}
+	offerJSON48 := func(v onlinecatalog.SupplierOfferInput) string { b, _ := json.Marshal(v); return string(b) }
+	catalogBefore48 := writes40()
+	created48 := request("POST", offerBase48, offerJSON48(offerInput48), tokenA, 201)
+	if created48["after"].(map[string]interface{})["unit_price_cents"] != float64(1234) {
+		t.Fatal("centavos48")
+	}
+	request("POST", offerBase48, offerJSON48(offerInput48), tokenA, 201)
+	offerID48 := offerInput48.OperationID
+	duplicate48 := offerInput48
+	duplicate48.OperationID = uuid.NewString()
+	request("POST", offerBase48, offerJSON48(duplicate48), tokenA, 409)
+	changed48 := offerInput48
+	changed48.MinimumUnits = 3
+	request("POST", offerBase48, offerJSON48(changed48), tokenA, 409)
+	request("POST", offerBase48, offerJSON48(offerInput48), otherToken39, 409)
+	request("GET", offerBase48+"/operations/"+offerID48, "", otherToken39, 404)
+	request("GET", offerBase48+"/"+offerID48, "", tokenB, 404)
+	request("GET", offerBase48+"/operations/"+offerID48, "", tokenB, 404)
+	request("GET", offerBase48, "", stockToken45, 403)
+	foreignProduct48 := duplicate48
+	foreignProduct48.OperationID = uuid.NewString()
+	foreignProduct48.ProductID = foreignID44
+	request("POST", offerBase48, offerJSON48(foreignProduct48), tokenA, 404)
+	foreignSupplierInput48 := supplierInput47
+	foreignSupplierInput48.OperationID = uuid.NewString()
+	foreignSupplierInput48.Name = "Supplier48 B"
+	request("POST", supplierBase47, supplierJSON47(foreignSupplierInput48), tokenB, 201)
+	foreignSupplier48 := duplicate48
+	foreignSupplier48.OperationID = uuid.NewString()
+	foreignSupplier48.SupplierID = foreignSupplierInput48.OperationID
+	request("POST", offerBase48, offerJSON48(foreignSupplier48), tokenA, 404)
+	foreignSupplier48.ProductID = foreignID44
+	request("POST", offerBase48, offerJSON48(foreignSupplier48), tokenB, 201)
+	second48 := duplicate48
+	second48.SupplierID = control47.OperationID
+	request("POST", offerBase48, offerJSON48(second48), tokenA, 201)
+	page48 := request("GET", fmt.Sprintf("%s?product_id=%d&limit=1", offerBase48, product45), "", tokenA, 200)
+	next48 := request("GET", fmt.Sprintf("%s?product_id=%d&limit=1&offset=1", offerBase48, product45), "", tokenA, 200)
+	if page48["total"] != float64(2) || page48["has_more"] != true || next48["has_more"] != false || page48["items"].([]interface{})[0].(map[string]interface{})["id"] == next48["items"].([]interface{})[0].(map[string]interface{})["id"] {
+		t.Fatal("paginação48")
+	}
+	filtered48 := request("GET", offerBase48+"?supplier_id="+supplierID47, "", tokenA, 200)
+	if filtered48["total"] != float64(1) {
+		t.Fatal("fornecedor filtro48")
+	}
+	update48 := offerInput48
+	update48.OperationID = uuid.NewString()
+	update48.ExpectedVersion = 1
+	update48.UnitPriceCents = 1500
+	update48.MinimumUnits = 3
+	update48.Reason = "Condições revisadas internamente"
+	updated48 := request("PUT", offerBase48+"/"+offerID48, offerJSON48(update48), tokenA, 200)
+	if updated48["before"].(map[string]interface{})["unit_price_cents"] != float64(1234) || updated48["after"].(map[string]interface{})["version"] != float64(2) {
+		t.Fatal("snapshots48")
+	}
+	request("PUT", offerBase48+"/"+offerID48, offerJSON48(update48), tokenA, 200)
+	stale48 := update48
+	stale48.OperationID = uuid.NewString()
+	request("PUT", offerBase48+"/"+offerID48, offerJSON48(stale48), tokenA, 409)
+	move48 := update48
+	move48.OperationID = uuid.NewString()
+	move48.ExpectedVersion = 2
+	move48.SupplierID = control47.OperationID
+	request("PUT", offerBase48+"/"+offerID48, offerJSON48(move48), tokenA, 409)
+	var wg48 sync.WaitGroup
+	results48 := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		wg48.Add(1)
+		go func() {
+			defer wg48.Done()
+			v := update48
+			v.ExpectedVersion = 2
+			v.OperationID = uuid.NewString()
+			_, e := store.UpdateSupplierOffer(ctx, actor, offerID48, v)
+			results48 <- e
+		}()
+	}
+	wg48.Wait()
+	close(results48)
+	wins48, conflicts48 := 0, 0
+	for e := range results48 {
+		if e == nil {
+			wins48++
+		} else if e == onlinecatalog.ErrConflict {
+			conflicts48++
+		} else {
+			t.Fatal("corrida48")
+		}
+	}
+	if wins48 != 1 || conflicts48 != 1 {
+		t.Fatal("revisão48")
+	}
+	original48 := request("GET", offerBase48+"/operations/"+offerID48, "", tokenA, 200)
+	if original48["after"].(map[string]interface{})["version"] != float64(1) {
+		t.Fatal("recibo original48")
+	}
+	inactiveSupplier48 := supplierInput47
+	inactiveSupplier48.OperationID = uuid.NewString()
+	inactiveSupplier48.ExpectedVersion = 3
+	inactiveSupplier48.Active = false
+	request("PUT", supplierBase47+"/"+supplierID47, supplierJSON47(inactiveSupplier48), tokenA, 200)
+	activeEdit48 := update48
+	activeEdit48.OperationID = uuid.NewString()
+	activeEdit48.ExpectedVersion = 3
+	request("PUT", offerBase48+"/"+offerID48, offerJSON48(activeEdit48), tokenA, 409)
+	// Replay still recovers the historical operation after a parent becomes inactive.
+	request("POST", offerBase48, offerJSON48(offerInput48), tokenA, 201)
+	inactiveEdit48 := activeEdit48
+	inactiveEdit48.OperationID = uuid.NewString()
+	inactiveEdit48.Active = false
+	request("PUT", offerBase48+"/"+offerID48, offerJSON48(inactiveEdit48), tokenA, 200)
+	inactiveList48 := request("GET", offerBase48+"?active=false", "", tokenA, 200)
+	if inactiveList48["total"] != float64(1) {
+		t.Fatal("inativo48")
+	}
+	for _, query := range []string{"?supplier_id=", "?product_id=0", "?product_id=01", "?product_id=1&product_id=2", "?active=", "?q=x"} {
+		request("GET", offerBase48+query, "", tokenA, 400)
+	}
+	var writesBefore48 int64
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_supplier_offers)+(SELECT count(*) FROM online_supplier_offer_operations)+(SELECT count(*) FROM online_supplier_offer_outbox)`).Scan(&writesBefore48) != nil {
+		t.Fatal("contagem48")
+	}
+	exec(`CREATE FUNCTION reject_supplier_offer_outbox48() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END $$; CREATE TRIGGER reject_supplier_offer_outbox48 BEFORE INSERT ON online_supplier_offer_outbox FOR EACH ROW EXECUTE FUNCTION reject_supplier_offer_outbox48()`)
+	rollback48 := inactiveEdit48
+	rollback48.OperationID = uuid.NewString()
+	rollback48.ExpectedVersion = 4
+	rollback48.UnitPriceCents = 999
+	if _, e := store.UpdateSupplierOffer(ctx, actor, offerID48, rollback48); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("rollback48")
+	}
+	var writesAfter48 int64
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_supplier_offers)+(SELECT count(*) FROM online_supplier_offer_operations)+(SELECT count(*) FROM online_supplier_offer_outbox)`).Scan(&writesAfter48) != nil || writesAfter48 != writesBefore48 {
+		t.Fatal("gravação parcial48")
+	}
+	rolled48 := request("GET", offerBase48+"/"+offerID48, "", tokenA, 200)
+	if rolled48["version"] != float64(4) || rolled48["unit_price_cents"] != float64(1500) {
+		t.Fatal("rollback não preservou48")
+	}
+	exec(`ALTER TABLE online_supplier_offer_outbox DISABLE TRIGGER reject_supplier_offer_outbox48`)
+	exec(`UPDATE products SET deleted_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	request("GET", offerBase48+"/"+offerID48, "", tokenA, 200)
+	inactiveAfterDelete48 := rollback48
+	inactiveAfterDelete48.OperationID = uuid.NewString()
+	inactiveAfterDelete48.UnitPriceCents = 1500
+	request("PUT", offerBase48+"/"+offerID48, offerJSON48(inactiveAfterDelete48), tokenA, 200)
+	exec(`UPDATE products SET deleted_at=NULL WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", offerBase48, "", tokenA, 401)
+	if _, e := store.SupplierOffers(ctx, actor, onlinecatalog.SupplierOfferQuery{Active: "all", Limit: 50}); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada48")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	if writes40() != catalogBefore48 {
+		t.Fatal("condições48 alteraram estoque/custo/venda")
+	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

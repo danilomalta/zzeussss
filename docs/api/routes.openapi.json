@@ -11266,6 +11266,371 @@
           "url": "./online-suppliers.openapi.json"
         }
       }
+    },
+    "/api/v1/supplier-offers": {
+      "post": {
+        "operationId": "SupplierOfferCreate48",
+        "summary": "Cria vínculo e condições declaradas",
+        "description": "Somente owner/admin/manager, empresa da sessão revalidada persistentemente. JSON estrito integral até8KiB, campos extras/repetidos/null/trailing inválidos. GET sem corpo. Query sem desconhecidos/repetidos, IDs vazios inválidos; product_id canônico sem zero inicial. Lista ordenada por produto, fornecedor e UUID, total/página na mesma transação; páginas distintas não compartilham snapshot.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Registro ou recibo de operação. Replay retorna o recibo histórico, sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-supplier-offers.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Registro ou pai inexistente na empresa; recibo de outro ator"
+          },
+          "409": {
+            "description": "Par duplicado, revisão desatualizada, mudança de identidade, pai inativo ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou dados inconsistentes"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-supplier-offers.openapi.json#/components/schemas/Create"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-supplier-offers.openapi.json"
+        }
+      },
+      "get": {
+        "operationId": "SupplierOfferList48",
+        "summary": "Lista por fornecedor produto e estado",
+        "description": "Somente owner/admin/manager, empresa da sessão revalidada persistentemente. JSON estrito integral até8KiB, campos extras/repetidos/null/trailing inválidos. GET sem corpo. Query sem desconhecidos/repetidos, IDs vazios inválidos; product_id canônico sem zero inicial. Lista ordenada por produto, fornecedor e UUID, total/página na mesma transação; páginas distintas não compartilham snapshot.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "true",
+                "false"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registro ou recibo de operação. Replay retorna o recibo histórico, sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-supplier-offers.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Registro ou pai inexistente na empresa; recibo de outro ator"
+          },
+          "409": {
+            "description": "Par duplicado, revisão desatualizada, mudança de identidade, pai inativo ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou dados inconsistentes"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-supplier-offers.openapi.json"
+        }
+      }
+    },
+    "/api/v1/supplier-offers/{offer_id}": {
+      "put": {
+        "operationId": "SupplierOfferUpdate48",
+        "summary": "Edita condições com versão esperada",
+        "description": "Somente owner/admin/manager, empresa da sessão revalidada persistentemente. JSON estrito integral até8KiB, campos extras/repetidos/null/trailing inválidos. GET sem corpo. Query sem desconhecidos/repetidos, IDs vazios inválidos; product_id canônico sem zero inicial. Lista ordenada por produto, fornecedor e UUID, total/página na mesma transação; páginas distintas não compartilham snapshot.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "offer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registro ou recibo de operação. Replay retorna o recibo histórico, sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-supplier-offers.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Registro ou pai inexistente na empresa; recibo de outro ator"
+          },
+          "409": {
+            "description": "Par duplicado, revisão desatualizada, mudança de identidade, pai inativo ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou dados inconsistentes"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-supplier-offers.openapi.json#/components/schemas/Update"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-supplier-offers.openapi.json"
+        }
+      },
+      "get": {
+        "operationId": "SupplierOfferDetail48",
+        "summary": "Consulta vínculo interno",
+        "description": "Somente owner/admin/manager, empresa da sessão revalidada persistentemente. JSON estrito integral até8KiB, campos extras/repetidos/null/trailing inválidos. GET sem corpo. Query sem desconhecidos/repetidos, IDs vazios inválidos; product_id canônico sem zero inicial. Lista ordenada por produto, fornecedor e UUID, total/página na mesma transação; páginas distintas não compartilham snapshot.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "offer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registro ou recibo de operação. Replay retorna o recibo histórico, sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-supplier-offers.openapi.json#/components/schemas/Offer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Registro ou pai inexistente na empresa; recibo de outro ator"
+          },
+          "409": {
+            "description": "Par duplicado, revisão desatualizada, mudança de identidade, pai inativo ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou dados inconsistentes"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-supplier-offers.openapi.json"
+        }
+      }
+    },
+    "/api/v1/supplier-offers/operations/{operation_id}": {
+      "get": {
+        "operationId": "SupplierOfferReceipt48",
+        "summary": "Recupera recibo original do próprio ator",
+        "description": "Somente owner/admin/manager, empresa da sessão revalidada persistentemente. JSON estrito integral até8KiB, campos extras/repetidos/null/trailing inválidos. GET sem corpo. Query sem desconhecidos/repetidos, IDs vazios inválidos; product_id canônico sem zero inicial. Lista ordenada por produto, fornecedor e UUID, total/página na mesma transação; páginas distintas não compartilham snapshot.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registro ou recibo de operação. Replay retorna o recibo histórico, sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-supplier-offers.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Registro ou pai inexistente na empresa; recibo de outro ator"
+          },
+          "409": {
+            "description": "Par duplicado, revisão desatualizada, mudança de identidade, pai inativo ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou dados inconsistentes"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-supplier-offers.openapi.json"
+        }
+      }
     }
   },
   "components": {

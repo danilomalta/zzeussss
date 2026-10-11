@@ -49,3 +49,6 @@ var ReplenishmentProposalsSQL string
 
 //go:embed 000020_online_suppliers.sql
 var SuppliersSQL string
+
+//go:embed 000021_online_supplier_offers.sql
+var SupplierOffersSQL string

@@ -156,6 +156,13 @@ func Registrar(app *fiber.App) {
 	negocios.Get("/catalog/replenishment/proposals/:proposal_id/history", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.HistoricoPropostaReposicao)
 	negocios.Get("/catalog/replenishment/proposals/:proposal_id/check", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConferirPropostaReposicao)
 
+	// Condições declaradas internas por fornecedor/produto, sem compra ou aceite externo.
+	negocios.Get("/supplier-offers/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.OperacaoCondicaoFornecedor)
+	negocios.Get("/supplier-offers", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ListarCondicoesFornecedores)
+	negocios.Post("/supplier-offers", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.GravarCondicaoFornecedor(false))
+	negocios.Get("/supplier-offers/:offer_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarCondicaoFornecedor)
+	negocios.Put("/supplier-offers/:offer_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.GravarCondicaoFornecedor(true))
+
 	// Fornecedores declarados da empresa; sem vínculo remoto ou envio.
 	negocios.Get("/suppliers/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.OperacaoFornecedor)
 	negocios.Get("/suppliers", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ListarFornecedores)
