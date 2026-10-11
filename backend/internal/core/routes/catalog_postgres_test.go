@@ -3480,5 +3480,114 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if writes40() != catalogBefore49 {
 		t.Fatal("compra interna49 alterou estoque/preço/custo")
 	}
+	// Delivery50: read-only internal purchasing reports; real DB, stable snapshot pages.
+	app = fiber.New()
+	Registrar(app)
+	newPurchase50 := func(reason string) string {
+		t.Helper()
+		p := newProposal49(true)
+		v := raceInput49
+		v.OperationID = uuid.NewString()
+		v.ProposalID = p.ID
+		v.Reason = reason
+		if _, e := store.CreatePurchaseDraft(ctx, actor, v); e != nil {
+			t.Fatal("criação50")
+		}
+		return v.OperationID
+	}
+	idLiteral50 := newPurchase50("Purchase50-%literal")
+	idControl50 := newPurchase50("Purchase50-Xliteral")
+	summary50 := request("GET", "/api/v1/purchases/summary?q=Purchase50-", "", tokenA, 200)
+	if summary50["total"] != float64(2) || summary50["draft"] != float64(2) {
+		t.Fatal("resumo50")
+	}
+	filter50 := fmt.Sprintf("&product_id=%d&supplier_id=%s", product49, supplierInput49.OperationID)
+	page50 := request("GET", "/api/v1/purchases?q=Purchase50-&limit=1"+filter50, "", tokenA, 200)
+	pageNext50 := request("GET", "/api/v1/purchases?q=Purchase50-&limit=1&offset=1"+filter50, "", tokenA, 200)
+	if page50["total"] != float64(2) || page50["has_more"] != true || pageNext50["has_more"] != false || page50["items"].([]interface{})[0].(map[string]interface{})["id"] == pageNext50["items"].([]interface{})[0].(map[string]interface{})["id"] {
+		t.Fatal("paginação50")
+	}
+	literal50 := request("GET", "/api/v1/purchases?q=Purchase50-%25literal", "", tokenA, 200)
+	if literal50["total"] != float64(1) || literal50["items"].([]interface{})[0].(map[string]interface{})["id"] != idLiteral50 {
+		t.Fatal("busca literal50")
+	}
+	foreign50 := request("GET", "/api/v1/purchases?q=Purchase50-", "", tokenB, 200)
+	if foreign50["total"] != float64(0) || len(foreign50["items"].([]interface{})) != 0 {
+		t.Fatal("empresa50")
+	}
+	request("GET", "/api/v1/purchases/"+idLiteral50+"/history", "", tokenB, 404)
+	request("GET", "/api/v1/purchases/"+idLiteral50+"/check", "", tokenB, 404)
+	request("GET", "/api/v1/purchases/summary", "", stockToken45, 403)
+	request("GET", "/api/v1/purchases?limit=101", "", tokenA, 400)
+	request("GET", "/api/v1/purchases?supplier_id=bad", "", tokenA, 400)
+	request("GET", "/api/v1/purchases/summary?state=all", "", tokenA, 400)
+	request("GET", "/api/v1/purchases?state=all&state=draft", "", tokenA, 400)
+	check50 := request("GET", "/api/v1/purchases/"+idLiteral50+"/check", "", tokenA, 200)
+	if check50["can_approve"] != true || check50["snapshot_matches"] != true || check50["status"] != "matches" {
+		t.Fatal("conferência50")
+	}
+	request("POST", "/api/v1/purchases/"+idLiteral50+"/approve", fmt.Sprintf(`{"operation_id":%q,"expected_revision":1,"reason":"Aprovação interna50"}`, uuid.NewString()), tokenA, 200)
+	queryWrites50 := func() string {
+		t.Helper()
+		var h string
+		if sqlDB.QueryRowContext(ctx, `SELECT md5(COALESCE((SELECT string_agg(payload::text,'|' ORDER BY tenant_id,purchase_id) FROM online_purchase_drafts),'') || COALESCE((SELECT string_agg(receipt::text,'|' ORDER BY tenant_id,operation_id) FROM online_purchase_operations),'') || COALESCE((SELECT string_agg(payload::text,'|' ORDER BY tenant_id,operation_id) FROM online_purchase_outbox),''))`).Scan(&h) != nil {
+			t.Fatal("hash50")
+		}
+		return h
+	}
+	queryBefore50, catalogBefore50 := queryWrites50(), writes40()
+	summary50 = request("GET", "/api/v1/purchases/summary?product_id="+fmt.Sprint(product49)+"&supplier_id="+supplierInput49.OperationID, "", tokenA, 200)
+	if summary50["total"] != float64(6) || summary50["draft"] != float64(1) {
+		t.Fatal("resumo estados50")
+	}
+	history50 := request("GET", "/api/v1/purchases/"+idLiteral50+"/history?limit=1", "", otherToken39, 200)
+	if history50["total"] != float64(2) || history50["has_more"] != true || history50["items"].([]interface{})[0].(map[string]interface{})["kind"] != "approve" {
+		t.Fatal("histórico50")
+	}
+	oldHistory50 := request("GET", "/api/v1/purchases/"+idLiteral50+"/history?limit=1&offset=1", "", tokenA, 200)
+	if oldHistory50["items"].([]interface{})[0].(map[string]interface{})["after"].(map[string]interface{})["state"] != "draft" {
+		t.Fatal("snapshot histórico50")
+	}
+	check50 = request("GET", "/api/v1/purchases/"+idLiteral50+"/check", "", tokenA, 200)
+	if check50["can_approve"] != false || check50["snapshot_matches"] != true {
+		t.Fatal("aprovado50")
+	}
+	drift50 := request("GET", "/api/v1/purchases/"+driftInput49.OperationID+"/check", "", tokenA, 200)
+	if drift50["offer_matches"] != false || drift50["can_approve"] != false || drift50["purchase"].(map[string]interface{})["total_cents"] != float64(6170) {
+		t.Fatal("condições históricas50")
+	}
+	exec(`UPDATE products SET estoque=5 WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	check50 = request("GET", "/api/v1/purchases/"+idControl50+"/check", "", tokenA, 200)
+	if check50["product_matches"] != false || check50["can_approve"] != false || check50["status"] != "changed" {
+		t.Fatal("saldo mudou50")
+	}
+	exec(`UPDATE products SET estoque=4,deleted_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	check50 = request("GET", "/api/v1/purchases/"+idControl50+"/check", "", tokenA, 200)
+	if check50["current_product"] != nil || check50["status"] != "parent_unavailable" || check50["can_approve"] != false {
+		t.Fatal("produto excluído50")
+	}
+	request("GET", "/api/v1/purchases/"+idControl50+"/history", "", tokenA, 200)
+	request("GET", "/api/v1/purchases?q=Purchase50-", "", tokenA, 200)
+	exec(`UPDATE products SET deleted_at=NULL WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	csvReq50 := httptest.NewRequest("GET", "/api/v1/purchases/export.csv?q=Purchase50-Xliteral&limit=1", nil)
+	csvReq50.Header.Set("Authorization", "Bearer "+tokenA)
+	csvResp50, csvErr50 := app.Test(csvReq50, 10000)
+	if csvErr50 != nil {
+		t.Fatal("CSV50")
+	}
+	csvBytes50, csvErr50 := io.ReadAll(csvResp50.Body)
+	csvResp50.Body.Close()
+	if csvErr50 != nil || csvResp50.StatusCode != 200 || csvResp50.Header.Get("X-Titan-Report-Scope") != "online-internal-purchases" || csvResp50.Header.Get("X-Titan-Report-Total") != "1" || !strings.Contains(string(csvBytes50), ";7500;internal_declaration;") || !strings.Contains(string(csvBytes50), idControl50) || strings.Contains(string(csvBytes50), idLiteral50) {
+		t.Fatal("CSV total isolamento50")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", "/api/v1/purchases/summary", "", tokenA, 401)
+	if _, e := store.PurchaseDrafts(ctx, actor, onlinecatalog.PurchaseQuery{State: "all", Limit: 50}); e != onlinecatalog.ErrDenied {
+		t.Fatal("revogada50")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	if queryWrites50() != queryBefore50 || writes40() != catalogBefore50 {
+		t.Fatal("consultas50 alteraram dados")
+	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

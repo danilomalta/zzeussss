@@ -213,3 +213,5 @@ Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de
 - Entrega48: vínculo interno de fornecedores/produtos e condições declaradas. Ver `123_CONDICOES_FORNECEDORES_CINCO_FUNCOES.md`; sem confirmação externa ou compra.
 
 - Entrega49: compra interna com snapshots e total exato; ver `124_COMPRAS_INTERNAS_CINCO_FUNCOES.md`. Confirmação externa, recebimento e financeiro continuam pendentes.
+
+- Entrega50: cinco consultas de compras internas; histórico e snapshots preservados. Ver `125_CONSULTAS_COMPRAS_INTERNAS_CINCO_FUNCOES.md`.

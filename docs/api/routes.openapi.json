@@ -11693,6 +11693,120 @@
           "description": "Contrato detalhado",
           "url": "./online-purchase-drafts.openapi.json"
         }
+      },
+      "get": {
+        "operationId": "PurchaseList50",
+        "summary": "Lista paginada das compras internas",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal aparada em nome/SKU do produto no snapshot e motivo atual. %, _ e barra invertida são literais."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "format": "int64"
+            },
+            "description": "Filtro por produto; não aceita0 nem zeros à esquerda. Sem parâmetro, todos os produtos."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "draft",
+                "approved",
+                "cancelled"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "format": "int64",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "format": "int64",
+              "default": 0
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Fornecedor do snapshot; UUID não vazio."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-queries.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Compra inexistente ou fora da empresa autenticada"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-queries.openapi.json"
+        }
       }
     },
     "/api/v1/purchases/{purchase_id}": {
@@ -11964,6 +12078,394 @@
         "externalDocs": {
           "description": "Contrato detalhado",
           "url": "./online-purchase-drafts.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchases/summary": {
+      "get": {
+        "operationId": "PurchaseSummary50",
+        "summary": "Resumo por estado das compras internas",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal aparada em nome/SKU do produto no snapshot e motivo atual. %, _ e barra invertida são literais."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "format": "int64"
+            },
+            "description": "Filtro por produto; não aceita0 nem zeros à esquerda. Sem parâmetro, todos os produtos."
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Fornecedor do snapshot; UUID não vazio."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-queries.openapi.json#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Compra inexistente ou fora da empresa autenticada"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-queries.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchases/{purchase_id}/history": {
+      "get": {
+        "operationId": "PurchaseHistory50",
+        "summary": "Histórico auditado da compra interna",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "format": "int64",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "format": "int64",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-queries.openapi.json#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Compra inexistente ou fora da empresa autenticada"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-queries.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchases/{purchase_id}/check": {
+      "get": {
+        "operationId": "PurchaseCheck50",
+        "summary": "Conferência dos dados atuais contra quatro snapshots",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-queries.openapi.json#/components/schemas/Check"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Compra inexistente ou fora da empresa autenticada"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-queries.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchases/export.csv": {
+      "get": {
+        "operationId": "PurchaseCSV50",
+        "summary": "CSV de uma página das compras internas",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal aparada em nome/SKU do produto no snapshot e motivo atual. %, _ e barra invertida são literais."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "format": "int64"
+            },
+            "description": "Filtro por produto; não aceita0 nem zeros à esquerda. Sem parâmetro, todos os produtos."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "draft",
+                "approved",
+                "cancelled"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "format": "int64",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "format": "int64",
+              "default": 0
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Fornecedor do snapshot; UUID não vazio."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "X-Titan-Report-Total": {
+                "description": "Total de propostas filtradas",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Limit": {
+                "description": "Limite da página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Offset": {
+                "description": "Offset da página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Has-More": {
+                "description": "true se existem mais registros",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Next-Offset": {
+                "description": "Próximo offset quando houver mais",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Source-Hash": {
+                "description": "SHA256 do conteúdo e filtros da página, sem timestamp",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Scope": {
+                "description": "online-internal-purchases",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "description": "apostrophe: proteção de texto para planilhas",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Compra inexistente ou fora da empresa autenticada"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-queries.openapi.json"
         }
       }
     }

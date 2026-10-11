@@ -1,0 +1,756 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — cinco consultas das compras internas",
+    "version": "50.0.0",
+    "description": "Resumo, lista, histórico auditado, conferência de quatro snapshots e CSV de compras internas. Não é confirmação do fornecedor, não transmite pedido, reserva estoque, gera recebimento ou pagamento. Uma chamada usa repeatable-read; páginas distintas podem mudar. can_approve é informativo e a aprovação revalida sob locks. Histórico por compra visível a gestores da mesma empresa; recibo individual49 continua restrito ao ator. CSV até100 linhas e256KiB, valores inteiros em centavos e textos protegidos por apóstrofo."
+  },
+  "paths": {
+    "/api/v1/purchases/summary": {
+      "get": {
+        "operationId": "PurchaseSummary50",
+        "summary": "Resumo por estado das compras internas",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal aparada em nome/SKU do produto no snapshot e motivo atual. %, _ e barra invertida são literais."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "format": "int64"
+            },
+            "description": "Filtro por produto; não aceita0 nem zeros à esquerda. Sem parâmetro, todos os produtos."
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Fornecedor do snapshot; UUID não vazio."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Compra inexistente ou fora da empresa autenticada"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        }
+      }
+    },
+    "/api/v1/purchases": {
+      "get": {
+        "operationId": "PurchaseList50",
+        "summary": "Lista paginada das compras internas",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal aparada em nome/SKU do produto no snapshot e motivo atual. %, _ e barra invertida são literais."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "format": "int64"
+            },
+            "description": "Filtro por produto; não aceita0 nem zeros à esquerda. Sem parâmetro, todos os produtos."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "draft",
+                "approved",
+                "cancelled"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "format": "int64",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "format": "int64",
+              "default": 0
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Fornecedor do snapshot; UUID não vazio."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Compra inexistente ou fora da empresa autenticada"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        }
+      }
+    },
+    "/api/v1/purchases/{purchase_id}/history": {
+      "get": {
+        "operationId": "PurchaseHistory50",
+        "summary": "Histórico auditado da compra interna",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "format": "int64",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "format": "int64",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Compra inexistente ou fora da empresa autenticada"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        }
+      }
+    },
+    "/api/v1/purchases/{purchase_id}/check": {
+      "get": {
+        "operationId": "PurchaseCheck50",
+        "summary": "Conferência dos dados atuais contra quatro snapshots",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Check"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Compra inexistente ou fora da empresa autenticada"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        }
+      }
+    },
+    "/api/v1/purchases/export.csv": {
+      "get": {
+        "operationId": "PurchaseCSV50",
+        "summary": "CSV de uma página das compras internas",
+        "description": "Apenas owner/admin/manager. Sem corpo. Campos extras, repetidos e parâmetros numéricos vazios recusados.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal aparada em nome/SKU do produto no snapshot e motivo atual. %, _ e barra invertida são literais."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "format": "int64"
+            },
+            "description": "Filtro por produto; não aceita0 nem zeros à esquerda. Sem parâmetro, todos os produtos."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "draft",
+                "approved",
+                "cancelled"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "format": "int64",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "format": "int64",
+              "default": 0
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Fornecedor do snapshot; UUID não vazio."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta sem mutação. Cada chamada usa snapshot transacional; páginas diferentes não compartilham uma sessão de exportação.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "X-Titan-Report-Total": {
+                "description": "Total de propostas filtradas",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Limit": {
+                "description": "Limite da página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Offset": {
+                "description": "Offset da página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Has-More": {
+                "description": "true se existem mais registros",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Next-Offset": {
+                "description": "Próximo offset quando houver mais",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Source-Hash": {
+                "description": "SHA256 do conteúdo e filtros da página, sem timestamp",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Scope": {
+                "description": "online-internal-purchases",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "description": "apostrophe: proteção de texto para planilhas",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "404": {
+            "description": "Compra inexistente ou fora da empresa autenticada"
+          },
+          "429": {
+            "description": "Limite HTTP excedido"
+          },
+          "503": {
+            "description": "Persistência ou dados inválidos, sem logs SQL brutos"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "state",
+          "product_id",
+          "limit",
+          "offset",
+          "items",
+          "total",
+          "has_more",
+          "generated_at",
+          "source_hash",
+          "supplier_id"
+        ],
+        "properties": {
+          "q": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "all",
+              "draft",
+              "approved",
+              "cancelled"
+            ]
+          },
+          "product_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "format": "int64"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000,
+            "format": "int64"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Draft"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "supplier_id": {
+            "type": "string",
+            "description": "UUID do fornecedor filtrado ou string vazia sem filtro."
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "product_id",
+          "total",
+          "draft",
+          "approved",
+          "cancelled",
+          "generated_at",
+          "supplier_id"
+        ],
+        "properties": {
+          "q": {
+            "type": "string"
+          },
+          "product_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "draft": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "approved": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "cancelled": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "supplier_id": {
+            "type": "string",
+            "description": "UUID do fornecedor filtrado ou string vazia sem filtro."
+          }
+        }
+      },
+      "History": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Receipt"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "format": "int64"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "format": "int64"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000,
+            "format": "int64"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer"
+          }
+        }
+      },
+      "Check": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "purchase",
+          "status",
+          "checked_at",
+          "current_proposal",
+          "current_offer",
+          "current_supplier",
+          "current_product",
+          "proposal_matches",
+          "offer_matches",
+          "supplier_matches",
+          "product_matches",
+          "snapshot_matches",
+          "can_approve"
+        ],
+        "properties": {
+          "purchase": {
+            "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Draft"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "matches",
+              "changed",
+              "parent_unavailable"
+            ]
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "current_proposal": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/Proposal"
+              }
+            ]
+          },
+          "current_offer": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "./online-supplier-offers.openapi.json#/components/schemas/Offer"
+              }
+            ]
+          },
+          "current_supplier": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "./online-suppliers.openapi.json#/components/schemas/Supplier"
+              }
+            ]
+          },
+          "current_product": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "./online-stock-settings.openapi.json#/components/schemas/Plan"
+              }
+            ]
+          },
+          "proposal_matches": {
+            "type": "boolean"
+          },
+          "offer_matches": {
+            "type": "boolean"
+          },
+          "supplier_matches": {
+            "type": "boolean"
+          },
+          "product_matches": {
+            "type": "boolean"
+          },
+          "snapshot_matches": {
+            "type": "boolean"
+          },
+          "can_approve": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
