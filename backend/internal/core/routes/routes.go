@@ -156,6 +156,13 @@ func Registrar(app *fiber.App) {
 	negocios.Get("/catalog/replenishment/proposals/:proposal_id/history", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.HistoricoPropostaReposicao)
 	negocios.Get("/catalog/replenishment/proposals/:proposal_id/check", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConferirPropostaReposicao)
 
+	// Fornecedores declarados da empresa; sem vínculo remoto ou envio.
+	negocios.Get("/suppliers/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.OperacaoFornecedor)
+	negocios.Get("/suppliers", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ListarFornecedores)
+	negocios.Post("/suppliers", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.GravarFornecedor(false))
+	negocios.Get("/suppliers/:supplier_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarFornecedor)
+	negocios.Put("/suppliers/:supplier_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.GravarFornecedor(true))
+
 	// Propostas duráveis: aprovação humana sem movimentação de estoque.
 	negocios.Post("/catalog/replenishment/proposals", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.CriarPropostaReposicao)
 	negocios.Get("/catalog/replenishment/proposals/:proposal_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarPropostaReposicao)

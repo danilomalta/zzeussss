@@ -10910,6 +10910,362 @@
           "url": "./online-replenishment-proposal-queries.openapi.json"
         }
       }
+    },
+    "/api/v1/suppliers": {
+      "post": {
+        "operationId": "SupplierCreate47",
+        "summary": "Cadastra contato com recibo idempotente",
+        "description": "Somente owner/admin/manager. Empresa derivada da sessão e revalidada dentro da transação. Campos extras, repetidos/null/trailing JSON rejeitados; GET sem corpo. Queries desconhecidas/repetidas inválidas.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Recibo histórico imutável no replay; consulta/edição retorna registro atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-suppliers.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, JSON estrito, query/corpo inesperado"
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Não encontrado na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Operação já usada com outro conteúdo/ator/alvo ou versão desatualizada"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-suppliers.openapi.json#/components/schemas/Create"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-suppliers.openapi.json"
+        }
+      },
+      "get": {
+        "operationId": "SupplierList47",
+        "summary": "Lista paginada com busca literal e estado",
+        "description": "Somente owner/admin/manager. Empresa derivada da sessão e revalidada dentro da transação. Campos extras, repetidos/null/trailing JSON rejeitados; GET sem corpo. Queries desconhecidas/repetidas inválidas.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca literal aparada em nome/email/telefone; %/_/barra invertida escapados."
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "true",
+                "false"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "format": "int64",
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "format": "int64",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recibo histórico imutável no replay; consulta/edição retorna registro atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-suppliers.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, JSON estrito, query/corpo inesperado"
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Não encontrado na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Operação já usada com outro conteúdo/ator/alvo ou versão desatualizada"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-suppliers.openapi.json"
+        }
+      }
+    },
+    "/api/v1/suppliers/{supplier_id}": {
+      "put": {
+        "operationId": "SupplierUpdate47",
+        "summary": "Edita contato e estado com versão esperada",
+        "description": "Somente owner/admin/manager. Empresa derivada da sessão e revalidada dentro da transação. Campos extras, repetidos/null/trailing JSON rejeitados; GET sem corpo. Queries desconhecidas/repetidas inválidas.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "supplier_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recibo histórico imutável no replay; consulta/edição retorna registro atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-suppliers.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, JSON estrito, query/corpo inesperado"
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Não encontrado na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Operação já usada com outro conteúdo/ator/alvo ou versão desatualizada"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-suppliers.openapi.json#/components/schemas/Update"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-suppliers.openapi.json"
+        }
+      },
+      "get": {
+        "operationId": "SupplierDetail47",
+        "summary": "Consulta contato da empresa",
+        "description": "Somente owner/admin/manager. Empresa derivada da sessão e revalidada dentro da transação. Campos extras, repetidos/null/trailing JSON rejeitados; GET sem corpo. Queries desconhecidas/repetidas inválidas.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "supplier_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recibo histórico imutável no replay; consulta/edição retorna registro atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-suppliers.openapi.json#/components/schemas/Supplier"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, JSON estrito, query/corpo inesperado"
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Não encontrado na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Operação já usada com outro conteúdo/ator/alvo ou versão desatualizada"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-suppliers.openapi.json"
+        }
+      }
+    },
+    "/api/v1/suppliers/operations/{operation_id}": {
+      "get": {
+        "operationId": "SupplierReceipt47",
+        "summary": "Recupera recibo do próprio ator",
+        "description": "Somente owner/admin/manager. Empresa derivada da sessão e revalidada dentro da transação. Campos extras, repetidos/null/trailing JSON rejeitados; GET sem corpo. Queries desconhecidas/repetidas inválidas.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recibo histórico imutável no replay; consulta/edição retorna registro atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-suppliers.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida, JSON estrito, query/corpo inesperado"
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Não encontrado na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Operação já usada com outro conteúdo/ator/alvo ou versão desatualizada"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-suppliers.openapi.json"
+        }
+      }
     }
   },
   "components": {

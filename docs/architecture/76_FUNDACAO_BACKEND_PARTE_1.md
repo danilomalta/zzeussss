@@ -207,3 +207,5 @@ Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de
 - Entrega45: proposta persistente de reposição e decisão humana com revisão, snapshot, idempotência, auditoria e outbox. Ver `120_PROPOSTAS_REPOSICAO_CINCO_FUNCOES.md`; pedido ao fornecedor e recebimento não são executados por estas rotas.
 
 - Entrega46: consultas e conferência de propostas45 com histórico, filtros e CSV protegido. Ver `121_CONSULTAS_PROPOSTAS_CINCO_FUNCOES.md`.
+
+- Entrega47: cadastro interno de contatos fornecedores com revisão, auditoria/outbox e recibos. Ver `122_FORNECEDORES_CINCO_FUNCOES.md`. Vínculo autenticado entre empresas permanece pendente.

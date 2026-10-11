@@ -117,3 +117,5 @@ Entrega44: `online-replenishment.openapi.json` documenta resumo, recomendações
 - `online-replenishment-proposals.openapi.json`: entrega45, criação de proposta, consulta, aprovação, cancelamento e recuperação de recibo; PostgreSQL19 explícito, sem movimentar estoque.
 
 - `online-replenishment-proposal-queries.openapi.json`: entrega46, resumo, lista, histórico, conferência e CSV de propostas45; sem nova migração ou mutação.
+
+- `online-suppliers.openapi.json`: entrega47, fornecedores internos com cadastro, edição/revisão, consulta, lista e recibo; migração PostgreSQL20 explícita.

@@ -3012,5 +3012,135 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_replenishment_operations)+(SELECT count(*) FROM online_replenishment_outbox)`).Scan(&auditAfter46) != nil || auditBefore46 != auditAfter46 || writes40() != readWrites46 {
 		t.Fatal("consulta46 alterou registros")
 	}
+	// Delivery47: internal suppliers, isolated from remote company identity and stock.
+	app = fiber.New()
+	Registrar(app)
+	if onlinecatalog.MigrateSuppliers(ctx, sqlDB) != nil || onlinecatalog.MigrateSuppliers(ctx, sqlDB) != nil || onlinecatalog.CheckSuppliers(ctx, sqlDB) != nil {
+		t.Fatal("migração fornecedores47")
+	}
+	var supplierHash47 string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_supplier_migrations WHERE version=20`).Scan(&supplierHash47) != nil {
+		t.Fatal("ledger47")
+	}
+	exec(`UPDATE online_supplier_migrations SET checksum='changed' WHERE version=20`)
+	if onlinecatalog.MigrateSuppliers(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("checksum47 aceito")
+	}
+	exec(`UPDATE online_supplier_migrations SET checksum=$1 WHERE version=20`, supplierHash47)
+	supplierBase47 := "/api/v1/suppliers"
+	supplierInput47 := onlinecatalog.SupplierInput{OperationID: uuid.NewString(), Name: "Supplier47 %_literal", Email: "Sales47@example.com", Phone: "+55 11 12345678", Active: true, Reason: "Contato interno declarado"}
+	supplierJSON47 := func(v onlinecatalog.SupplierInput) string { b, _ := json.Marshal(v); return string(b) }
+	stockBefore47 := writes40()
+	created47 := request("POST", supplierBase47, supplierJSON47(supplierInput47), tokenA, 201)
+	request("POST", supplierBase47, supplierJSON47(supplierInput47), tokenA, 201)
+	supplierID47 := supplierInput47.OperationID
+	if created47["after"].(map[string]interface{})["version"] != float64(1) {
+		t.Fatal("versão inicial47")
+	}
+	changedInput47 := supplierInput47
+	changedInput47.Name = "Changed47"
+	request("POST", supplierBase47, supplierJSON47(changedInput47), tokenA, 409)
+	request("POST", supplierBase47, supplierJSON47(supplierInput47), otherToken39, 409)
+	request("GET", supplierBase47+"/operations/"+supplierID47, "", otherToken39, 404)
+	request("GET", supplierBase47+"/operations/"+supplierID47, "", tokenA, 200)
+	request("GET", supplierBase47+"/"+supplierID47, "", tokenB, 404)
+	request("GET", supplierBase47+"/operations/"+supplierID47, "", tokenB, 404)
+	request("GET", supplierBase47, "", stockToken45, 403)
+	control47 := supplierInput47
+	control47.OperationID = uuid.NewString()
+	control47.Name = "Supplier47 XXliteral"
+	request("POST", supplierBase47, supplierJSON47(control47), tokenA, 201)
+	literal47 := request("GET", supplierBase47+"?q=Supplier47%20%25_literal&limit=1", "", tokenA, 200)
+	if literal47["total"] != float64(1) || len(literal47["items"].([]interface{})) != 1 {
+		t.Fatal("busca literal47")
+	}
+	page47 := request("GET", supplierBase47+"?q=Supplier47&limit=1", "", tokenA, 200)
+	next47 := request("GET", supplierBase47+"?q=Supplier47&limit=1&offset=1", "", tokenA, 200)
+	if page47["total"] != float64(2) || page47["has_more"] != true || next47["has_more"] != false || page47["items"].([]interface{})[0].(map[string]interface{})["id"] == next47["items"].([]interface{})[0].(map[string]interface{})["id"] {
+		t.Fatal("página47")
+	}
+	update47 := supplierInput47
+	update47.OperationID = uuid.NewString()
+	update47.ExpectedVersion = 1
+	update47.Active = false
+	update47.Email = "New47@example.com"
+	update47.Reason = "Contato temporariamente inativo"
+	updated47 := request("PUT", supplierBase47+"/"+supplierID47, supplierJSON47(update47), tokenA, 200)
+	if updated47["before"].(map[string]interface{})["email"] != supplierInput47.Email || updated47["after"].(map[string]interface{})["version"] != float64(2) {
+		t.Fatal("snapshot atualização47")
+	}
+	request("PUT", supplierBase47+"/"+supplierID47, supplierJSON47(update47), tokenA, 200)
+	stale47 := update47
+	stale47.OperationID = uuid.NewString()
+	request("PUT", supplierBase47+"/"+supplierID47, supplierJSON47(stale47), tokenA, 409)
+	detail47 := request("GET", supplierBase47+"/"+supplierID47, "", tokenA, 200)
+	if detail47["active"] != false {
+		t.Fatal("inativação47")
+	}
+	inactive47 := request("GET", supplierBase47+"?q=Supplier47&active=false", "", tokenA, 200)
+	if inactive47["total"] != float64(1) {
+		t.Fatal("filtro47")
+	}
+	if recovered47 := request("GET", supplierBase47+"/operations/"+supplierID47, "", tokenA, 200); recovered47["after"].(map[string]interface{})["version"] != float64(1) {
+		t.Fatal("recibo histórico47")
+	}
+	request("GET", supplierBase47+"?active=", "", tokenA, 400)
+	request("GET", supplierBase47+"?q=a&q=b", "", tokenA, 400)
+	request("GET", supplierBase47+"?unknown=1", "", tokenA, 400)
+	request("GET", supplierBase47+"?limit=101", "", tokenA, 400)
+	supplierRace47 := supplierInput47
+	supplierRace47.ExpectedVersion = 2
+	supplierRace47.Active = true
+	var wg47 sync.WaitGroup
+	results47 := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		wg47.Add(1)
+		go func() {
+			defer wg47.Done()
+			v := supplierRace47
+			v.OperationID = uuid.NewString()
+			_, e := store.UpdateSupplier(ctx, actor, supplierID47, v)
+			results47 <- e
+		}()
+	}
+	wg47.Wait()
+	close(results47)
+	wins47, conflicts47 := 0, 0
+	for e := range results47 {
+		if e == nil {
+			wins47++
+		} else if e == onlinecatalog.ErrConflict {
+			conflicts47++
+		} else {
+			t.Fatal("corrida47")
+		}
+	}
+	if wins47 != 1 || conflicts47 != 1 {
+		t.Fatal("revisão concorrente47")
+	}
+	var supplierWrites47 int64
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_suppliers)+(SELECT count(*) FROM online_supplier_operations)+(SELECT count(*) FROM online_supplier_outbox)`).Scan(&supplierWrites47) != nil {
+		t.Fatal("contagens47")
+	}
+	exec(`CREATE FUNCTION reject_supplier_outbox47() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END $$; CREATE TRIGGER reject_supplier_outbox47 BEFORE INSERT ON online_supplier_outbox FOR EACH ROW EXECUTE FUNCTION reject_supplier_outbox47()`)
+	rollback47 := supplierInput47
+	rollback47.OperationID = uuid.NewString()
+	if _, e := store.CreateSupplier(ctx, actor, rollback47); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("outbox ignorada47")
+	}
+	var supplierWritesAfter47 int64
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_suppliers)+(SELECT count(*) FROM online_supplier_operations)+(SELECT count(*) FROM online_supplier_outbox)`).Scan(&supplierWritesAfter47) != nil || supplierWritesAfter47 != supplierWrites47 {
+		t.Fatal("rollback47 parcial")
+	}
+	exec(`ALTER TABLE online_supplier_outbox DISABLE TRIGGER reject_supplier_outbox47`)
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", supplierBase47, "", tokenA, 401)
+	if _, e := store.Suppliers(ctx, actor, onlinecatalog.SupplierQuery{Active: "all", Limit: 50}); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada47")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	if writes40() != stockBefore47 {
+		t.Fatal("fornecedores alteraram catálogo/estoque")
+	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

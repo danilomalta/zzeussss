@@ -46,3 +46,6 @@ var StockSettingsSQL string
 
 //go:embed 000019_online_replenishment_proposals.sql
 var ReplenishmentProposalsSQL string
+
+//go:embed 000020_online_suppliers.sql
+var SuppliersSQL string
