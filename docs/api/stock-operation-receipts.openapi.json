@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "TitanSystem P61 estoque manual",
+    "title": "TitanSystem P61 operações de estoque",
     "version": "1.0.0"
   },
   "servers": [
@@ -64,7 +64,7 @@
     },
     "/stock/operations/history": {
       "get": {
-        "summary": "Operações manuais de todos os operadores da empresa nesta loja, por produto/local",
+        "summary": "Operações de estoque da empresa nesta loja, incluindo entradas/compensações de compras, por produto/local",
         "parameters": [
           {
             "name": "product_id",

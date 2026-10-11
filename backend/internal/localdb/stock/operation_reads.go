@@ -86,7 +86,8 @@ func Receipt(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Devic
 }
 
 // History includes all operators of the current company/store, never other stores.
-// It is not a complete ledger: sales, purchases and production have their own records.
+// Purchase receipts and voids can create stock operations and appear here too.
+// It is not a complete ledger: sales, inventory and production have their own records.
 func History(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, product, location string, offset int64) (OperationHistory, error) {
 	out := OperationHistory{ProductID: product, LocationID: location, Items: []OperationReceipt{}, Offset: offset, Limit: 50}
 	if !validAvailabilityID(product) || !validAvailabilityID(location) || offset < 0 || offset > MaxAvailabilityQuantity {

@@ -8,7 +8,7 @@ Base coordenada: `3157348`, branch `feat/producao-receitas`.
 2. Transferência entre locais com origem/destino distintos e gravação atômica existente.
 3. Perda manual de estoque com motivo e proteção do saldo reservado existente.
 4. Consulta do recibo original de uma movimentação pelo identificador.
-5. Histórico paginado das movimentações manuais por produto/local.
+5. Histórico paginado das operações de estoque por produto/local.
 
 Acesse **Estoque e locais** (`/local/stock`). Produtos são os da página carregada; locais são os da loja. Revisão não grava estoque. Quantidade é convertida com BigInt para milésimos da unidade explícita do produto, sem conversão volume/massa. Produtos por unidade exigem quantidade inteira. A interface e os novos recibos limitam quantidades a 9007199254740991 milésimos; valores fora desse intervalo são recusados, sem arredondamento.
 
@@ -25,7 +25,7 @@ Sem alteração de autenticação, infraestrutura, criptografia, formato de back
 
 `GET /local/v1/stock/operations/{id}/receipt` exige `manage_stock`, aparelho aprovado e operador/aparelho originais, na mesma empresa e loja. Ausência ou escopo diferente resulta 404. Retorna o pedido persistido, responsável, aparelho, data e unidade; não deriva quantidade do saldo atual. A unidade de produtos com movimentos não pode ser alterada pelo contrato de edição existente.
 
-`GET /local/v1/stock/operations/history?product_id=...&location_id=...&offset=0` exige `manage_stock` e aparelho aprovado. Inclui operações manuais de todos os operadores/aparelhos da empresa nesta loja. Página de 50, ordem data descendente e ID descendente como desempate, total global e indicador de próxima página no mesmo snapshot. Transferência aparece uma vez no histórico de cada local envolvido. Não é um extrato completo: vendas, inventários, compras e produção têm registros próprios. Consultas não reservam nem baixam saldo; continuam sendo autorizadas pela API, independentemente da permissão exibida na tela.
+`GET /local/v1/stock/operations/history?product_id=...&location_id=...&offset=0` exige `manage_stock` e aparelho aprovado. Inclui operações de estoque de todos os operadores/aparelhos da empresa nesta loja, inclusive entradas e compensações geradas por recebimentos e anulações de compras. Página de 50, ordem data descendente e ID descendente como desempate, total global e indicador de próxima página no mesmo snapshot. Transferência aparece uma vez no histórico de cada local envolvido. Não é um extrato completo: vendas, inventários e produção têm registros próprios. O recebimento comercial da compra possui sua própria rastreabilidade; a entrada/compensação correspondente também aparece nesta consulta de estoque. Consultas não reservam nem baixam saldo; continuam sendo autorizadas pela API, independentemente da permissão exibida na tela.
 
 ## Idempotência e falhas
 
