@@ -105,3 +105,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - Entrega39: `online-product-costs.openapi.json`: custo declarado, revisão, histórico, recibo e margem. PostgreSQL17 explícito; núcleo local e produção separados.
 
 - Entrega40: `online-margin-report.openapi.json`: resumo, falta de custo, margem negativa, meta e CSV por página.
+
+- Entrega41: [histórico auditável de custos](online-cost-history.openapi.json): resumo, lista, detalhe, produto e CSV; sessão/empresa revalidadas, snapshots preservados.

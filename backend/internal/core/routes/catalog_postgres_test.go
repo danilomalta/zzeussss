@@ -2232,5 +2232,100 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 		t.Fatal("sessão revogada em relatório")
 	}
 	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	// Delivery41: own HTTP budget; immutable cost history, no live-product joins.
+	app = fiber.New()
+	Registrar(app)
+	historyBase41 := "/api/v1/catalog/cost-history/"
+	p41 := request("POST", "/api/v1/produtos/", `{"nome":"=CostHistory41 original","sku":"history41-%literal","preco":10}`, tokenA, 201)
+	id41 := int64(p41["ID"].(float64))
+	ops41 := make([]string, 4)
+	for i, cost41 := range []int64{700, 800, 600, 600} {
+		ops41[i] = uuid.NewString()
+		request("POST", fmt.Sprintf("/api/v1/produtos/%d/cost", id41), fmt.Sprintf(`{"operation_id":%q,"expected_product_version":1,"expected_cost_revision":%d,"cost_cents":%d,"reason":"=Invoice41"}`, ops41[i], i, cost41), tokenA, 200)
+	}
+	pSecond41 := request("POST", "/api/v1/produtos/", `{"nome":"CostHistory41 second","sku":"history41-Xliteral","preco":10}`, tokenA, 201)
+	idSecond41 := int64(pSecond41["ID"].(float64))
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/cost", idSecond41), fmt.Sprintf(`{"operation_id":%q,"expected_product_version":1,"expected_cost_revision":0,"cost_cents":0,"reason":"Second invoice"}`, uuid.NewString()), otherToken39, 200)
+	pForeign41 := request("POST", "/api/v1/produtos/", `{"nome":"CostHistory41 foreign","sku":"history41-foreign","preco":10}`, tokenB, 201)
+	foreignID41 := int64(pForeign41["ID"].(float64))
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/cost", foreignID41), fmt.Sprintf(`{"operation_id":%q,"expected_product_version":1,"expected_cost_revision":0,"cost_cents":500,"reason":"Foreign invoice"}`, uuid.NewString()), tokenB, 200)
+	beforeReads41 := writes40()
+	summary41 := request("GET", historyBase41+"summary?q=CostHistory41", "", tokenA, 200)
+	if summary41["total"] != float64(5) || summary41["initial"] != float64(2) || summary41["increased"] != float64(1) || summary41["decreased"] != float64(1) || summary41["unchanged"] != float64(1) || summary41["products"] != float64(2) || summary41["actors"] != float64(2) {
+		t.Fatal("histórico41 sem partição correta")
+	}
+	page41 := request("GET", historyBase41+"entries?q=CostHistory41&limit=2", "", tokenA, 200)
+	if page41["total"] != float64(5) || page41["has_more"] != true || page41["next_offset"] != float64(2) || len(page41["items"].([]interface{})) != 2 {
+		t.Fatal("paginação41 incorreta")
+	}
+	literal41 := request("GET", historyBase41+"entries?q=history41-%25literal", "", tokenA, 200)
+	if literal41["total"] != float64(4) {
+		t.Fatal("busca41 não literal")
+	}
+	for _, change41 := range []string{"increased", "decreased", "unchanged"} {
+		r41 := request("GET", historyBase41+"entries?q=CostHistory41&change="+change41, "", tokenA, 200)
+		if r41["total"] != float64(1) || r41["items"].([]interface{})[0].(map[string]interface{})["change"] != change41 {
+			t.Fatal("classificação41 incorreta")
+		}
+	}
+	detail41 := request("GET", historyBase41+"entries/"+ops41[0], "", tokenA, 200)
+	request("GET", historyBase41+"entries/"+ops41[0], "", otherToken39, 200)
+	request("GET", "/api/v1/catalog/costs/operations/"+ops41[0], "", otherToken39, 404)
+	if detail41["delta_cents"] != nil || detail41["before"].(map[string]interface{})["cost_cents"] != nil {
+		t.Fatal("custo inicial anterior inventado")
+	}
+	request("GET", historyBase41+"entries/"+ops41[0], "", tokenB, 404)
+	request("GET", historyBase41+"entries/"+uuid.NewString(), "", tokenA, 404)
+	productPage41 := request("GET", fmt.Sprintf("%sproducts/%d?limit=2&offset=2", historyBase41, id41), "", tokenA, 200)
+	if productPage41["total"] != float64(4) || productPage41["has_more"] != false || len(productPage41["items"].([]interface{})) != 2 {
+		t.Fatal("página por produto41 incorreta")
+	}
+	if r41 := request("GET", fmt.Sprintf("%sproducts/%d", historyBase41, id41), "", tokenB, 200); r41["total"] != float64(0) {
+		t.Fatal("histórico por produto vazou empresa")
+	}
+	if r41 := request("GET", historyBase41+"summary?q=CostHistory41", "", tokenB, 200); r41["total"] != float64(1) {
+		t.Fatal("resumo41 vazou empresa")
+	}
+	if r41 := request("GET", historyBase41+"entries?q=CostHistory41&actor_id="+userB, "", tokenA, 200); r41["total"] != float64(0) {
+		t.Fatal("filtro de ator41 atravessou empresa")
+	}
+	if r41 := request("GET", historyBase41+"entries?q=CostHistory41&from=2000-01-01T00:00:00Z&until=2001-01-01T00:00:00Z", "", tokenA, 200); r41["total"] != float64(0) {
+		t.Fatal("intervalo41 ignorado")
+	}
+	// From is inclusive, until is exclusive, both at the receipt's exact timestamp.
+	boundary41 := detail41["created_at"].(string)
+	if r41 := request("GET", fmt.Sprintf("%sentries?product_id=%d&from=%s", historyBase41, id41, boundary41), "", tokenA, 200); r41["total"] != float64(4) {
+		t.Fatal("início41 não inclusivo")
+	}
+	if r41 := request("GET", fmt.Sprintf("%sentries?product_id=%d&until=%s", historyBase41, id41, boundary41), "", tokenA, 200); r41["total"] != float64(0) {
+		t.Fatal("fim41 não exclusivo")
+	}
+	req41 := httptest.NewRequest("GET", historyBase41+"export.csv?q=CostHistory41&limit=2", nil)
+	req41.Header.Set("Authorization", "Bearer "+tokenA)
+	resp41, e41 := app.Test(req41, 10000)
+	if e41 != nil {
+		t.Fatal("CSV41 indisponível")
+	}
+	data41, e41 := io.ReadAll(resp41.Body)
+	resp41.Body.Close()
+	if e41 != nil || resp41.StatusCode != 200 || !strings.HasPrefix(string(data41), "operation_id;product_id;") || !strings.Contains(string(data41), "'=CostHistory41") || resp41.Header.Get("X-Titan-Report-Total") != "5" || resp41.Header.Get("X-Titan-Report-Count") != "2" || resp41.Header.Get("X-Titan-Report-Has-More") != "true" || resp41.Header.Get("Cache-Control") != "no-store" || len(resp41.Header.Get("X-Titan-Source-Hash")) != 64 {
+		t.Fatal("CSV41 sem proteção ou metadados")
+	}
+	if writes40() != beforeReads41 {
+		t.Fatal("consulta41 alterou dados")
+	}
+	exec(`UPDATE products SET nome='Renamed41',sku='renamed41',ativo=false,deleted_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, id41)
+	if r41 := request("GET", historyBase41+"entries?q=history41-%25literal", "", tokenA, 200); r41["total"] != float64(4) {
+		t.Fatal("histórico41 dependeu do produto atual")
+	}
+	if r41 := request("GET", historyBase41+"entries/"+ops41[0], "", tokenA, 200); r41["product"].(map[string]interface{})["nome"] != "=CostHistory41 original" {
+		t.Fatal("snapshot41 reescrito")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", historyBase41+"summary", "", tokenA, 401)
+	if _, e := store.CostReport(ctx, actor, onlinecatalog.CostReportQuery{Change: "all", Limit: 50}); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada41 consultou histórico")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

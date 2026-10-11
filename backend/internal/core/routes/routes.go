@@ -73,6 +73,11 @@ func Registrar(app *fiber.App) {
 	produtos.Post("/:id/price", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("price"))
 	produtos.Post("/:id/active", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), catalogDelivery.AlterarProduto("active"))
 
+	negocios.Get("/catalog/cost-history/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ResumoHistoricoCustos)
+	negocios.Get("/catalog/cost-history/entries", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RelatorioHistoricoCustos(false, false))
+	negocios.Get("/catalog/cost-history/entries/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DetalheHistoricoCustos)
+	negocios.Get("/catalog/cost-history/products/:id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RelatorioHistoricoCustos(true, false))
+	negocios.Get("/catalog/cost-history/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RelatorioHistoricoCustos(false, true))
 	negocios.Get("/catalog/margins/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ResumoMargens)
 	negocios.Get("/catalog/margins/missing-cost", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RelatorioMargens("missing_cost", false))
 	negocios.Get("/catalog/margins/negative", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RelatorioMargens("negative", false))

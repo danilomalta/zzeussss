@@ -7904,6 +7904,638 @@
           "url": "./online-margin-report.openapi.json"
         }
       }
+    },
+    "/api/v1/catalog/cost-history/summary": {
+      "get": {
+        "operationId": "costHistorySummary41",
+        "summary": "Resumo do histórico de custos",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal, sem curingas, no nome ou SKU do snapshot. Vazio permite todos.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "actor_id",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "change",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "initial",
+                "increased",
+                "decreased",
+                "unchanged"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio. Anos 2000–9999; from inclusivo, until exclusivo; from deve preceder until.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio. Anos 2000–9999; from inclusivo, until exclusivo; from deve preceder until.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida, parâmetro extra/repetido ou corpo em GET."
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada."
+          },
+          "403": {
+            "description": "Papel sem autorização."
+          },
+          "429": {
+            "description": "Limite de requisições."
+          },
+          "503": {
+            "description": "Banco indisponível ou resultado inconsistente."
+          },
+          "200": {
+            "description": "Snapshot consistente por requisição. Páginas seguintes são novas leituras e podem incluir novas alterações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-cost-history.openapi.json#/components/schemas/Summary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/cost-history/entries": {
+      "get": {
+        "operationId": "costHistoryEntries41",
+        "summary": "Lista paginada de alterações",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal, sem curingas, no nome ou SKU do snapshot. Vazio permite todos.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "actor_id",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "change",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "initial",
+                "increased",
+                "decreased",
+                "unchanged"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio. Anos 2000–9999; from inclusivo, until exclusivo; from deve preceder until.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio. Anos 2000–9999; from inclusivo, until exclusivo; from deve preceder until.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida, parâmetro extra/repetido ou corpo em GET."
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada."
+          },
+          "403": {
+            "description": "Papel sem autorização."
+          },
+          "429": {
+            "description": "Limite de requisições."
+          },
+          "503": {
+            "description": "Banco indisponível ou resultado inconsistente."
+          },
+          "200": {
+            "description": "Snapshot consistente por requisição. Páginas seguintes são novas leituras e podem incluir novas alterações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-cost-history.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/cost-history/entries/{operation_id}": {
+      "get": {
+        "operationId": "costHistoryDetail41",
+        "summary": "Detalhe auditável da alteração",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida, parâmetro extra/repetido ou corpo em GET."
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada."
+          },
+          "403": {
+            "description": "Papel sem autorização."
+          },
+          "404": {
+            "description": "Recibo ausente nesta empresa; somente detalhe."
+          },
+          "429": {
+            "description": "Limite de requisições."
+          },
+          "503": {
+            "description": "Banco indisponível ou resultado inconsistente."
+          },
+          "200": {
+            "description": "Snapshot consistente por requisição. Páginas seguintes são novas leituras e podem incluir novas alterações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-cost-history.openapi.json#/components/schemas/Entry"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/cost-history/products/{id}": {
+      "get": {
+        "operationId": "costHistoryProduct41",
+        "summary": "Histórico paginado por produto",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal, sem curingas, no nome ou SKU do snapshot. Vazio permite todos.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "actor_id",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "change",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "initial",
+                "increased",
+                "decreased",
+                "unchanged"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio. Anos 2000–9999; from inclusivo, until exclusivo; from deve preceder until.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio. Anos 2000–9999; from inclusivo, until exclusivo; from deve preceder until.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida, parâmetro extra/repetido ou corpo em GET."
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada."
+          },
+          "403": {
+            "description": "Papel sem autorização."
+          },
+          "429": {
+            "description": "Limite de requisições."
+          },
+          "503": {
+            "description": "Banco indisponível ou resultado inconsistente."
+          },
+          "200": {
+            "description": "Snapshot consistente por requisição. Páginas seguintes são novas leituras e podem incluir novas alterações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-cost-history.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/cost-history/export.csv": {
+      "get": {
+        "operationId": "costHistoryCSV41",
+        "summary": "Exportação de uma página do histórico",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Busca literal, sem curingas, no nome ou SKU do snapshot. Vazio permite todos.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": ""
+            }
+          },
+          {
+            "name": "actor_id",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "change",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "initial",
+                "increased",
+                "decreased",
+                "unchanged"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio. Anos 2000–9999; from inclusivo, until exclusivo; from deve preceder until.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio. Anos 2000–9999; from inclusivo, until exclusivo; from deve preceder until.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Filtro opcional. Não aceita repetição nem valor vazio.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Entrada inválida, parâmetro extra/repetido ou corpo em GET."
+          },
+          "401": {
+            "description": "Sessão ausente, expirada ou revogada."
+          },
+          "403": {
+            "description": "Papel sem autorização."
+          },
+          "429": {
+            "description": "Limite de requisições."
+          },
+          "503": {
+            "description": "Banco indisponível ou resultado inconsistente."
+          },
+          "200": {
+            "description": "Snapshot consistente por requisição. Páginas seguintes são novas leituras e podem incluir novas alterações.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "maxLength": 262144
+                }
+              }
+            },
+            "headers": {
+              "X-Titan-Report-Total": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Total sob os filtros"
+              },
+              "X-Titan-Report-Count": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Linhas desta página"
+              },
+              "X-Titan-Report-Has-More": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Existem páginas seguintes"
+              },
+              "X-Titan-Report-Next-Offset": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Próximo offset, apenas quando has_more"
+              },
+              "X-Titan-Source-Hash": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "SHA256 da página/query/total; não é assinatura nem hash global"
+              },
+              "X-Titan-Report-Scope": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "online-cost-history"
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "apostrophe"
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "no-store"
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "nosniff"
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "attachment; filename=\"cost-history.csv\""
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

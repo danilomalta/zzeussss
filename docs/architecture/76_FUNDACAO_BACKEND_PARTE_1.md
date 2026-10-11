@@ -195,3 +195,5 @@ Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de
 - Entrega39: [114_CUSTO_MARGEM_CINCO_FUNCOES.md](114_CUSTO_MARGEM_CINCO_FUNCOES.md).
 
 - Entrega40: [115_RELATORIO_MARGENS_CINCO_FUNCOES.md](115_RELATORIO_MARGENS_CINCO_FUNCOES.md).
+
+- Entrega41: cinco consultas de histórico de custos online, com snapshots históricos, classificação exata e CSV por página; aceite exige PostgreSQL isolado. Ver `116_HISTORICO_CUSTOS_CINCO_FUNCOES.md`.
