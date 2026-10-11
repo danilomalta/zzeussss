@@ -1,0 +1,13 @@
+import {requireValid} from './operationsRead.mjs';
+import {compareRecipeVersions} from './recipeComparison.mjs';
+import {csvDocument,decimalQuantity as q} from './operationsExport.mjs';
+const headers=['escopo','direcao','receita_id','versao_origem_id','revisao_origem','versao_comparacao_id','revisao_comparacao'];
+function checked(v){requireValid(v&&typeof v==='object');const c=compareRecipeVersions(v.before,v.after);return {c,base:['comparacao_por_batida','origem_para_comparacao',c.before.recipe_id,c.before.version_id,c.before.revision,c.after.version_id,c.after.revision]};}
+function delta(d){return d?[d.direction,d.numerator??'',d.denominator??'',d.unit]:['produto_substituido','','',''];}
+const deltaHeaders=['diferenca_tipo','diferenca_magnitude_milli_numerador','diferenca_denominador','diferenca_unidade_origem'];
+export function comparisonOutputCSV(v){const {c,base}=checked(v);return csvDocument([...headers,'nome_origem','nome_comparacao','produto_origem_id','produto_comparacao_id','mesmo_produto','rendimento_origem_milli','rendimento_origem','unidade_origem','rendimento_comparacao_milli','rendimento_comparacao','unidade_comparacao',...deltaHeaders],[[...base,c.before.name,c.after.name,c.before.output_product_id,c.after.output_product_id,c.same_product,c.before.yield_milli,q(c.before.yield_milli),c.before.output_unit,c.after.yield_milli,q(c.after.yield_milli),c.after.output_unit,...delta(c.yield_difference)]]);}
+function ingredients(v,kind){const {c,base}=checked(v);return csvDocument([...headers,'classe','produto_id','quantidade_milli','quantidade','unidade','versao_da_quantidade_id'],c[kind].map(i=>[...base,kind,i.product_id,i.quantity_milli,q(i.quantity_milli),i.unit,kind==='added'?c.after.version_id:c.before.version_id]));}
+export function comparisonAddedCSV(v){return ingredients(v,'added');}
+export function comparisonRemovedCSV(v){return ingredients(v,'removed');}
+export function comparisonChangedCSV(v){const {c,base}=checked(v);return csvDocument([...headers,'produto_id','quantidade_origem_milli','quantidade_origem','unidade_origem','quantidade_comparacao_milli','quantidade_comparacao','unidade_comparacao',...deltaHeaders],c.changed.map(i=>[...base,i.product_id,i.before.quantity_milli,q(i.before.quantity_milli),i.before.unit,i.after.quantity_milli,q(i.after.quantity_milli),i.after.unit,...delta(i.difference)]));}
+export function comparisonUnchangedCSV(v){const {c,base}=checked(v),byID=new Map(c.before.ingredients.map(i=>[i.product_id,i]));return csvDocument([...headers,'produto_id','quantidade_por_batida_milli','quantidade_por_batida','unidade'],c.unchanged.map(id=>{const i=byID.get(id);return [...base,id,i.quantity_milli,q(i.quantity_milli),i.unit];}));}
