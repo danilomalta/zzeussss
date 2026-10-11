@@ -40,6 +40,12 @@ func runPeer(ctx context.Context, args []string, password io.Reader, output io.W
 	if args[0] == "inspect" {
 		return inspectPeer(args[1:], output)
 	}
+	if args[0] == "candidate-init" {
+		return createCandidate(args[1:], output)
+	}
+	if args[0] == "pair-inspect" {
+		return inspectPairFile(args[1:], output)
+	}
 	if args[0] != "key-init" && args[0] != "export" {
 		return errPeerConfig
 	}
