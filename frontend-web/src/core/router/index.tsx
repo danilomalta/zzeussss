@@ -48,6 +48,7 @@ export const router = createBrowserRouter([
     { path: 'staff', element: <SuspenseWrapper><LocalStaff /></SuspenseWrapper> },
     { path: 'catalog', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
     { path: 'pos', element: <SuspenseWrapper><LocalPointOfSale /></SuspenseWrapper> },
+    { path: 'cash', element: <SuspenseWrapper><LocalPointOfSale mode="cash" /></SuspenseWrapper> },
   ] },
   {
     path: '/login',

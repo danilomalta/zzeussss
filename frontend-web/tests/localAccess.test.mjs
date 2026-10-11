@@ -22,6 +22,12 @@ test('invalid or missing trust fails closed for module navigation',()=>{
  const forged={...caps(['core','inventory','pos'],['sell']),license:{state:'invalid',modules:['pos'],remaining_days:0}};
  assert.ok(!allowedAreas(forged).includes('pos'));assert.deepEqual(allowedAreas(null),['home']);
 });
+test('closing has its own route and keeps POS permission requirements',()=>{
+ assert.equal(areaForRoute('/local/pos'),'pos');
+ assert.equal(areaForRoute('/local/cash'),'cash');
+ assert.ok(allowedAreas(caps(['core','pos'],['sell'],'cashier')).includes('cash'));
+ assert.ok(!allowedAreas(caps(['core','pos'],[],'cashier')).includes('cash'));
+});
 test('client rejects foreign capabilities and unexpected permissions',async()=>{
  const valid=caps(['core','staff'],['manage_staff']);
  assert.deepEqual(await createLocalClient(async()=>json(valid)).capabilities('token',scope),valid);

@@ -14,7 +14,7 @@ const modules = [
  { id: 'pos', name: 'PDV', icon: '▦', path: '/local/pos' },
  { id: 'catalog', name: 'Catálogo de produtos', icon: '▤', path: '/local/catalog' },
  { id: 'stock', name: 'Estoque e locais', icon: '▥', path: '/local/stock' },
- { id: 'cash', name: 'Fechamento de caixa', icon: '◈', path: '/local/pos?panel=cash' },
+ { id: 'cash', name: 'Fechamento de caixa', icon: '◈', path: '/local/cash' },
  { id: 'sos', name: 'SOS', icon: '⊕' },
  { id: 'production', name: 'Produção e receitas', icon: '◇' },
  { id: 'orders', name: 'Pedidos e fornecedores', icon: '⇄', path: '/local/orders' },
@@ -57,7 +57,7 @@ export default function LocalWorkspace() {
  const {t}=useTranslation();
  const {capabilities} = useLocalAccess();
  const allowed = allowedAreas(capabilities);
- const visible = modules.filter(m=>allowed.includes(m.id));
+ const visible = modules.filter(m=>allowed.includes(m.id) && !!m.path);
  const [expanded, setExpanded] = useState(false);
  const [shortcuts, setShortcuts] = useState(readShortcuts);
  const [notice, setNotice] = useState('');
@@ -73,9 +73,9 @@ export default function LocalWorkspace() {
  return <div className={`brand-page workspace ${expanded ? 'workspace-expanded' : ''}`}>
   <aside className="workspace-rail" aria-label={t('workspace.nav')}>
    <button className="workspace-menu" aria-expanded={expanded} aria-label={t(expanded?'workspace.collapse':'workspace.expand')} onClick={() => setExpanded(!expanded)}>☰</button>
-   {expanded && <><BrandLogo /><p className="brand-state">{t('workspace.company')}</p></>}
+   {expanded && <p className="brand-state">{t('workspace.company')}</p>}
    <nav>{(expanded ? visible : effectiveShortcuts.map(id => visible.find(m => m.id === id)!)).map(m => m.path ?
-    <NavLink key={m.id} to={m.path} title={t('workspace.'+m.id)} aria-label={t('workspace.'+m.id)} className={() => `workspace-tile ${m.id==='home'&&location.pathname==='/local/home' || m.id==='plans'&&location.pathname==='/local/subscription' || m.id==='staff'&&location.pathname==='/local/staff' || m.id==='pos'&&location.pathname==='/local/pos'&&!location.search.includes('panel=cash') || m.id==='cash'&&location.pathname==='/local/pos'&&location.search.includes('panel=cash') || m.id==='catalog'&&location.pathname==='/local/catalog' || m.id==='stock'&&location.pathname==='/local/stock' || m.id==='orders'&&location.pathname==='/local/orders' || m.id==='prices'&&location.pathname==='/local/prices' ? 'selected' : ''}`} onClick={() => setExpanded(false)}>
+    <NavLink key={m.id} to={m.path} title={t('workspace.'+m.id)} aria-label={t('workspace.'+m.id)} className={() => `workspace-tile ${m.id==='home'&&location.pathname==='/local/home' || m.id==='plans'&&location.pathname==='/local/subscription' || m.id==='staff'&&location.pathname==='/local/staff' || m.id==='pos'&&location.pathname==='/local/pos' || m.id==='cash'&&location.pathname==='/local/cash' || m.id==='catalog'&&location.pathname==='/local/catalog' || m.id==='stock'&&location.pathname==='/local/stock' || m.id==='orders'&&location.pathname==='/local/orders' || m.id==='prices'&&location.pathname==='/local/prices' ? 'selected' : ''}`} onClick={() => setExpanded(false)}>
      <span className="workspace-squircle" aria-hidden="true"><TileIcon id={m.id}/></span><span className="workspace-label">{t('workspace.'+m.id)}</span>
     </NavLink> : <button key={m.id} className="workspace-tile" title={t('workspace.pendingNotice',{name:t('workspace.'+m.id)})} aria-label={t('workspace.'+m.id)} onClick={() => setNotice('workspace.pendingNotice:'+m.id)}><span className="workspace-squircle" aria-hidden="true"><TileIcon id={m.id}/></span><span className="workspace-label">{t('workspace.'+m.id)}<small>{t('workspace.pending')}</small></span></button>)}</nav>
    {expanded && <section className="workspace-shortcuts"><h2>{t('workspace.shortcuts')}</h2>{effectiveShortcuts.map((id, slot) => <label key={slot}>{t('workspace.shortcut',{count:slot+1})}<select value={id} onChange={e => choose(slot, e.target.value)}>{visible.map(m => <option key={m.id} value={m.id}>{t('workspace.'+m.id)}</option>)}</select></label>)}<button className="brand-secondary" onClick={() => void endSession()}>{t('workspace.logout')}</button></section>}

@@ -39,6 +39,10 @@ button:active:not(:disabled) { transform: scale(.98); }
 .catalog-tabs [aria-pressed='true'] { border-color: var(--focus); background: var(--accent-soft); }
 .brand-card:focus-within { box-shadow: var(--brand-shadow), 0 0 0 2px var(--accent-soft); }
 .workspace-top-actions {display:flex;align-items:center;gap:12px;}
+.workspace-pos-focused .workspace-rail,.workspace-pos-focused .workspace-top {display:none;}
+.workspace-pos-focused .workspace-body {width:100%;}
+.workspace-pos-focused .workspace-scroll {overflow-y:auto;}
+.workspace-pos-focused .pos-content {max-width:none;padding:12px 20px;}
 :root[data-theme='dark'] .workspace .brand-panel {background:#1b1b20;border-color:#414147;}
 :root[data-theme='light'] .workspace .brand-panel {background:#fff;border-color:#d3d3ce;}
 .workspace-rail {position:relative;z-index:3;}
