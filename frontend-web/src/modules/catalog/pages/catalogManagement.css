@@ -1,7 +1,7 @@
 .catalog-create summary,.catalog-columns summary{cursor:pointer;font-weight:650;min-height:36px;display:flex;align-items:center;gap:8px}
-.catalog-create summary::before,.catalog-columns summary::before{content:'+';color:var(--brand-blue,#1769ff);font-size:20px}
+.catalog-create summary::before,.catalog-columns summary::before{content:'+';color:var(--accent);font-size:20px}
 .catalog-create[open] summary::before,.catalog-columns[open] summary::before{content:'−'}
-.catalog-create summary:focus-visible,.catalog-columns summary:focus-visible{outline:2px solid #1769ff;outline-offset:4px;border-radius:6px}
+.catalog-create summary:focus-visible,.catalog-columns summary:focus-visible{outline:2px solid var(--focus);outline-offset:4px;border-radius:6px}
 .catalog-search-panel,.catalog-results{margin-top:20px}
 .catalog-search-form{display:grid;grid-template-columns:minmax(220px,2fr) minmax(130px,1fr) minmax(220px,1.4fr) auto;gap:12px;align-items:end}
 .catalog-search-form label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600}

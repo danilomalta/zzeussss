@@ -1,8 +1,13 @@
 import {Link} from 'react-router-dom';
 import {useLocalAccess} from '../../../core/local/LocalAccess';
 import {allowedAreas} from '../../../core/local/accessModel.mjs';
+import {useTranslation} from 'react-i18next';
 export default function LocalHome(){
+ const {t}=useTranslation();
  const {capabilities}=useLocalAccess();const areas=allowedAreas(capabilities);
- const cards=[['catalog','Catálogo de produtos','/local/catalog','Consulta e cadastro de produtos.'],['stock','Estoque e locais','/local/stock','Recebimento e quantidades por local.'],['pos','Frente de caixa','/local/pos','Vendas, turno e fechamento.'],['staff','RH e funcionários','/local/staff','Cadastro de funcionários autorizado.'],['plans','Assinatura e faturas','/local/subscription','Vigência verificada e situação da integração financeira.']];
- return <main className="brand-app-content"><p className="brand-eyebrow">MINHA ÁREA</p><h1>Seu espaço de trabalho</h1><p className="brand-state">Perfil: {capabilities?.role}. O menu segue seus acessos e os módulos contratados.</p><div className="plan-grid">{cards.filter(c=>areas.includes(c[0])).map(c=><Link className="brand-panel area-card" key={c[0]} to={c[2]}><h2>{c[1]}</h2><p>{c[3]}</p><span>Abrir área →</span></Link>)}</div>{capabilities?.license.state!=='active' && <p role="status" className="brand-message">Licença sem vigência ativa. As operações continuam sujeitas à verificação do servidor.</p>}{areas.includes('production') && <p className="brand-message">Produção contratada. A interface de etapas e receitas está em preparação; PDV não é habilitado por esse contrato.</p>}{areas.includes('point') && <p className="brand-message">Meu ponto é uma área própria do funcionário. Marcação de ponto ainda não está integrada.</p>}</main>;
+ const cards=[['catalog','/local/catalog'],['stock','/local/stock'],['pos','/local/pos'],['staff','/local/staff'],['plans','/local/subscription']];
+ return <main className="brand-app-content"><p className="brand-eyebrow">{t('home.eyebrow')}</p><h1>{t('home.title')}</h1><p className="brand-state">{t('home.access')}</p>
+ {capabilities?.license.state!=='active'&&<div role="status" className="brand-message"><p>{t('home.licenseNotice')}</p>{areas.includes('plans')&&<Link to="/local/subscription" className="brand-link">{t('home.viewLicense')}</Link>}</div>}
+ <div className="plan-grid">{cards.filter(([id])=>areas.includes(id)||capabilities?.role==='owner').map(([id,path])=>areas.includes(id)?<Link className="brand-panel area-card" key={id} to={path}><h2>{t('home.'+id)}</h2><p>{t('home.'+id+'Help')}</p><span>{t('home.open')} →</span></Link>:<section className="brand-panel area-card area-card-locked" key={id} aria-label={t('home.'+id)}><h2>{t('home.'+id)}</h2><p>{t('home.'+id+'Help')}</p><span>{t('home.needsLicense')}</span></section>)}</div>
+ {areas.includes('production') && <p className="brand-message">{t('home.productionPending')}</p>}{areas.includes('point') && <p className="brand-message">{t('home.pointPending')}</p>}</main>;
 }

@@ -1,7 +1,9 @@
 .plan-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin:24px 0; }
 .area-card { color:var(--brand-ink);text-decoration:none; }
 .area-card p { color:var(--brand-muted); }
-.area-card span { color:var(--brand-blue); }
+.area-card span { color:var(--accent); }
+.area-card-locked {opacity:.7;}
+.area-card-locked span {color:var(--text-muted);font-size:13px;}
 .license-days { font-size:28px; }
 .workspace { height: 100dvh; min-height: 0; display: flex; flex-direction: row; overflow: hidden; }
 .workspace-rail { width: 80px; flex: none; padding: 14px 8px; border-right: 1px solid var(--brand-border); background: var(--brand-surface); overflow-y: auto; transition: width .22s ease; }
@@ -10,9 +12,9 @@
 .workspace-menu { width: 50px; height: 46px; border: 0; border-radius: 16px; background: transparent; color: var(--brand-ink); font-size: 24px; cursor: pointer; }
 .workspace-tile { display: flex; gap: 12px; align-items: center; padding: 4px; border: 0; border-radius: 18px; background: transparent; color: var(--brand-muted); text-decoration: none; text-align: left; cursor: pointer; min-height: 56px; }
 .workspace-squircle { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 18px; background: var(--brand-input); border: 1px solid var(--brand-border); font-size: 25px; transition: background .2s ease, transform .2s ease, box-shadow .2s ease; }
-.workspace-tile.selected { color: var(--brand-blue); }
-.workspace-tile.selected .workspace-squircle { background: rgba(23,103,245,.16); box-shadow: inset 0 0 0 1px var(--brand-blue); }
-.workspace-tile:hover .workspace-squircle { transform: translateY(-2px); background: rgba(23,103,245,.12); }
+.workspace-tile.selected { color: var(--accent); }
+.workspace-tile.selected .workspace-squircle { background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--focus); }
+.workspace-tile:hover .workspace-squircle { transform: translateY(-2px); background: var(--accent-soft); }
 .workspace-tile:active .workspace-squircle { transform: scale(.96); }
 .workspace-label { display: none; font-size: 13px; font-weight: 600; }
 .workspace-expanded .workspace-label { display: block; }
@@ -23,7 +25,7 @@
 .workspace .brand-app-content { width: auto; max-width: none; margin: 0; padding: 24px; }
 .workspace .pos-page { min-height: 0; background: transparent; }
 .workspace .pos-page::before { display: none; }
-.workspace-notice { padding: 12px 24px; display: flex; justify-content: space-between; gap: 12px; background: rgba(23,103,245,.1); font-size: 13px; }
+.workspace-notice { padding: 12px 24px; display: flex; justify-content: space-between; gap: 12px; background: var(--accent-soft); font-size: 13px; }
 .workspace-shortcuts { margin-top: 24px; }
 .workspace-shortcuts h2 { font-size: 13px; }
 .workspace-shortcuts label { display: block; font-size: 12px; margin: 12px 0; }
@@ -34,6 +36,13 @@
 .catalog-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
 button, a, .brand-input-wrap { transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 button:active:not(:disabled) { transform: scale(.98); }
-.catalog-tabs [aria-pressed='true'] { border-color: var(--brand-blue); background: rgba(23,103,245,.14); }
-.brand-card:focus-within { box-shadow: var(--brand-shadow), 0 0 0 2px rgba(23,103,245,.12); }
+.catalog-tabs [aria-pressed='true'] { border-color: var(--focus); background: var(--accent-soft); }
+.brand-card:focus-within { box-shadow: var(--brand-shadow), 0 0 0 2px var(--accent-soft); }
+.workspace-top-actions {display:flex;align-items:center;gap:12px;}
+:root[data-theme='dark'] .workspace .brand-panel {background:#1b1b20;border-color:#414147;}
+:root[data-theme='light'] .workspace .brand-panel {background:#fff;border-color:#d3d3ce;}
+.workspace-rail {position:relative;z-index:3;}
+.workspace:not(.workspace-expanded) .workspace-rail:not(:hover):not(:focus-within) .workspace-label {display:none;}
+.workspace:not(.workspace-expanded) .workspace-rail:hover,.workspace:not(.workspace-expanded) .workspace-rail:focus-within {width:260px;padding:16px;box-shadow:var(--brand-shadow);}
+.workspace:not(.workspace-expanded) .workspace-rail:hover .workspace-label,.workspace:not(.workspace-expanded) .workspace-rail:focus-within .workspace-label {display:block;}
 @media(max-width:700px) { .workspace-rail { width: 64px; padding: 10px 4px; } .workspace-squircle { width: 46px; height: 46px; border-radius: 16px; } .workspace-expanded .workspace-rail { position:absolute; top:0; bottom:0; left:0; z-index:20; box-shadow:var(--brand-shadow); } .workspace .brand-app-content { padding: 16px; } .workspace-top { padding:12px; } .catalog-form { grid-template-columns:1fr; } }

@@ -1,0 +1,27 @@
+.subscription-page {max-width:1440px!important;padding:clamp(20px,3vw,42px)!important;}
+.subscription-page .brand-app-heading {margin-bottom:24px;}
+.subscription-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:stretch;}
+.subscription-panel {min-height:265px;display:flex;flex-direction:column;align-items:flex-start;gap:15px;padding:clamp(24px,3vw,38px);background:var(--subscription-surface,#1b1b20);border:1px solid var(--subscription-border,#414147);box-shadow:0 18px 40px rgb(0 0 0 / .12);}
+.subscription-panel h2 {font-size:18px;margin:0;}
+.subscription-panel .brand-state {margin:0;max-width:55ch;line-height:1.6;}
+.subscription-panel .license-days {font-size:clamp(21px,2vw,29px);}
+.subscription-statement {font-size:clamp(18px,2vw,23px);}
+.subscription-badge {display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;}
+.subscription-badge.active {background:rgb(41 155 84 / .2);color:#69d391;}
+.subscription-badge.pending {background:var(--accent-soft);color:var(--accent);}
+.subscription-badge.expired {background:rgb(186 55 58 / .17);color:#ff9292;}
+.subscription-badge.unknown {background:rgb(135 135 135 / .19);color:var(--text-muted);}
+.subscription-action {width:auto;min-width:155px;margin-top:auto;text-decoration:none;}
+.subscription-check {min-height:44px!important;padding:10px 18px!important;font-size:14px!important;border-radius:12px!important;}
+.subscription-modules {grid-column:1 / -1;min-height:205px;}
+.subscription-modules ul {display:flex;gap:10px;flex-wrap:wrap;margin:0;padding:0;list-style:none;}
+.subscription-modules li {padding:8px 12px;background:var(--accent-soft);border:1px solid var(--border);border-radius:10px;}
+.subscription-empty {display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.subscription-empty > span {color:var(--accent);font-size:28px;}
+.subscription-empty p {color:var(--text-muted);font-size:15px;margin:0;}
+.subscription-empty .brand-secondary {display:inline-flex;align-items:center;text-decoration:none;}
+:root[data-theme='light'] {--subscription-surface:#fff;--subscription-border:#d3d3ce;}
+:root[data-theme='light'] .subscription-badge.active {color:#166534;background:rgb(22 101 52 / .12);}
+:root[data-theme='light'] .subscription-badge.pending {color:#80580d;}
+:root[data-theme='light'] .subscription-badge.expired {color:#a72828;}
+@media(max-width:800px) {.subscription-grid {grid-template-columns:1fr;}.subscription-modules {grid-column:auto;}}

@@ -1,7 +1,23 @@
 import {Link} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 import {useLocalAccess} from '../../../core/local/LocalAccess';
+import './subscription.css';
+
+const moduleNames:Record<string,string>={inventory:'catalog',pos:'pos',staff:'staff'};
+
 export default function LocalSubscription(){
- const {capabilities,refresh}=useLocalAccess();const license=capabilities?.license;
- const labels:Record<string,string>={active:'Ativa',expired:'Expirada',not_yet_valid:'Ainda não vigente',unavailable:'Verificador não configurado',not_installed:'Contrato não instalado',invalid:'Contrato inválido',clock_blocked:'Relógio bloqueado para conferência'};
- return <main className="brand-app-content"><div className="brand-app-heading"><div><p className="brand-eyebrow">GESTÃO DA EMPRESA</p><h1>Assinatura e faturas</h1></div><button className="brand-secondary" onClick={refresh}>Conferir licença</button></div><div className="plan-grid"><section className="brand-panel"><h2>Vigência da licença</h2><strong className="license-days">{license?.state==='active'?`${license.remaining_days} dia(s)`:'Sem vigência ativa'}</strong><p>{license && labels[license.state]}</p>{license?.expires_unix && <p>Expira em {new Date(license.expires_unix*1000).toLocaleString('pt-BR')}</p>}<p className="brand-state">Contagem obtida do contrato assinado. Não representa data de vencimento de fatura.</p></section><section className="brand-panel"><h2>Faturas e pagamento</h2><p className="brand-message">Integração de faturamento pendente.</p><p className="brand-state">Não há consulta de faturas, Pix de cobrança ou confirmação de pagamento conectada. O sistema não presume que sua empresa está sem dívidas.</p><Link className="brand-link" to="/register">Consultar planos e configurar proposta</Link></section></div><section className="brand-panel" style={{marginTop:20}}><h2>Módulos do contrato</h2><p>{license?.modules.join(' · ') || 'Nenhum módulo confirmado'}</p></section></main>;
+ const {capabilities,refresh}=useLocalAccess();
+ const {t,i18n}=useTranslation();
+ const license=capabilities?.license;
+ const state=license?.state??'unavailable';
+ const badge=state==='active'?'active':state==='expired'?'expired':state==='not_yet_valid'?'pending':'unknown';
+ const expiry=license?.expires_unix?new Intl.DateTimeFormat(i18n.resolvedLanguage||'pt-BR',{dateStyle:'medium'}).format(new Date(license.expires_unix*1000)):null;
+ return <main className="brand-app-content subscription-page">
+  <div className="brand-app-heading"><div><p className="brand-eyebrow">{t('subscription.eyebrow')}</p><h1>{t('subscription.title')}</h1></div><button type="button" className="brand-secondary subscription-check" onClick={refresh}>{t('subscription.check')}</button></div>
+  <div className="subscription-grid">
+   <section className="brand-panel subscription-panel"><h2>{t('subscription.period')}</h2><span className={`subscription-badge ${badge}`}>{t('subscription.state.'+state)}</span><strong className="license-days">{state==='active'?t('subscription.days',{count:license?.remaining_days}):state==='not_installed'?t('subscription.noLicense'):t('subscription.state.'+state)}</strong>{expiry&&<p className="brand-state">{t('subscription.expires',{date:expiry})}</p>}</section>
+   <section className="brand-panel subscription-panel"><h2>{t('subscription.billing')}</h2><strong className="subscription-statement">{t('subscription.billingUnavailable')}</strong><p className="brand-state">{t('subscription.billingHelp')}</p><Link className="brand-primary subscription-action" to="/register">{t('subscription.plans')}</Link></section>
+   <section className="brand-panel subscription-panel subscription-modules"><h2>{t('subscription.modules')}</h2>{license?.modules.length?<ul>{license.modules.map(id=><li key={id}>{moduleNames[id]?t('workspace.'+moduleNames[id]):id}</li>)}</ul>:<div className="subscription-empty"><span aria-hidden="true">▦</span><p>{t('subscription.noModules')}</p><Link className="brand-secondary" to="/register">{t('subscription.choose')}</Link></div>}</section>
+  </div>
+ </main>;
 }

@@ -25,15 +25,15 @@ export default function SignInCard({mode,onSubmit,notice}:Props) {
     } finally {setPassword('');setBusy(false);}
   }
   return <BrandShell><section className="brand-card" aria-labelledby="login-title">
-    <div className="brand-card-head"><BrandLogo/><h1 id="login-title">{t('login.title')}</h1><p className="brand-subtitle">{t('login.subtitle')}</p></div>
+    <div className="brand-card-head"><BrandLogo compact/><h1 id="login-title">{t('login.title')}</h1><p className="brand-subtitle">{t('login.subtitle')}</p></div>
     {notice&&<p role="status" className="brand-message">{t('errors.session')}</p>}
     <form noValidate onSubmit={submit}>
-      <label htmlFor="brand-credential" className="brand-field">{t('login.credential')}</label><div className="brand-input-wrap"><Icon kind="user"/><input id="brand-credential" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required disabled={busy} aria-describedby="credential-help" aria-invalid={!!error} placeholder={t('login.placeholder')} value={credential} onChange={event=>setCredential(event.target.value)}/></div>
+      <label htmlFor="brand-credential" className="brand-field">{t('login.credential')}</label><div className="brand-input-wrap"><Icon kind="user"/><input id="brand-credential" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required disabled={busy} aria-describedby="credential-help" aria-invalid={!!error} placeholder={t(mode==='online'?'login.onlinePlaceholder':'login.localPlaceholder')} value={credential} onChange={event=>setCredential(event.target.value)}/></div>
       <p id="credential-help" className="brand-input-help">{t(mode==='local'?'login.localHelp':'login.onlineHelp')}</p>
       <label htmlFor="brand-password" className="brand-field">{t('login.password')}</label><div className="brand-input-wrap"><Icon kind="lock"/><input id="brand-password" type={show?'text':'password'} autoComplete="current-password" required disabled={busy} aria-invalid={!!error} aria-describedby={error?'login-error':undefined} value={password} onChange={event=>setPassword(event.target.value)}/><button type="button" className="brand-icon-button" aria-label={t(show?'login.hide':'login.show')} onClick={()=>setShow(value=>!value)}><Icon kind="eye"/></button></div>
       <div className="brand-help"><button type="button" className="brand-text-button" onClick={()=>setHelp(true)}>{t('login.forgot')}</button></div>
       {help&&<p role="status" className="brand-message">{t(mode==='local'?'login.recoveryLocal':'login.recoveryOnline')}</p>}
-      {error&&<p id="login-error" role="alert" className="brand-message error">{t(error)}</p>}
+      {error&&<p id="login-error" role="alert" className="brand-message error"><span aria-hidden="true">ⓘ</span> {t(error)}</p>}
       <button type="submit" className="brand-primary" disabled={busy} aria-busy={busy}>{busy&&<span className="brand-spinner" aria-hidden="true"/>}{t(busy?'login.loading':'login.enter')}</button>
     </form>
     <div className="brand-card-foot">{t('login.noAccount')} <Link to="/register">{t('login.create')}</Link></div>

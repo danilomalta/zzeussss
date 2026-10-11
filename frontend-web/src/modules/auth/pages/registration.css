@@ -18,6 +18,12 @@
 .registration .catalog-form label {font-size:14px; font-weight:600; color:var(--brand-ink);}
 .registration .catalog-form select, .registration .catalog-form input {width:100%; display:block; margin-top:8px; padding:13px; min-height:48px; border:1px solid var(--brand-border); border-radius:12px; background:var(--brand-input); color:var(--brand-ink); font-size:16px;}
 .registration-field-help {display:block; color:var(--brand-muted); font-size:13px; font-weight:400; line-height:1.6; margin-top:8px;}
+.registration .catalog-form {align-items:start;row-gap:28px;}
+.registration .catalog-form label {display:flex;flex-direction:column;min-width:0;line-height:1.5;}
+.registration .catalog-form input,.registration .catalog-form select {flex:none;}
+.registration .registration-field-help {margin-top:8px;min-height:2.7em;}
+.registration-advice {display:flex;align-items:flex-start;gap:12px;clear:both;margin:18px 0 0;padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:var(--accent-soft);font-size:14px;line-height:1.6;color:var(--text);}
+.registration-advice > span:first-child {color:var(--focus);font-size:20px;line-height:1.1;}
 .registration-full-field {grid-column:1 / -1;}
 .plan-grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:18px; margin:22px 0;}
 .plan-card {display:flex; flex-direction:column; align-items:flex-start; text-align:left; padding:26px; border:1px solid var(--brand-border); border-radius:20px; background:var(--brand-surface); color:var(--brand-ink); cursor:pointer; transition:box-shadow .18s ease,border-color .18s ease;}

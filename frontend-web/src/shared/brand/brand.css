@@ -4,7 +4,7 @@
  --btn-bg:#111113; --btn-text:#fff; --accent:#d4a24c; --accent-soft:rgb(212 162 76 / .10);
  --focus:#926310; --success:#166534;
  --brand-bg:var(--bg); --brand-surface:var(--surface); --brand-border:var(--border); --brand-ink:var(--text); --brand-muted:var(--text-muted);
- --brand-input:var(--surface); --brand-blue:var(--accent); --brand-link:var(--text); --brand-success:var(--success);
+ --brand-input:var(--surface); --brand-link:var(--text); --brand-success:var(--success);
  --brand-shadow:0 12px 40px rgb(17 17 19 / .06);
 }
 :root[data-theme='dark'] {
@@ -40,6 +40,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible {o
 .brand-card-head .brand-logo {flex-direction:column;margin-bottom:22px;gap:12px;}
 .brand-card-head .brand-logo strong {font-size:17px;}
 .brand-card-head .brand-mark {width:68px;height:72px;}
+.brand-card-head .brand-logo {margin-bottom:18px;}
 .brand-card h1 {font-size:28px;font-weight:650;letter-spacing:-.03em;line-height:1.25;margin:0;}
 .brand-subtitle {font-size:14px;line-height:1.6;color:var(--text-muted);margin:12px 0 0;}
 .brand-field {display:block;font-size:15px;font-weight:600;margin-top:24px;}
@@ -109,17 +110,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible {o
 .brand-app-heading, .brand-panel-top { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .brand-app-heading { margin-bottom: 24px; }
 .brand-app-heading h1 { margin: 4px 0; font-size: clamp(25px, 3vw, 34px); letter-spacing: -.04em; }
-.brand-eyebrow { margin: 0; color: var(--brand-blue); font-size: 11px; font-weight: 700; letter-spacing: .14em; }
+.brand-eyebrow { margin: 0; color: var(--focus); font-size: 13px; font-weight: 700; letter-spacing: .14em; }
 .brand-panel { background: var(--brand-surface); border: 1px solid var(--brand-border); border-radius: 16px; box-shadow: var(--brand-shadow); padding: 24px; }
 .brand-panel-top { margin-bottom: 24px; }
 .brand-panel-top h2 { margin: 0 0 3px; font-size: 17px; }
 .brand-panel-top p, .brand-empty p { margin: 0; color: var(--brand-muted); font-size: 13px; }
-.brand-secondary, .brand-small-primary { padding: 9px 13px; border: 1px solid var(--brand-border); border-radius: 8px; background: var(--brand-surface); color: var(--brand-ink); font-size: 12px; cursor: pointer; }
-.brand-small-primary { color: white; background: var(--brand-blue); border-color: var(--brand-blue); }
+.brand-secondary, .brand-small-primary { padding: 10px 14px; min-height:44px; border: 1px solid var(--brand-border); border-radius: 10px; background: var(--brand-surface); color: var(--brand-ink); font-size: 14px; cursor: pointer; }
+.brand-small-primary { color: var(--btn-text); background: var(--btn-bg); border-color: var(--btn-bg); }
 .brand-secondary:disabled, .brand-small-primary:disabled { opacity: .45; cursor: not-allowed; }
 .brand-state { color: var(--brand-muted); font-size: 13px; }
 .brand-empty { padding: clamp(32px, 7vw, 72px) 12px; text-align: center; border: 1px dashed var(--brand-border); border-radius: 12px; }
-.brand-empty span { color: var(--brand-blue); font-size: 35px; }
+.brand-empty span { color: var(--accent); font-size: 35px; }
 .brand-empty h3 { margin: 6px 0; font-size: 16px; }
 .brand-table-scroll { max-width: 100%; overflow-x: auto; }
 .brand-table { width: 100%; min-width: 540px; border-collapse: collapse; text-align: left; font-size: 13px; }
@@ -131,7 +132,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible {o
 .brand-feature-panel { min-height: 220px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
 .brand-feature-panel h2 { margin: 8px 0 4px; font-size: 19px; }
 .brand-feature-panel p { max-width: 620px; color: var(--brand-muted); font-size: 14px; line-height: 1.6; }
-.brand-feature-icon { color: var(--brand-blue); font-size: 26px; }
-.brand-feature-link { margin-top: 12px; color: var(--brand-blue); font-size: 13px; font-weight: 650; text-decoration: none; }
+.brand-feature-icon { color: var(--accent); font-size: 26px; }
+.brand-feature-link { margin-top: 12px; color: var(--accent); font-size: 13px; font-weight: 650; text-decoration: none; }
 .brand-feature-link:hover { text-decoration: underline; }
 .brand-actions { display: flex; align-items: center; gap: 16px; font-size: 13px; }

@@ -18,7 +18,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             end
             className={({ isActive }) =>
               isActive
-                ? 'text-left w-full px-4 py-3 rounded-lg bg-indigo-600 text-white font-medium shadow-md'
+                ? 'text-left w-full px-4 py-3 rounded-lg bg-amber-700 text-white font-medium shadow-md'
                 : 'text-left w-full px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors'
             }
           >
@@ -28,7 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             to="/pos"
             className={({ isActive }) =>
               isActive
-                ? 'text-left w-full px-4 py-3 rounded-lg bg-indigo-600 text-white font-medium shadow-md'
+                ? 'text-left w-full px-4 py-3 rounded-lg bg-amber-700 text-white font-medium shadow-md'
                 : 'text-left w-full px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors'
             }
           >
@@ -38,7 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             to="/logistics"
             className={({ isActive }) =>
               isActive
-                ? 'text-left w-full px-4 py-3 rounded-lg bg-indigo-600 text-white font-medium shadow-md'
+                ? 'text-left w-full px-4 py-3 rounded-lg bg-amber-700 text-white font-medium shadow-md'
                 : 'text-left w-full px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors'
             }
           >
@@ -48,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             to="/settings"
             className={({ isActive }) =>
               isActive
-                ? 'text-left w-full px-4 py-3 rounded-lg bg-indigo-600 text-white font-medium shadow-md'
+                ? 'text-left w-full px-4 py-3 rounded-lg bg-amber-700 text-white font-medium shadow-md'
                 : 'text-left w-full px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors'
             }
           >
@@ -65,9 +65,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-sm font-bold text-white">{user?.name || 'Administrador'}</p>
-              <p className="text-xs text-indigo-400">Operador mestre</p>
+              <p className="text-xs text-amber-400">Operador mestre</p>
             </div>
-            <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+            <div className="w-10 h-10 bg-amber-700 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'Z'}
             </div>
           </div>
