@@ -5,6 +5,7 @@ import {createStockRead} from '../../../core/local/stockRead.mjs';
 import type {StockBalance,Reservations} from '../../../core/local/stockRead.mjs';
 import {exactQuantity as q} from '../../../core/local/operationsRead.mjs';
 import {useReadTask,ReadState,ReadSection,Pages} from '../../production/pages/readPanel';
+import StockPlanning,{ReservationGroups} from './StockPlanning';
 const client=createStockRead();
 function Metrics({balance}:{balance:StockBalance}){return <dl className="operation-metrics"><div><dt>Saldo físico</dt><dd>{q(balance.physical_milli)} {balance.unit}</dd></div><div><dt>Reservado global</dt><dd>{q(balance.reserved_milli)} {balance.unit}</dd></div><div><dt>Livre</dt><dd>{q(balance.free_milli)} {balance.unit}</dd></div></dl>;}
 export default function LocalStockAvailability(){
@@ -21,5 +22,7 @@ export default function LocalStockAvailability(){
  {!canReservations&&<p>Detalhes das reservas exigem também permissão de produção. A API confere os acessos.</p>}
  </ReadSection>
  {reservations.data&&<ReadSection title="Origem das reservas ativas"><p>{reservations.data.total_count} reservas ativas no produto e local. O saldo acima é global; a tabela mostra somente esta página.</p><div className="operation-table-wrap"><table className="operation-table"><caption>Reservas de ordens de produção</caption><thead><tr><th>Ordem e versão</th><th>Responsável</th><th>Quantidade</th><th>Criada em</th></tr></thead><tbody>{reservations.data.items.map(r=><tr key={r.reservation_id}><td><span className="operation-id">{r.order_id}</span><small>Versão: {r.version_id}<br/>Reserva: {r.reservation_id}</small></td><td className="operation-id">{r.responsible_id}</td><td>{q(r.quantity_milli)} {r.unit}</td><td>{r.created_at}</td></tr>)}</tbody></table></div>{reservations.data.items.length===0&&<p>Nenhuma reserva ativa nesta página.</p>}<Pages offset={offset} more={reservations.data.has_more} busy={reservations.busy} change={loadReservations}/></ReadSection>}
+ {reservations.data&&<ReservationGroups page={reservations.data}/>}
+ <StockPlanning/>
  </main>;
 }
