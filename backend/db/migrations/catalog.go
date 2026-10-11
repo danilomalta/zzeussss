@@ -40,3 +40,6 @@ var DiscountReviewsSQL string
 
 //go:embed 000017_online_product_costs.sql
 var ProductCostsSQL string
+
+//go:embed 000018_online_stock_settings.sql
+var StockSettingsSQL string

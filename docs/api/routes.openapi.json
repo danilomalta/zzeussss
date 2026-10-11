@@ -9115,6 +9115,394 @@
           }
         }
       }
+    },
+    "/api/v1/produtos/{id}/stock-settings": {
+      "get": {
+        "operationId": "onlineStockSettings43_1",
+        "summary": "Consultar parâmetros atuais",
+        "description": "Empresa e usuário derivados da sessão. Parâmetros extras e corpo em GET são recusados. ",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado confirmado.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-stock-settings.openapi.json#/components/schemas/Plan"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: extras, duplicados, campos faltantes, null, tipos ou limites incorretos."
+          },
+          "401": {
+            "description": "Sessão inválida, expirada ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager."
+          },
+          "404": {
+            "description": "Produto/recibo não encontrado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão antiga ou operação reutilizada com ator/produto/payload diferente."
+          },
+          "429": {
+            "description": "Limite HTTP excedido; respeite Retry-After."
+          },
+          "503": {
+            "description": "Dependência indisponível ou resultado incerto; consulte seu operation_id."
+          }
+        },
+        "x-payload-contract": "defined"
+      },
+      "post": {
+        "operationId": "onlineStockSettings43_3",
+        "summary": "Gravar planejamento com versão, recibo e outbox",
+        "description": "Empresa e usuário derivados da sessão. Parâmetros extras e corpo em GET são recusados. ",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado confirmado.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-stock-settings.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: extras, duplicados, campos faltantes, null, tipos ou limites incorretos."
+          },
+          "401": {
+            "description": "Sessão inválida, expirada ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager."
+          },
+          "404": {
+            "description": "Produto/recibo não encontrado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão antiga ou operação reutilizada com ator/produto/payload diferente."
+          },
+          "429": {
+            "description": "Limite HTTP excedido; respeite Retry-After."
+          },
+          "503": {
+            "description": "Dependência indisponível ou resultado incerto; consulte seu operation_id."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "description": "JSON até 8192 bytes, exatamente os sete campos; payload normalizado define idempotência.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "online-stock-settings.openapi.json#/components/schemas/Input"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "defined"
+      }
+    },
+    "/api/v1/produtos/{id}/stock-settings/preview": {
+      "post": {
+        "operationId": "onlineStockSettings43_2",
+        "summary": "Simular parâmetros sem gravar",
+        "description": "Empresa e usuário derivados da sessão. Parâmetros extras e corpo em GET são recusados. ",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado confirmado.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-stock-settings.openapi.json#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: extras, duplicados, campos faltantes, null, tipos ou limites incorretos."
+          },
+          "401": {
+            "description": "Sessão inválida, expirada ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager."
+          },
+          "404": {
+            "description": "Produto/recibo não encontrado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão antiga ou operação reutilizada com ator/produto/payload diferente."
+          },
+          "429": {
+            "description": "Limite HTTP excedido; respeite Retry-After."
+          },
+          "503": {
+            "description": "Dependência indisponível ou resultado incerto; consulte seu operation_id."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "description": "JSON até 8192 bytes, exatamente os sete campos; payload normalizado define idempotência.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "online-stock-settings.openapi.json#/components/schemas/Input"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "defined"
+      }
+    },
+    "/api/v1/catalog/stock-settings/operations/{operation_id}": {
+      "get": {
+        "operationId": "onlineStockSettings43_4",
+        "summary": "Recuperar o próprio recibo após perda de resposta",
+        "description": "Empresa e usuário derivados da sessão. Parâmetros extras e corpo em GET são recusados. Recibo da consulta de operação restrito ao ator original.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID canônico minúsculo e não nulo."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado confirmado.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-stock-settings.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: extras, duplicados, campos faltantes, null, tipos ou limites incorretos."
+          },
+          "401": {
+            "description": "Sessão inválida, expirada ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager."
+          },
+          "404": {
+            "description": "Produto/recibo não encontrado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão antiga ou operação reutilizada com ator/produto/payload diferente."
+          },
+          "429": {
+            "description": "Limite HTTP excedido; respeite Retry-After."
+          },
+          "503": {
+            "description": "Dependência indisponível ou resultado incerto; consulte seu operation_id."
+          }
+        },
+        "x-payload-contract": "defined"
+      }
+    },
+    "/api/v1/produtos/{id}/stock-settings/history": {
+      "get": {
+        "operationId": "onlineStockSettings43_5",
+        "summary": "Consultar histórico paginado por produto",
+        "description": "Empresa e usuário derivados da sessão. Parâmetros extras e corpo em GET são recusados. Histórico disponível para produto removido logicamente, com snapshots e responsáveis originais.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado confirmado.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "online-stock-settings.openapi.json#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: extras, duplicados, campos faltantes, null, tipos ou limites incorretos."
+          },
+          "401": {
+            "description": "Sessão inválida, expirada ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager."
+          },
+          "404": {
+            "description": "Produto/recibo não encontrado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão antiga ou operação reutilizada com ator/produto/payload diferente."
+          },
+          "429": {
+            "description": "Limite HTTP excedido; respeite Retry-After."
+          },
+          "503": {
+            "description": "Dependência indisponível ou resultado incerto; consulte seu operation_id."
+          }
+        },
+        "x-payload-contract": "defined"
+      }
     }
   },
   "components": {

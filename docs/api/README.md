@@ -109,3 +109,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - Entrega41: [histórico auditável de custos](online-cost-history.openapi.json): resumo, lista, detalhe, produto e CSV; sessão/empresa revalidadas, snapshots preservados.
 
 - Entrega42: [análise de estoque online](online-stock-analysis.openapi.json): resumo, zero, mínimo, cobertura e CSV. Dados PostgreSQL; não é estoque sincronizado do PDV local.
+
+Entrega43: `online-stock-settings.openapi.json` cobre consulta, prévia, gravação versionada, recuperação do próprio recibo e histórico paginado do planejamento online. Migração18 explícita; não altera saldos nem o módulo de produção.

@@ -2427,5 +2427,184 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if _, e := store.StockReport(ctx, stockReportActor42, onlinecatalog.StockReportQuery{Active: "true", Issue: "all", HorizonDays: 7, Limit: 50}); e != onlinecatalog.ErrDenied {
 		t.Fatal("sessão revogada42 consultou estoque")
 	}
+	// Delivery43: planning declarations, immutable receipts and transactional outbox.
+	app = fiber.New()
+	Registrar(app)
+	if onlinecatalog.MigrateStockSettings(ctx, sqlDB) != nil || onlinecatalog.MigrateStockSettings(ctx, sqlDB) != nil || onlinecatalog.CheckStockSettings(ctx, sqlDB) != nil {
+		t.Fatal("migração do planejamento43 falhou")
+	}
+	created43 := request("POST", "/api/v1/produtos/", `{"nome":"Planning43","sku":"planning43","preco":10}`, tokenA, 201)
+	product43 := int64(created43["ID"].(float64))
+	settingsURL43 := fmt.Sprintf("/api/v1/produtos/%d/stock-settings", product43)
+	exec(`UPDATE products SET estoque=4,estoque_minimo=0,ponto_reposicao=0,tempo_reposicao_dias=0,demanda_media_diaria=0,variabilidade_demanda=0.1234,ultima_previsao_demanda_em=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, product43)
+	input43 := onlinecatalog.StockSettingsInput{OperationID: uuid.NewString(), ExpectedVersion: 1, MinimumUnits: 5, ReorderPointUnits: 8, LeadTimeDays: 2, DailyDemand: "1.0000", Reason: "Parâmetros conferidos"}
+	body43, _ := json.Marshal(input43)
+	initial43 := request("GET", settingsURL43, "", tokenA, 200)
+	if initial43["stock_units"] != float64(4) || initial43["settings"].(map[string]interface{})["daily_demand"] != "0.0000" {
+		t.Fatal("consulta43 inventou planejamento")
+	}
+	beforePreview43 := writes40()
+	preview43 := request("POST", settingsURL43+"/preview", string(body43), tokenA, 200)
+	metrics43 := preview43["metrics"].(map[string]interface{})
+	if writes40() != beforePreview43 || metrics43["missing_to_minimum"] != float64(1) || metrics43["coverage_days"] != "4.0000" || preview43["after"].(map[string]interface{})["settings"].(map[string]interface{})["forecast_at"] != nil {
+		t.Fatal("prévia43 alterou dados ou cálculo incorreto")
+	}
+	var count43 int
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_stock_setting_operations)+(SELECT count(*) FROM online_stock_setting_outbox)`).Scan(&count43) != nil || count43 != 0 {
+		t.Fatal("prévia43 gravou auditoria")
+	}
+	receipt43 := request("POST", settingsURL43, string(body43), tokenA, 200)
+	after43 := receipt43["after"].(map[string]interface{})
+	if after43["product"].(map[string]interface{})["version"] != float64(2) || after43["stock_units"] != float64(4) || after43["settings"].(map[string]interface{})["forecast_at"] != nil {
+		t.Fatal("gravação43 incorreta")
+	}
+	opURL43 := "/api/v1/catalog/stock-settings/operations/" + input43.OperationID
+	for _, r43 := range []map[string]interface{}{request("POST", settingsURL43, string(body43), tokenA, 200), request("GET", opURL43, "", tokenA, 200)} {
+		b43, _ := json.Marshal(r43)
+		original43, _ := json.Marshal(receipt43)
+		if string(b43) != string(original43) {
+			t.Fatal("recuperação43 mudou recibo")
+		}
+	}
+	request("GET", opURL43, "", tokenB, 404)
+	request("GET", opURL43, "", otherToken39, 404)
+	request("POST", settingsURL43, string(body43), otherToken39, 409)
+	request("GET", settingsURL43, "", tokenB, 404)
+	request("GET", settingsURL43+"/history", "", tokenB, 404)
+	bad43 := input43
+	bad43.MinimumUnits++
+	badBody43, _ := json.Marshal(bad43)
+	request("POST", settingsURL43, string(badBody43), tokenA, 409)
+	bad43.OperationID = uuid.NewString()
+	badBody43, _ = json.Marshal(bad43)
+	request("POST", settingsURL43, string(badBody43), tokenA, 409)
+	request("POST", settingsURL43+"/preview", string(badBody43), tokenA, 409)
+	// Changing thresholds while retaining the same demand preserves a genuine forecast timestamp.
+	exec(`UPDATE products SET ultima_previsao_demanda_em=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, product43)
+	second43 := input43
+	second43.OperationID = uuid.NewString()
+	second43.ExpectedVersion = 2
+	second43.MinimumUnits = 6
+	secondReceipt43, e43 := store.SetStockSettings(ctx, actor, product43, second43)
+	if e43 != nil || secondReceipt43.After.Settings.ForecastAt == nil || !secondReceipt43.After.Settings.ForecastAt.Equal(*secondReceipt43.Before.Settings.ForecastAt) {
+		t.Fatal("demanda mantida43 perdeu previsão")
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM products WHERE tenant_id=$1 AND id=$2 AND estoque=4 AND preco=10 AND nome='Planning43' AND sku='planning43' AND variabilidade_demanda=0.1234`, tenantA, product43).Scan(&count43) != nil || count43 != 1 {
+		t.Fatal("planejamento43 alterou campos protegidos")
+	}
+	history43 := request("GET", settingsURL43+"/history?limit=1", "", tokenA, 200)
+	if history43["total"] != float64(2) || history43["has_more"] != true || history43["next_offset"] != float64(1) || len(history43["items"].([]interface{})) != 1 {
+		t.Fatal("histórico43 sem paginação")
+	}
+	last43 := request("GET", settingsURL43+"/history?limit=1&offset=1", "", otherToken39, 200)
+	if last43["has_more"] != false || last43["items"].([]interface{})[0].(map[string]interface{})["operation_id"] != input43.OperationID {
+		t.Fatal("histórico43 perdeu snapshot original")
+	}
+	if h43 := request("GET", settingsURL43+"/history?offset=99", "", tokenA, 200); len(h43["items"].([]interface{})) != 0 {
+		t.Fatal("página43 fabricada")
+	}
+	// Outbox rejection or an ignored insert must roll back product and audit together.
+	rollback43 := input43
+	rollback43.OperationID = uuid.NewString()
+	rollback43.ExpectedVersion = 3
+	rollback43.DailyDemand = "2.0000"
+	exec(`CREATE FUNCTION reject_planning43() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.operation_id::text='` + rollback43.OperationID + `' THEN RAISE EXCEPTION 'fixture'; END IF; RETURN NEW; END $$`)
+	exec(`CREATE TRIGGER reject_planning43 BEFORE INSERT ON online_stock_setting_outbox FOR EACH ROW EXECUTE FUNCTION reject_planning43()`)
+	beforeRollback43 := writes40()
+	if _, e := store.SetStockSettings(ctx, actor, product43, rollback43); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("falha tardia43 aceita")
+	}
+	if writes40() != beforeRollback43 {
+		t.Fatal("rollback43 alterou produto")
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_stock_setting_operations WHERE tenant_id=$1 AND operation_id=$2`, tenantA, rollback43.OperationID).Scan(&count43) != nil || count43 != 0 {
+		t.Fatal("rollback43 deixou auditoria")
+	}
+	exec(`ALTER TABLE online_stock_setting_outbox DISABLE TRIGGER reject_planning43`)
+	exec(`CREATE FUNCTION ignore_planning43() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.operation_id::text='` + rollback43.OperationID + `' THEN RETURN NULL; END IF; RETURN NEW; END $$`)
+	exec(`CREATE TRIGGER ignore_planning43 BEFORE INSERT ON online_stock_setting_outbox FOR EACH ROW EXECUTE FUNCTION ignore_planning43()`)
+	if _, e := store.SetStockSettings(ctx, actor, product43, rollback43); e != onlinecatalog.ErrUnavailable || writes40() != beforeRollback43 {
+		t.Fatal("outbox ignorada43 publicou produto")
+	}
+	exec(`ALTER TABLE online_stock_setting_outbox DISABLE TRIGGER ignore_planning43`)
+	if _, e := store.SetStockSettings(ctx, actor, product43, rollback43); e != nil {
+		t.Fatal("nova tentativa43 após rollback falhou")
+	}
+	concurrent43 := input43
+	concurrent43.OperationID = uuid.NewString()
+	concurrent43.ExpectedVersion = 4
+	concurrent43.DailyDemand = "3.0000"
+	errors43 := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		go func() { _, e := store.SetStockSettings(ctx, actor, product43, concurrent43); errors43 <- e }()
+	}
+	for i := 0; i < 2; i++ {
+		if <-errors43 != nil {
+			t.Fatal("replay concorrente43 falhou")
+		}
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_stock_setting_operations WHERE tenant_id=$1 AND operation_id=$2)+(SELECT count(*) FROM online_stock_setting_outbox WHERE tenant_id=$1 AND operation_id=$2)`, tenantA, concurrent43.OperationID).Scan(&count43) != nil || count43 != 2 {
+		t.Fatal("recibo ou evento43 duplicado")
+	}
+	for i := 0; i < 2; i++ {
+		v43 := concurrent43
+		v43.OperationID = uuid.NewString()
+		v43.ExpectedVersion = 5
+		v43.MinimumUnits = int64(10 + i)
+		go func(v43 onlinecatalog.StockSettingsInput) {
+			_, e := store.SetStockSettings(ctx, actor, product43, v43)
+			errors43 <- e
+		}(v43)
+	}
+	won43, conflict43 := 0, 0
+	for i := 0; i < 2; i++ {
+		e := <-errors43
+		if e == nil {
+			won43++
+		} else if e == onlinecatalog.ErrConflict {
+			conflict43++
+		} else {
+			t.Fatal("concorrência43 indisponível")
+		}
+	}
+	if won43 != 1 || conflict43 != 1 {
+		t.Fatal("versão43 não protegeu disputa")
+	}
+	// Original receipt remains recoverable after later versions and soft deletion.
+	request("POST", settingsURL43, string(body43), tokenA, 200)
+	exec(`UPDATE products SET deleted_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, product43)
+	request("GET", settingsURL43, "", tokenA, 404)
+	request("GET", opURL43, "", tokenA, 200)
+	if h43 := request("GET", settingsURL43+"/history", "", tokenA, 200); h43["total"] != float64(5) {
+		t.Fatal("histórico43 após exclusão perdeu dados")
+	}
+	stockSession43 := uuid.NewString()
+	exec(`INSERT INTO online_sessions(id,tenant_id,user_id,role,created_at,expires_at) VALUES($1,$2,$3,'stock',clock_timestamp(),clock_timestamp()+interval '1 hour')`, stockSession43, tenantA, stockUser)
+	stockToken43, errStock43 := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": stockUser, "tenant_id": tenantA, "role": "stock", "sid": stockSession43, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("catalog-fixture-only-secret"))
+	if errStock43 != nil {
+		t.Fatal("token43 indisponível")
+	}
+	request("GET", settingsURL43, "", stockToken43, 403)
+	request("POST", settingsURL43, string(body43), stockToken43, 403)
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", opURL43, "", tokenA, 401)
+	if _, e := store.StockSettingsOperation(ctx, actor, input43.OperationID); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada43 recuperou recibo")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	var checksum43 string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_stock_setting_migrations WHERE version=18`).Scan(&checksum43) != nil {
+		t.Fatal("checksum43 indisponível")
+	}
+	exec(`UPDATE online_stock_setting_migrations SET checksum='changed' WHERE version=18`)
+	if onlinecatalog.CheckStockSettings(ctx, sqlDB) != onlinecatalog.ErrUnavailable || onlinecatalog.MigrateStockSettings(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema43 adulterado aceito")
+	}
+	exec(`UPDATE online_stock_setting_migrations SET checksum=$1 WHERE version=18`, checksum43)
+	exec(`INSERT INTO online_stock_setting_migrations(version,checksum) VALUES(19,'future')`)
+	if onlinecatalog.MigrateStockSettings(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("schema43 futuro aceito")
+	}
+	exec(`DELETE FROM online_stock_setting_migrations WHERE version=19`)
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

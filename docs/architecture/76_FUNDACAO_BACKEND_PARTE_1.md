@@ -199,3 +199,5 @@ Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de
 - Entrega41: cinco consultas de histórico de custos online, com snapshots históricos, classificação exata e CSV por página; aceite exige PostgreSQL isolado. Ver `116_HISTORICO_CUSTOS_CINCO_FUNCOES.md`.
 
 - Entrega42: cinco consultas do estoque online e cobertura estimada sobre demanda registrada, sem movimentar estoque ou gerar pedidos. Ver `117_ESTOQUE_ONLINE_CINCO_FUNCOES.md`; aceite exige PostgreSQL isolado.
+
+- Entrega43: consulta, prévia, gravação idempotente, recuperação e histórico de planejamento de estoque online. Ver `118_PLANEJAMENTO_ESTOQUE_CINCO_FUNCOES.md`; aceite exige PostgreSQL isolado.
