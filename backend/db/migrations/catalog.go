@@ -43,3 +43,6 @@ var ProductCostsSQL string
 
 //go:embed 000018_online_stock_settings.sql
 var StockSettingsSQL string
+
+//go:embed 000019_online_replenishment_proposals.sql
+var ReplenishmentProposalsSQL string

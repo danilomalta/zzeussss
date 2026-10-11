@@ -10099,6 +10099,342 @@
         },
         "x-payload-contract": "defined"
       }
+    },
+    "/api/v1/catalog/replenishment/proposals": {
+      "post": {
+        "operationId": "CreateReplenishmentProposal",
+        "summary": "Criar proposta com cálculo preservado",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Resultado persistente; replay retorna o recibo original e o mesmo status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: campos extras/duplicados/nulos, tipo, limites ou query não permitida."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager; empresa, usuário e papel revalidados na transação."
+          },
+          "404": {
+            "description": "Proposta, produto ou recibo não localizado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão/revisão desatualizada, estado incompatível, divergência do snapshot ou operation_id reutilizado com outra entrada/ator."
+          },
+          "429": {
+            "description": "Limite HTTP excedido."
+          },
+          "503": {
+            "description": "Persistência ou esquema indisponível; resposta sem erro SQL bruto."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/CreateInput"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-replenishment-proposals.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/proposals/{proposal_id}": {
+      "get": {
+        "operationId": "GetReplenishmentProposal",
+        "summary": "Consultar estado e revisão atuais",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistente; replay retorna o recibo original e o mesmo status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/Proposal"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: campos extras/duplicados/nulos, tipo, limites ou query não permitida."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager; empresa, usuário e papel revalidados na transação."
+          },
+          "404": {
+            "description": "Proposta, produto ou recibo não localizado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão/revisão desatualizada, estado incompatível, divergência do snapshot ou operation_id reutilizado com outra entrada/ator."
+          },
+          "429": {
+            "description": "Limite HTTP excedido."
+          },
+          "503": {
+            "description": "Persistência ou esquema indisponível; resposta sem erro SQL bruto."
+          }
+        },
+        "description": "Sem corpo e sem parâmetros de query.",
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-replenishment-proposals.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/proposals/{proposal_id}/approve": {
+      "post": {
+        "operationId": "ApproveReplenishmentProposal",
+        "summary": "Aprovar proposta planejada sem divergência do produto",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistente; replay retorna o recibo original e o mesmo status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: campos extras/duplicados/nulos, tipo, limites ou query não permitida."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager; empresa, usuário e papel revalidados na transação."
+          },
+          "404": {
+            "description": "Proposta, produto ou recibo não localizado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão/revisão desatualizada, estado incompatível, divergência do snapshot ou operation_id reutilizado com outra entrada/ator."
+          },
+          "429": {
+            "description": "Limite HTTP excedido."
+          },
+          "503": {
+            "description": "Persistência ou esquema indisponível; resposta sem erro SQL bruto."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/DecisionInput"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-replenishment-proposals.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/proposals/{proposal_id}/cancel": {
+      "post": {
+        "operationId": "CancelReplenishmentProposal",
+        "summary": "Cancelar proposta planejada ou aprovada com motivo",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistente; replay retorna o recibo original e o mesmo status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: campos extras/duplicados/nulos, tipo, limites ou query não permitida."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager; empresa, usuário e papel revalidados na transação."
+          },
+          "404": {
+            "description": "Proposta, produto ou recibo não localizado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão/revisão desatualizada, estado incompatível, divergência do snapshot ou operation_id reutilizado com outra entrada/ator."
+          },
+          "429": {
+            "description": "Limite HTTP excedido."
+          },
+          "503": {
+            "description": "Persistência ou esquema indisponível; resposta sem erro SQL bruto."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/DecisionInput"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-replenishment-proposals.openapi.json"
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/operations/{operation_id}": {
+      "get": {
+        "operationId": "GetReplenishmentProposalOperation",
+        "summary": "Recuperar recibo imutável do próprio responsável",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistente; replay retorna o recibo original e o mesmo status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: campos extras/duplicados/nulos, tipo, limites ou query não permitida."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager; empresa, usuário e papel revalidados na transação."
+          },
+          "404": {
+            "description": "Proposta, produto ou recibo não localizado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão/revisão desatualizada, estado incompatível, divergência do snapshot ou operation_id reutilizado com outra entrada/ator."
+          },
+          "429": {
+            "description": "Limite HTTP excedido."
+          },
+          "503": {
+            "description": "Persistência ou esquema indisponível; resposta sem erro SQL bruto."
+          }
+        },
+        "description": "Sem corpo e sem parâmetros de query.",
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado desta operação",
+          "url": "./online-replenishment-proposals.openapi.json"
+        }
+      }
     }
   },
   "components": {

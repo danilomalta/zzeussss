@@ -1,0 +1,524 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — propostas humanas de reposição online",
+    "version": "45.0.0",
+    "description": "Cinco funções persistentes. Uma proposta por produto, cálculo44 preservado e quantidade inteira escolhida explicitamente. Não constitui pedido, reserva, compra, comunicação com fornecedor ou movimento de estoque. Criação em estado planned e revisão1; aprovação planned→approved, cancelamento planned/approved→cancelled. operation_id da criação torna-se id da proposta. Repetir a mesma operação retorna o recibo histórico mesmo após outras decisões. Aprovação compara todo o StockPlan atual com o snapshot; se mudou, criar nova proposta. Cancelamento preserva o snapshot e funciona após exclusão lógica do produto. Quantity pode diferir da sugestão, com motivo obrigatório. Decisões não alteram a quantidade. A mesma empresa pode criar propostas independentes do mesmo produto; não há deduplicação de compras nem controle de execução externa."
+  },
+  "paths": {
+    "/api/v1/catalog/replenishment/proposals": {
+      "post": {
+        "operationId": "CreateReplenishmentProposal",
+        "summary": "Criar proposta com cálculo preservado",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Resultado persistente; replay retorna o recibo original e o mesmo status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: campos extras/duplicados/nulos, tipo, limites ou query não permitida."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager; empresa, usuário e papel revalidados na transação."
+          },
+          "404": {
+            "description": "Proposta, produto ou recibo não localizado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão/revisão desatualizada, estado incompatível, divergência do snapshot ou operation_id reutilizado com outra entrada/ator."
+          },
+          "429": {
+            "description": "Limite HTTP excedido."
+          },
+          "503": {
+            "description": "Persistência ou esquema indisponível; resposta sem erro SQL bruto."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/proposals/{proposal_id}": {
+      "get": {
+        "operationId": "GetReplenishmentProposal",
+        "summary": "Consultar estado e revisão atuais",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistente; replay retorna o recibo original e o mesmo status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proposal"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: campos extras/duplicados/nulos, tipo, limites ou query não permitida."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager; empresa, usuário e papel revalidados na transação."
+          },
+          "404": {
+            "description": "Proposta, produto ou recibo não localizado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão/revisão desatualizada, estado incompatível, divergência do snapshot ou operation_id reutilizado com outra entrada/ator."
+          },
+          "429": {
+            "description": "Limite HTTP excedido."
+          },
+          "503": {
+            "description": "Persistência ou esquema indisponível; resposta sem erro SQL bruto."
+          }
+        },
+        "description": "Sem corpo e sem parâmetros de query."
+      }
+    },
+    "/api/v1/catalog/replenishment/proposals/{proposal_id}/approve": {
+      "post": {
+        "operationId": "ApproveReplenishmentProposal",
+        "summary": "Aprovar proposta planejada sem divergência do produto",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistente; replay retorna o recibo original e o mesmo status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: campos extras/duplicados/nulos, tipo, limites ou query não permitida."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager; empresa, usuário e papel revalidados na transação."
+          },
+          "404": {
+            "description": "Proposta, produto ou recibo não localizado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão/revisão desatualizada, estado incompatível, divergência do snapshot ou operation_id reutilizado com outra entrada/ator."
+          },
+          "429": {
+            "description": "Limite HTTP excedido."
+          },
+          "503": {
+            "description": "Persistência ou esquema indisponível; resposta sem erro SQL bruto."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/proposals/{proposal_id}/cancel": {
+      "post": {
+        "operationId": "CancelReplenishmentProposal",
+        "summary": "Cancelar proposta planejada ou aprovada com motivo",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistente; replay retorna o recibo original e o mesmo status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: campos extras/duplicados/nulos, tipo, limites ou query não permitida."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager; empresa, usuário e papel revalidados na transação."
+          },
+          "404": {
+            "description": "Proposta, produto ou recibo não localizado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão/revisão desatualizada, estado incompatível, divergência do snapshot ou operation_id reutilizado com outra entrada/ator."
+          },
+          "429": {
+            "description": "Limite HTTP excedido."
+          },
+          "503": {
+            "description": "Persistência ou esquema indisponível; resposta sem erro SQL bruto."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/replenishment/operations/{operation_id}": {
+      "get": {
+        "operationId": "GetReplenishmentProposalOperation",
+        "summary": "Recuperar recibo imutável do próprio responsável",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado persistente; replay retorna o recibo original e o mesmo status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida: campos extras/duplicados/nulos, tipo, limites ou query não permitida."
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada."
+          },
+          "403": {
+            "description": "Apenas owner/admin/manager; empresa, usuário e papel revalidados na transação."
+          },
+          "404": {
+            "description": "Proposta, produto ou recibo não localizado no escopo permitido."
+          },
+          "409": {
+            "description": "Versão/revisão desatualizada, estado incompatível, divergência do snapshot ou operation_id reutilizado com outra entrada/ator."
+          },
+          "429": {
+            "description": "Limite HTTP excedido."
+          },
+          "503": {
+            "description": "Persistência ou esquema indisponível; resposta sem erro SQL bruto."
+          }
+        },
+        "description": "Sem corpo e sem parâmetros de query."
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "product_id",
+          "expected_version",
+          "review_days",
+          "quantity_units",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "product_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "expected_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "review_days": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "quantity_units": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Motivo obrigatório, aparado e sem caracteres de controle."
+          }
+        }
+      },
+      "DecisionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Motivo obrigatório, aparado e sem caracteres de controle."
+          }
+        }
+      },
+      "Proposal": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "product_id",
+          "revision",
+          "state",
+          "snapshot",
+          "quantity_units",
+          "creator_id",
+          "last_actor_id",
+          "reason",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "product_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "approved",
+              "cancelled"
+            ]
+          },
+          "snapshot": {
+            "$ref": "./online-replenishment.openapi.json#/components/schemas/Item"
+          },
+          "quantity_units": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "creator_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "last_actor_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Motivo obrigatório, aparado e sem caracteres de controle."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "proposal_id",
+          "actor_id",
+          "kind",
+          "before",
+          "after"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "proposal_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "create",
+              "approve",
+              "cancel"
+            ]
+          },
+          "before": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Proposal"
+              }
+            ],
+            "description": "null na criação; snapshot da revisão anterior nas decisões."
+          },
+          "after": {
+            "$ref": "#/components/schemas/Proposal"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

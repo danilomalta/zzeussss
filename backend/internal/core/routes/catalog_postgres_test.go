@@ -2,12 +2,14 @@ package routes
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -2731,5 +2733,178 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if _, e := store.Replenishments(ctx, stockActor44, onlinecatalog.ReplenishmentQuery{Active: "true", State: "all", ReviewDays: 7, Limit: 50}); e != onlinecatalog.ErrDenied {
 		t.Fatal("sessão revogada44 consultou reposição")
 	}
+	// Delivery45: persistent human proposals with no supplier order or stock movement.
+	app = fiber.New()
+	Registrar(app)
+	if onlinecatalog.MigrateReplenishmentProposals(ctx, sqlDB) != nil || onlinecatalog.MigrateReplenishmentProposals(ctx, sqlDB) != nil || onlinecatalog.CheckReplenishmentProposals(ctx, sqlDB) != nil {
+		t.Fatal("migração19 da proposta falhou")
+	}
+	exec(`UPDATE online_replenishment_migrations SET checksum='changed' WHERE version=19`)
+	if onlinecatalog.CheckReplenishmentProposals(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("migração19 adulterada aceita")
+	}
+	exec(`UPDATE online_replenishment_migrations SET checksum=$1 WHERE version=19`, fmt.Sprintf("%x", sha256.Sum256([]byte(migrations.ReplenishmentProposalsSQL))))
+	var product45 int64
+	if sqlDB.QueryRowContext(ctx, `INSERT INTO products(tenant_id,nome,sku,preco,ativo,estoque,estoque_minimo,ponto_reposicao,tempo_reposicao_dias,demanda_media_diaria) VALUES($1,'Proposal45','proposal45',10,true,4,5,8,2,1) RETURNING id`, tenantA).Scan(&product45) != nil {
+		t.Fatal("produto45 indisponível")
+	}
+	beforeWrites45 := writes40()
+	proposalBase45 := "/api/v1/catalog/replenishment/proposals"
+	operationBase45 := "/api/v1/catalog/replenishment/operations/"
+	proposalInput45 := func(op string) string {
+		return fmt.Sprintf(`{"operation_id":%q,"product_id":%d,"expected_version":1,"review_days":7,"quantity_units":5,"reason":"Reposição45 conferida"}`, op, product45)
+	}
+	decisionInput45 := func(op string, revision int) string {
+		return fmt.Sprintf(`{"operation_id":%q,"expected_revision":%d,"reason":"Decisão45 conferida"}`, op, revision)
+	}
+	createOp45 := uuid.NewString()
+	created45 := request("POST", proposalBase45, proposalInput45(createOp45), tokenA, 201)
+	if created45["kind"] != "create" || created45["before"] != nil || created45["after"].(map[string]interface{})["state"] != "planned" {
+		t.Fatal("proposta45 não planejada")
+	}
+	if replay45 := request("POST", proposalBase45, proposalInput45(createOp45), tokenA, 201); !reflect.DeepEqual(created45, replay45) {
+		t.Fatal("replay45 mudou recibo")
+	}
+	request("POST", proposalBase45, strings.Replace(proposalInput45(createOp45), `"quantity_units":5`, `"quantity_units":6`, 1), tokenA, 409)
+	request("POST", proposalBase45, proposalInput45(createOp45), otherToken39, 409)
+	proposalURL45 := proposalBase45 + "/" + createOp45
+	request("GET", proposalURL45, "", tokenB, 404)
+	request("GET", operationBase45+createOp45, "", otherToken39, 404)
+	if recovered45 := request("GET", operationBase45+createOp45, "", tokenA, 200); !reflect.DeepEqual(created45, recovered45) {
+		t.Fatal("recuperação45 perdeu recibo")
+	}
+	approvalOp45 := uuid.NewString()
+	approved45 := request("POST", proposalURL45+"/approve", decisionInput45(approvalOp45, 1), tokenA, 200)
+	if approved45["after"].(map[string]interface{})["state"] != "approved" || approved45["after"].(map[string]interface{})["revision"] != float64(2) {
+		t.Fatal("aprovação45 falhou")
+	}
+	request("POST", proposalURL45+"/approve", decisionInput45(uuid.NewString(), 2), tokenA, 409)
+	request("POST", proposalURL45+"/cancel", decisionInput45(uuid.NewString(), 1), tokenA, 409)
+	cancelOp45 := uuid.NewString()
+	cancelled45 := request("POST", proposalURL45+"/cancel", decisionInput45(cancelOp45, 2), tokenA, 200)
+	if cancelled45["after"].(map[string]interface{})["state"] != "cancelled" || cancelled45["after"].(map[string]interface{})["revision"] != float64(3) {
+		t.Fatal("cancelamento45 falhou")
+	}
+	// Lost-response retry returns its historical approval, even after cancellation.
+	if replay45 := request("POST", proposalURL45+"/approve", decisionInput45(approvalOp45, 1), tokenA, 200); !reflect.DeepEqual(approved45, replay45) {
+		t.Fatal("recibo45 foi reescrito")
+	}
+	if recovered45 := request("GET", operationBase45+approvalOp45, "", tokenA, 200); !reflect.DeepEqual(approved45, recovered45) {
+		t.Fatal("recuperação45 de aprovação falhou")
+	}
+	request("POST", proposalURL45+"/cancel", decisionInput45(uuid.NewString(), 3), tokenA, 409)
+	if detail45 := request("GET", proposalURL45, "", tokenA, 200); detail45["state"] != "cancelled" || detail45["quantity_units"] != float64(5) {
+		t.Fatal("consulta45 incorreta")
+	}
+	var operations45, outbox45 int
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_replenishment_operations WHERE tenant_id=$1 AND proposal_id=$2),(SELECT count(*) FROM online_replenishment_outbox WHERE tenant_id=$1)`, tenantA, createOp45).Scan(&operations45, &outbox45) != nil || operations45 != 3 || outbox45 != 3 {
+		t.Fatal("replay45 duplicou eventos")
+	}
+	// Drift of stock, active flag, planning or catalog version cannot approve a stale snapshot.
+	driftOp45 := uuid.NewString()
+	request("POST", proposalBase45, proposalInput45(driftOp45), tokenA, 201)
+	for _, change45 := range []struct{ apply, restore string }{{"estoque=3", "estoque=4"}, {"ativo=false", "ativo=true"}, {"estoque_minimo=6", "estoque_minimo=5"}, {"catalog_version=2", "catalog_version=1"}, {"preco=11", "preco=10"}} {
+		exec(`UPDATE products SET `+change45.apply+` WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+		request("POST", proposalBase45+"/"+driftOp45+"/approve", decisionInput45(uuid.NewString(), 1), tokenA, 409)
+		exec(`UPDATE products SET `+change45.restore+` WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	}
+	// Stock staff can read recommendations44 but cannot create/decide human proposals45.
+	stockSession45 := uuid.NewString()
+	exec(`INSERT INTO online_sessions(id,tenant_id,user_id,role,created_at,expires_at) VALUES($1,$2,$3,'stock',clock_timestamp(),clock_timestamp()+interval '1 hour')`, stockSession45, tenantA, stockUser)
+	stockToken45, e45 := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": stockUser, "tenant_id": tenantA, "role": "stock", "sid": stockSession45, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("catalog-fixture-only-secret"))
+	if e45 != nil {
+		t.Fatal("sessão45 indisponível")
+	}
+	request("POST", proposalBase45, proposalInput45(uuid.NewString()), stockToken45, 403)
+	request("GET", proposalURL45, "", stockToken45, 403)
+	request("POST", proposalBase45+"/"+driftOp45+"/approve", decisionInput45(uuid.NewString(), 1), stockToken45, 403)
+	request("POST", proposalBase45+"/"+driftOp45+"/cancel", decisionInput45(uuid.NewString(), 1), stockToken45, 403)
+	request("GET", operationBase45+createOp45, "", stockToken45, 403)
+	request("POST", proposalBase45, strings.Replace(proposalInput45(uuid.NewString()), fmt.Sprintf(`"product_id":%d`, product45), fmt.Sprintf(`"product_id":%d`, foreignID44), 1), tokenA, 404)
+	request("POST", proposalBase45, strings.Replace(proposalInput45(uuid.NewString()), `"expected_version":1`, `"expected_version":2`, 1), tokenA, 409)
+	request("POST", proposalBase45, strings.Replace(proposalInput45(uuid.NewString()), `"quantity_units":5`, `"quantity_units":0`, 1), tokenA, 400)
+	// Competing approver/canceller with revision1: exactly one decision and outbox commit.
+	raceID45 := uuid.NewString()
+	request("POST", proposalBase45, proposalInput45(raceID45), tokenA, 201)
+	start45 := make(chan struct{})
+	results45 := make(chan error, 2)
+	for _, kind45 := range []string{"approve", "cancel"} {
+		go func(kind string) {
+			<-start45
+			_, e := store.DecideReplenishmentProposal(ctx, actor, raceID45, kind, onlinecatalog.ReplenishmentDecisionInput{OperationID: uuid.NewString(), ExpectedRevision: 1, Reason: "Concorrência45"})
+			results45 <- e
+		}(kind45)
+	}
+	close(start45)
+	wins45, conflicts45 := 0, 0
+	for i45 := 0; i45 < 2; i45++ {
+		e := <-results45
+		if e == nil {
+			wins45++
+		} else if e == onlinecatalog.ErrConflict {
+			conflicts45++
+		} else {
+			t.Fatal("concorrência45 indisponível")
+		}
+	}
+	if wins45 != 1 || conflicts45 != 1 {
+		t.Fatal("concorrência45 sobrescreveu decisão")
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_replenishment_operations WHERE tenant_id=$1 AND proposal_id=$2`, tenantA, raceID45).Scan(&operations45) != nil || operations45 != 2 {
+		t.Fatal("concorrência45 duplicou auditoria")
+	}
+	// Same-operation concurrent creation commits exactly one proposal, receipt and event.
+	concurrentCreate45 := onlinecatalog.ReplenishmentProposalInput{OperationID: uuid.NewString(), ProductID: product45, ExpectedVersion: 1, ReviewDays: 7, QuantityUnits: 6, Reason: "Quantidade humana45"}
+	createStart45 := make(chan struct{})
+	createResults45 := make(chan onlinecatalog.ReplenishmentProposalReceipt, 2)
+	createErrors45 := make(chan error, 2)
+	for i45 := 0; i45 < 2; i45++ {
+		go func() {
+			<-createStart45
+			r, e := store.CreateReplenishmentProposal(ctx, actor, concurrentCreate45)
+			createResults45 <- r
+			createErrors45 <- e
+		}()
+	}
+	close(createStart45)
+	firstCreate45 := <-createResults45
+	secondCreate45 := <-createResults45
+	if <-createErrors45 != nil || <-createErrors45 != nil || !reflect.DeepEqual(firstCreate45, secondCreate45) || firstCreate45.After.QuantityUnits != 6 {
+		t.Fatal("criação concorrente45 duplicada")
+	}
+	if sqlDB.QueryRowContext(ctx, `SELECT count(*) FROM online_replenishment_operations WHERE tenant_id=$1 AND proposal_id=$2`, tenantA, concurrentCreate45.OperationID).Scan(&operations45) != nil || operations45 != 1 {
+		t.Fatal("criação concorrente45 duplicou recibo")
+	}
+	// No positive recommendation is not a purchase proposal with invented demand.
+	exec(`UPDATE products SET estoque_minimo=0,ponto_reposicao=0,demanda_media_diaria=0 WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	request("POST", proposalBase45, proposalInput45(uuid.NewString()), tokenA, 409)
+	exec(`UPDATE products SET estoque_minimo=5,ponto_reposicao=8,demanda_media_diaria=1 WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	// An ignored outbox write must roll back the entire proposal or transition.
+	exec(`CREATE FUNCTION reject_replenishment_outbox45() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END $$; CREATE TRIGGER reject_replenishment_outbox45 BEFORE INSERT ON online_replenishment_outbox FOR EACH ROW EXECUTE FUNCTION reject_replenishment_outbox45()`)
+	failedCreate45 := uuid.NewString()
+	request("POST", proposalBase45, proposalInput45(failedCreate45), tokenA, 503)
+	request("GET", proposalBase45+"/"+failedCreate45, "", tokenA, 404)
+	failedDecision45 := uuid.NewString()
+	request("POST", proposalBase45+"/"+driftOp45+"/approve", decisionInput45(failedDecision45, 1), tokenA, 503)
+	request("GET", operationBase45+failedDecision45, "", tokenA, 404)
+	if current45 := request("GET", proposalBase45+"/"+driftOp45, "", tokenA, 200); current45["state"] != "planned" || current45["revision"] != float64(1) {
+		t.Fatal("rollback45 alterou proposta")
+	}
+	exec(`ALTER TABLE online_replenishment_outbox DISABLE TRIGGER reject_replenishment_outbox45`)
+	request("POST", proposalBase45+"/"+driftOp45+"/approve", decisionInput45(failedDecision45, 1), tokenA, 200)
+	// Cancellation and receipt recovery remain possible after product soft deletion.
+	exec(`UPDATE products SET deleted_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	request("POST", proposalBase45+"/"+driftOp45+"/cancel", decisionInput45(uuid.NewString(), 2), tokenA, 200)
+	request("GET", operationBase45+failedDecision45, "", tokenA, 200)
+	exec(`UPDATE products SET deleted_at=NULL WHERE tenant_id=$1 AND id=$2`, tenantA, product45)
+	if writes40() != beforeWrites45 {
+		t.Fatal("propostas45 alteraram catálogo ou custos")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", proposalURL45, "", tokenA, 401)
+	if _, e := store.CreateReplenishmentProposal(ctx, actor, onlinecatalog.ReplenishmentProposalInput{OperationID: uuid.NewString(), ProductID: product45, ExpectedVersion: 1, ReviewDays: 7, QuantityUnits: 5, Reason: "Bloqueio45"}); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada45 gravou proposta")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

@@ -14,8 +14,8 @@ import (
 )
 
 func run(args []string) error {
-	if len(args) != 1 || (args[0] != "migrate-sessions" && args[0] != "check-sessions" && args[0] != "migrate-catalog" && args[0] != "check-catalog" && args[0] != "migrate-discount-reviews" && args[0] != "check-discount-reviews" && args[0] != "migrate-costs" && args[0] != "check-costs" && args[0] != "migrate-stock-settings" && args[0] != "check-stock-settings") {
-		return fmt.Errorf("uso: titan-online migrate-sessions | check-sessions | migrate-catalog | check-catalog | migrate-discount-reviews | check-discount-reviews | migrate-costs | check-costs | migrate-stock-settings | check-stock-settings")
+	if len(args) != 1 || (args[0] != "migrate-sessions" && args[0] != "check-sessions" && args[0] != "migrate-catalog" && args[0] != "check-catalog" && args[0] != "migrate-discount-reviews" && args[0] != "check-discount-reviews" && args[0] != "migrate-costs" && args[0] != "check-costs" && args[0] != "migrate-stock-settings" && args[0] != "check-stock-settings" && args[0] != "migrate-replenishment-proposals" && args[0] != "check-replenishment-proposals") {
+		return fmt.Errorf("uso: titan-online migrate-sessions | check-sessions | migrate-catalog | check-catalog | migrate-discount-reviews | check-discount-reviews | migrate-costs | check-costs | migrate-stock-settings | check-stock-settings | migrate-replenishment-proposals | check-replenishment-proposals")
 	}
 	// Only an explicit invocation of this maintenance command applies schema.
 	_ = godotenv.Load()
@@ -28,6 +28,12 @@ func run(args []string) error {
 	defer db.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+	if args[0] == "migrate-replenishment-proposals" {
+		return onlinecatalog.MigrateReplenishmentProposals(ctx, db)
+	}
+	if args[0] == "check-replenishment-proposals" {
+		return onlinecatalog.CheckReplenishmentProposals(ctx, db)
+	}
 	if args[0] == "migrate-stock-settings" {
 		return onlinecatalog.MigrateStockSettings(ctx, db)
 	}

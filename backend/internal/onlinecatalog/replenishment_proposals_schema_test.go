@@ -1,0 +1,51 @@
+package onlinecatalog
+
+import (
+	"context"
+	"github.com/DATA-DOG/go-sqlmock"
+	"testing"
+)
+
+func existingSettings45(m sqlmock.Sqlmock) {
+	m.ExpectQuery(`SELECT count\(\*\),COALESCE`).WillReturnRows(sqlmock.NewRows([]string{"n", "v", "h"}).AddRow(1, 18, stockSettingsChecksum()))
+	m.ExpectQuery("SELECT to_regclass").WillReturnRows(sqlmock.NewRows([]string{"ok"}).AddRow(true))
+}
+func TestReplenishmentProposalsMigrationStrictHistoryAndAtomicDDL(t *testing.T) {
+	for _, state := range []string{"fresh", "same", "future", "changed"} {
+		s, m := qualityFixture(t)
+		existingSettings45(m)
+		m.ExpectBegin()
+		m.ExpectExec("SELECT pg_advisory_xact_lock").WillReturnResult(sqlmock.NewResult(0, 1))
+		m.ExpectExec("CREATE TABLE IF NOT EXISTS online_replenishment_migrations").WillReturnResult(sqlmock.NewResult(0, 1))
+		rows := sqlmock.NewRows([]string{"version", "checksum"})
+		h := replenishmentProposalsChecksum()
+		if state == "same" {
+			rows.AddRow(19, h)
+		}
+		if state == "future" {
+			rows.AddRow(20, h)
+		}
+		if state == "changed" {
+			rows.AddRow(19, "changed")
+		}
+		m.ExpectQuery("SELECT version,checksum").WillReturnRows(rows)
+		if state == "future" || state == "changed" {
+			m.ExpectRollback()
+		} else {
+			if state == "fresh" {
+				m.ExpectExec("CREATE TABLE online_replenishment_proposals").WillReturnResult(sqlmock.NewResult(0, 1))
+				m.ExpectExec("INSERT INTO online_replenishment_migrations").WithArgs(h).WillReturnResult(sqlmock.NewResult(0, 1))
+			}
+			m.ExpectQuery(`SELECT count\(\*\),COALESCE`).WillReturnRows(sqlmock.NewRows([]string{"n", "v", "h"}).AddRow(1, 19, h))
+			m.ExpectQuery("SELECT to_regclass").WillReturnRows(sqlmock.NewRows([]string{"ok"}).AddRow(true))
+			m.ExpectCommit()
+		}
+		e := MigrateReplenishmentProposals(context.Background(), s.DB)
+		if (state == "fresh" || state == "same") && e != nil || (state == "future" || state == "changed") && e != ErrUnavailable {
+			t.Fatal(state, e)
+		}
+		if e = m.ExpectationsWereMet(); e != nil {
+			t.Fatal(e)
+		}
+	}
+}

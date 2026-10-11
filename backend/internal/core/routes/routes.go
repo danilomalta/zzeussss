@@ -150,6 +150,13 @@ func Registrar(app *fiber.App) {
 	negocios.Get("/catalog/quality/zero-stock", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CatalogQuality("zero_stock", false))
 	negocios.Get("/catalog/quality/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager", "stock"), catalogDelivery.CatalogQuality("any", true))
 
+	// Propostas duráveis: aprovação humana sem movimentação de estoque.
+	negocios.Post("/catalog/replenishment/proposals", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.CriarPropostaReposicao)
+	negocios.Get("/catalog/replenishment/proposals/:proposal_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarPropostaReposicao)
+	negocios.Post("/catalog/replenishment/proposals/:proposal_id/approve", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DecidirPropostaReposicao("approve"))
+	negocios.Post("/catalog/replenishment/proposals/:proposal_id/cancel", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DecidirPropostaReposicao("cancel"))
+	negocios.Get("/catalog/replenishment/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarOperacaoPropostaReposicao)
+
 	// Análises com Inteligência Artificial (Bounded Context: Catalog)
 	analises := negocios.Group("/analises")
 	analises.Get("/produtos-parados", Indisponivel)

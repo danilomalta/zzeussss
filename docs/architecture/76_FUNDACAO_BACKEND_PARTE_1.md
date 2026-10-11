@@ -203,3 +203,5 @@ Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de
 - Entrega43: consulta, prévia, gravação idempotente, recuperação e histórico de planejamento de estoque online. Ver `118_PLANEJAMENTO_ESTOQUE_CINCO_FUNCOES.md`; aceite exige PostgreSQL isolado.
 
 - Entrega44: resumo, lista, detalhe, simulação e CSV de planejamento de reposição online, usando parâmetros da43 sem gravações comerciais. Ver `119_REPOSICAO_ONLINE_CINCO_FUNCOES.md`; aceite exige PostgreSQL isolado.
+
+- Entrega45: proposta persistente de reposição e decisão humana com revisão, snapshot, idempotência, auditoria e outbox. Ver `120_PROPOSTAS_REPOSICAO_CINCO_FUNCOES.md`; pedido ao fornecedor e recebimento não são executados por estas rotas.
