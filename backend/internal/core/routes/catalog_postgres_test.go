@@ -1901,5 +1901,90 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 		t.Fatal("report accepted revoked session")
 	}
 	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	// Delivery38: compare approved snapshots to the current product, without mutations.
+	// A fresh HTTP harness gives this independent scenario its own rate-limit budget.
+	// Database, sessions and prior assertions remain unchanged; production limits stay active.
+	app = fiber.New()
+	Registrar(app)
+	checkBase38 := "/api/v1/discounts/checks/"
+	currentID38, currentProduct38 := newReview36("checks38-current")
+	priceID38, priceProduct38 := newReview36("checks38-%literal")
+	inactiveID38, inactiveProduct38 := newReview36("checks38-inactive")
+	versionID38, versionProduct38 := newReview36("checks38-version")
+	legacyID38, _ := newReview36("checks38-legacy")
+	exec(`UPDATE products SET nome='=Checks38' WHERE tenant_id=$1 AND sku LIKE 'checks38-%'`, tenantA)
+	for _, id38 := range []int64{currentID38, priceID38, inactiveID38, versionID38} {
+		request("POST", fmt.Sprintf("/api/v1/discounts/suggestions/%d/approve", id38), bodyReview36(onlinecatalog.DiscountReviewInput{OperationID: uuid.NewString(), ExpectedProductVersion: 1, ExpectedDiscountBPS: 1500, Reason: "Conferência antes da alteração"}), tokenA, 200)
+	}
+	exec(`UPDATE discount_suggestions SET status='APPROVED',reviewed_by=$3 WHERE tenant_id=$1 AND id=$2`, tenantA, legacyID38, userA)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/price", priceProduct38), fmt.Sprintf(`{"operation_id":%q,"expected_version":1,"price_cents":1200}`, uuid.NewString()), tokenA, 200)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/active", inactiveProduct38), fmt.Sprintf(`{"operation_id":%q,"expected_version":1,"ativo":false}`, uuid.NewString()), tokenA, 200)
+	request("POST", fmt.Sprintf("/api/v1/produtos/%d/details", versionProduct38), fmt.Sprintf(`{"operation_id":%q,"expected_version":1,"nome":"=Checks38","sku":"checks38-version","descricao":"Mudança de dados"}`, uuid.NewString()), tokenA, 200)
+	writesBefore38 := countReports37()
+	counts38 := request("GET", checkBase38+"summary?q=checks38", "", tokenA, 200)
+	if counts38["total"] != float64(5) || counts38["attention"] != float64(4) || counts38["price_changed"] != float64(1) || counts38["version_changed"] != float64(3) || counts38["inactive"] != float64(1) || counts38["no_receipt"] != float64(1) {
+		t.Fatal("approval check counts incorrect")
+	}
+	foreign38 := request("GET", checkBase38+"summary?q=checks38", "", tokenB, 200)
+	if foreign38["total"] != float64(0) {
+		t.Fatal("approval checks leaked company")
+	}
+	for _, test38 := range []struct {
+		id     int64
+		issues int
+	}{{currentID38, 0}, {priceID38, 2}, {inactiveID38, 2}, {versionID38, 1}, {legacyID38, 1}} {
+		r38 := request("GET", fmt.Sprintf("%ssuggestions/%d", checkBase38, test38.id), "", tokenA, 200)
+		if len(r38["issues"].([]interface{})) != test38.issues {
+			t.Fatal("approval issues mismatch")
+		}
+		if test38.id == legacyID38 {
+			if _, ok := r38["approved_price_cents"]; ok || r38["has_receipt"] != false {
+				t.Fatal("legacy snapshot invented")
+			}
+		} else if r38["approved_price_cents"] != float64(1000) || r38["approved_product_version"] != float64(1) {
+			t.Fatal("approval snapshot overwritten")
+		}
+	}
+	request("GET", fmt.Sprintf("%ssuggestions/%d", checkBase38, currentID38), "", tokenB, 404)
+	request("GET", fmt.Sprintf("%ssuggestions/%d", checkBase38, pendingID37), "", tokenA, 404)
+	prices38 := request("GET", checkBase38+"price-changed?q=checks38&limit=1", "", tokenA, 200)
+	if prices38["total"] != float64(1) || prices38["items"].([]interface{})[0].(map[string]interface{})["id"] != float64(priceID38) {
+		t.Fatal("price drift list incorrect")
+	}
+	inactive38 := request("GET", checkBase38+"inactive?q=checks38", "", tokenA, 200)
+	if inactive38["total"] != float64(1) || inactive38["items"].([]interface{})[0].(map[string]interface{})["id"] != float64(inactiveID38) {
+		t.Fatal("inactive approval list incorrect")
+	}
+	empty38 := request("GET", checkBase38+"inactive?q=checks38&offset=1", "", tokenA, 200)
+	if len(empty38["items"].([]interface{})) != 0 || empty38["has_more"] != false {
+		t.Fatal("check empty page incorrect")
+	}
+	literal38 := request("GET", checkBase38+"summary?q=%25literal", "", tokenA, 200)
+	if literal38["total"] != float64(1) {
+		t.Fatal("check search not literal")
+	}
+	req38 := httptest.NewRequest("GET", checkBase38+"export.csv?q=checks38&issue=any&limit=1", nil)
+	req38.Header.Set("Authorization", "Bearer "+tokenA)
+	resp38, e38 := app.Test(req38, 5000)
+	if e38 != nil {
+		t.Fatal("check csv transport")
+	}
+	data38, e38 := io.ReadAll(resp38.Body)
+	resp38.Body.Close()
+	if e38 != nil || resp38.StatusCode != 200 || !strings.Contains(string(data38), "'=Checks38") || !strings.HasPrefix(string(data38), "suggestion_id;product_id;") || resp38.Header.Get("X-Titan-Report-Total") != "4" || resp38.Header.Get("X-Titan-Report-Count") != "1" || resp38.Header.Get("X-Titan-Report-Has-More") != "true" || resp38.Header.Get("Cache-Control") != "no-store" || len(resp38.Header.Get("X-Titan-Source-Hash")) != 64 {
+		t.Fatal("check csv metadata/protection failed")
+	}
+	if countReports37() != writesBefore38 {
+		t.Fatal("approval checks mutated audit/outbox")
+	}
+	checkProduct(currentProduct38, 1, 1000, true)
+	checkProduct(priceProduct38, 2, 1200, true)
+	checkProduct(inactiveProduct38, 2, 1000, false)
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", checkBase38+"summary", "", tokenA, 401)
+	if _, e := store.DiscountCheck(ctx, actor, currentID38); e != onlinecatalog.ErrDenied {
+		t.Fatal("check accepted revoked session")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

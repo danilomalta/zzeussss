@@ -1,0 +1,632 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — Conferência de descontos aprovados",
+    "version": "1.0.0",
+    "description": "Cinco funções de leitura, sem aplicar desconto ou emitir garantia de elegibilidade. Preço/versão atuais comparados com snapshot da aprovação; receipt ausente explícito. Snapshot por requisição, schema16."
+  },
+  "paths": {
+    "/api/v1/discounts/checks/summary": {
+      "get": {
+        "operationId": "discountChecksummary",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Owner/admin/manager. Produtos/sugestões excluídos logicamente não entram; inativos entram. Apenas APPROVED. Consulta de conferência não autoriza venda. Filtros fixos não podem ser sobrescritos na query.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conferência real de aprovações desta empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query/corpo inválido"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "503": {
+            "description": "Banco/schema ou snapshot inconsistente"
+          }
+        }
+      }
+    },
+    "/api/v1/discounts/checks/price-changed": {
+      "get": {
+        "operationId": "discountCheckprice_changed",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Owner/admin/manager. Produtos/sugestões excluídos logicamente não entram; inativos entram. Apenas APPROVED. Consulta de conferência não autoriza venda. Filtros fixos não podem ser sobrescritos na query.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conferência real de aprovações desta empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query/corpo inválido"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "503": {
+            "description": "Banco/schema ou snapshot inconsistente"
+          }
+        }
+      }
+    },
+    "/api/v1/discounts/checks/inactive": {
+      "get": {
+        "operationId": "discountCheckinactive",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Owner/admin/manager. Produtos/sugestões excluídos logicamente não entram; inativos entram. Apenas APPROVED. Consulta de conferência não autoriza venda. Filtros fixos não podem ser sobrescritos na query.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conferência real de aprovações desta empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query/corpo inválido"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "503": {
+            "description": "Banco/schema ou snapshot inconsistente"
+          }
+        }
+      }
+    },
+    "/api/v1/discounts/checks/suggestions/{id}": {
+      "get": {
+        "operationId": "discountChecksuggestions_id",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Owner/admin/manager. Produtos/sugestões excluídos logicamente não entram; inativos entram. Apenas APPROVED. Consulta de conferência não autoriza venda. Filtros fixos não podem ser sobrescritos na query.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conferência real de aprovações desta empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query/corpo inválido"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "503": {
+            "description": "Banco/schema ou snapshot inconsistente"
+          },
+          "404": {
+            "description": "Sugestão aprovada não encontrada no contexto"
+          }
+        }
+      }
+    },
+    "/api/v1/discounts/checks/export.csv": {
+      "get": {
+        "operationId": "discountCheckexport_csv",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Owner/admin/manager. Produtos/sugestões excluídos logicamente não entram; inativos entram. Apenas APPROVED. Consulta de conferência não autoriza venda. CSV por página, default issue=any.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "issue",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "any",
+                "price_changed",
+                "inactive"
+              ],
+              "default": "any"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conferência real de aprovações desta empresa; no-store.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "maxLength": 262144
+                }
+              }
+            },
+            "headers": {
+              "X-Titan-Report-Total": {
+                "description": "Total filtrado",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "X-Titan-Report-Count": {
+                "description": "Itens desta página",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              },
+              "X-Titan-Report-Has-More": {
+                "description": "Existem mais itens",
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "X-Titan-Report-Next-Offset": {
+                "description": "Próximo offset quando houver mais itens",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "X-Titan-Source-Hash": {
+                "description": "Hash da página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Scope": {
+                "description": "online-discount-checks",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "description": "apostrophe",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query/corpo inválido"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "503": {
+            "description": "Banco/schema ou snapshot inconsistente"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Item": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "product_id",
+          "current_product_version",
+          "nome",
+          "sku",
+          "ativo",
+          "current_price_cents",
+          "discount_bps",
+          "operation_id",
+          "has_receipt",
+          "issues"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "product_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "current_product_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "nome": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "current_price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "discount_bps": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "approved_price_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "approved_product_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "operation_id": {
+            "type": "string",
+            "description": "UUID da aprovação, vazio quando não existe recibo"
+          },
+          "has_receipt": {
+            "type": "boolean"
+          },
+          "issues": {
+            "type": "array",
+            "uniqueItems": true,
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "enum": [
+                "no_receipt",
+                "inactive",
+                "price_changed",
+                "version_changed"
+              ]
+            }
+          }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "issue",
+          "limit",
+          "offset",
+          "total",
+          "items",
+          "has_more",
+          "generated_at",
+          "source_hash"
+        ],
+        "properties": {
+          "q": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "issue": {
+            "type": "string",
+            "enum": [
+              "all",
+              "any",
+              "price_changed",
+              "inactive"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "next_offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 1000000100
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "q",
+          "total",
+          "attention",
+          "price_changed",
+          "version_changed",
+          "inactive",
+          "no_receipt",
+          "generated_at"
+        ],
+        "properties": {
+          "q": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "attention": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "price_changed": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "version_changed": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "inactive": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "no_receipt": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "erro"
+        ],
+        "properties": {
+          "erro": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

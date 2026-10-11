@@ -6633,6 +6633,417 @@
           "url": "./online-discount-report.openapi.json"
         }
       }
+    },
+    "/api/v1/discounts/checks/summary": {
+      "get": {
+        "operationId": "discountChecksummary",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner/admin/manager. Produtos/sugestões excluídos logicamente não entram; inativos entram. Apenas APPROVED. Consulta de conferência não autoriza venda. Filtros fixos não podem ser sobrescritos na query.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conferência real de aprovações desta empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-checks.openapi.json#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query/corpo inválido"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "503": {
+            "description": "Banco/schema ou snapshot inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-discount-checks.openapi.json"
+        }
+      }
+    },
+    "/api/v1/discounts/checks/price-changed": {
+      "get": {
+        "operationId": "discountCheckprice_changed",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner/admin/manager. Produtos/sugestões excluídos logicamente não entram; inativos entram. Apenas APPROVED. Consulta de conferência não autoriza venda. Filtros fixos não podem ser sobrescritos na query.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conferência real de aprovações desta empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-checks.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query/corpo inválido"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "503": {
+            "description": "Banco/schema ou snapshot inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-discount-checks.openapi.json"
+        }
+      }
+    },
+    "/api/v1/discounts/checks/inactive": {
+      "get": {
+        "operationId": "discountCheckinactive",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner/admin/manager. Produtos/sugestões excluídos logicamente não entram; inativos entram. Apenas APPROVED. Consulta de conferência não autoriza venda. Filtros fixos não podem ser sobrescritos na query.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conferência real de aprovações desta empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-checks.openapi.json#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query/corpo inválido"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "503": {
+            "description": "Banco/schema ou snapshot inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-discount-checks.openapi.json"
+        }
+      }
+    },
+    "/api/v1/discounts/checks/suggestions/{id}": {
+      "get": {
+        "operationId": "discountChecksuggestions_id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner/admin/manager. Produtos/sugestões excluídos logicamente não entram; inativos entram. Apenas APPROVED. Consulta de conferência não autoriza venda. Filtros fixos não podem ser sobrescritos na query.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conferência real de aprovações desta empresa; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-discount-checks.openapi.json#/components/schemas/Item"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query/corpo inválido"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "503": {
+            "description": "Banco/schema ou snapshot inconsistente"
+          },
+          "404": {
+            "description": "Sugestão aprovada não encontrada no contexto"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-discount-checks.openapi.json"
+        }
+      }
+    },
+    "/api/v1/discounts/checks/export.csv": {
+      "get": {
+        "operationId": "discountCheckexport_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner/admin/manager. Produtos/sugestões excluídos logicamente não entram; inativos entram. Apenas APPROVED. Consulta de conferência não autoriza venda. CSV por página, default issue=any.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "issue",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "any",
+                "price_changed",
+                "inactive"
+              ],
+              "default": "any"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conferência real de aprovações desta empresa; no-store.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "maxLength": 262144
+                }
+              }
+            },
+            "headers": {
+              "X-Titan-Report-Total": {
+                "description": "Total filtrado",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "X-Titan-Report-Count": {
+                "description": "Itens desta página",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              },
+              "X-Titan-Report-Has-More": {
+                "description": "Existem mais itens",
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "X-Titan-Report-Next-Offset": {
+                "description": "Próximo offset quando houver mais itens",
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "X-Titan-Source-Hash": {
+                "description": "Hash da página",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-Report-Scope": {
+                "description": "online-discount-checks",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Titan-CSV-Text-Escape": {
+                "description": "apostrophe",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada/query/corpo inválido"
+          },
+          "401": {
+            "description": "Sessão ausente/revogada"
+          },
+          "403": {
+            "description": "Papel não autorizado"
+          },
+          "503": {
+            "description": "Banco/schema ou snapshot inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-discount-checks.openapi.json"
+        }
+      }
     }
   },
   "components": {

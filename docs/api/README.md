@@ -99,3 +99,5 @@ Encerramento online durante reinícios/atualizações: documento 98. HTTP sem re
 - Entrega 36: `online-discount-reviews.openapi.json` documenta consulta, aprovação, recusa, histórico e recuperação de decisão humana. Schema PostgreSQL 16 por manutenção explícita; não aplica desconto a vendas.
 
 - Entrega37: [relatório de sugestões de desconto](online-discount-report.openapi.json), cinco consultas e CSV paginado, schema16 existente.
+
+- Entrega38: [conferência de aprovações](online-discount-checks.openapi.json), snapshot versus produto atual, cinco consultas sem aplicar desconto.

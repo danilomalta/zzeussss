@@ -134,6 +134,11 @@ func Registrar(app *fiber.App) {
 
 	// Frente de Caixa e Motor de Descontos (Bounded Context: POS)
 	descontos := negocios.Group("/discounts")
+	descontos.Get("/checks/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountCheckSummary)
+	descontos.Get("/checks/price-changed", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountChecks("price_changed", false))
+	descontos.Get("/checks/inactive", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountChecks("inactive", false))
+	descontos.Get("/checks/suggestions/:id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountCheck)
+	descontos.Get("/checks/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountChecks("any", true))
 	descontos.Get("/report/summary", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountReportSummary)
 	descontos.Get("/report/pending", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountReport("PENDING", false))
 	descontos.Get("/report/approved", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountReport("APPROVED", false))
