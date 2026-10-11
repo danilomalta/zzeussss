@@ -1,0 +1,527 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — compra interna com snapshots",
+    "version": "49.0.0",
+    "description": "Cinco funções internas. Criação requer proposta aprovada, condições e fornecedor ativos na mesma empresa, produto atual idêntico ao StockPlan aprovado, revisões esperadas e mínimo atendido. Usa quantidade da proposta, sem arredondar; total BRL=preço unitário em centavos vezes unidades, até9007199254740991. Preserva snapshots de proposta/condições/contato. Um registro por proposta mesmo cancelado. Aprovação revalida tudo sob locks; cancelamento draft/approved não depende de pais atuais. Source internal_declaration; nenhum envio, aceite externo, reserva, recebimento, título financeiro ou pagamento. Outbox durável sem despacho. Recibo individual restrito ao ator e histórico original no replay."
+  },
+  "paths": {
+    "/api/v1/purchases": {
+      "post": {
+        "operationId": "PurchaseCreate49",
+        "summary": "Cria compra interna de proposta aprovada",
+        "description": "Owner/admin/manager; empresa e autorização da sessão revalidadas persistentemente. Sem query; GET sem corpo. JSON integral estrito até8KiB, sem campos extras/repetidos/null/trailing. Approved é aprovação interna, não aceite do fornecedor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Estado atual ou recibo histórico imutável; replay idêntico sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou total excede inteiro seguro"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Versão/estado/snapshot divergente, pais inativos, mínimo não atendido, proposta já vinculada ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Create"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/purchases/{purchase_id}": {
+      "get": {
+        "operationId": "PurchaseDetail49",
+        "summary": "Consulta compra interna",
+        "description": "Owner/admin/manager; empresa e autorização da sessão revalidadas persistentemente. Sem query; GET sem corpo. JSON integral estrito até8KiB, sem campos extras/repetidos/null/trailing. Approved é aprovação interna, não aceite do fornecedor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado atual ou recibo histórico imutável; replay idêntico sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Draft"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou total excede inteiro seguro"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Versão/estado/snapshot divergente, pais inativos, mínimo não atendido, proposta já vinculada ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        }
+      }
+    },
+    "/api/v1/purchases/{purchase_id}/approve": {
+      "post": {
+        "operationId": "PurchaseApprove49",
+        "summary": "Aprova internamente após revalidar snapshots",
+        "description": "Owner/admin/manager; empresa e autorização da sessão revalidadas persistentemente. Sem query; GET sem corpo. JSON integral estrito até8KiB, sem campos extras/repetidos/null/trailing. Approved é aprovação interna, não aceite do fornecedor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado atual ou recibo histórico imutável; replay idêntico sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou total excede inteiro seguro"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Versão/estado/snapshot divergente, pais inativos, mínimo não atendido, proposta já vinculada ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Decision"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/purchases/{purchase_id}/cancel": {
+      "post": {
+        "operationId": "PurchaseCancel49",
+        "summary": "Cancela compra interna com revisão e motivo",
+        "description": "Owner/admin/manager; empresa e autorização da sessão revalidadas persistentemente. Sem query; GET sem corpo. JSON integral estrito até8KiB, sem campos extras/repetidos/null/trailing. Approved é aprovação interna, não aceite do fornecedor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado atual ou recibo histórico imutável; replay idêntico sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou total excede inteiro seguro"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Versão/estado/snapshot divergente, pais inativos, mínimo não atendido, proposta já vinculada ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Decision"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/purchases/operations/{operation_id}": {
+      "get": {
+        "operationId": "PurchaseReceipt49",
+        "summary": "Recupera recibo original pelo próprio ator",
+        "description": "Owner/admin/manager; empresa e autorização da sessão revalidadas persistentemente. Sem query; GET sem corpo. JSON integral estrito até8KiB, sem campos extras/repetidos/null/trailing. Approved é aprovação interna, não aceite do fornecedor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado atual ou recibo histórico imutável; replay idêntico sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou total excede inteiro seguro"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Versão/estado/snapshot divergente, pais inativos, mínimo não atendido, proposta já vinculada ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Draft": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "proposal_id",
+          "revision",
+          "state",
+          "proposal",
+          "offer",
+          "supplier",
+          "quantity_units",
+          "total_cents",
+          "source",
+          "creator_id",
+          "last_actor_id",
+          "reason",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "proposal_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "approved",
+              "cancelled"
+            ]
+          },
+          "proposal": {
+            "$ref": "./online-replenishment-proposals.openapi.json#/components/schemas/Proposal"
+          },
+          "offer": {
+            "$ref": "./online-supplier-offers.openapi.json#/components/schemas/Offer"
+          },
+          "supplier": {
+            "$ref": "./online-suppliers.openapi.json#/components/schemas/Supplier"
+          },
+          "quantity_units": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "total_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "internal_declaration"
+            ]
+          },
+          "creator_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "last_actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Create": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "proposal_id",
+          "offer_id",
+          "expected_proposal_revision",
+          "expected_offer_version",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "proposal_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "offer_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_proposal_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "expected_offer_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "Decision": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "purchase_id",
+          "actor_id",
+          "kind",
+          "before",
+          "after"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purchase_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "create",
+              "approve",
+              "cancel"
+            ]
+          },
+          "before": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Draft"
+              }
+            ]
+          },
+          "after": {
+            "$ref": "#/components/schemas/Draft"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

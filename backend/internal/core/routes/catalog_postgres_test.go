@@ -3314,5 +3314,171 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	if writes40() != catalogBefore48 {
 		t.Fatal("condições48 alteraram estoque/custo/venda")
 	}
+	// Delivery49: internal purchasing only. No supplier transmission or acceptance.
+	app = fiber.New()
+	Registrar(app)
+	if onlinecatalog.MigratePurchaseDrafts(ctx, sqlDB) != nil || onlinecatalog.MigratePurchaseDrafts(ctx, sqlDB) != nil || onlinecatalog.CheckPurchaseDrafts(ctx, sqlDB) != nil {
+		t.Fatal("migração22")
+	}
+	var hash49 string
+	if sqlDB.QueryRowContext(ctx, `SELECT checksum FROM online_purchase_migrations WHERE version=22`).Scan(&hash49) != nil {
+		t.Fatal("ledger49")
+	}
+	exec(`UPDATE online_purchase_migrations SET checksum='changed' WHERE version=22`)
+	if onlinecatalog.MigratePurchaseDrafts(ctx, sqlDB) != onlinecatalog.ErrUnavailable {
+		t.Fatal("checksum49 aceito")
+	}
+	exec(`UPDATE online_purchase_migrations SET checksum=$1 WHERE version=22`, hash49)
+	productMap49 := request("POST", "/api/v1/produtos/", `{"nome":"Purchase49","sku":"purchase49","preco":10}`, tokenA, 201)
+	product49 := int64(productMap49["ID"].(float64))
+	exec(`UPDATE products SET estoque=4,estoque_minimo=5,ponto_reposicao=8,tempo_reposicao_dias=2,demanda_media_diaria=1 WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	supplierInput49 := supplierInput47
+	supplierInput49.OperationID = uuid.NewString()
+	supplierInput49.Name = "Purchase49 supplier"
+	supplierInput49.Active = true
+	if _, e := store.CreateSupplier(ctx, actor, supplierInput49); e != nil {
+		t.Fatal("fornecedor49")
+	}
+	offerInput49 := onlinecatalog.SupplierOfferInput{OperationID: uuid.NewString(), SupplierID: supplierInput49.OperationID, ProductID: product49, SupplierSKU: "BUY49", UnitPriceCents: 1234, MinimumUnits: 2, LeadTimeDays: 5, Active: true, Reason: "Condições declaradas49"}
+	if _, e := store.CreateSupplierOffer(ctx, actor, offerInput49); e != nil {
+		t.Fatal("condições49")
+	}
+	newProposal49 := func(approve bool) onlinecatalog.ReplenishmentProposal {
+		t.Helper()
+		v := onlinecatalog.ReplenishmentProposalInput{OperationID: uuid.NewString(), ProductID: product49, ExpectedVersion: 1, ReviewDays: 7, QuantityUnits: 5, Reason: "Proposta compra49"}
+		r, e := store.CreateReplenishmentProposal(ctx, actor, v)
+		if e != nil {
+			t.Fatal("proposta49")
+		}
+		if !approve {
+			return r.After
+		}
+		r, e = store.DecideReplenishmentProposal(ctx, actor, r.ProposalID, "approve", onlinecatalog.ReplenishmentDecisionInput{OperationID: uuid.NewString(), ExpectedRevision: 1, Reason: "Aprovação reposição49"})
+		if e != nil {
+			t.Fatal("aprovação proposta49")
+		}
+		return r.After
+	}
+	proposal49 := newProposal49(true)
+	purchaseBase49 := "/api/v1/purchases"
+	purchaseInput49 := onlinecatalog.PurchaseDraftInput{OperationID: uuid.NewString(), ProposalID: proposal49.ID, OfferID: offerInput49.OperationID, ExpectedProposalRevision: 2, ExpectedOfferVersion: 1, Reason: "Compra interna declarada49"}
+	purchaseJSON49 := func(v onlinecatalog.PurchaseDraftInput) string { b, _ := json.Marshal(v); return string(b) }
+	catalogBefore49 := writes40()
+	created49 := request("POST", purchaseBase49, purchaseJSON49(purchaseInput49), tokenA, 201)
+	purchaseID49 := purchaseInput49.OperationID
+	if created49["after"].(map[string]interface{})["total_cents"] != float64(6170) || created49["after"].(map[string]interface{})["source"] != "internal_declaration" {
+		t.Fatal("total49")
+	}
+	request("POST", purchaseBase49, purchaseJSON49(purchaseInput49), tokenA, 201)
+	divergent49 := purchaseInput49
+	divergent49.Reason = "Outro motivo"
+	request("POST", purchaseBase49, purchaseJSON49(divergent49), tokenA, 409)
+	request("POST", purchaseBase49, purchaseJSON49(purchaseInput49), otherToken39, 409)
+	request("GET", purchaseBase49+"/operations/"+purchaseID49, "", otherToken39, 404)
+	request("GET", purchaseBase49+"/"+purchaseID49, "", tokenB, 404)
+	request("GET", purchaseBase49+"/operations/"+purchaseID49, "", tokenB, 404)
+	request("GET", purchaseBase49+"/"+purchaseID49, "", stockToken45, 403)
+	approvalOp49 := uuid.NewString()
+	approveBody49 := fmt.Sprintf(`{"operation_id":%q,"expected_revision":1,"reason":"Aprovação interna de compra"}`, approvalOp49)
+	approved49 := request("POST", purchaseBase49+"/"+purchaseID49+"/approve", approveBody49, tokenA, 200)
+	if approved49["after"].(map[string]interface{})["state"] != "approved" {
+		t.Fatal("estado49")
+	}
+	request("POST", purchaseBase49+"/"+purchaseID49+"/approve", approveBody49, tokenA, 200)
+	request("POST", purchaseBase49+"/"+purchaseID49+"/approve", fmt.Sprintf(`{"operation_id":%q,"expected_revision":2,"reason":"De novo"}`, uuid.NewString()), tokenA, 409)
+	request("POST", purchaseBase49+"/"+purchaseID49+"/cancel", fmt.Sprintf(`{"operation_id":%q,"expected_revision":2,"reason":"Cancelamento interno"}`, uuid.NewString()), tokenA, 200)
+	request("GET", purchaseBase49+"/"+purchaseID49, "", tokenA, 200)
+	if receipt49 := request("GET", purchaseBase49+"/operations/"+purchaseID49, "", tokenA, 200); receipt49["after"].(map[string]interface{})["revision"] != float64(1) {
+		t.Fatal("recibo histórico49")
+	}
+	duplicate49 := purchaseInput49
+	duplicate49.OperationID = uuid.NewString()
+	request("POST", purchaseBase49, purchaseJSON49(duplicate49), tokenA, 409)
+	foreign49 := duplicate49
+	foreign49.OfferID = foreignSupplier48.OperationID
+	request("POST", purchaseBase49, purchaseJSON49(foreign49), tokenA, 404)
+	planned49 := newProposal49(false)
+	pending49 := duplicate49
+	pending49.OperationID = uuid.NewString()
+	pending49.ProposalID = planned49.ID
+	pending49.ExpectedProposalRevision = 1
+	request("POST", purchaseBase49, purchaseJSON49(pending49), tokenA, 409)
+	driftProposal49 := newProposal49(true)
+	driftInput49 := purchaseInput49
+	driftInput49.OperationID = uuid.NewString()
+	driftInput49.ProposalID = driftProposal49.ID
+	request("POST", purchaseBase49, purchaseJSON49(driftInput49), tokenA, 201)
+	priceEdit49 := offerInput49
+	priceEdit49.OperationID = uuid.NewString()
+	priceEdit49.ExpectedVersion = 1
+	priceEdit49.UnitPriceCents = 1500
+	if _, e := store.UpdateSupplierOffer(ctx, actor, offerInput49.OperationID, priceEdit49); e != nil {
+		t.Fatal("preço49")
+	}
+	request("POST", purchaseBase49+"/"+driftInput49.OperationID+"/approve", fmt.Sprintf(`{"operation_id":%q,"expected_revision":1,"reason":"Aprovar condições antigas"}`, uuid.NewString()), tokenA, 409)
+	request("POST", purchaseBase49+"/"+driftInput49.OperationID+"/cancel", fmt.Sprintf(`{"operation_id":%q,"expected_revision":1,"reason":"Cancelar após alteração"}`, uuid.NewString()), tokenA, 200)
+	raceProposal49 := newProposal49(true)
+	raceInput49 := purchaseInput49
+	raceInput49.OperationID = uuid.NewString()
+	raceInput49.ProposalID = raceProposal49.ID
+	raceInput49.ExpectedOfferVersion = 2
+	request("POST", purchaseBase49, purchaseJSON49(raceInput49), tokenA, 201)
+	var wg49 sync.WaitGroup
+	results49 := make(chan error, 2)
+	for _, kind := range []string{"approve", "cancel"} {
+		wg49.Add(1)
+		go func(kind string) {
+			defer wg49.Done()
+			_, e := store.DecidePurchaseDraft(ctx, actor, raceInput49.OperationID, kind, onlinecatalog.ReplenishmentDecisionInput{OperationID: uuid.NewString(), ExpectedRevision: 1, Reason: "Decisão concorrente49"})
+			results49 <- e
+		}(kind)
+	}
+	wg49.Wait()
+	close(results49)
+	wins49, conflicts49 := 0, 0
+	for e := range results49 {
+		if e == nil {
+			wins49++
+		} else if e == onlinecatalog.ErrConflict {
+			conflicts49++
+		} else {
+			t.Fatal("corrida49")
+		}
+	}
+	if wins49 != 1 || conflicts49 != 1 {
+		t.Fatal("revisão corrida49")
+	}
+	rollbackProposal49 := newProposal49(true)
+	rollbackInput49 := raceInput49
+	rollbackInput49.OperationID = uuid.NewString()
+	rollbackInput49.ProposalID = rollbackProposal49.ID
+	var writesBefore49 int64
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_purchase_drafts)+(SELECT count(*) FROM online_purchase_operations)+(SELECT count(*) FROM online_purchase_outbox)`).Scan(&writesBefore49) != nil {
+		t.Fatal("contagem49")
+	}
+	exec(`CREATE FUNCTION reject_purchase_outbox49() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END $$; CREATE TRIGGER reject_purchase_outbox49 BEFORE INSERT ON online_purchase_outbox FOR EACH ROW EXECUTE FUNCTION reject_purchase_outbox49()`)
+	if _, e := store.CreatePurchaseDraft(ctx, actor, rollbackInput49); e != onlinecatalog.ErrUnavailable {
+		t.Fatal("outbox49")
+	}
+	var writesAfter49 int64
+	if sqlDB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM online_purchase_drafts)+(SELECT count(*) FROM online_purchase_operations)+(SELECT count(*) FROM online_purchase_outbox)`).Scan(&writesAfter49) != nil || writesBefore49 != writesAfter49 {
+		t.Fatal("rollback parcial49")
+	}
+	exec(`ALTER TABLE online_purchase_outbox DISABLE TRIGGER reject_purchase_outbox49`)
+	request("POST", purchaseBase49, purchaseJSON49(rollbackInput49), tokenA, 201)
+	exec(`UPDATE products SET estoque=estoque+1 WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	request("POST", purchaseBase49+"/"+rollbackInput49.OperationID+"/approve", fmt.Sprintf(`{"operation_id":%q,"expected_revision":1,"reason":"Estoque mudou"}`, uuid.NewString()), tokenA, 409)
+	exec(`UPDATE products SET deleted_at=clock_timestamp() WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	request("POST", purchaseBase49+"/"+rollbackInput49.OperationID+"/cancel", fmt.Sprintf(`{"operation_id":%q,"expected_revision":1,"reason":"Cancelar produto excluído"}`, uuid.NewString()), tokenA, 200)
+	exec(`UPDATE products SET estoque=4,deleted_at=NULL WHERE tenant_id=$1 AND id=$2`, tenantA, product49)
+	exec(`UPDATE online_sessions SET revoked_at=clock_timestamp() WHERE id=$1`, sessionA)
+	request("GET", purchaseBase49+"/"+purchaseID49, "", tokenA, 401)
+	if _, e := store.PurchaseDraft(ctx, actor, purchaseID49); e != onlinecatalog.ErrDenied {
+		t.Fatal("sessão revogada49")
+	}
+	exec(`UPDATE online_sessions SET revoked_at=NULL WHERE id=$1`, sessionA)
+	if writes40() != catalogBefore49 {
+		t.Fatal("compra interna49 alterou estoque/preço/custo")
+	}
 	// Schema and data remain for inspection. No DROP, TRUNCATE or cleanup SQL.
 }

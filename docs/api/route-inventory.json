@@ -1288,6 +1288,41 @@
       "path": "/api/v1/supplier-offers/operations/:operation_id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/purchases",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/purchases/:purchase_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/purchases/:purchase_id/approve",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/purchases/:purchase_id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/purchases/operations/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
     }
   ]
 }

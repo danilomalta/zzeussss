@@ -121,3 +121,5 @@ Entrega44: `online-replenishment.openapi.json` documenta resumo, recomendações
 - `online-suppliers.openapi.json`: entrega47, fornecedores internos com cadastro, edição/revisão, consulta, lista e recibo; migração PostgreSQL20 explícita.
 
 - `online-supplier-offers.openapi.json`: entrega48, vínculo fornecedor/produto com condições internas declaradas, revisão, auditoria/outbox, filtros e recibos; migração21 explícita.
+
+- `online-purchase-drafts.openapi.json`: entrega49, compra interna de proposta aprovada, consulta, aprovação/cancelamento e recibos com snapshots; sem aceite do fornecedor.

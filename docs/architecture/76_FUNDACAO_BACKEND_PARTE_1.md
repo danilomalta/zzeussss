@@ -211,3 +211,5 @@ Entrega38: resumo, preços alterados, inativos, conferência individual e CSV de
 - Entrega47: cadastro interno de contatos fornecedores com revisão, auditoria/outbox e recibos. Ver `122_FORNECEDORES_CINCO_FUNCOES.md`. Vínculo autenticado entre empresas permanece pendente.
 
 - Entrega48: vínculo interno de fornecedores/produtos e condições declaradas. Ver `123_CONDICOES_FORNECEDORES_CINCO_FUNCOES.md`; sem confirmação externa ou compra.
+
+- Entrega49: compra interna com snapshots e total exato; ver `124_COMPRAS_INTERNAS_CINCO_FUNCOES.md`. Confirmação externa, recebimento e financeiro continuam pendentes.

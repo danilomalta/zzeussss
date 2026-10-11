@@ -156,6 +156,13 @@ func Registrar(app *fiber.App) {
 	negocios.Get("/catalog/replenishment/proposals/:proposal_id/history", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.HistoricoPropostaReposicao)
 	negocios.Get("/catalog/replenishment/proposals/:proposal_id/check", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConferirPropostaReposicao)
 
+	// Compra interna com snapshots, sem transmissão ou confirmação do fornecedor.
+	negocios.Get("/purchases/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.OperacaoCompraInterna)
+	negocios.Post("/purchases", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.CriarCompraInterna)
+	negocios.Get("/purchases/:purchase_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarCompraInterna)
+	negocios.Post("/purchases/:purchase_id/approve", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DecidirCompraInterna("approve"))
+	negocios.Post("/purchases/:purchase_id/cancel", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DecidirCompraInterna("cancel"))
+
 	// Condições declaradas internas por fornecedor/produto, sem compra ou aceite externo.
 	negocios.Get("/supplier-offers/operations/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.OperacaoCondicaoFornecedor)
 	negocios.Get("/supplier-offers", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ListarCondicoesFornecedores)

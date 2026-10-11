@@ -11631,6 +11631,341 @@
           "url": "./online-supplier-offers.openapi.json"
         }
       }
+    },
+    "/api/v1/purchases": {
+      "post": {
+        "operationId": "PurchaseCreate49",
+        "summary": "Cria compra interna de proposta aprovada",
+        "description": "Owner/admin/manager; empresa e autorização da sessão revalidadas persistentemente. Sem query; GET sem corpo. JSON integral estrito até8KiB, sem campos extras/repetidos/null/trailing. Approved é aprovação interna, não aceite do fornecedor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Estado atual ou recibo histórico imutável; replay idêntico sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou total excede inteiro seguro"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Versão/estado/snapshot divergente, pais inativos, mínimo não atendido, proposta já vinculada ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Create"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-drafts.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchases/{purchase_id}": {
+      "get": {
+        "operationId": "PurchaseDetail49",
+        "summary": "Consulta compra interna",
+        "description": "Owner/admin/manager; empresa e autorização da sessão revalidadas persistentemente. Sem query; GET sem corpo. JSON integral estrito até8KiB, sem campos extras/repetidos/null/trailing. Approved é aprovação interna, não aceite do fornecedor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado atual ou recibo histórico imutável; replay idêntico sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Draft"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou total excede inteiro seguro"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Versão/estado/snapshot divergente, pais inativos, mínimo não atendido, proposta já vinculada ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-drafts.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchases/{purchase_id}/approve": {
+      "post": {
+        "operationId": "PurchaseApprove49",
+        "summary": "Aprova internamente após revalidar snapshots",
+        "description": "Owner/admin/manager; empresa e autorização da sessão revalidadas persistentemente. Sem query; GET sem corpo. JSON integral estrito até8KiB, sem campos extras/repetidos/null/trailing. Approved é aprovação interna, não aceite do fornecedor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado atual ou recibo histórico imutável; replay idêntico sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou total excede inteiro seguro"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Versão/estado/snapshot divergente, pais inativos, mínimo não atendido, proposta já vinculada ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Decision"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-drafts.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchases/{purchase_id}/cancel": {
+      "post": {
+        "operationId": "PurchaseCancel49",
+        "summary": "Cancela compra interna com revisão e motivo",
+        "description": "Owner/admin/manager; empresa e autorização da sessão revalidadas persistentemente. Sem query; GET sem corpo. JSON integral estrito até8KiB, sem campos extras/repetidos/null/trailing. Approved é aprovação interna, não aceite do fornecedor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purchase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado atual ou recibo histórico imutável; replay idêntico sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou total excede inteiro seguro"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Versão/estado/snapshot divergente, pais inativos, mínimo não atendido, proposta já vinculada ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Decision"
+              }
+            }
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-drafts.openapi.json"
+        }
+      }
+    },
+    "/api/v1/purchases/operations/{operation_id}": {
+      "get": {
+        "operationId": "PurchaseReceipt49",
+        "summary": "Recupera recibo original pelo próprio ator",
+        "description": "Owner/admin/manager; empresa e autorização da sessão revalidadas persistentemente. Sem query; GET sem corpo. JSON integral estrito até8KiB, sem campos extras/repetidos/null/trailing. Approved é aprovação interna, não aceite do fornecedor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado atual ou recibo histórico imutável; replay idêntico sem nova gravação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./online-purchase-drafts.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida ou total excede inteiro seguro"
+          },
+          "401": {
+            "description": "Sessão inválida/revogada"
+          },
+          "403": {
+            "description": "Papel sem autorização"
+          },
+          "404": {
+            "description": "Compra/pai inexistente na empresa ou recibo de outro ator"
+          },
+          "409": {
+            "description": "Versão/estado/snapshot divergente, pais inativos, mínimo não atendido, proposta já vinculada ou replay divergente"
+          },
+          "429": {
+            "description": "Limite HTTP"
+          },
+          "503": {
+            "description": "Persistência indisponível ou registro inconsistente"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./online-purchase-drafts.openapi.json"
+        }
+      }
     }
   },
   "components": {

@@ -52,3 +52,6 @@ var SuppliersSQL string
 
 //go:embed 000021_online_supplier_offers.sql
 var SupplierOffersSQL string
+
+//go:embed 000022_online_purchase_drafts.sql
+var PurchaseDraftsSQL string
