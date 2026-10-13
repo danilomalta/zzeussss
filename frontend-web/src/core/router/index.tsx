@@ -45,6 +45,7 @@ export const router = createBrowserRouter([
     { path: "orders", element: <SuspenseWrapper><LocalOrders /></SuspenseWrapper> },
     { index: true, element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
     { path: 'home', element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
+    { path: 'overview', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'owner', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'map', element: <SuspenseWrapper><LocalDistributionMap /></SuspenseWrapper> },
     { path: 'settings', element: <SuspenseWrapper><LocalHome settings /></SuspenseWrapper> },

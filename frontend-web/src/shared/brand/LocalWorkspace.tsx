@@ -10,7 +10,7 @@ import ContactDrawer from './ContactDrawer';
 import './workspace.css';
 
 const modules = [
- { id: 'portfolio', name: 'Painel do dono', icon: '▥', path: '/local/owner' },
+ { id: 'portfolio', name: 'Visão executiva', icon: '▥', path: '/local/overview' },
  { id: 'map', name: 'Mapa', icon: '⌖', path: '/local/map' },
  { id: 'home', name: 'Minha área', icon: '◇', path: '/local/home' },
  { id: 'pos', name: 'PDV', icon: '▦', path: '/local/pos' },
@@ -79,7 +79,7 @@ export default function LocalWorkspace() {
    <button className="workspace-menu" aria-expanded={expanded} aria-label={t(expanded?'workspace.collapse':'workspace.expand')} onClick={() => setExpanded(!expanded)}>☰</button>
    {expanded && <p className="brand-state">{t('workspace.company')}</p>}
    <nav>{(expanded ? visible : effectiveShortcuts.map(id => visible.find(m => m.id === id)!)).map(m => m.path ?
-    <NavLink key={m.id} to={m.path} title={t('workspace.'+m.id)} aria-label={t('workspace.'+m.id)} className={() => `workspace-tile ${m.id==='portfolio'&&location.pathname==='/local/owner' || m.id==='map'&&location.pathname==='/local/map' || m.id==='home'&&location.pathname==='/local/home' || m.id==='plans'&&location.pathname==='/local/subscription' || m.id==='staff'&&location.pathname==='/local/staff' || m.id==='pos'&&location.pathname==='/local/pos' || m.id==='cash'&&location.pathname==='/local/cash' || m.id==='catalog'&&location.pathname==='/local/catalog' || m.id==='stock'&&location.pathname==='/local/stock' || m.id==='orders'&&location.pathname==='/local/orders' || m.id==='prices'&&location.pathname==='/local/prices' ? 'selected' : ''}`} onClick={() => setExpanded(false)}>
+    <NavLink key={m.id} to={m.path} title={t('workspace.'+m.id)} aria-label={t('workspace.'+m.id)} className={() => `workspace-tile ${m.id==='portfolio'&&(location.pathname==='/local/owner' || location.pathname==='/local/overview') || m.id==='map'&&location.pathname==='/local/map' || m.id==='home'&&location.pathname==='/local/home' || m.id==='plans'&&location.pathname==='/local/subscription' || m.id==='staff'&&location.pathname==='/local/staff' || m.id==='pos'&&location.pathname==='/local/pos' || m.id==='cash'&&location.pathname==='/local/cash' || m.id==='catalog'&&location.pathname==='/local/catalog' || m.id==='stock'&&location.pathname==='/local/stock' || m.id==='orders'&&location.pathname==='/local/orders' || m.id==='prices'&&location.pathname==='/local/prices' ? 'selected' : ''}`} onClick={() => setExpanded(false)}>
      <span className="workspace-squircle" aria-hidden="true"><TileIcon id={m.id}/></span><span className="workspace-label">{t('workspace.'+m.id)}</span>
     </NavLink> : <button key={m.id} className="workspace-tile" title={t('workspace.pendingNotice',{name:t('workspace.'+m.id)})} aria-label={t('workspace.'+m.id)} onClick={() => setNotice('workspace.pendingNotice:'+m.id)}><span className="workspace-squircle" aria-hidden="true"><TileIcon id={m.id}/></span><span className="workspace-label">{t('workspace.'+m.id)}<small>{t('workspace.pending')}</small></span></button>)}</nav>
    {expanded && <section className="workspace-shortcuts"><h2>{t('workspace.shortcuts')}</h2>{effectiveShortcuts.map((id, slot) => <label key={slot}>{t('workspace.shortcut',{count:slot+1})}<select value={id} onChange={e => choose(slot, e.target.value)}>{visible.map(m => <option key={m.id} value={m.id}>{t('workspace.'+m.id)}</option>)}</select></label>)}<button className="brand-secondary" onClick={() => void endSession()}>{t('workspace.logout')}</button></section>}

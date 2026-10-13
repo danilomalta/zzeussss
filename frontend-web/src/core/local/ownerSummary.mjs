@@ -18,3 +18,13 @@ export function formatOwnerMoney(cents,locale='pt-BR'){
  const value=BigInt(cents),formatter=new Intl.NumberFormat(locale,{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
  return formatter.formatToParts(value/100n).map(part=>part.type==='fraction'?String(value%100n).padStart(2,'0'):part.value).join('');
 }
+export function summarizeTodaySales(rows,now=new Date()){
+ summarizeOwnerSales(rows);
+ if(!(now instanceof Date)||!Number.isFinite(now.getTime()))throw new Error('Invalid current date');
+ const localDay=value=>new Date(value).toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'});
+ return summarizeOwnerSales(rows.filter(row=>localDay(row.committed_at)===localDay(now)));
+}
+export function averageOwnerTicket(summary){
+ if(!summary||!Number.isSafeInteger(summary.total_cents)||summary.total_cents<0||!Number.isSafeInteger(summary.completed)||summary.completed<0)throw new Error('Invalid summary');
+ return summary.completed?Number((BigInt(summary.total_cents)+BigInt(Math.floor(summary.completed/2)))/BigInt(summary.completed)):null;
+}

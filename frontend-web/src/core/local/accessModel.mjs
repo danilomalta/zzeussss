@@ -18,7 +18,7 @@ export function allowedAreas(capabilities) {
  return areas;
 }
 export function areaForRoute(pathname) {
- if(pathname==='/local/owner')return 'portfolio';
+ if((pathname==='/local/owner' || pathname==='/local/overview'))return 'portfolio';
  if(pathname==='/local/map')return 'map';
  if(pathname==='/local/prices')return 'prices';
  if(pathname==="/local/orders")return "orders";
