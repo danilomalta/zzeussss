@@ -6,11 +6,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/joho/godotenv"
 	"titansystem-backend/internal/core/database"
 	"titansystem-backend/internal/onlinecatalog"
 	"titansystem-backend/internal/onlinesessions"
+
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/joho/godotenv"
 )
 
 func run(args []string) error {
