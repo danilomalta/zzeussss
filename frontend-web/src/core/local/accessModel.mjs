@@ -10,7 +10,7 @@ export function allowedAreas(capabilities) {
  if(has('production','manage_production')) areas.push('production');
  if(has('orders','view_orders')) areas.push('orders');
  if(has('logistics','view_orders')) areas.push('fleet');
- if(has('staff','manage_staff')) areas.push('staff');
+ if(has('staff','manage_staff')) areas.push('staff','hr');
  if(signed && m.has('staff')) areas.push('point');
  if(has('accounting','view_accounting')) areas.push('accounting');
  if(capabilities?.role==='owner') areas.push('plans','portfolio');
@@ -18,6 +18,7 @@ export function allowedAreas(capabilities) {
  return areas;
 }
 export function areaForRoute(pathname) {
+ if(pathname==='/local/hr')return 'hr';
  if((pathname==='/local/owner' || pathname==='/local/overview'))return 'portfolio';
  if(pathname==='/local/map')return 'map';
  if(pathname==='/local/prices')return 'prices';

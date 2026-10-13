@@ -170,7 +170,7 @@
   "workspace.production": "生产与配方",
   "workspace.orders": "订单与供应商",
   "workspace.fleet": "车队与路线",
-  "workspace.staff": "人事与员工",
+  "workspace.staff": "人员与权限",
   "workspace.point": "我的考勤",
   "workspace.accounting": "会计",
   "workspace.prices": "价格比较",
@@ -299,5 +299,6 @@
   "posUi.keyDiscount": "折扣暂不可用",
   "posUi.keyBack": "返回",
   "workspace.map": "地图",
-  "workspace.portfolio": "经营总览"
+  "workspace.portfolio": "经营总览",
+  "workspace.hr": "人力资源"
 }

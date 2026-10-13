@@ -16,6 +16,7 @@ const LocalComparison = React.lazy(() => import('../../modules/catalog/pages/Loc
 const LocalOrders = React.lazy(() => import("../../modules/catalog/pages/LocalOrders"));
 const LocalDistributionMap = React.lazy(() => import('../../modules/tenant/pages/LocalDistributionMap'));
 const LocalOwnerDashboard = React.lazy(() => import('../../modules/tenant/pages/LocalOwnerDashboard'));
+const LocalHumanResources = React.lazy(() => import('../../modules/tenant/pages/LocalHumanResources'));
 const LocalHome = React.lazy(() => import('../../modules/tenant/pages/LocalMainMenu'));
 const LocalSubscription = React.lazy(() => import('../../modules/tenant/pages/LocalSubscription'));
 const LocalStaff = React.lazy(() => import('../../modules/tenant/pages/LocalStaff'));
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
     { path: 'settings', element: <SuspenseWrapper><LocalHome settings /></SuspenseWrapper> },
     { path: 'stock', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
     { path: 'subscription', element: <SuspenseWrapper><LocalSubscription /></SuspenseWrapper> },
+    { path: 'hr', element: <SuspenseWrapper><LocalHumanResources /></SuspenseWrapper> },
     { path: 'staff', element: <SuspenseWrapper><LocalStaff /></SuspenseWrapper> },
     { path: 'catalog', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
     { path: 'pos', element: <SuspenseWrapper><LocalPointOfSale /></SuspenseWrapper> },

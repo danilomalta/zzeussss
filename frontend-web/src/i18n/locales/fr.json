@@ -170,7 +170,7 @@
   "workspace.production": "Production et recettes",
   "workspace.orders": "Commandes et fournisseurs",
   "workspace.fleet": "Flotte et trajets",
-  "workspace.staff": "RH et personnel",
+  "workspace.staff": "Personnel et accès",
   "workspace.point": "Mon pointage",
   "workspace.accounting": "Comptabilité",
   "workspace.prices": "Comparateur de prix",
@@ -299,5 +299,6 @@
   "posUi.keyDiscount": "Remise indisponible",
   "posUi.keyBack": "Retour",
   "workspace.map": "Carte",
-  "workspace.portfolio": "Vue de direction"
+  "workspace.portfolio": "Vue de direction",
+  "workspace.hr": "Ressources humaines"
 }

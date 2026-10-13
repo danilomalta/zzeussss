@@ -170,7 +170,7 @@
   "workspace.production": "Production and recipes",
   "workspace.orders": "Orders and suppliers",
   "workspace.fleet": "Fleet and routes",
-  "workspace.staff": "HR and staff",
+  "workspace.staff": "People and access",
   "workspace.point": "My time clock",
   "workspace.accounting": "Accounting",
   "workspace.prices": "Price comparison",
@@ -299,5 +299,6 @@
   "posUi.keyDiscount": "Discount unavailable",
   "posUi.keyBack": "Back",
   "workspace.map": "Map",
-  "workspace.portfolio": "Executive overview"
+  "workspace.portfolio": "Executive overview",
+  "workspace.hr": "Human Resources"
 }
