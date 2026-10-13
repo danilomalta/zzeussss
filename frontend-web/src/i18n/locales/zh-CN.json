@@ -300,5 +300,7 @@
   "posUi.keyBack": "返回",
   "workspace.map": "地图",
   "workspace.portfolio": "经营总览",
-  "workspace.hr": "人力资源"
+  "workspace.hr": "人力资源",
+  "navigation.backToMenu": "返回菜单",
+  "workspace.sheets": "Titan 表格"
 }

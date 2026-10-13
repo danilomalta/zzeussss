@@ -300,5 +300,7 @@
   "posUi.keyBack": "Back",
   "workspace.map": "Map",
   "workspace.portfolio": "Executive overview",
-  "workspace.hr": "Human Resources"
+  "workspace.hr": "Human Resources",
+  "navigation.backToMenu": "Back to menu",
+  "workspace.sheets": "Titan Sheets"
 }

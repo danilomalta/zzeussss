@@ -225,6 +225,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
 
     <main className="brand-app-content pos-content">
       <div className="brand-app-heading pos-heading"><div><h1>{t(cashPage?"posUi.cashTitle":"posUi.title")}</h1><p className="brand-subtitle">{t("posUi.operator")}: {operatorName||t("posUi.operatorFallback")} · {cash?t("posUi.open"):knownCash?t("posUi.closed"):t("posUi.unconfirmed")}</p></div>{!cashPage&&<button type="button" className="brand-secondary pos-focus-toggle" aria-pressed={focused} onClick={()=>setFocused(v=>!v)}>{t(focused?"posUi.reduce":"posUi.expand")}</button>}
+        {focused&&!cashPage&&<Link className="brand-secondary pos-menu-return" to="/local/home" onClick={()=>setFocused(false)}>← {t('navigation.backToMenu')}</Link>}
         <button className="brand-secondary" disabled={busy || loading || turnBusy} onClick={() => void refreshCash(true)}>{t(turnBusy?"posUi.checkingShift":"posUi.checkShift")}</button></div>
       {(error || calculationError) && <p role="alert" className="brand-message error">{error || calculationError}</p>}
       {message && <p role="status" className="brand-message">{message}</p>}

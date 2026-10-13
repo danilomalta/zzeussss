@@ -1,6 +1,9 @@
 import {useId} from 'react';
 import type {ReactNode} from 'react';
-import {Link} from 'react-router-dom';
+import {Link,useLocation} from 'react-router-dom';
+import {useLocalSession} from '../../core/local/useLocalSession';
+import {useAuthStore} from '../../core/auth/useAuthStore';
+import {logoDestination} from '../../core/local/navigationDestination.mjs';
 import {useTranslation} from 'react-i18next';
 import ContactDrawer from './ContactDrawer';
 import {useTheme} from './theme';
@@ -10,7 +13,12 @@ const symbolPath = 'M50 0Q51 0 53 1L92 22Q94 23 94 26V29Q94 31 92 32L82 37V29H18
 export function BrandLogo({compact=false}:{compact?:boolean}) {
   const {t} = useTranslation();
   const id = useId().replace(/:/g,'');
-  return <Link to="/local/login" className="brand-logo" aria-label={t('login.home')}>
+  const {pathname}=useLocation();
+  const session=useLocalSession(state=>state.session),token=useLocalSession(state=>state.token);
+  const onlineActive=useAuthStore(state=>state.isAuthenticated);
+  const localActive=!!token&&!!session&&session.expires_unix*1000>Date.now();
+  const destination=logoDestination({pathname,localActive,onlineActive});
+  return <Link to={destination} className="brand-logo" aria-label={t(localActive||onlineActive?'navigation.backToMenu':'login.home')}>
     <svg className="brand-mark" viewBox="0 0 100 104" aria-hidden="true">
       <defs><clipPath id={id+'clip'}><path d={symbolPath}/></clipPath><linearGradient id={id+'shine'}><stop offset="0" stopColor="var(--accent)" stopOpacity="0"/><stop offset=".4" stopColor="var(--accent)" stopOpacity=".9"/><stop offset=".55" stopColor="white" stopOpacity=".7"/><stop offset="1" stopColor="var(--accent)" stopOpacity="0"/></linearGradient></defs>
       <path d={symbolPath} fill="currentColor"/>

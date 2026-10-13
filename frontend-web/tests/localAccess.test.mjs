@@ -14,7 +14,7 @@ test('cashier cannot see stock mutation or HR management while own point stays d
  assert.ok(areas.includes('pos'));assert.ok(areas.includes('catalog'));assert.ok(areas.includes('point'));assert.ok(!areas.includes('staff'));assert.ok(!areas.includes('stock'));assert.ok(!areas.includes('plans'));
 });
 test('employee and accountant never gain modules from the company size',()=>{
- const employee=allowedAreas(caps(['core','staff'],[],'employee'));assert.deepEqual(employee,['home','point']);
+ const employee=allowedAreas(caps(['core','staff'],[],'employee'));assert.deepEqual(employee,['home','point','sheets']);
  const accountant=allowedAreas(caps(['core','accounting'],['view_accounting'],'accountant'));assert.ok(accountant.includes('accounting'));assert.ok(!accountant.includes('pos'));assert.ok(!accountant.includes('staff'));
  assert.equal(areaForRoute('/local/stock'),'stock');assert.equal(areaForRoute('/local/staff'),'staff');
 });

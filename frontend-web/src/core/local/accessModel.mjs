@@ -15,9 +15,11 @@ export function allowedAreas(capabilities) {
  if(has('accounting','view_accounting')) areas.push('accounting');
  if(capabilities?.role==='owner') areas.push('plans','portfolio');
  if(capabilities?.role==='owner' || areas.includes('production') || areas.includes('fleet')) areas.push('map');
+ if(capabilities?.identity_id)areas.push('sheets');
  return areas;
 }
 export function areaForRoute(pathname) {
+ if(pathname==='/local/sheets')return 'sheets';
  if(pathname==='/local/hr')return 'hr';
  if((pathname==='/local/owner' || pathname==='/local/overview'))return 'portfolio';
  if(pathname==='/local/map')return 'map';

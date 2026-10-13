@@ -1,94 +1,19 @@
-import { useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Navigate } from 'react-router-dom';
-import { useLocalAccess } from '../../core/local/LocalAccess';
-import { allowedAreas, areaForRoute } from '../../core/local/accessModel.mjs';
-import { BrandLogo, ThemeToggle } from './BrandShell';
-import { useLocalSession } from '../../core/local/useLocalSession';
-import { useTranslation } from 'react-i18next';
+import {Link,Navigate,Outlet,useLocation} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import {useLocalAccess} from '../../core/local/LocalAccess';
+import {allowedAreas,areaForRoute} from '../../core/local/accessModel.mjs';
+import {BrandLogo,ThemeToggle} from './BrandShell';
 import ContactDrawer from './ContactDrawer';
 import './workspace.css';
-
-const modules = [
- { id: 'hr', name: 'Recursos Humanos', icon: '♧', path: '/local/hr' },
- { id: 'portfolio', name: 'Visão executiva', icon: '▥', path: '/local/overview' },
- { id: 'map', name: 'Mapa', icon: '⌖', path: '/local/map' },
- { id: 'home', name: 'Minha área', icon: '◇', path: '/local/home' },
- { id: 'pos', name: 'PDV', icon: '▦', path: '/local/pos' },
- { id: 'catalog', name: 'Catálogo de produtos', icon: '▤', path: '/local/catalog' },
- { id: 'stock', name: 'Estoque e locais', icon: '▥', path: '/local/stock' },
- { id: 'cash', name: 'Fechamento de caixa', icon: '◈', path: '/local/cash' },
- { id: 'sos', name: 'SOS', icon: '⊕' },
- { id: 'production', name: 'Produção e receitas', icon: '◇' },
- { id: 'orders', name: 'Pedidos e fornecedores', icon: '⇄', path: '/local/orders' },
- { id: 'fleet', name: 'Frota e rotas', icon: '↗' },
- { id: 'staff', name: 'Funcionários e acessos', icon: '♧', path: '/local/staff' },
- { id: 'point', name: 'Meu ponto', icon: '◷' },
- { id: 'accounting', name: 'Contabilidade', icon: '▧' },
- { id: 'prices', name: 'Comparador de preços', icon: '≍', path: '/local/prices' },
- { id: 'payments', name: 'Maquininha, Pix e delivery', icon: '▭' },
- { id: 'plans', name: 'Assinatura e faturas', icon: '⚙', path: '/local/subscription' },
-];
-function TileIcon({id}:{id:string}) {
- const paths:Record<string,string>={
-  map:'M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2z M9 3v16 M15 5v16',
-  portfolio:'M3 21h18 M5 17V9h3v8 M11 17V3h3v14 M17 17v-5h3v5',
-  hr:'M9 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M2 22v-5c0-6 14-6 14 0v5 M17 3h5 M17 8h5 M20 13v9',
-  home:'M3 10l9-7 9 7v11h-6v-7H9v7H3z',
-  point:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20 M12 6v6l4 2',
-  pos:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
-  catalog:'M5 3h14v18H5z M8 7h8 M8 11h8 M8 15h5',
-  stock:'M3 8l9-5 9 5v10l-9 4-9-4z M3 8l9 5 9-5 M12 13v9',
-  cash:'M3 6h18v14H3z M3 10h18 M7 15h4 M17 15h1',
-  sos:'M12 3l10 18H2z M12 9v5 M12 17h.01',
-  production:'M3 21V9l6 3V6l6 6V3h5v18z',
-  orders:'M3 7h16 M15 3l4 4-4 4 M21 17H5 M9 13l-4 4 4 4',
-  fleet:'M2 6h12v12H2z M14 10h4l4 4v4h-8 M4 18v3h4v-3 M16 18v3h4v-3',
-  staff:'M8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M2 22v-5c0-6 12-6 12 0v5 M16 5h6 M19 2v6',
-  accounting:'M5 2h14v20H5z M8 6h8 M8 10h2 M14 10h2 M8 14h2 M14 14h2 M8 18h2 M14 18h2',
-  prices:'M3 16l6-6 4 4 8-10 M15 4h6v6',
-  payments:'M3 5h18v14H3z M3 10h18 M7 15h4',
-  plans:'M3 6h18 M3 12h18 M3 18h18 M7 3v6 M17 9v6 M10 15v6',
- };
- return <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[id]}/></svg>;
-}
-function readShortcuts(): string[] {
- try { const ids = JSON.parse(localStorage.getItem('titan-shortcuts') || 'null');
-  if (Array.isArray(ids) && ids.length >= 1 && ids.length <= 3 && new Set(ids).size === ids.length && ids.every(id => modules.some(m => m.id === id))) return ids;
- } catch { /* Preferences stay in memory if storage is unavailable. */ }
- return ['pos', 'catalog', 'cash'];
-}
-export default function LocalWorkspace() {
- const location = useLocation();
- const {t}=useTranslation();
- const {capabilities} = useLocalAccess();
- const allowed = allowedAreas(capabilities);
- const visible = modules.filter(m=>allowed.includes(m.id) && !!m.path);
- const [expanded, setExpanded] = useState(false);
- const [shortcuts, setShortcuts] = useState(readShortcuts);
- const [notice, setNotice] = useState('');
- const endSession = useLocalSession(s => s.endSession);
- function choose(slot: number, id: string) {
-  const available = [...shortcuts.filter(id=>visible.some(m=>m.id===id)),...visible.map(m=>m.id).filter(id=>!shortcuts.includes(id))].slice(0,3);
-  const next = [...available]; const existing = next.indexOf(id);
-  if (existing !== -1) next[existing] = next[slot]; next[slot] = id;
-  setShortcuts(next); try { localStorage.setItem('titan-shortcuts', JSON.stringify(next)); } catch { setNotice('workspace.preference'); }
- }
- const effectiveShortcuts = [...shortcuts.filter(id=>visible.some(m=>m.id===id)),...visible.map(m=>m.id).filter(id=>!shortcuts.includes(id))].slice(0,3);
- if (!allowed.includes(areaForRoute(location.pathname))) return <Navigate to="/local/home" replace />;
- return <div className={`brand-page workspace ${expanded ? 'workspace-expanded' : ''}`}>
-  <aside className="workspace-rail" aria-label={t('workspace.nav')}>
-   <button className="workspace-menu" aria-expanded={expanded} aria-label={t(expanded?'workspace.collapse':'workspace.expand')} onClick={() => setExpanded(!expanded)}>☰</button>
-   {expanded && <p className="brand-state">{t('workspace.company')}</p>}
-   <nav>{(expanded ? visible : effectiveShortcuts.map(id => visible.find(m => m.id === id)!)).map(m => m.path ?
-    <NavLink key={m.id} to={m.path} title={t('workspace.'+m.id)} aria-label={t('workspace.'+m.id)} className={() => `workspace-tile ${m.id==='hr'&&location.pathname==='/local/hr' || m.id==='portfolio'&&(location.pathname==='/local/owner' || location.pathname==='/local/overview') || m.id==='map'&&location.pathname==='/local/map' || m.id==='home'&&location.pathname==='/local/home' || m.id==='plans'&&location.pathname==='/local/subscription' || m.id==='staff'&&location.pathname==='/local/staff' || m.id==='pos'&&location.pathname==='/local/pos' || m.id==='cash'&&location.pathname==='/local/cash' || m.id==='catalog'&&location.pathname==='/local/catalog' || m.id==='stock'&&location.pathname==='/local/stock' || m.id==='orders'&&location.pathname==='/local/orders' || m.id==='prices'&&location.pathname==='/local/prices' ? 'selected' : ''}`} onClick={() => setExpanded(false)}>
-     <span className="workspace-squircle" aria-hidden="true"><TileIcon id={m.id}/></span><span className="workspace-label">{t('workspace.'+m.id)}</span>
-    </NavLink> : <button key={m.id} className="workspace-tile" title={t('workspace.pendingNotice',{name:t('workspace.'+m.id)})} aria-label={t('workspace.'+m.id)} onClick={() => setNotice('workspace.pendingNotice:'+m.id)}><span className="workspace-squircle" aria-hidden="true"><TileIcon id={m.id}/></span><span className="workspace-label">{t('workspace.'+m.id)}<small>{t('workspace.pending')}</small></span></button>)}</nav>
-   {expanded && <section className="workspace-shortcuts"><h2>{t('workspace.shortcuts')}</h2>{effectiveShortcuts.map((id, slot) => <label key={slot}>{t('workspace.shortcut',{count:slot+1})}<select value={id} onChange={e => choose(slot, e.target.value)}>{visible.map(m => <option key={m.id} value={m.id}>{t('workspace.'+m.id)}</option>)}</select></label>)}<button className="brand-secondary" onClick={() => void endSession()}>{t('workspace.logout')}</button></section>}
-  </aside>
-  <section className="workspace-body"><header className="workspace-top"><BrandLogo /><div className="workspace-top-actions"><ThemeToggle /><ContactDrawer/></div></header>
-   {notice && <div className="workspace-notice" role="status">{notice.startsWith('workspace.pendingNotice:')?t('workspace.pendingNotice',{name:t('workspace.'+notice.split(':')[1])}):t(notice)}<button className="brand-secondary" onClick={() => setNotice('')}>{t('workspace.closeNotice')}</button></div>}
-   <div className="workspace-scroll"><Outlet /></div>
-  </section>
- </div>;
+export default function LocalWorkspace(){
+ const {t}=useTranslation();const location=useLocation();const {capabilities}=useLocalAccess();
+ if(!allowedAreas(capabilities).includes(areaForRoute(location.pathname)))return <Navigate to="/local/home" replace/>;
+ const home=['/local','/local/','/local/home'].includes(location.pathname);
+ return <div className="brand-page workspace workspace-menu-only"><section className="workspace-body">
+  <header className="workspace-top"><BrandLogo/><div className="workspace-top-actions">
+   {!home&&<Link className="brand-secondary workspace-back-menu" to="/local/home">← {t('navigation.backToMenu')}</Link>}
+   <ThemeToggle/><ContactDrawer/>
+  </div></header>
+  <div className="workspace-scroll"><Outlet/></div>
+ </section></div>;
 }
