@@ -298,5 +298,6 @@
   "posUi.keyPay": "Payer",
   "posUi.keyDiscount": "Remise indisponible",
   "posUi.keyBack": "Retour",
-  "workspace.map": "Carte"
+  "workspace.map": "Carte",
+  "workspace.portfolio": "Tableau du propriétaire"
 }

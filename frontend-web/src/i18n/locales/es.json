@@ -298,5 +298,6 @@
   "posUi.keyPay": "Pagar",
   "posUi.keyDiscount": "Descuento no disponible",
   "posUi.keyBack": "Volver",
-  "workspace.map": "Mapa"
+  "workspace.map": "Mapa",
+  "workspace.portfolio": "Panel del propietario"
 }

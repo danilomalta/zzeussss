@@ -15,9 +15,9 @@ test('a tela interna traduz estados reais, navegação e contexto de licença na
 
 test('a interface não libera PDV nem estoque de laboratório sem contrato assinado',()=>{
  const base={role:'owner',permissions:['view_catalog','manage_stock','sell'],license:{modules:['inventory','pos'],state:'unavailable'}};
- assert.deepEqual(allowedAreas(base),['home','plans','map']);
+ assert.deepEqual(allowedAreas(base),['home','plans','portfolio','map']);
  for(const state of ['not_installed','invalid','clock_blocked'])
-  assert.deepEqual(allowedAreas({...base,license:{...base.license,state}}),['home','plans','map']);
+  assert.deepEqual(allowedAreas({...base,license:{...base.license,state}}),['home','plans','portfolio','map']);
  const signed=allowedAreas({...base,license:{...base.license,state:'active'}});
  assert.ok(signed.includes('catalog')&&signed.includes('stock')&&signed.includes('pos'));
 });

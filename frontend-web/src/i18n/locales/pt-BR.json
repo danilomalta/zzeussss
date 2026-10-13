@@ -298,5 +298,6 @@
   "posUi.keyPay": "Pagar",
   "posUi.keyDiscount": "Desconto indisponível",
   "posUi.keyBack": "Voltar",
-  "workspace.map": "Mapa"
+  "workspace.map": "Mapa",
+  "workspace.portfolio": "Painel do dono"
 }

@@ -14,6 +14,7 @@ import './localMainMenu.css';
 
 const copy:Record<string,typeof pt>={'pt-BR':pt,pt,en,es,fr,'zh-CN':zh,zh};
 const entries=[
+ {id:'portfolio',path:'/local/owner',icon:'▥'},
  {id:'map',path:'/local/map',icon:'⌖'},
  {id:'pos',path:'/local/pos',icon:'▦'},
  {id:'catalog',path:'/local/catalog',icon:'▤'},
