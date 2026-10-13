@@ -297,5 +297,6 @@
   "posUi.keySearch": "搜索",
   "posUi.keyPay": "付款",
   "posUi.keyDiscount": "折扣暂不可用",
-  "posUi.keyBack": "返回"
+  "posUi.keyBack": "返回",
+  "workspace.map": "地图"
 }

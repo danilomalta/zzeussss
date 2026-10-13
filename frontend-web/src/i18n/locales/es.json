@@ -297,5 +297,6 @@
   "posUi.keySearch": "Buscar",
   "posUi.keyPay": "Pagar",
   "posUi.keyDiscount": "Descuento no disponible",
-  "posUi.keyBack": "Volver"
+  "posUi.keyBack": "Volver",
+  "workspace.map": "Mapa"
 }

@@ -297,5 +297,6 @@
   "posUi.keySearch": "Rechercher",
   "posUi.keyPay": "Payer",
   "posUi.keyDiscount": "Remise indisponible",
-  "posUi.keyBack": "Retour"
+  "posUi.keyBack": "Retour",
+  "workspace.map": "Carte"
 }
