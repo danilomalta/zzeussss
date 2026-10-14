@@ -1,0 +1,22 @@
+{
+  "operation": "Operação",
+  "management": "Gestão",
+  "administration": "Administração",
+  "search": "Buscar área",
+  "soon": "Em breve",
+  "unavailable": "Esta área ainda não possui uma tela operacional.",
+  "finance": "Financeiro",
+  "fiscal": "Fiscal e notas",
+  "accounting": "Contabilidade e contador",
+  "commercial": "Clientes e comercial",
+  "purchasing": "Compras",
+  "production": "Produção",
+  "discounts": "Descontos e perdas",
+  "fleet": "Logística e frota",
+  "documents": "Documentos",
+  "reports": "Relatórios e auditoria",
+  "food": "Alimentação e delivery",
+  "services": "Serviços",
+  "sheets": "Planilhas Titan",
+  "empty": "Nenhuma área encontrada."
+}

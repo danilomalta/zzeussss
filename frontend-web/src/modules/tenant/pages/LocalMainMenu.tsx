@@ -1,3 +1,9 @@
+import zh72 from '../../../i18n/menu72/zh-CN.json';
+import fr72 from '../../../i18n/menu72/fr.json';
+import es72 from '../../../i18n/menu72/es.json';
+import en72 from '../../../i18n/menu72/en.json';
+import pt72 from '../../../i18n/menu72/pt-BR.json';
+import {useState} from 'react';
 import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {useLocalAccess} from '../../../core/local/LocalAccess';
@@ -11,10 +17,11 @@ import es from '../../../i18n/menu/es.json';
 import fr from '../../../i18n/menu/fr.json';
 import zh from '../../../i18n/menu/zh-CN.json';
 import './localMainMenu.css';
+import './menu72.css';
+const copy72:Record<string,typeof pt72>={'pt-BR':pt72,pt:pt72,en:en72,es:es72,fr:fr72,'zh-CN':zh72,zh:zh72};
 
 const copy:Record<string,typeof pt>={'pt-BR':pt,pt,en,es,fr,'zh-CN':zh,zh};
 const entries=[
- {id:'sheets',path:'/local/sheets',icon:'▦'},
  {id:'hr',path:'/local/hr',icon:'♧'},
  {id:'portfolio',path:'/local/overview',icon:'▥'},
  {id:'map',path:'/local/map',icon:'⌖'},
@@ -29,6 +36,8 @@ const entries=[
 ];
 export default function LocalMainMenu({settings=false}:{settings?:boolean}){
  const {t,i18n}=useTranslation();
+ const [query,setQuery]=useState('');
+ const w=copy72[i18n.resolvedLanguage||i18n.language]||pt72;
  const words=copy[i18n.resolvedLanguage||i18n.language]||pt;
  const {capabilities}=useLocalAccess();
  const areas=allowedAreas(capabilities);
@@ -37,10 +46,16 @@ export default function LocalMainMenu({settings=false}:{settings?:boolean}){
   <h1>{settings?words.settings:words.title}</h1>
   <p className="brand-state">{settings?words.preferences:words.choose}</p>
   {settings?<><Link className="brand-secondary titan-menu-back" to="/local/home">← {words.back}</Link><section className="brand-panel titan-menu-settings"><h2>{t('theme.appearance')}</h2><ThemeToggle/><h2>{words.languageContact}</h2><ContactDrawer/><button type="button" className="brand-secondary" onClick={()=>void logout()}>{t('workspace.logout')}</button></section></>:<>
-   <nav className="titan-menu-grid" aria-label={words.title}>
-    {entries.filter(item=>areas.includes(item.id)).map(item=><Link className="brand-panel titan-menu-card" key={item.id} to={item.path}><span className="titan-menu-icon" aria-hidden="true">{item.icon}</span><strong>{t('workspace.'+item.id)}</strong></Link>)}
-    <Link className="brand-panel titan-menu-card" to="/local/settings"><span className="titan-menu-icon" aria-hidden="true">⚙</span><strong>{words.settings}</strong></Link>
-   </nav>
+   <label className="menu72-search">{w.search}<input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder={w.search}/></label>
+   {(['operation','management','administration'] as const).map(group=>{
+    const existing=entries.filter(item=>areas.includes(item.id)).map(item=>({...item,label:t('workspace.'+item.id),group:['pos','catalog','stock','cash','orders','prices','map'].includes(item.id)?'operation':['hr','portfolio','staff'].includes(item.id)?'management':'administration',planned:false}));
+    if(capabilities?.role==='owner' && Object.keys(import.meta.glob('./LocalSpreadsheet.tsx')).length)existing.push({id:'sheets',path:'/local/sheets',icon:'▦',label:w.sheets,group:'management',planned:false});
+    const planned=[['finance','management','portfolio'],['fiscal','administration','accounting'],['accounting','administration','accounting'],['commercial','operation','orders'],['purchasing','operation','orders'],['production','operation','production'],['discounts','operation','catalog'],['fleet','operation','fleet'],['documents','administration','staff'],['reports','management','portfolio'],['food','operation','pos'],['services','operation','orders']].filter(([, ,area])=>capabilities?.role==='owner'||areas.includes(area)).map(([id,section])=>({id,path:'',icon:'◇',label:w[id as keyof typeof w],group:section,planned:true}));
+    const cards=[...existing,...planned,...(group==='administration'?[{id:'settings',path:'/local/settings',icon:'⚙',label:words.settings,group,planned:false}]:[])].filter(item=>item.group===group&&item.label.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
+    if(!cards.length)return null;
+    return <section key={group} className="menu72-section"><h2>{w[group]}</h2><nav className="titan-menu-grid" aria-label={w[group]}>{cards.map(item=>item.planned?<article className="brand-panel titan-menu-card menu72-planned" key={item.id} aria-disabled="true" title={w.unavailable}><span className="titan-menu-icon" aria-hidden="true">{item.icon}</span><strong>{item.label}</strong><span className="menu72-badge">{w.soon}</span></article>:<Link className="brand-panel titan-menu-card" key={item.id} to={item.path}><span className="titan-menu-icon" aria-hidden="true">{item.icon}</span><strong>{item.label}</strong></Link>)}</nav></section>;
+   })}
+
   </>}
  </main>;
 }

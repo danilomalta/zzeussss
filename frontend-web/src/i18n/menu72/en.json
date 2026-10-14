@@ -1,0 +1,22 @@
+{
+  "operation": "Operations",
+  "management": "Management",
+  "administration": "Administration",
+  "search": "Search areas",
+  "soon": "Coming soon",
+  "unavailable": "This area does not have an operational screen yet.",
+  "finance": "Finance",
+  "fiscal": "Tax and invoices",
+  "accounting": "Accounting and accountant",
+  "commercial": "Customers and sales",
+  "purchasing": "Purchasing",
+  "production": "Production",
+  "discounts": "Discounts and losses",
+  "fleet": "Logistics and fleet",
+  "documents": "Documents",
+  "reports": "Reports and audit",
+  "food": "Food service and delivery",
+  "services": "Services",
+  "sheets": "Titan spreadsheets",
+  "empty": "No areas found."
+}

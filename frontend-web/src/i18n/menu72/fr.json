@@ -1,0 +1,22 @@
+{
+  "operation": "Opérations",
+  "management": "Gestion",
+  "administration": "Administration",
+  "search": "Rechercher une rubrique",
+  "soon": "Bientôt",
+  "unavailable": "Cette rubrique ne dispose pas encore d’un écran opérationnel.",
+  "finance": "Finances",
+  "fiscal": "Fiscalité et factures",
+  "accounting": "Comptabilité et comptable",
+  "commercial": "Clients et ventes",
+  "purchasing": "Achats",
+  "production": "Production",
+  "discounts": "Remises et pertes",
+  "fleet": "Logistique et flotte",
+  "documents": "Documents",
+  "reports": "Rapports et audit",
+  "food": "Restauration et livraison",
+  "services": "Services",
+  "sheets": "Tableurs Titan",
+  "empty": "Aucune rubrique trouvée."
+}

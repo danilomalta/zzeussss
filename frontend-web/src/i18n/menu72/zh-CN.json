@@ -1,0 +1,22 @@
+{
+  "operation": "业务操作",
+  "management": "管理",
+  "administration": "系统管理",
+  "search": "搜索功能",
+  "soon": "即将推出",
+  "unavailable": "此功能尚无可用的业务页面。",
+  "finance": "财务",
+  "fiscal": "税务与发票",
+  "accounting": "会计与会计师",
+  "commercial": "客户与销售",
+  "purchasing": "采购",
+  "production": "生产",
+  "discounts": "折扣与损耗",
+  "fleet": "物流与车队",
+  "documents": "文档",
+  "reports": "报表与审计",
+  "food": "餐饮与配送",
+  "services": "服务",
+  "sheets": "Titan 表格",
+  "empty": "未找到功能。"
+}
