@@ -1,3 +1,4 @@
+import StockListCoverage from './StockListCoverage';
 import ReservationFilter from './ReservationFilter';
 import ExportCSV from '../../production/pages/ExportCSV';
 import {reservationsCSV} from '../../../core/local/operationsExport.mjs';
@@ -27,5 +28,6 @@ export default function LocalStockAvailability(){
  {reservations.data&&<ReadSection title="Origem das reservas ativas"><ExportCSV kind="reservas" offset={offset} empty={!reservations.data.items.length} create={()=>reservationsCSV(reservations.data!)} scope="Página completa de reservas, antes dos filtros locais abaixo. Não inclui outras páginas nem credenciais."/><p>{reservations.data.total_count} reservas ativas no produto e local. O saldo acima é global; a tabela mostra somente esta página.</p><ReservationFilter key={`${reservations.data.balance.product_id}:${reservations.data.balance.location_id}:${offset}`} page={reservations.data} render={items=><div className="operation-table-wrap"><table className="operation-table"><caption>Reservas de ordens de produção</caption><thead><tr><th>Ordem e versão</th><th>Responsável</th><th>Quantidade</th><th>Criada em</th></tr></thead><tbody>{items.map(r=><tr key={r.reservation_id}><td><span className="operation-id">{r.order_id}</span><small>Versão: {r.version_id}<br/>Reserva: {r.reservation_id}</small></td><td className="operation-id">{r.responsible_id}</td><td>{q(r.quantity_milli)} {r.unit}</td><td>{r.created_at}</td></tr>)}</tbody></table></div>}/><Pages offset={offset} more={reservations.data.has_more} busy={reservations.busy} change={loadReservations}/></ReadSection>}
  {reservations.data&&<ReservationGroups page={reservations.data}/>}
  <StockPlanning/>
+ <StockListCoverage/>
  </main>;
 }
