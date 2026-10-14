@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import {AppearanceProvider80} from '../settings80/runtime';
 import {useTranslation} from 'react-i18next';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 import { OnlineSessionGuard, LocalSessionGuard } from '../local/SessionGuards';
@@ -20,6 +21,7 @@ const LocalHumanResources = React.lazy(() => import('../../modules/tenant/pages/
 const LocalSpreadsheet = React.lazy(() => import('../../modules/tenant/pages/LocalSpreadsheet'));
 const LocalWorkbench73 = React.lazy(() => import('../../modules/tenant/pages/LocalWorkbench73'));
 const LocalIntegrations74 = React.lazy(() => import('../../modules/tenant/pages/LocalIntegrations74'));
+const LocalSettings80 = React.lazy(() => import('../../modules/tenant/pages/LocalSettings80'));
 const LocalHome = React.lazy(() => import('../../modules/tenant/pages/LocalMainMenu'));
 const LocalSubscription = React.lazy(() => import('../../modules/tenant/pages/LocalSubscription'));
 const LocalStaff = React.lazy(() => import('../../modules/tenant/pages/LocalStaff'));
@@ -46,7 +48,7 @@ const LocalLossPrevention76 = React.lazy(() => import('../../modules/tenant/page
 export const router = createBrowserRouter([
   { path: '/register', element: <SuspenseWrapper><Registration /></SuspenseWrapper> },
   { path: '/local/login', element: <SuspenseWrapper><LocalLogin /></SuspenseWrapper> },
-  { path: '/local', element: <LocalSessionGuard><LocalAccessProvider><SuspenseWrapper><LocalWorkspace /></SuspenseWrapper></LocalAccessProvider></LocalSessionGuard>, children: [
+  { path: '/local', element: <LocalSessionGuard><LocalAccessProvider><SuspenseWrapper><AppearanceProvider80><LocalWorkspace /></AppearanceProvider80></SuspenseWrapper></LocalAccessProvider></LocalSessionGuard>, children: [
     { path: 'prices', element: <SuspenseWrapper><LocalComparison /></SuspenseWrapper> },
     { path: "orders", element: <SuspenseWrapper><LocalOrders /></SuspenseWrapper> },
     { index: true, element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
@@ -57,7 +59,7 @@ export const router = createBrowserRouter([
     { path: 'overview', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'owner', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'map', element: <SuspenseWrapper><LocalDistributionMap /></SuspenseWrapper> },
-    { path: 'settings', element: <SuspenseWrapper><LocalHome settings /></SuspenseWrapper> },
+    { path: 'settings', element: <SuspenseWrapper><LocalSettings80 /></SuspenseWrapper> },
     { path: 'stock', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
     { path: 'subscription', element: <SuspenseWrapper><LocalSubscription /></SuspenseWrapper> },
     { path: 'sheets', element: <SuspenseWrapper><LocalSpreadsheet /></SuspenseWrapper> },

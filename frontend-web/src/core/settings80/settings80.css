@@ -1,0 +1,43 @@
+.appearance80-scope{min-height:100dvh;color:var(--text);background:var(--bg);isolation:isolate}
+.appearance80-photo{position:relative;background:#0b0b0d}
+.appearance80-photo::before{content:'';position:fixed;inset:0;z-index:-1;background-image:linear-gradient(rgb(0 0 0 / .25),rgb(0 0 0 / .25)),var(--wallpaper80);background-size:cover,var(--wallpaper-fit80);background-position:center;background-repeat:no-repeat;pointer-events:none}
+.appearance80-photo .brand-page,.appearance80-photo .workspace-body,.appearance80-photo .workspace-scroll{background:transparent}
+.appearance80-photo .brand-page::before{display:none}
+.appearance80-photo :is(.brand-panel,.workspace-top,.ctx74-bar,.settings80-save){background:var(--surface);border:1px solid var(--border);box-shadow:inset 0 1px 0 rgb(255 255 255 / .15),0 8px 28px rgb(0 0 0 / .2);backdrop-filter:blur(16px) saturate(1.12);-webkit-backdrop-filter:blur(16px) saturate(1.12)}
+.appearance80-reduced :is(.brand-panel,.workspace-top,.ctx74-bar,.settings80-save){backdrop-filter:none;-webkit-backdrop-filter:none}
+.appearance80-photo input,.appearance80-photo select,.appearance80-photo textarea{background:#1c1c20!important;color:var(--text)!important}
+.appearance80-photo .brand-theme-toggle button:disabled{opacity:.55;cursor:not-allowed}
+.appearance80-photo .brand-secondary{background:rgba(20,20,23,.9)}
+.appearance80-photo .brand-logo{background:rgba(20,20,23,.88);padding:6px 10px;border-radius:12px}
+.appearance80-compact .workspace-top{padding-block:8px}
+.appearance80-compact .titan-menu-card{min-height:130px;padding:16px}
+.brand-company-logo80{height:44px;max-width:180px;object-fit:contain}
+.brand-company-label80{font-size:18px!important;letter-spacing:.02em!important;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.settings80-page{max-width:1200px;margin-inline:auto;padding-bottom:100px}
+.settings80-page h1{font-size:30px;margin:0 0 10px}
+.settings80-page h2{font-size:20px;margin:0 0 14px}
+.settings80-page p{font-size:14px;line-height:1.6;color:var(--text-muted)}
+.settings80-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.settings80-tabs button{min-height:44px}
+.settings80-tabs [aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+.settings80-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.settings80-page label{display:grid;gap:8px;font-size:15px;margin-block:12px}
+.settings80-page input,.settings80-page select{box-sizing:border-box;width:100%;min-height:46px;border:1px solid var(--border);border-radius:10px;padding:10px;background:var(--surface);color:var(--text);font-size:15px}
+.settings80-page input[type=checkbox]{width:22px;min-height:22px}
+.settings80-page .settings80-check{display:flex;align-items:center;gap:12px}
+.settings80-page input[type=color]{width:90px;height:48px;padding:4px}
+.settings80-page input[type=file]{font-size:13px}
+.settings80-image{width:100%;max-height:180px;object-fit:contain;border:1px solid var(--border);border-radius:12px;padding:12px;box-sizing:border-box}
+.settings80-image[data-logo=light]{background:#f7f7f5}
+.settings80-image[data-logo=dark]{background:#141417}
+.settings80-warning{padding:14px;border:1px solid var(--border);border-radius:12px;font-size:14px;line-height:1.6;background:var(--accent-soft)}
+.settings80-save{position:sticky;bottom:0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:20px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;z-index:2}
+.settings80-actions{display:flex;gap:8px;flex-wrap:wrap}
+.settings80-save button,.settings80-page button{min-height:44px}
+.settings80-save .brand-primary{width:auto;padding-inline:22px}
+.settings80-status{font-size:13px;color:var(--text-muted)}
+.settings80-page fieldset{border:0;padding:0;margin:0;min-width:0}
+.settings80-page button:disabled{opacity:.6;cursor:not-allowed}
+@media(max-width:700px){.settings80-grid{grid-template-columns:1fr}.settings80-save{align-items:stretch}.settings80-actions{width:100%}.settings80-actions button{flex:1}.brand-company-label80{max-width:120px}.settings80-page h1{font-size:25px}}
+@media(prefers-reduced-motion:reduce){.appearance80-scope *{scroll-behavior:auto;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@supports not (backdrop-filter:blur(1px)){.appearance80-photo{--surface:rgba(20,20,23,.96)!important}}

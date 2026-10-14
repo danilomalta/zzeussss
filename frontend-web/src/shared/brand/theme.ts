@@ -7,6 +7,7 @@ function readTheme():Theme {
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 function applyTheme(theme:Theme) {
+  if(document.documentElement.dataset.appearance==='photo')return;
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
   try {localStorage.setItem('titansystem-theme',theme);} catch { /* Keep preference in memory. */ }
