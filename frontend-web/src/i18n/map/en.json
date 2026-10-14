@@ -27,5 +27,15 @@
   "source": "Geographic map: IBGE, simplified boundaries.",
   "back": "Back to menu",
   "map": "Map",
+  "soon": "Coming soon",
+  "period": "Period",
+  "today": "Today",
+  "sevenDays": "Last 7 days",
+  "thirtyDays": "Last 30 days",
+  "selectFirst": "Select a state to zoom in.",
+  "emptyTitle": "No regional data yet",
+  "viewOrders": "View orders",
+  "legend": "Color scale",
+  "legendUnavailable": "The scale will appear when authorized data is available by state and period.",
   "_review": "Revisão por falante nativo pendente."
 }

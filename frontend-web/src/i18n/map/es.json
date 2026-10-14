@@ -27,5 +27,15 @@
   "source": "Mapa geográfico: IBGE, límites simplificados.",
   "back": "Volver al menú",
   "map": "Mapa",
+  "soon": "Próximamente",
+  "period": "Período",
+  "today": "Hoy",
+  "sevenDays": "Últimos 7 días",
+  "thirtyDays": "Últimos 30 días",
+  "selectFirst": "Selecciona un estado para ampliarlo.",
+  "emptyTitle": "Aún no hay datos regionales",
+  "viewOrders": "Ver pedidos",
+  "legend": "Escala de colores",
+  "legendUnavailable": "La escala aparecerá cuando haya datos autorizados por estado y período.",
   "_review": "Revisão por falante nativo pendente."
 }

@@ -27,5 +27,15 @@
   "source": "Mapa geográfico: IBGE, malha simplificada.",
   "back": "Voltar ao menu",
   "map": "Mapa",
+  "soon": "Em breve",
+  "period": "Período",
+  "today": "Hoje",
+  "sevenDays": "Últimos 7 dias",
+  "thirtyDays": "Últimos 30 dias",
+  "selectFirst": "Selecione um estado para ampliar.",
+  "emptyTitle": "Ainda não há dados regionais",
+  "viewOrders": "Ver pedidos",
+  "legend": "Escala de cores",
+  "legendUnavailable": "A escala aparecerá quando houver dados autorizados por estado e período.",
   "_review": "Texto original em português."
 }

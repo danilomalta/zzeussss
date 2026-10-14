@@ -27,5 +27,15 @@
   "source": "Carte géographique : IBGE, limites simplifiées.",
   "back": "Retour au menu",
   "map": "Carte",
+  "soon": "Bientôt disponible",
+  "period": "Période",
+  "today": "Aujourd'hui",
+  "sevenDays": "7 derniers jours",
+  "thirtyDays": "30 derniers jours",
+  "selectFirst": "Sélectionnez un État pour l'agrandir.",
+  "emptyTitle": "Aucune donnée régionale pour le moment",
+  "viewOrders": "Voir les commandes",
+  "legend": "Échelle de couleurs",
+  "legendUnavailable": "L'échelle apparaîtra lorsque des données autorisées seront disponibles par État et période.",
   "_review": "Revisão por falante nativo pendente."
 }

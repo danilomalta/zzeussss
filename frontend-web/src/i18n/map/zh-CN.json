@@ -27,5 +27,15 @@
   "source": "地理地图：IBGE，简化边界。",
   "back": "返回菜单",
   "map": "地图",
+  "soon": "即将推出",
+  "period": "时间范围",
+  "today": "今天",
+  "sevenDays": "最近 7 天",
+  "thirtyDays": "最近 30 天",
+  "selectFirst": "选择一个州以放大。",
+  "emptyTitle": "暂无地区数据",
+  "viewOrders": "查看订单",
+  "legend": "颜色图例",
+  "legendUnavailable": "获得按州和时间范围授权的数据后，将显示颜色图例。",
   "_review": "Revisão por falante nativo pendente."
 }
