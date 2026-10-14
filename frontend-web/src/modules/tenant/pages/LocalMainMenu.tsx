@@ -1,3 +1,4 @@
+import {permitted as lossPermitted76} from '../../../core/loss76/engine.mjs';
 import MenuIcon75 from '../../../shared/brand/MenuIcon75';
 import MenuStatus75,{MenuLegend75} from '../../../shared/brand/MenuStatus75';
 import {words75} from '../../../core/context75/words';
@@ -67,6 +68,7 @@ export default function LocalMainMenu({settings=false}:{settings?:boolean}){
     for(const item of planned){const target=routes[item.id];if(target&&permitted(capabilities,target)){item.path="/local/workbench?area="+target;item.planned=false;}}
     if(permitted(capabilities,"pdv"))existing.push({id:"payment-tools",path:"/local/workbench?area=pdv",icon:"≍",label:w73.allocation,group:"operation",planned:false});
     if(permitted(capabilities,"accountant"))existing.push({id:"accountant-tools",path:"/local/workbench?area=accountant",icon:"▤",label:w73.accountant,group:"administration",planned:false});
+    if(lossPermitted76(capabilities)&&!planned.some(item=>item.id==='discounts')){existing.push({id:'discounts',path:'/local/losses',icon:'%',label:w.discounts,group:'operation',planned:false});}for(const item of planned){if(item.id==='discounts'&&lossPermitted76(capabilities)){item.path='/local/losses';item.planned=false;}}
     const cards=[...existing,...planned,...(group==='administration'?[{id:'settings',path:'/local/settings',icon:'⚙',label:words.settings,group,planned:false}]:[])].filter(item=>item.group===group&&item.label.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
     if(!cards.length)return null;
     return <section key={group} className="menu72-section"><h2>{w[group]}</h2><nav className="titan-menu-grid" aria-label={w[group]}>{cards.map(item=>item.planned?<article className="brand-panel titan-menu-card menu72-planned" key={item.id} aria-disabled="true" title={w.unavailable}><span className="titan-menu-icon" aria-hidden="true"><MenuIcon75 id={item.id}/></span><strong>{item.label}</strong><MenuStatus75 item={item}/></article>:<Link className={'brand-panel titan-menu-card'+(item.id==='pos'?' menu75-pos':'')} key={item.id} to={item.path}><span className="titan-menu-icon" aria-hidden="true"><MenuIcon75 id={item.id}/></span><strong>{item.label}</strong>{item.id==='pos'&&<small>{v75.posDescription}</small>}<MenuStatus75 item={item}/></Link>)}</nav></section>;

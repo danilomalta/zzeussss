@@ -40,6 +40,8 @@ const SuspenseWrapper = ({children}:{children:React.ReactNode}) => {
   return <Suspense fallback={<div className="flex h-screen items-center justify-center text-base" style={{background:'var(--bg)',color:'var(--text-muted)'}}>{t('common.loading')}</div>}>{children}</Suspense>;
 };
 
+const LocalLossPrevention76 = React.lazy(() => import('../../modules/tenant/pages/LocalLossPrevention76'));
+
 // Definição da árvore de rotas modularizada do TitanSystem
 export const router = createBrowserRouter([
   { path: '/register', element: <SuspenseWrapper><Registration /></SuspenseWrapper> },
@@ -49,6 +51,7 @@ export const router = createBrowserRouter([
     { path: "orders", element: <SuspenseWrapper><LocalOrders /></SuspenseWrapper> },
     { index: true, element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
     { path: 'home', element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
+    { path: 'losses', element: <SuspenseWrapper><LocalLossPrevention76 /></SuspenseWrapper> },
     { path: 'integrations', element: <SuspenseWrapper><LocalIntegrations74 /></SuspenseWrapper> },
     { path: 'workbench', element: <SuspenseWrapper><LocalWorkbench73 /></SuspenseWrapper> },
     { path: 'overview', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
