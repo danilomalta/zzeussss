@@ -1,0 +1,13 @@
+{
+  "city": "Ville",
+  "chooseState": "Sélectionnez un État",
+  "allCities": "Toutes les villes de l’État",
+  "search": "Rechercher une ville",
+  "loading": "Chargement des communes de l’IBGE…",
+  "failed": "Impossible de charger les communes. La carte des États reste disponible.",
+  "retry": "Réessayer",
+  "cached": "Géographie enregistrée sur cet ordinateur",
+  "source": "Limites communales : IBGE. Rues et itinéraires encore indisponibles.",
+  "viewState": "Voir tout l’État",
+  "_review": "Revisão por falante nativo pendente."
+}

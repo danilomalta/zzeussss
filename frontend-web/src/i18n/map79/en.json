@@ -1,0 +1,13 @@
+{
+  "city": "City",
+  "chooseState": "Select a state",
+  "allCities": "All cities in the state",
+  "search": "Find city",
+  "loading": "Loading IBGE municipalities…",
+  "failed": "Could not load municipalities. The state map is still available.",
+  "retry": "Try again",
+  "cached": "Geography saved on this computer",
+  "source": "Municipal boundaries: IBGE. Streets and routes are not available yet.",
+  "viewState": "View entire state",
+  "_review": "Revisão por falante nativo pendente."
+}

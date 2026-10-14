@@ -1,0 +1,13 @@
+{
+  "city": "Cidade",
+  "chooseState": "Selecione um estado",
+  "allCities": "Todas as cidades do estado",
+  "search": "Buscar cidade",
+  "loading": "Carregando cidades do IBGE…",
+  "failed": "Não foi possível carregar as cidades. O mapa dos estados continua disponível.",
+  "retry": "Tentar novamente",
+  "cached": "Geografia salva neste computador",
+  "source": "Limites municipais: IBGE. Ruas e rotas ainda não disponíveis.",
+  "viewState": "Ver todo o estado",
+  "_review": "Texto original em português."
+}

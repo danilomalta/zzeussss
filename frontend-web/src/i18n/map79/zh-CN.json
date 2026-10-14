@@ -1,0 +1,13 @@
+{
+  "city": "城市",
+  "chooseState": "请选择一个州",
+  "allCities": "州内所有城市",
+  "search": "搜索城市",
+  "loading": "正在加载 IBGE 城市…",
+  "failed": "无法加载城市。仍可使用州地图。",
+  "retry": "重试",
+  "cached": "地图已保存在本电脑",
+  "source": "行政边界：IBGE。街道和路线暂不可用。",
+  "viewState": "查看整个州",
+  "_review": "Revisão por falante nativo pendente."
+}

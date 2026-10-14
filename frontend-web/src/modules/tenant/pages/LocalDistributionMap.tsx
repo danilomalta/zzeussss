@@ -10,6 +10,9 @@ import zh from '../../../i18n/map/zh-CN.json';
 import './distributionMap.css';
 import {words78} from '../../../core/map78/words';
 import DeliveryTracking78 from './DeliveryTracking78';
+import {loadMunicipalities} from '../../../core/map79/load';
+import type {Municipality79} from '../../../core/map79/geography.mjs';
+import {words79} from '../../../core/map79/words';
 
 const translations:Record<string,typeof pt>={'pt-BR':pt,pt,en,es,fr,'zh-CN':zh,zh};
 const extent=states.reduce((box,state)=>[
@@ -22,9 +25,20 @@ export default function LocalDistributionMap(){
  const {i18n}=useTranslation();
  const words=translations[i18n.resolvedLanguage||i18n.language]||pt;
  const deliveryWords=words78(i18n.resolvedLanguage||i18n.language);
+ const cityWords=words79(i18n.resolvedLanguage||i18n.language);
+ const [cities,setCities]=useState<Municipality79[]>([]),[cityID,setCityID]=useState(''),[cityQuery,setCityQuery]=useState(''),[geoState,setGeoState]=useState(''),[geoRevision,setGeoRevision]=useState(0),[geoCached,setGeoCached]=useState(false);
  const [full,setFull]=useState(true),[tracking,setTracking]=useState(false);
  const page=useRef<HTMLElement>(null);
  const [uf,setUF]=useState(''),[zoom,setZoom]=useState(1),[focused,setFocused]=useState(false),[offset,setOffset]=useState<Point>({x:0,y:0}),[period,setPeriod]=useState('30');
+ useEffect(()=>{
+  setCities([]);setCityID('');setCityQuery('');setGeoCached(false);
+  if(!uf){setGeoState('');return;}
+  const controller=new AbortController();
+  let live=true;
+  setGeoState('loading');
+  loadMunicipalities(uf,controller.signal).then(value=>{if(live){setCities(value.rows);setGeoCached(value.cached);setGeoState('ready');}}).catch(()=>{if(live)setGeoState('failed');});
+  return ()=>{live=false;controller.abort();};
+ },[uf,geoRevision]);
  const drag=useRef<{x:number;y:number;offset:Point;scale:number;moved:boolean}|null>(null);
  const ignoreClick=useRef(false);
  const svg=useRef<SVGSVGElement>(null);
@@ -52,10 +66,14 @@ export default function LocalDistributionMap(){
   return ()=>node.removeEventListener('wheel',wheel);
  },[]);
  const selected=states.find(state=>state.uf===uf);
- const bounds=focused&&selected?[selected.bounds[0]-8,selected.bounds[1]-8,selected.bounds[2]+16,selected.bounds[3]+16]:brazil;
+ const selectedCity=cities.find(city=>city.id===cityID);
+ const area=selectedCity||focused&&selected;
+ const padding=selectedCity?Math.max(selectedCity.bounds[2],selectedCity.bounds[3])*.08:8;
+ const bounds=area?[area.bounds[0]-padding,area.bounds[1]-padding,area.bounds[2]+padding*2,area.bounds[3]+padding*2]:brazil;
  const width=bounds[2]/zoom,height=bounds[3]/zoom;
  const viewBox=`${bounds[0]+bounds[2]/2-width/2+offset.x} ${bounds[1]+bounds[3]/2-height/2+offset.y} ${width} ${height}`;
- function select(value:string){setUF(value);setZoom(1);setFocused(false);setOffset({x:0,y:0});}
+ function select(value:string){setUF(value);setCityID('');setZoom(1);setFocused(!!value);setOffset({x:0,y:0});}
+ function selectCity(value:string){setCityID(value);setZoom(1);setFocused(true);setOffset({x:0,y:0});}
  function zoomTo(next:number){setZoom(Math.max(1,Math.min(5,next)));setOffset({x:0,y:0});}
  function move(event:React.PointerEvent<SVGSVGElement>){
   if(!drag.current||!svg.current)return;
@@ -68,16 +86,25 @@ export default function LocalDistributionMap(){
   <div className="distribution-status"><span className="distribution-badge">{words.offline}</span><span className="distribution-locked" aria-disabled="true" title={words.pending}>🔒 {words.locations} · {words.soon}</span></div>
   <div className="distribution-layout">
    <section className="brand-panel distribution-map" aria-label={words.title}>
-    <div className="distribution-toolbar"><label>{words.state}<select value={uf} onChange={event=>select(event.target.value)}><option value="">{words.all}</option>{states.map(state=><option key={state.uf} value={state.uf}>{state.uf} · {state.name}</option>)}</select></label><label>{words.period}<select value={period} onChange={event=>setPeriod(event.target.value)}><option value="today">{words.today}</option><option value="7">{words.sevenDays}</option><option value="30">{words.thirtyDays}</option></select></label><div className="distribution-toolbar-actions"><button className="brand-secondary" onClick={()=>setTracking(value=>!value)} aria-expanded={tracking}>{deliveryWords.deliveries}</button><button className="brand-secondary" onClick={()=>setFull(value=>!value)}>{full?deliveryWords.exit:deliveryWords.full}</button>{selected&&<button className="brand-secondary" onClick={()=>{setFocused(!focused);zoomTo(1);}}>{focused?words.overview:words.focus}</button>}</div></div>
+    <div className="distribution-toolbar">
+     <label>{words.state}<select value={uf} onChange={event=>select(event.target.value)}><option value="">{words.all}</option>{states.map(state=><option key={state.uf} value={state.uf}>{state.uf} · {state.name}</option>)}</select></label>
+     <label>{cityWords.search}<input value={cityQuery} disabled={!cities.length} onChange={event=>setCityQuery(event.target.value)} placeholder={uf?cityWords.search:cityWords.chooseState}/></label>
+     <label>{cityWords.city}<select value={cityID} disabled={!cities.length} onChange={event=>selectCity(event.target.value)}><option value="">{uf?cityWords.allCities:cityWords.chooseState}</option>{cities.filter(city=>!cityQuery||city.id===cityID||city.name.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(cityQuery.toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''))).map(city=><option key={city.id} value={city.id}>{city.name}</option>)}</select></label>
+     <label>{words.period}<select value={period} onChange={event=>setPeriod(event.target.value)}><option value="today">{words.today}</option><option value="7">{words.sevenDays}</option><option value="30">{words.thirtyDays}</option></select></label>
+     <div className="distribution-toolbar-actions"><button className="brand-secondary" onClick={()=>setTracking(value=>!value)} aria-expanded={tracking}>{deliveryWords.deliveries}</button><button className="brand-secondary" onClick={()=>setFull(value=>!value)}>{full?deliveryWords.exit:deliveryWords.full}</button>{selectedCity?<button className="brand-secondary" onClick={()=>selectCity('')}>{cityWords.viewState}</button>:selected&&<button className="brand-secondary" onClick={()=>{setFocused(!focused);zoomTo(1);}}>{focused?words.overview:words.focus}</button>}</div>
+    </div>
+    {(geoState==='loading'||geoState==='failed'||geoCached)&&<div className="distribution-geography-status" role="status">{geoState==='loading'?cityWords.loading:geoState==='failed'?cityWords.failed:cityWords.cached}{geoState==='failed'&&<button className="brand-secondary" onClick={()=>setGeoRevision(v=>v+1)}>{cityWords.retry}</button>}</div>}
     <div className="distribution-canvas">
      <svg ref={svg} className="distribution-svg" viewBox={viewBox} preserveAspectRatio="xMidYMid meet" aria-label={words.title} role="group" onPointerDown={event=>{if(event.button!==0)return;drag.current={x:event.clientX,y:event.clientY,offset,scale:event.currentTarget.getScreenCTM()?.a||1,moved:false};}} onPointerMove={move} onPointerUp={stop} onPointerCancel={stop}>
       {states.map(state=><path key={state.uf} d={state.path} className={uf===state.uf?'distribution-state selected':'distribution-state'} fillRule="evenodd" tabIndex={0} role="button" aria-label={`${state.name} (${state.uf})`} aria-pressed={uf===state.uf} onClick={event=>{if(ignoreClick.current){event.preventDefault();return;}select(state.uf);}} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();select(state.uf);}}}><title>{state.name} ({state.uf})</title></path>)}
+      {cities.map(city=><path key={city.id} d={city.path} className={'distribution-state distribution-city'+(city.id===cityID?' selected':'')} fillRule="evenodd" role="button" tabIndex={0} aria-label={city.name} aria-pressed={city.id===cityID} onClick={event=>{if(ignoreClick.current){event.preventDefault();return;}selectCity(city.id);}} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectCity(city.id);}}}><title>{city.name} · {city.uf}</title></path>)}
+      {selectedCity&&<text className="distribution-city-label" x={selectedCity.bounds[0]+selectedCity.bounds[2]/2} y={selectedCity.bounds[1]+selectedCity.bounds[3]/2} fontSize={Math.min(width,height)/22} textAnchor="middle" pointerEvents="none">{selectedCity.name}</text>}
      </svg>
      <div className="distribution-controls"><button className="brand-secondary" onClick={()=>zoomTo(zoom+.5)} disabled={zoom>=5} aria-label={words.zoomIn} title={words.zoomIn}>+</button><button className="brand-secondary" onClick={()=>zoomTo(zoom-.5)} disabled={zoom<=1} aria-label={words.zoomOut} title={words.zoomOut}>−</button><button className="brand-secondary" onClick={()=>select('')} title={words.reset}>{words.reset}</button></div>
     </div>
     {tracking&&<DeliveryTracking78 close={()=>setTracking(false)} selectState={select} period={period}/>}
     <div className="distribution-selection" role="status"><div><small>{words.selected}</small><strong>{selected?`${selected.name} · ${selected.uf}`:words.all}</strong></div>{selected?<button className="brand-secondary" onClick={()=>{setFocused(!focused);zoomTo(1);}}>{focused?words.overview:words.focus}</button>:<span className="distribution-tip">{words.selectFirst}</span>}</div>
-    <p className="distribution-help">{words.hint}</p><p className="distribution-source">{words.source}</p>
+    <p className="distribution-help">{words.hint}</p><p className="distribution-source">{cities.length?cityWords.source:words.source}</p>
    </section>
    <aside className="distribution-results" aria-label={words.indicators}>
     <section className="brand-panel distribution-empty"><span className="distribution-empty-icon" aria-hidden="true">◎</span><h2>{words.emptyTitle}</h2><p>{words.unavailable}</p><div className="distribution-empty-actions"><Link className="brand-secondary" to="/local/orders">{words.viewOrders}</Link></div><h3>{words.indicators}</h3><ul>{[words.purchases,words.profit,words.losses,words.issues,words.demand].map(label=><li key={label}><span>{label}</span><strong aria-label={words.noData}>—</strong></li>)}</ul></section>

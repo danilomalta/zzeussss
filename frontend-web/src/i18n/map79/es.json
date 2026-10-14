@@ -1,0 +1,13 @@
+{
+  "city": "Ciudad",
+  "chooseState": "Selecciona un estado",
+  "allCities": "Todas las ciudades del estado",
+  "search": "Buscar ciudad",
+  "loading": "Cargando municipios del IBGE…",
+  "failed": "No se pudieron cargar los municipios. El mapa de estados sigue disponible.",
+  "retry": "Reintentar",
+  "cached": "Geografía guardada en este equipo",
+  "source": "Límites municipales: IBGE. Calles y rutas aún no disponibles.",
+  "viewState": "Ver todo el estado",
+  "_review": "Revisão por falante nativo pendente."
+}

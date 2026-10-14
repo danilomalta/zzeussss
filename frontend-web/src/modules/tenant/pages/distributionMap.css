@@ -62,3 +62,11 @@
 .distribution-delivery dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
 .distribution-delivery dd{margin:4px 0;font-weight:650}
 @media(max-width:600px){.distribution-full{padding:0!important}.distribution-full .distribution-map{border-radius:0;padding:8px}.distribution-full .distribution-toolbar label{min-width:120px}.distribution-full .distribution-toolbar-actions{gap:4px}.distribution-full .distribution-toolbar-actions button{font-size:13px;padding-inline:8px}.distribution-tracking{right:8px;bottom:8px;top:160px;width:calc(100% - 16px)}}
+.distribution-toolbar input{width:100%;min-height:44px;box-sizing:border-box;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px;font-size:15px}
+.distribution-city{stroke-width:.7}
+.distribution-city.selected{stroke-width:2.5}
+.distribution-city-label{fill:var(--text);paint-order:stroke;stroke:var(--surface);stroke-width:.05em;font-weight:650}
+.distribution-geography-status{display:flex;gap:12px;align-items:center;font-size:13px;color:var(--text);flex-shrink:0}
+.distribution-full .distribution-toolbar label{min-width:130px;max-width:220px}
+.distribution-full .distribution-canvas{overflow:hidden}
+@media(max-width:600px){.distribution-full .distribution-toolbar{gap:6px}.distribution-full .distribution-toolbar label{min-width:calc(50% - 6px);max-width:none;font-size:13px}.distribution-geography-status{font-size:13px}.distribution-tracking{top:230px}}
