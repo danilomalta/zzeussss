@@ -1,0 +1,3 @@
+import {contextOf} from '../context74/model.mjs';
+export function contextState(session,capabilities,now=Date.now()){if(!session)return 'denied';if(!session.tenant_id||!session.store_id)return 'selection';if(!capabilities)return 'checking';try{contextOf(session,capabilities,now);return 'confirmed';}catch{return 'denied';}}
+export function menuState(item){if(item.planned)return 'soon';if(item.id==='integrations')return 'unavailable';if(item.path?.startsWith('/local/workbench')||item.id==='sheets')return 'local';if(['portfolio','map','hr'].includes(item.id))return 'interface';if(['pos','stock','catalog','cash','orders','staff','prices','plans'].includes(item.id))return 'unverified';return 'navigation';}

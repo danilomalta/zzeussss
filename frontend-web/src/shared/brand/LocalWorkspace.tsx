@@ -1,3 +1,4 @@
+import ContextGate75 from './ContextGate75';
 import ContextBar74 from './ContextBar74';
 import OpenInSheets70 from './OpenInSheets70';
 import {Link,Navigate,Outlet,useLocation} from 'react-router-dom';
@@ -17,6 +18,6 @@ export default function LocalWorkspace(){
    <OpenInSheets70/><ThemeToggle/><ContactDrawer/>
   </div></header>
   <ContextBar74/>
-  <div className="workspace-scroll"><Outlet/></div>
+  <div className="workspace-scroll"><ContextGate75><Outlet/></ContextGate75></div>
  </section></div>;
 }

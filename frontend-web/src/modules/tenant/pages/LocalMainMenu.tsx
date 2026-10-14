@@ -1,3 +1,7 @@
+import MenuIcon75 from '../../../shared/brand/MenuIcon75';
+import MenuStatus75,{MenuLegend75} from '../../../shared/brand/MenuStatus75';
+import {words75} from '../../../core/context75/words';
+import '../../../shared/brand/context75.css';
 import {words74} from '../../../core/context74/words';
 import {permitted} from "../../../core/workbench73/engine.mjs";
 import {workbenchWords} from "../../../core/workbench73/words";
@@ -40,6 +44,7 @@ const entries=[
 ];
 export default function LocalMainMenu({settings=false}:{settings?:boolean}){
  const {t,i18n}=useTranslation();
+ const v75=words75(i18n.resolvedLanguage||i18n.language);
  const w74=words74(i18n.resolvedLanguage||i18n.language);
  const w73=workbenchWords(i18n.resolvedLanguage||i18n.language);
  const [query,setQuery]=useState('');
@@ -52,6 +57,7 @@ export default function LocalMainMenu({settings=false}:{settings?:boolean}){
   <h1>{settings?words.settings:words.title}</h1>
   <p className="brand-state">{settings?words.preferences:words.choose}</p>
   {settings?<><Link className="brand-secondary titan-menu-back" to="/local/home">← {words.back}</Link><section className="brand-panel titan-menu-settings"><h2>{t('theme.appearance')}</h2><ThemeToggle/><h2>{words.languageContact}</h2><ContactDrawer/><button type="button" className="brand-secondary" onClick={()=>void logout()}>{t('workspace.logout')}</button></section></>:<>
+   <MenuLegend75/>
    <label className="menu72-search">{w.search}<input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder={w.search}/></label>
    {(['operation','management','administration'] as const).map(group=>{
     const existing=entries.filter(item=>areas.includes(item.id)||(item.id==='integrations'&&capabilities?.role==='owner')).map(item=>({...item,label:item.id==='integrations'?w74.integrations:t('workspace.'+item.id),group:['pos','catalog','stock','cash','orders','prices','map'].includes(item.id)?'operation':['hr','portfolio','staff'].includes(item.id)?'management':'administration',planned:false}));
@@ -63,7 +69,7 @@ export default function LocalMainMenu({settings=false}:{settings?:boolean}){
     if(permitted(capabilities,"accountant"))existing.push({id:"accountant-tools",path:"/local/workbench?area=accountant",icon:"▤",label:w73.accountant,group:"administration",planned:false});
     const cards=[...existing,...planned,...(group==='administration'?[{id:'settings',path:'/local/settings',icon:'⚙',label:words.settings,group,planned:false}]:[])].filter(item=>item.group===group&&item.label.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
     if(!cards.length)return null;
-    return <section key={group} className="menu72-section"><h2>{w[group]}</h2><nav className="titan-menu-grid" aria-label={w[group]}>{cards.map(item=>item.planned?<article className="brand-panel titan-menu-card menu72-planned" key={item.id} aria-disabled="true" title={w.unavailable}><span className="titan-menu-icon" aria-hidden="true">{item.icon}</span><strong>{item.label}</strong><span className="menu72-badge">{w.soon}</span></article>:<Link className="brand-panel titan-menu-card" key={item.id} to={item.path}><span className="titan-menu-icon" aria-hidden="true">{item.icon}</span><strong>{item.label}</strong>{item.path.startsWith("/local/workbench")&&<span className="menu72-badge">{w73.local}</span>}</Link>)}</nav></section>;
+    return <section key={group} className="menu72-section"><h2>{w[group]}</h2><nav className="titan-menu-grid" aria-label={w[group]}>{cards.map(item=>item.planned?<article className="brand-panel titan-menu-card menu72-planned" key={item.id} aria-disabled="true" title={w.unavailable}><span className="titan-menu-icon" aria-hidden="true"><MenuIcon75 id={item.id}/></span><strong>{item.label}</strong><MenuStatus75 item={item}/></article>:<Link className={'brand-panel titan-menu-card'+(item.id==='pos'?' menu75-pos':'')} key={item.id} to={item.path}><span className="titan-menu-icon" aria-hidden="true"><MenuIcon75 id={item.id}/></span><strong>{item.label}</strong>{item.id==='pos'&&<small>{v75.posDescription}</small>}<MenuStatus75 item={item}/></Link>)}</nav></section>;
    })}
 
   </>}

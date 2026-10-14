@@ -1,0 +1,1 @@
+export type ContextState75='confirmed'|'selection'|'checking'|'denied';export function contextState(session:unknown,capabilities:unknown,now?:number):ContextState75;export function menuState(item:{id:string;path?:string;planned:boolean}):'soon'|'unavailable'|'local'|'interface'|'unverified'|'navigation';
