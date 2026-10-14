@@ -1,3 +1,4 @@
+import ProductionOrderCoverage from './ProductionOrderCoverage';
 import RecipeComparison from './RecipeComparison';
 import ProductionTrace from './ProductionTrace';
 import ProductionLotSearch from './ProductionLotSearch';
@@ -39,6 +40,7 @@ export default function LocalProduction(){
   return <main className="brand-app-content operation-page"><ProductionPending><header><p className="brand-eyebrow">PRODUÇÃO LOCAL</p><h1>Receitas e ordens</h1><p>Quantidades em milésimos da unidade indicada. Consultar capacidade não reserva ingredientes.</p></header>
     <RecipeEditor/>
     <RecipeComparison/>
+    <ProductionOrderCoverage/>
     <RecipeStateEditor/>
     <OrderPlanner/>
     <OrderStateEditor/>
