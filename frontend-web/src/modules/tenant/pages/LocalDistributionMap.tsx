@@ -8,6 +8,8 @@ import es from '../../../i18n/map/es.json';
 import fr from '../../../i18n/map/fr.json';
 import zh from '../../../i18n/map/zh-CN.json';
 import './distributionMap.css';
+import {words78} from '../../../core/map78/words';
+import DeliveryTracking78 from './DeliveryTracking78';
 
 const translations:Record<string,typeof pt>={'pt-BR':pt,pt,en,es,fr,'zh-CN':zh,zh};
 const extent=states.reduce((box,state)=>[
@@ -19,10 +21,29 @@ type Point={x:number;y:number};
 export default function LocalDistributionMap(){
  const {i18n}=useTranslation();
  const words=translations[i18n.resolvedLanguage||i18n.language]||pt;
+ const deliveryWords=words78(i18n.resolvedLanguage||i18n.language);
+ const [full,setFull]=useState(true),[tracking,setTracking]=useState(false);
+ const page=useRef<HTMLElement>(null);
  const [uf,setUF]=useState(''),[zoom,setZoom]=useState(1),[focused,setFocused]=useState(false),[offset,setOffset]=useState<Point>({x:0,y:0}),[period,setPeriod]=useState('30');
- const drag=useRef<{x:number;y:number;offset:Point;moved:boolean}|null>(null);
+ const drag=useRef<{x:number;y:number;offset:Point;scale:number;moved:boolean}|null>(null);
  const ignoreClick=useRef(false);
  const svg=useRef<SVGSVGElement>(null);
+ useEffect(()=>{
+  if(!full)return;
+  const oldOverflow=document.body.style.overflow,previous=document.activeElement as HTMLElement|null;
+  document.body.style.overflow='hidden';
+  page.current?.querySelector<HTMLElement>('select')?.focus();
+  const keys=(event:KeyboardEvent)=>{
+   if(event.key==='Escape'){event.preventDefault();if(tracking)setTracking(false);else setFull(false);}
+   if(event.key!=='Tab')return;
+   const items=Array.from(page.current?.querySelectorAll<HTMLElement>('button:not([disabled]),select:not([disabled]),a[href],[tabindex="0"]')||[]).filter(node=>node.getClientRects().length);
+   const first=items[0],last=items[items.length-1];
+   if(event.shiftKey&&(document.activeElement===first||!page.current?.contains(document.activeElement))){event.preventDefault();last?.focus();}
+   else if(!event.shiftKey&&(document.activeElement===last||!page.current?.contains(document.activeElement))){event.preventDefault();first?.focus();}
+  };
+  document.addEventListener('keydown',keys);
+  return ()=>{document.body.style.overflow=oldOverflow;document.removeEventListener('keydown',keys);previous?.focus();};
+ },[full,tracking]);
  useEffect(()=>{
   const node=svg.current;
   if(!node)return;
@@ -38,23 +59,23 @@ export default function LocalDistributionMap(){
  function zoomTo(next:number){setZoom(Math.max(1,Math.min(5,next)));setOffset({x:0,y:0});}
  function move(event:React.PointerEvent<SVGSVGElement>){
   if(!drag.current||!svg.current)return;
-  const rect=svg.current.getBoundingClientRect();
   if(!drag.current.moved&&Math.abs(event.clientX-drag.current.x)+Math.abs(event.clientY-drag.current.y)>5){drag.current.moved=true;event.currentTarget.setPointerCapture(event.pointerId);}
-  if(drag.current.moved)setOffset({x:drag.current.offset.x-(event.clientX-drag.current.x)*width/rect.width,y:drag.current.offset.y-(event.clientY-drag.current.y)*height/rect.height});
+  if(drag.current.moved)setOffset({x:drag.current.offset.x-(event.clientX-drag.current.x)/drag.current.scale,y:drag.current.offset.y-(event.clientY-drag.current.y)/drag.current.scale});
  }
  function stop(){if(drag.current?.moved){ignoreClick.current=true;setTimeout(()=>{ignoreClick.current=false;},0);}drag.current=null;}
- return <main className="brand-app-content distribution-page">
+ return <main ref={page} className={'brand-app-content distribution-page'+(full?' distribution-full':'')} role={full?'dialog':undefined} aria-modal={full?true:undefined} aria-label={words.title}>
   <header className="distribution-heading"><h1>{words.title}</h1><p>{words.subtitle}</p></header>
   <div className="distribution-status"><span className="distribution-badge">{words.offline}</span><span className="distribution-locked" aria-disabled="true" title={words.pending}>🔒 {words.locations} · {words.soon}</span></div>
   <div className="distribution-layout">
    <section className="brand-panel distribution-map" aria-label={words.title}>
-    <div className="distribution-toolbar"><label>{words.state}<select value={uf} onChange={event=>select(event.target.value)}><option value="">{words.all}</option>{states.map(state=><option key={state.uf} value={state.uf}>{state.uf} · {state.name}</option>)}</select></label><label>{words.period}<select value={period} onChange={event=>setPeriod(event.target.value)}><option value="today">{words.today}</option><option value="7">{words.sevenDays}</option><option value="30">{words.thirtyDays}</option></select></label></div>
+    <div className="distribution-toolbar"><label>{words.state}<select value={uf} onChange={event=>select(event.target.value)}><option value="">{words.all}</option>{states.map(state=><option key={state.uf} value={state.uf}>{state.uf} · {state.name}</option>)}</select></label><label>{words.period}<select value={period} onChange={event=>setPeriod(event.target.value)}><option value="today">{words.today}</option><option value="7">{words.sevenDays}</option><option value="30">{words.thirtyDays}</option></select></label><div className="distribution-toolbar-actions"><button className="brand-secondary" onClick={()=>setTracking(value=>!value)} aria-expanded={tracking}>{deliveryWords.deliveries}</button><button className="brand-secondary" onClick={()=>setFull(value=>!value)}>{full?deliveryWords.exit:deliveryWords.full}</button>{selected&&<button className="brand-secondary" onClick={()=>{setFocused(!focused);zoomTo(1);}}>{focused?words.overview:words.focus}</button>}</div></div>
     <div className="distribution-canvas">
-     <svg ref={svg} className="distribution-svg" viewBox={viewBox} preserveAspectRatio="xMidYMid meet" aria-label={words.title} role="group" onPointerDown={event=>{if(event.button!==0)return;drag.current={x:event.clientX,y:event.clientY,offset,moved:false};}} onPointerMove={move} onPointerUp={stop} onPointerCancel={stop}>
+     <svg ref={svg} className="distribution-svg" viewBox={viewBox} preserveAspectRatio="xMidYMid meet" aria-label={words.title} role="group" onPointerDown={event=>{if(event.button!==0)return;drag.current={x:event.clientX,y:event.clientY,offset,scale:event.currentTarget.getScreenCTM()?.a||1,moved:false};}} onPointerMove={move} onPointerUp={stop} onPointerCancel={stop}>
       {states.map(state=><path key={state.uf} d={state.path} className={uf===state.uf?'distribution-state selected':'distribution-state'} fillRule="evenodd" tabIndex={0} role="button" aria-label={`${state.name} (${state.uf})`} aria-pressed={uf===state.uf} onClick={event=>{if(ignoreClick.current){event.preventDefault();return;}select(state.uf);}} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();select(state.uf);}}}><title>{state.name} ({state.uf})</title></path>)}
      </svg>
      <div className="distribution-controls"><button className="brand-secondary" onClick={()=>zoomTo(zoom+.5)} disabled={zoom>=5} aria-label={words.zoomIn} title={words.zoomIn}>+</button><button className="brand-secondary" onClick={()=>zoomTo(zoom-.5)} disabled={zoom<=1} aria-label={words.zoomOut} title={words.zoomOut}>−</button><button className="brand-secondary" onClick={()=>select('')} title={words.reset}>{words.reset}</button></div>
     </div>
+    {tracking&&<DeliveryTracking78 close={()=>setTracking(false)} selectState={select} period={period}/>}
     <div className="distribution-selection" role="status"><div><small>{words.selected}</small><strong>{selected?`${selected.name} · ${selected.uf}`:words.all}</strong></div>{selected?<button className="brand-secondary" onClick={()=>{setFocused(!focused);zoomTo(1);}}>{focused?words.overview:words.focus}</button>:<span className="distribution-tip">{words.selectFirst}</span>}</div>
     <p className="distribution-help">{words.hint}</p><p className="distribution-source">{words.source}</p>
    </section>
