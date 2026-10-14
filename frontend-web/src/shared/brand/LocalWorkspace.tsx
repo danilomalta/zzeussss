@@ -8,6 +8,7 @@ import {allowedAreas,areaForRoute} from '../../core/local/accessModel.mjs';
 import {BrandLogo,ThemeToggle} from './BrandShell';
 import ContactDrawer from './ContactDrawer';
 import './workspace.css';
+import LogoutButton82 from './LogoutButton82';
 export default function LocalWorkspace(){
  const {t}=useTranslation();const location=useLocation();const {capabilities}=useLocalAccess();
  if(!allowedAreas(capabilities).includes(areaForRoute(location.pathname)))return <Navigate to="/local/home" replace/>;
@@ -15,7 +16,7 @@ export default function LocalWorkspace(){
  return <div className="brand-page workspace workspace-menu-only"><section className="workspace-body">
   <header className="workspace-top"><BrandLogo/><div className="workspace-top-actions">
    {!home&&<Link className="brand-secondary workspace-back-menu" to="/local/home">← {t('navigation.backToMenu')}</Link>}
-   <OpenInSheets70/><ThemeToggle/><ContactDrawer/>
+   <OpenInSheets70/><ThemeToggle/><ContactDrawer/><LogoutButton82/>
   </div></header>
   <ContextBar74/>
   <div className="workspace-scroll"><ContextGate75><Outlet/></ContextGate75></div>
