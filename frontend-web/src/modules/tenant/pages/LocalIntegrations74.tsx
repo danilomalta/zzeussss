@@ -1,0 +1,15 @@
+import {useEffect,useRef,useState} from 'react';import {Navigate} from 'react-router-dom';import {useTranslation} from 'react-i18next';
+import {useLocalAccess} from '../../../core/local/LocalAccess';import {useLocalSession} from '../../../core/local/useLocalSession';
+import {contextOf} from '../../../core/context74/model.mjs';import {checkLocal} from '../../../core/context74/health';import {words74} from '../../../core/context74/words';
+import '../../../shared/brand/context74.css';
+export default function LocalIntegrations74(){
+ const {capabilities}=useLocalAccess(),session=useLocalSession(s=>s.session),token=useLocalSession(s=>s.token),{i18n}=useTranslation(),w=words74(i18n.resolvedLanguage||i18n.language);
+ const [health,setHealth]=useState<boolean|null>(null),[busy,setBusy]=useState(false),[checked,setChecked]=useState<Date|null>(null),active=useRef<AbortController|null>(null),generation=useRef(0);
+ useEffect(()=>{generation.current++;active.current?.abort();setHealth(null);setChecked(null);setBusy(false);return()=>{generation.current++;active.current?.abort();};},[token,session,capabilities]);
+ let valid=false;try{contextOf(session,capabilities);valid=true;}catch{}
+ async function check(){if(busy||!valid||capabilities?.role!=='owner')return;const serial=++generation.current,controller=new AbortController();active.current=controller;setBusy(true);const timer=setTimeout(()=>controller.abort(),5000);try{const result=await checkLocal(controller.signal);if(serial===generation.current&&useLocalSession.getState().token===token){setHealth(result);setChecked(new Date());}}finally{clearTimeout(timer);if(serial===generation.current)setBusy(false);}}
+ if(!valid||capabilities?.role!=='owner')return <Navigate to="/local/home" replace/>;
+ const integrations=['payments','bank','food','commerce','hardware','fiscal','backup','sync'] as const;
+ const evidence=['flow','restart','permission','isolation','audit','restore'] as const;
+ return <main className="brand-app-content ctx74-page"><h1>{w.integrations}</h1><p>{w.integrationInfo}</p><section className="brand-panel"><h2>{w.localAPI}</h2><p role="status">{busy?w.checking:health===null?'—':health?w.available:w.unavailable}</p><p>{w.checkingOnly}</p><button className="brand-primary" disabled={busy} onClick={()=>void check()}>{w.check}</button>{checked&&<p>{w.lastCheck}: {new Intl.DateTimeFormat(i18n.language,{dateStyle:'short',timeStyle:'short'}).format(checked)}</p>}</section><section className="ctx74-grid" aria-label={w.integrations}>{integrations.map(k=><article className="brand-panel" key={k}><h2>{w[k]}</h2><span className="ctx74-status">{w.unknown}</span><p>{k==='backup'?w.backupInfo:k==='sync'?w.syncInfo:w.requires}</p>{k==='fiscal'&&<p>{w.legacy}</p>}<button className="brand-secondary" disabled title={w.requires}>{w.configureDisabled}</button></article>)}</section><section className="brand-panel"><h2>{w.evidence}</h2><ul>{evidence.map(k=><li key={k}>{w[k]} <span>— {w.unknown}</span></li>)}</ul><p>{w.note}</p></section><p>{w.noSecrets}</p></main>;
+}

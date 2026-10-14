@@ -1,3 +1,4 @@
+import ContextBar74 from './ContextBar74';
 import OpenInSheets70 from './OpenInSheets70';
 import {Link,Navigate,Outlet,useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
@@ -15,6 +16,7 @@ export default function LocalWorkspace(){
    {!home&&<Link className="brand-secondary workspace-back-menu" to="/local/home">← {t('navigation.backToMenu')}</Link>}
    <OpenInSheets70/><ThemeToggle/><ContactDrawer/>
   </div></header>
+  <ContextBar74/>
   <div className="workspace-scroll"><Outlet/></div>
  </section></div>;
 }

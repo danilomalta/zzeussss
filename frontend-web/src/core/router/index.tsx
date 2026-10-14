@@ -19,6 +19,7 @@ const LocalOwnerDashboard = React.lazy(() => import('../../modules/tenant/pages/
 const LocalHumanResources = React.lazy(() => import('../../modules/tenant/pages/LocalHumanResources'));
 const LocalSpreadsheet = React.lazy(() => import('../../modules/tenant/pages/LocalSpreadsheet'));
 const LocalWorkbench73 = React.lazy(() => import('../../modules/tenant/pages/LocalWorkbench73'));
+const LocalIntegrations74 = React.lazy(() => import('../../modules/tenant/pages/LocalIntegrations74'));
 const LocalHome = React.lazy(() => import('../../modules/tenant/pages/LocalMainMenu'));
 const LocalSubscription = React.lazy(() => import('../../modules/tenant/pages/LocalSubscription'));
 const LocalStaff = React.lazy(() => import('../../modules/tenant/pages/LocalStaff'));
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
     { path: "orders", element: <SuspenseWrapper><LocalOrders /></SuspenseWrapper> },
     { index: true, element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
     { path: 'home', element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
+    { path: 'integrations', element: <SuspenseWrapper><LocalIntegrations74 /></SuspenseWrapper> },
     { path: 'workbench', element: <SuspenseWrapper><LocalWorkbench73 /></SuspenseWrapper> },
     { path: 'overview', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'owner', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },

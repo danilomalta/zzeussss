@@ -1,0 +1,1 @@
+export async function checkLocal(signal:AbortSignal):Promise<boolean>{try{const response=await fetch('/local/v1/health',{method:'GET',cache:'no-store',credentials:'omit',signal});if(!response.ok)return false;const value=await response.json();return value?.status==='local';}catch{return false;}}
