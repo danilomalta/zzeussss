@@ -9,5 +9,5 @@ export function createWorkbook(id:string,title:string,name:string):TitanWorkbook
 export function evaluateSheet(sheet:TitanSheet):Record<string,string|number|boolean>;
 export function parseWorkbook(text:string):TitanWorkbook;
 export function csvText(matrix:(string|number|boolean)[][],delimiter?:string):string;
-export function parseDelimited(text:string):string[][];
+export function parseDelimited(text:string,options?:{rows?:number;cols?:number;bytes?:number;text?:number}):string[][];
 export function sortSheet(sheet:TitanSheet,col:number,descending?:boolean):TitanSheet;

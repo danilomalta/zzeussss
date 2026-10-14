@@ -1,0 +1,12 @@
+import type {IWorkbookData} from '@univerjs/presets';
+export const limits68:{bytes:number;inflated:number;sheets:number;rows:number;cols:number;cells:number};
+export function emptySnapshot(name?:string):IWorkbookData;
+export function validateSnapshot(data:unknown):IWorkbookData;
+export function readTitanFile(text:string):IWorkbookData;
+export function writeTitanFile(snapshot:IWorkbookData):string;
+export function legacyToSnapshot(text:string):IWorkbookData;
+export function csvToSnapshot(text:string,name:string):IWorkbookData;
+export function snapshotCSV(snapshot:IWorkbookData,sheetId?:string):string;
+export function snapshotToXLSX(snapshot:IWorkbookData):Promise<ArrayBuffer>;
+export function xlsxToSnapshot(bytes:ArrayBuffer,name:string):Promise<IWorkbookData>;
+export function pivotRows(snapshot:IWorkbookData,sheetId?:string,keyColumn?:number,valueColumn?:number):{label:string;sum:number;count:number}[];
