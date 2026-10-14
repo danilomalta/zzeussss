@@ -80,5 +80,6 @@
   "activity": "Scenario history",
   "unitLabel": "Units",
   "litre": "Litres",
-  "search": "Search products"
+  "search": "Search products",
+  "openSheets": "Open in Titan spreadsheet"
 }

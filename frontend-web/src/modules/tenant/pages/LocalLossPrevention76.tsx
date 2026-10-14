@@ -1,11 +1,13 @@
-import {tableCSV} from '../../../core/loss76/export76.mjs';
-import {useEffect,useMemo,useState} from 'react';
-import {Link,useBlocker} from 'react-router-dom';
+import {stageReport76} from '../../../core/loss76/report76.mjs';
+import '../../../core/loss76/sessionReport76';
+import {analysisMatrix76,tableCSV} from '../../../core/loss76/export76.mjs';
+import {useEffect,useMemo,useRef,useState} from 'react';
+import {Link,useBlocker,useNavigate} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {useLocalAccess} from '../../../core/local/LocalAccess';
 import {useLocalSession} from '../../../core/local/useLocalSession';
 import {contextOf,contextKey} from '../../../core/context74/model.mjs';
-import {analyze,approve,defaultPolicy,examples,permitted,production,readScenario,recordLoss,scenarioFile,validate} from '../../../core/loss76/engine.mjs';
+import {analyze,approve,defaultPolicy,examples,permitted,production,recordLoss,validate} from '../../../core/loss76/engine.mjs';
 import type {Lot,Policy,Recipe,Decision,Journal} from '../../../core/loss76/engine.mjs';
 import type {LocalProduct} from '../../../core/local/localClient.mjs';
 import {catalogPage} from '../../../core/loss76/catalog';
@@ -22,6 +24,7 @@ function todayLocal(){const d=new Date();return `${d.getFullYear()}-${String(d.g
 function download(name:string,data:string,type:string){const url=URL.createObjectURL(new Blob([data],{type})),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 export default function LocalLossPrevention76(){const {i18n}=useTranslation(),w=dictionaries[i18n.resolvedLanguage||i18n.language]||pt;const {capabilities}=useLocalAccess(),session=useLocalSession(s=>s.session);let key='';try{key=contextKey(contextOf(session,capabilities));}catch{/* Guard below also handles invalid context. */}return permitted(capabilities)&&key?<LossWorkspace key={key} context={key}/>:<main className="brand-app-content"><p>{w.denied}</p><Link to="/local/home">{w.back}</Link></main>;}
 function LossWorkspace({context}:{context:string}){
+ const navigate=useNavigate(),sending=useRef(false);const {capabilities}=useLocalAccess();
  const {i18n}=useTranslation(),locale=i18n.resolvedLanguage||i18n.language,w=dictionaries[locale]||pt;
  const [rows,setRows]=useState<Lot[]>([]),[policy,setPolicy]=useState<Policy>({...defaultPolicy}),[recipe,setRecipe]=useState<Recipe>(initialRecipe),[decisions,setDecisions]=useState<Decision[]>([]),[journal,setJournal]=useState<Journal[]>([]),[reviewed,setReviewed]=useState<string[]>([]);
  const [recipeName,setRecipeName]=useState(''),[comparisons,setComparisons]=useState<{name:string;recipe:Recipe}[]>([]);
@@ -30,7 +33,7 @@ function LossWorkspace({context}:{context:string}){
  const token=useLocalSession(s=>s.token);
  const money=(c:number)=>new Intl.NumberFormat(locale,{style:'currency',currency:'BRL'}).format(c/100),qty=(n:number)=>new Intl.NumberFormat(locale,{maximumFractionDigits:3}).format(n/1000);
  const change=()=>{setDirty(true);setDecisions([]);setReviewed([]);setError('');};
- const blocker=useBlocker(({currentLocation,nextLocation})=>dirty&&currentLocation.pathname!==nextLocation.pathname);
+ const blocker=useBlocker(({currentLocation,nextLocation})=>dirty&&!sending.current&&currentLocation.pathname!==nextLocation.pathname);
  useEffect(()=>{if(blocker.state==='blocked'){if(window.confirm(w.unsaved))blocker.proceed();else blocker.reset();}},[blocker,w.unsaved]);
  useEffect(()=>{const fn=(e:BeforeUnloadEvent)=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',fn);return()=>window.removeEventListener('beforeunload',fn);},[dirty]);
  useEffect(()=>{let live=true;if(!catalogOpen||!token)return;setLoading(true);setCatalog([]);catalogPage(token,offset).then(r=>{if(live)setCatalog(r);}).catch(()=>{if(live)setError(w.error);}).finally(()=>{if(live)setLoading(false);});return()=>{live=false;};},[token,offset,catalogOpen,w.error]);
@@ -42,12 +45,12 @@ function LossWorkspace({context}:{context:string}){
  const number=(label:string,value:number,onChange:(n:number)=>void,step='0.001',max=1000000)=><label>{label}<input type="number" min="0" max={max} step={step} value={value} onChange={e=>{const n=Number(e.target.value);if(Number.isFinite(n)&&n>=0&&n<=max)onChange(n);}}/></label>;
  const units=(value:string,onChange:(s:Lot['unit'])=>void)=><label>{w.unit}<select value={value} onChange={e=>onChange(e.target.value as Lot['unit'])}><option value="unit">{w.unitLabel}</option><option value="kg">kg</option><option value="litre">{w.litre}</option></select></label>;
  const status=(a:ReturnType<typeof analyze>)=>a.expired?w.expired:a.near?w.near:a.slow?w.slow:w.healthy;
- const save=()=>{download('Titan_Perdas_76.json',JSON.stringify(scenarioFile(context,rows,decisions,recipe,policy,journal,comparisons),null,2),'application/json');setDirty(false);};
+
  const reset=()=>{if(dirty&&!window.confirm(w.confirm))return;setRows([]);setDecisions([]);setRecipe(initialRecipe);setJournal([]);setPolicy({...defaultPolicy});setReviewed([]);setComparisons([]);setDemo(false);setDirty(false);};
  return <main className="brand-app-content loss76"><header><div><h1>{w.title}</h1><p>{w.subtitle}</p></div><Link className="brand-secondary" to="/local/home">← {w.back}</Link></header>
  <div className="loss76-notice" role="status">{demo&&<strong>{w.demoBadge} · </strong>}{w.planning}</div>
- <div className="loss76-actions"><button className="brand-secondary" onClick={reset}>{w.clear}</button><button className="brand-secondary" onClick={()=>{if(rows.length&&!window.confirm(w.confirm))return;setRows(examples(today));setRecipe({output_unit:'unit',yield_milli:1000,waste_bps:500,ingredients:[{id:'demo-flour',required_milli:500},{id:'demo-milk',required_milli:300}]});setJournal([]);setComparisons([]);change();setDemo(true);}}>{w.demo}</button><button type="button" data-export="csv" className="brand-primary" disabled={!visible.length} onClick={()=>download('Titan_Analise_Perdas.csv',tableCSV(visible,w,locale),'text/csv;charset=utf-8')}>{w.export} (.csv)</button></div>
- <details className="brand-panel"><summary>{w.save} / {w.open} (.json)</summary><p>{w.planning}</p><button type="button" data-export="scenario" className="brand-secondary" disabled={!rows.length} onClick={save}>{w.save} (.json)</button><label className="brand-secondary loss76-file">{w.open}<input type="file" accept=".json,application/json" onChange={async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;if(dirty&&!window.confirm(w.confirm))return;try{if(f.size>2000000)throw Error();const value=readScenario(JSON.parse(await f.text()),context);if(useLocalSession.getState().token!==token)throw Error();setRows(value.rows);setPolicy(value.policy);setRecipe(value.recipe);setDecisions(value.decisions);setJournal(value.journal);setComparisons(value.comparisons);setReviewed([]);setDirty(false);setDemo(false);setError('');}catch{setError(w.error);}}}/></label></details>
+ <div className="loss76-actions"><button className="brand-secondary" onClick={reset}>{w.clear}</button><button className="brand-secondary" onClick={()=>{if(rows.length&&!window.confirm(w.confirm))return;setRows(examples(today));setRecipe({output_unit:'unit',yield_milli:1000,waste_bps:500,ingredients:[{id:'demo-flour',required_milli:500},{id:'demo-milk',required_milli:300}]});setJournal([]);setComparisons([]);change();setDemo(true);}}>{w.demo}</button><button type="button" data-export="csv" className="brand-primary" disabled={!visible.length} onClick={()=>download('Titan_Analise_Perdas.csv',tableCSV(visible,w,locale),'text/csv;charset=utf-8')}>{w.export} (.csv)</button><button type="button" data-export="sheets" className="brand-secondary" disabled={!visible.length||capabilities?.role!=='owner'} onClick={()=>run(()=>{const id=crypto.randomUUID();stageReport76(context,id,w.title,analysisMatrix76(visible,w));sending.current=true;navigate('/local/sheets?report='+encodeURIComponent(id));})}>{w.openSheets}</button></div>
+
  {error&&<p className="loss76-error" role="alert">! {error}</p>}
  <section className="brand-panel loss76-policy"><h2>{w.policy}</h2><div className="loss76-fields"><label>{w.today}<input type="date" value={today} onChange={e=>{if(e.target.value){try{rows.forEach(r=>analyze(r,policy,e.target.value));setToday(e.target.value);change();}catch{setError(w.error);}}}}/></label>{number(w.days,policy.expiry_days,n=>{setPolicy({...policy,expiry_days:Math.round(n)});change();},'1',365)}{number(w.slowDays,policy.slow_days,n=>{setPolicy({...policy,slow_days:Math.round(n)});change();},'1',365)}{number(w.margin,policy.margin_bps/100,n=>{setPolicy({...policy,margin_bps:Math.round(n*100)});change();},'0.01',100)}{number(w.discount,policy.discount_bps/100,n=>{setPolicy({...policy,discount_bps:Math.round(n*100)});change();},'0.01',100)}</div></section>
  <nav className="loss76-tabs" aria-label={w.title}>{(['monitor','discounts','reorder','losses','production'] as const).map(id=><button type="button" key={id} aria-pressed={tab===id} onClick={()=>setTab(id)}>{w[id]}</button>)}</nav>

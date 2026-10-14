@@ -1,3 +1,6 @@
+import {takeReport76,reportBook76} from '../../../core/loss76/report76.mjs';
+import {contextOf,contextKey} from '../../../core/context74/model.mjs';
+import '../../../core/loss76/sessionReport76';
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { Navigate, useBlocker } from 'react-router-dom';
@@ -121,6 +124,8 @@ export default function LocalSpreadsheet() {
           theme === 'dark'
         );
         runtime.current = instance;
+        const incoming76=takeReport76(contextKey(contextOf(session,caps70.current)),new URLSearchParams(window.location.search).get('report')||'');
+        if(incoming76){snapshot.current=reportBook76(emptySnapshot(),incoming76);setName(incoming76.name);setDirty(true);}
         const workbook = instance.univerAPI.createWorkbook(snapshot.current);
         instance.univerAPI.getFormula().registerFunction(
           'TITAN',

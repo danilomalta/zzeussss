@@ -80,5 +80,6 @@
   "activity": "Historique du scénario",
   "unitLabel": "Unités",
   "litre": "Litres",
-  "search": "Rechercher un produit"
+  "search": "Rechercher un produit",
+  "openSheets": "Ouvrir dans le tableur Titan"
 }

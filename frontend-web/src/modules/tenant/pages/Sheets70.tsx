@@ -205,7 +205,7 @@ export default function Sheets70(props: Props) {
     void sheetStorage()
       .list(scope)
       .then((saved) => {
-        if (!mounted.current || contextRef.current !== scope || !saved.length) return;
+        if (parameters.has('report') || !mounted.current || contextRef.current !== scope || !saved.length) return;
         bootstrap = window.setTimeout(() => {
           if (!mounted.current || doc.current) return;
           const file = saved[0];

@@ -80,5 +80,6 @@
   "activity": "场景历史",
   "unitLabel": "件",
   "litre": "升",
-  "search": "搜索产品"
+  "search": "搜索产品",
+  "openSheets": "在 Titan 表格中打开"
 }
