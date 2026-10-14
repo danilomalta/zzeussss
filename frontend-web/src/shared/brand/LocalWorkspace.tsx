@@ -1,3 +1,4 @@
+import OpenInSheets70 from './OpenInSheets70';
 import {Link,Navigate,Outlet,useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {useLocalAccess} from '../../core/local/LocalAccess';
@@ -12,7 +13,7 @@ export default function LocalWorkspace(){
  return <div className="brand-page workspace workspace-menu-only"><section className="workspace-body">
   <header className="workspace-top"><BrandLogo/><div className="workspace-top-actions">
    {!home&&<Link className="brand-secondary workspace-back-menu" to="/local/home">← {t('navigation.backToMenu')}</Link>}
-   <ThemeToggle/><ContactDrawer/>
+   <OpenInSheets70/><ThemeToggle/><ContactDrawer/>
   </div></header>
   <div className="workspace-scroll"><Outlet/></div>
  </section></div>;

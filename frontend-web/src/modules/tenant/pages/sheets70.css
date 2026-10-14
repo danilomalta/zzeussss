@@ -1,0 +1,322 @@
+.workspace-scroll:has(.sheet70-page) {
+  display: flex;
+  overflow: hidden;
+  padding: 0;
+  min-height: 0;
+}
+.sheet70-page {
+  --sheet-accent: #a57b36;
+  display: flex !important;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 12px !important;
+  overflow: hidden;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  font-family: Inter, system-ui, 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+}
+.sheet70-page .sheet68-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.sheet70-page .sheet68-heading h1 {
+  font-size: 18px;
+  margin: 0;
+}
+.sheet70-page .sheet68-heading label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+}
+.sheet70-page button,
+.sheet70-page input,
+.sheet70-page select,
+.sheet70-page summary {
+  font: inherit;
+  font-size: 13px;
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 6px 10px;
+}
+.sheet70-page button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.sheet70-page :focus-visible {
+  outline: 2px solid var(--sheet-accent);
+  outline-offset: 2px;
+}
+.sheet70-page summary {
+  cursor: pointer;
+}
+.sheet70-bar {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+}
+.sheet70-bar > span {
+  margin-left: auto;
+  font-size: 13px;
+}
+.sheet70-bar details {
+  position: relative;
+}
+.sheet70-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 30px #0003;
+}
+.sheet70-page .sheet69-ribbon[hidden] {
+  display: none !important;
+}
+.sheet70-page .sheet69-ribbon {
+  flex-shrink: 0;
+  max-height: 180px;
+  overflow: auto;
+}
+.sheet70-page .sheet69-ribbon nav,
+.sheet70-page .sheet69-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sheet70-page .sheet69-tools label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.sheet70-page .sheet69-tools input {
+  width: 100px;
+}
+.sheet70-page .sheet68-workspace {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  gap: 10px;
+}
+.sheet70-page .sheet68-engine {
+  height: auto !important;
+  min-height: 0 !important;
+  flex: 1;
+  width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.sheet70-page .sheet68-analysis {
+  width: 300px;
+  overflow: auto;
+  padding: 12px;
+  background: var(--surface);
+}
+.sheet70-page .sheet68-help {
+  flex-shrink: 0;
+}
+.sheet70-page .sheet68-help[open] {
+  max-height: 100px;
+  overflow: auto;
+}
+.sheet70-page .sheet68-help summary {
+  min-height: 24px;
+  padding: 3px 8px;
+}
+.sheet70-links {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+  max-height: 100px;
+  overflow: auto;
+}
+.sheet70-links summary {
+  border-color: var(--sheet-accent);
+}
+.sheet70-links input {
+  width: 80px;
+}
+.sheet70-dialog {
+  position: fixed;
+  inset: 5dvh 3vw;
+  margin: auto;
+  width: min(900px, 94vw);
+  height: 90dvh;
+  max-height: 90dvh;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 20px;
+  overflow: auto;
+  z-index: 1000;
+  box-shadow: 0 0 0 100vmax #0008;
+}
+.sheet70-dialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  position: sticky;
+  top: -20px;
+  background: var(--surface);
+  padding: 10px 0;
+  z-index: 1;
+}
+.sheet70-dialog h2 {
+  margin: 0;
+  font-size: 22px;
+}
+.sheet70-dialog label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.sheet70-dialog article {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.sheet70-dialog time {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.sheet70-template-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.sheet70-template-grid button {
+  min-height: 80px;
+}
+.sheet70-table {
+  overflow: auto;
+  max-height: 45dvh;
+}
+.sheet70-dialog td,
+.sheet70-dialog th {
+  border: 1px solid var(--border);
+  padding: 8px;
+  white-space: nowrap;
+}
+.sheet70-dialog table {
+  border-collapse: collapse;
+}
+@media (max-width: 700px) {
+  .sheet70-page {
+    padding: 6px !important;
+  }
+  .sheet70-page .sheet68-heading h1 {
+    display: none;
+  }
+  .sheet70-page .sheet68-heading label {
+    margin: 0;
+    width: 100%;
+  }
+  .sheet70-page .sheet68-heading input {
+    min-width: 0;
+    flex: 1;
+  }
+  .sheet70-bar > span {
+    width: 100%;
+    margin: 0;
+  }
+  .sheet70-page .sheet68-analysis {
+    position: absolute;
+    inset: 160px 10px 40px;
+    width: auto;
+    z-index: 40;
+  }
+  .sheet70-dialog {
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+  .sheet70-template-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media print {
+  .sheet70-bar,
+  .sheet70-links,
+  .sheet70-dialog {
+    display: none;
+  }
+}
+.sheet70-page .sheet69-printdialog {
+  width: min(1100px, 94vw);
+  max-height: 85dvh;
+  overflow: auto;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+}
+.sheet69-printdialog header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.sheet69-printdialog table {
+  border-collapse: collapse;
+}
+.sheet69-printdialog td {
+  border: 1px solid var(--border);
+  padding: 6px;
+}
+@media print {
+  body:has(.sheet69-printdialog[open]) * {
+    visibility: hidden;
+  }
+  body:has(.sheet69-printdialog[open]) .sheet69-printdialog,
+  body:has(.sheet69-printdialog[open]) .sheet69-printdialog * {
+    visibility: visible;
+  }
+  .sheet70-page .sheet69-printdialog {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    background: white;
+    color: black;
+  }
+  .sheet69-printdialog header {
+    display: none;
+  }
+  .sheet69-printdialog td {
+    border-color: #aaa;
+  }
+  .sheet69-printdialog footer {
+    margin-top: 12px;
+  }
+}
