@@ -1,6 +1,5 @@
-import OperationsIcon83 from '../../../shared/brand/OperationsIcon83';
-import {menuLabel83} from '../../../core/operations83/menu';
-import {can83,sections83} from '../../../core/operations83/model.mjs';
+import {menuLabel84} from '../../../core/operations84/menu';
+import {allowed84,areas84} from '../../../core/operations84/rules.mjs';
 import {permitted as lossPermitted76} from '../../../core/loss76/engine.mjs';
 import MenuIcon75 from '../../../shared/brand/MenuIcon75';
 import MenuStatus75,{MenuLegend75} from '../../../shared/brand/MenuStatus75';
@@ -66,16 +65,17 @@ export default function LocalMainMenu({settings=false}:{settings?:boolean}){
    {(['operation','management','administration'] as const).map(group=>{
     const existing=entries.filter(item=>areas.includes(item.id)||(item.id==='integrations'&&capabilities?.role==='owner')).map(item=>({...item,label:item.id==='integrations'?w74.integrations:t('workspace.'+item.id),group:['pos','catalog','stock','cash','orders','prices','map'].includes(item.id)?'operation':['hr','portfolio','staff'].includes(item.id)?'management':'administration',planned:false}));
     if(capabilities?.role==='owner' && Object.keys(import.meta.glob('./LocalSpreadsheet.tsx')).length)existing.push({id:'sheets',path:'/local/sheets',icon:'▦',label:w.sheets,group:'management',planned:false});
-    if(sections83.some(a=>can83(capabilities,a)))existing.push({id:'operations83',path:'/local/operations',icon:'▦',label:menuLabel83(i18n.resolvedLanguage||i18n.language),group:'management',planned:false});
+    if(areas84.some(a=>allowed84(capabilities,a)))existing.push({id:'operations83',path:'/local/operations',icon:'▦',label:menuLabel84(i18n.resolvedLanguage||i18n.language),group:'management',planned:false});
     const planned=[['finance','management','portfolio'],['fiscal','administration','accounting'],['accounting','administration','accounting'],['commercial','operation','orders'],['purchasing','operation','orders'],['production','operation','production'],['discounts','operation','catalog'],['fleet','operation','fleet'],['documents','administration','staff'],['reports','management','portfolio'],['food','operation','pos'],['services','operation','orders']].filter(([, ,area])=>capabilities?.role==='owner'||areas.includes(area)).map(([id,section])=>({id,path:'',icon:'◇',label:w[id as keyof typeof w],group:section,planned:true}));
     const routes:Record<string,string>={finance:"finance",fiscal:"fiscal",accounting:"accounting"};
     for(const item of planned){const target=routes[item.id];if(target&&permitted(capabilities,target)){item.path="/local/workbench?area="+target;item.planned=false;}}
     if(permitted(capabilities,"pdv"))existing.push({id:"payment-tools",path:"/local/workbench?area=pdv",icon:"≍",label:w73.allocation,group:"operation",planned:false});
     if(permitted(capabilities,"accountant"))existing.push({id:"accountant-tools",path:"/local/workbench?area=accountant",icon:"▤",label:w73.accountant,group:"administration",planned:false});
     if(lossPermitted76(capabilities)&&!planned.some(item=>item.id==='discounts')){existing.push({id:'discounts',path:'/local/losses',icon:'%',label:w.discounts,group:'operation',planned:false});}for(const item of planned){if(item.id==='discounts'&&lossPermitted76(capabilities)){item.path='/local/losses';item.planned=false;}}
+    for(const item of planned){if(item.id==='production'&&allowed84(capabilities,'quality')){item.path='/local/operations?area=quality';item.planned=false;}}
     const cards=[...existing,...planned,...(group==='administration'?[{id:'settings',path:'/local/settings',icon:'⚙',label:words.settings,group,planned:false}]:[])].filter(item=>item.group===group&&item.label.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
     if(!cards.length)return null;
-    return <section key={group} className="menu72-section"><h2>{w[group]}</h2><nav className="titan-menu-grid" aria-label={w[group]}>{cards.map(item=>item.planned?<article className="brand-panel titan-menu-card menu72-planned" key={item.id} aria-disabled="true" title={w.unavailable}><span className="titan-menu-icon" aria-hidden="true">{item.id==='operations83'?<OperationsIcon83/>:<MenuIcon75 id={item.id}/>}</span><strong>{item.label}</strong><MenuStatus75 item={item}/></article>:<Link className={'brand-panel titan-menu-card'+(item.id==='pos'?' menu75-pos':'')} key={item.id} to={item.path}><span className="titan-menu-icon" aria-hidden="true">{item.id==='operations83'?<OperationsIcon83/>:<MenuIcon75 id={item.id}/>}</span><strong>{item.label}</strong>{item.id==='pos'&&<small>{v75.posDescription}</small>}<MenuStatus75 item={item}/></Link>)}</nav></section>;
+    return <section key={group} className="menu72-section"><h2>{w[group]}</h2><nav className="titan-menu-grid" aria-label={w[group]}>{cards.map(item=>item.planned?<article className="brand-panel titan-menu-card menu72-planned" key={item.id} aria-disabled="true" title={w.unavailable}><span className="titan-menu-icon" aria-hidden="true"><MenuIcon75 id={item.id}/></span><strong>{item.label}</strong><MenuStatus75 item={item}/></article>:<Link className={'brand-panel titan-menu-card'+(item.id==='pos'?' menu75-pos':'')} key={item.id} to={item.path}><span className="titan-menu-icon" aria-hidden="true"><MenuIcon75 id={item.id}/></span><strong>{item.label}</strong>{item.id==='pos'&&<small>{v75.posDescription}</small>}<MenuStatus75 item={item}/></Link>)}</nav></section>;
    })}
 
   </>}
