@@ -1,0 +1,3 @@
+import type {Adapter83,Record83} from '../contracts';
+import {can83} from '../model.mjs';
+export function source83(area:string,rows:Record83[]):Adapter83{return {async read(context,cap,signal,demo){if(signal.aborted)throw new DOMException('Aborted','AbortError');if(!can83(cap,area)||context.tenant_id!==cap.tenant_id||context.store_id!==cap.store_id||context.identity_id!==cap.identity_id||context.device_id!==cap.device_id)return {state:'forbidden',rows:[],demo:false};return demo?{state:'ready',rows:structuredClone(rows),asOf:new Date().toISOString(),demo:true}:{state:'unavailable',rows:[],demo:false};}};}

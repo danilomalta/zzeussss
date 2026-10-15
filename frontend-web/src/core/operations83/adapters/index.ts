@@ -1,0 +1,11 @@
+import closing from './closing';
+import journal from './journal';
+import returns from './returns';
+import inventory from './inventory';
+import quality from './quality';
+import supply from './supply';
+import opportunities from './opportunities';
+import performance from './performance';
+import devices from './devices';
+import type {Adapter83} from '../contracts';
+export const adapters83:Record<string,Adapter83>={closing,journal,returns,inventory,quality,supply,opportunities,performance,devices};

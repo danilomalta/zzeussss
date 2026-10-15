@@ -22,6 +22,7 @@ const LocalSpreadsheet = React.lazy(() => import('../../modules/tenant/pages/Loc
 const LocalWorkbench73 = React.lazy(() => import('../../modules/tenant/pages/LocalWorkbench73'));
 const LocalIntegrations74 = React.lazy(() => import('../../modules/tenant/pages/LocalIntegrations74'));
 const LocalSettings80 = React.lazy(() => import('../../modules/tenant/pages/LocalSettings80'));
+const LocalOperations83 = React.lazy(() => import('../../modules/tenant/pages/LocalOperations83'));
 const LocalHome = React.lazy(() => import('../../modules/tenant/pages/LocalMainMenu'));
 const LocalSubscription = React.lazy(() => import('../../modules/tenant/pages/LocalSubscription'));
 const LocalStaff = React.lazy(() => import('../../modules/tenant/pages/LocalStaff'));
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
     { path: 'owner', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'map', element: <SuspenseWrapper><LocalDistributionMap /></SuspenseWrapper> },
     { path: 'settings', element: <SuspenseWrapper><LocalSettings80 /></SuspenseWrapper> },
+    { path: 'operations', element: <SuspenseWrapper><LocalOperations83 /></SuspenseWrapper> },
     { path: 'stock', element: <SuspenseWrapper><LocalCatalog /></SuspenseWrapper> },
     { path: 'subscription', element: <SuspenseWrapper><LocalSubscription /></SuspenseWrapper> },
     { path: 'sheets', element: <SuspenseWrapper><LocalSpreadsheet /></SuspenseWrapper> },
