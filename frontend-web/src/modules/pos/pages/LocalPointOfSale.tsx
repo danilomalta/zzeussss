@@ -11,6 +11,9 @@ import type { CartItem } from '../../../core/local/posModel.mjs';
 import { createPOSOperations } from '../../../core/local/posOperations.mjs';
 import type { OperationOutcome, PendingOperation } from '../../../core/local/posOperations.mjs';
 import CashClosing92 from './CashClosing92';
+import SaleCustomer93 from './SaleCustomer93';
+import {words93} from '../../../core/local/words93';
+import type {Customer93} from '../../../core/local/reconciliation93.mjs';
 import {checkoutScope91} from '../../../core/local/checkout91.mjs';
 import SalesHistory from './SalesHistory';
 import './localPOS.css';
@@ -54,6 +57,10 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const operationWords90=words90(i18n.resolvedLanguage||i18n.language);
   const checkoutWords91=words91(i18n.resolvedLanguage||i18n.language);
   const cashPage=mode==='cash';
+  const customerWords93=words93(i18n.resolvedLanguage||i18n.language);
+  const [customer93,setCustomer93]=useState<Customer93>({document:'',club:'skip'});
+  const [customerOpen93,setCustomerOpen93]=useState(false);
+  const customerAsked93=useRef(false);
   const {capabilities}=useLocalAccess();
   const [operatorName,setOperatorName]=useState('');
   useEffect(()=>{if(!capabilities?.permissions?.includes('manage_staff'))return;let alive=true;
@@ -95,6 +102,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const [reload, setReload] = useState(0);
   const [quantity, setQuantity] = useState('1');
   const [cart, setCart] = useState<CartItem[]>(()=>activeDraft && activeDraft.token===token ? activeDraft.items : []);
+  useEffect(()=>{if(cashPage)return;if(!cart.length){setFiscal91('none');setFiscalDocument91('');customerAsked93.current=false;setCustomer93({document:"",club:"skip"});setCustomerOpen93(false);}else if(!customerAsked93.current){customerAsked93.current=true;setCustomerOpen93(true);}},[cart.length,cashPage]);
   useEffect(()=>{activeDraft={token,items:cart};},[cart,token]);
   useEffect(()=>{if(knownCash&&!cash&&cart.length)setCart([]);},[knownCash,cash,cart.length]);
   const [opening, setOpening] = useState('');
@@ -162,6 +170,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       setCompletion91({receipt:outcome.result,names:Object.fromEntries([...products,...cart.map(item=>item.product)].map(product=>[product.id,{name:product.name,unit:product.unit}])),change:confirmedChange91(outcome.result,tender)});
       setReceipt(outcome.result); setCart([]); setRemoved(null); setLastProduct(''); setPaying(false); setReceived(''); setHistoryRevision(v=>v+1);
       setPaymentMethod91('cash');setFiscal91('none');setFiscalDocument91('');
+      setCustomer93({document:'',club:'skip'});setCustomerOpen93(false);customerAsked93.current=false;
       setMessage(t(outcome.result.status === 'cancelled' ? 'posUi.saleCancelled' : 'posUi.saleConfirmed'));
     } else if (outcome.kind === 'open') { setOpening(''); setMessage('Abertura de caixa confirmada.'); }
     else {
@@ -209,20 +218,22 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   function discardDraft(){
     if(locked||paying||!cart.length)return;
     if(!window.confirm(t('posUi.discardConfirm')))return;
+    setCustomer93({document:'',club:'skip'});customerAsked93.current=false;setCustomerOpen93(false);
     setCart([]);setRemoved(null);setLastProduct('');setReceived('');setSearch('');setError('');setMessage(t('posUi.discarded'));scanRef.current?.focus();
   }
-  useEffect(()=>{if(cashPage)return;const onKey=(event:KeyboardEvent)=>{if(event.altKey||event.ctrlKey||event.metaKey||event.repeat)return;
+  useEffect(()=>{if(cashPage||customerOpen93||club91)return;const onKey=(event:KeyboardEvent)=>{if(event.altKey||event.ctrlKey||event.metaKey||event.repeat)return;
     if(event.key==='Escape'){if(paying){setPaying(false);}else if(focused){setFocused(false);}else{setSearch('');scanRef.current?.focus();}return;}
     if(!cash || locked || closing)return;
     if(event.key==='F2'){event.preventDefault();scanRef.current?.focus();}
     if(event.key==='F4' && cart.length && !paying){event.preventDefault();setReceived('');setPaying(true);}
     if(event.key==='F8'){event.preventDefault();setMessage(t('posUi.discountUnavailable'));}
-  };window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[cashPage,cash,locked,closing,cart.length,paying,focused,t]);
+  };window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[cashPage,cash,locked,closing,cart.length,paying,focused,t,customerOpen93,club91]);
   const filtered = products.filter((product) => `${product.name} ${product.sku} ${product.barcode || ''}`.toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')));
   function addProduct(product: LocalProduct) {
     try {
-      if (locked || !cash || !locationID) throw new Error(t('posUi.needLocation'));
+      if (locked || customerOpen93 || !cash || !locationID) throw new Error(t('posUi.needLocation'));
       const next=addCartProduct(cart,product,locationID,quantity);
+      if(!customerAsked93.current){customerAsked93.current=true;setCustomerOpen93(true);}
       setCart(next); setReceipt(null); setRemoved(null); setLastProduct(product.id); setSearch(''); setQuantity('1'); setSearchIndex(0); setError('');scanRef.current?.focus();
     } catch (failure) { setError(failureText(failure)); }
   }
@@ -232,10 +243,10 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
     catch(failure){setError(failureText(failure));return false;}
   }
   function undoRemove(){if(!removed||locked||paying)return;try{setCart(restoreCartItem(cart,removed));setLastProduct(removed.product.id);setRemoved(null);setError('');scanRef.current?.focus();}catch(failure){setError(failureText(failure));}}
-  function scan(){if(locked||paying||closing)return;try{addProduct(selectCatalogProduct(products,search,searchIndex));}catch(failure){setError(failureText(failure));}}
+  function scan(){if(locked||paying||closing||customerOpen93)return;try{addProduct(selectCatalogProduct(products,search,searchIndex));}catch(failure){setError(failureText(failure));}}
 
   function submitSale() {
-    if (!operations || !cash || locked || change === null) return;
+    if (!operations || !cash || locked || customerOpen93 || club91 || change === null) return;
     if(!canCheckout91||receivedCents91===null||!setup.tenders)return;
     try { const input = makeSale(cart, cash.session_id);setup.tenders.save(input,receivedCents91); void run(() => operations.start(token, 'sale', input)); }
     catch (failure) { setError(failure instanceof Error&&checkoutWords91[failure.message]?checkoutWords91[failure.message]:failureText(failure)); }
@@ -266,6 +277,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       {cashPage&&<p><Link className="brand-secondary pos-back" to="/local/pos">{t("posUi.backToSale")}</Link></p>}
       {cashPage && cash && <CashClosing92 key={cash.session_id} token={token} scope={checkoutScope91(session)} cash={cash.session_id} disabled={locked || cart.length > 0} manager={capabilities?.role==="owner" || capabilities?.role==="manager"} onClose={amount=>{if(!operations || locked || cart.length)return;void run(()=>operations.start(token, 'close', {session_id:cash.session_id,operation_id:crypto.randomUUID(),declared_cents:amount}));}}/>}
       {cashPage && closedReport && <section className="brand-panel pos-closing-report" role="status"><h2>{t("posUi.closeResult")}</h2><div className="pos-payment-status"><div><span>{t("posUi.declaredCash")}</span><strong>{formatLocalCents(closedReport.declared_cents)}</strong></div><div><span>{t("posUi.expectedCash")}</span><strong>{formatLocalCents(closedReport.expected_cents)}</strong></div><div><span>{closedReport.difference_cents===0?t('posUi.balanced'):closedReport.difference_cents<0?t('posUi.shortage'):t('posUi.surplus')}</span><strong>{formatLocalCents(Math.abs(closedReport.difference_cents))}</strong></div></div></section>}
+      {!cashPage&&cart.length>0&&<div className="customer93-summary"><span>{customerWords93.customer}: {customer93.document?'***.***.***-'+customer93.document.slice(-2):customerWords93.noCustomer}</span>{customer93.club!=='skip'&&<span>{customerWords93.clubIntent}</span>}<button className="brand-secondary" disabled={locked||paying} onClick={()=>setCustomerOpen93(true)}>{customerWords93.editCustomer}</button></div>}
       {!cashPage && <div ref={retailRef} className="pos-retail-grid" aria-disabled={!cash}>
         <div className="pos-selling">
           <form className="pos-scan" onSubmit={e=>{e.preventDefault();scan();}}>
@@ -294,8 +306,9 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       {!cashPage && <footer className="pos-statusbar"><span>{cash?t("posUi.open"):t("posUi.closed")}</span><div className="pos-shortcut-items"><span><kbd>F2</kbd> {t('posUi.keySearch')}</span><span><kbd>F4</kbd> {t('posUi.keyPay')}</span><span><kbd>F8</kbd> {t('posUi.keyDiscount')}</span><span><kbd>Esc</kbd> {t('posUi.keyBack')}</span></div><button className="brand-secondary" aria-expanded={help} onClick={()=>setHelp(v=>!v)}>Ajuda</button></footer>}
       {!cashPage&&help&&<section className="brand-panel pos-help"><h2>Operação do caixa</h2><p>Abra seu turno, confira o local de retirada e registre por SKU, código de barras ou nome. A busca consulta a página carregada; navegue pelo catálogo para outros produtos. Altere quantidades diretamente na linha; Enter confirma a correção. Remova e desfaça a última remoção quando necessário.</p><p>A venda só é registrada após confirmação da API. Se houver perda de resposta, use a operação pendente; não abra outra venda para substituir a anterior. O carrinho ainda em edição não é salvo ao recarregar. Suspensão e retomada de rascunhos não estão disponíveis nesta entrega.</p></section>}
       <dialog ref={paymentRef} className="pos-payment-dialog checkout91-dialog" aria-labelledby="pos-payment-title" onCancel={e=>{if(busy){e.preventDefault();return;}setPaying(false);}} onClose={()=>{setPaying(false);scanRef.current?.focus();}}><div className="pos-dialog-heading"><h2 id="pos-payment-title">{checkoutWords91.checkoutTitle}</h2><button type="button" className="brand-secondary" aria-label={t('posUi.backToSale')} disabled={busy} onClick={()=>setPaying(false)}>×</button></div><Payment91 cart={cart} total={total} method={paymentMethod91} setMethod={setPaymentMethod91} fiscal={fiscal91} setFiscal={setFiscal91} document={fiscalDocument91} setDocument={setFiscalDocument91} received={received} setReceived={setReceived} inputRef={receivedRef} disabled={locked||!cart.length} busy={busy} pending={!!pending} error={error} onSubmit={submitSale} canSubmit={canCheckout91&&!!cash&&cart.length>0&&!closing} canFiscal={can90(capabilities,'fiscal')} onClub={()=>setClub91(true)}/></dialog>
+      {!cashPage&&customerOpen93&&<SaleCustomer93 value={customer93} onContinue={value=>{setCustomer93(value);setFiscalDocument91(value.document);setCustomerOpen93(false);if(value.club==='join')setClub91(true);else scanRef.current?.focus();}}/>}
       {!cashPage&&completion91&&<Completion91 receipt={completion91.receipt} names={completion91.names} change={completion91.change} onNext={()=>{setCompletion91(null);setReceived('');scanRef.current?.focus();}}/>}
-      {club91&&<Club91 session={session} onClose={()=>setClub91(false)}/>}
+      {club91&&<Club91 session={session} initialDocument={customer93.document} onClose={()=>setClub91(false)}/>}
       {!cashPage&&!focused&&receipt && <section className="brand-panel pos-receipt"><h2>{t(receipt.status === 'cancelled' ? 'posUi.saleCancelled' : 'posUi.saleConfirmed')}</h2><p>{t('posUi.recordedTotal')}: <strong>{formatLocalCents(receipt.total_cents)}</strong></p><details><summary>{t('posUi.details')}</summary><code>{receipt.sale_id}</code></details></section>}
       {!cashPage&&!focused&&<SalesHistory token={token} revision={historyRevision} onRead={setReceipt} />}
     </main>
