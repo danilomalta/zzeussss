@@ -13,6 +13,7 @@ import type { OperationOutcome, PendingOperation } from '../../../core/local/pos
 import CashCount from './CashCount';
 import SalesHistory from './SalesHistory';
 import './localPOS.css';
+import {words90} from '../../../core/operation90/words';
 
 async function browserLock<T>(key: string, action: () => Promise<T>): Promise<T> {
   if (!navigator.locks) throw new Error('Abra o sistema em localhost usando um navegador com proteção entre abas.');
@@ -43,7 +44,8 @@ export default function LocalPointOfSale({ mode = 'sale' }: { mode?: 'sale' | 'c
 }
 
 function POSWorkspace({ token, session, mode }: { token: string; session: LocalSession; mode: 'sale' | 'cash' }) {
-  const {t}=useTranslation();
+  const {t,i18n}=useTranslation();
+  const operationWords90=words90(i18n.resolvedLanguage||i18n.language);
   const cashPage=mode==='cash';
   const {capabilities}=useLocalAccess();
   const [operatorName,setOperatorName]=useState('');
@@ -226,6 +228,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
     <main className="brand-app-content pos-content">
       <div className="brand-app-heading pos-heading"><div><h1>{t(cashPage?"posUi.cashTitle":"posUi.title")}</h1><p className="brand-subtitle">{t("posUi.operator")}: {operatorName||t("posUi.operatorFallback")} · {cash?t("posUi.open"):knownCash?t("posUi.closed"):t("posUi.unconfirmed")}</p></div>{!cashPage&&<button type="button" className="brand-secondary pos-focus-toggle" aria-pressed={focused} onClick={()=>setFocused(v=>!v)}>{t(focused?"posUi.reduce":"posUi.expand")}</button>}
         {focused&&!cashPage&&<Link className="brand-secondary pos-menu-return" to="/local/home" onClick={()=>setFocused(false)}>← {t('navigation.backToMenu')}</Link>}
+        {!focused&&<Link className="brand-secondary" to={'/local/operation?area='+(cashPage?'closing':'pos')}>{operationWords90.operationCenter}</Link>}
         <button className="brand-secondary" disabled={busy || loading || turnBusy} onClick={() => void refreshCash(true)}>{t(turnBusy?"posUi.checkingShift":"posUi.checkShift")}</button></div>
       {(error || calculationError) && <p role="alert" className="brand-message error">{error || calculationError}</p>}
       {message && <p role="status" className="brand-message">{message}</p>}

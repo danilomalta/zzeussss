@@ -1,4 +1,5 @@
 const paths:Record<string,string>={
+ operation90:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z M6 6h1 M17 6h1 M6 17h1 M17 17h1',
  inventory:'M4 3h16v18H4z M8 3v4h8V3 M7 12l2 2 4-4 M7 18h10',
  crm:'M12 21S2 15 2 8a5 5 0 0 1 10-1a5 5 0 0 1 10 1c0 7-10 13-10 13 M8 12h8',
  channels:'M3 4h18v12H3z M8 21h8 M12 16v5 M7 8h4 M14 8h3 M7 12h10',
