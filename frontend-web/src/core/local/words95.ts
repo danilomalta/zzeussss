@@ -1,0 +1,2 @@
+import pt from '../../i18n/desk95/pt-BR.json';import en from '../../i18n/desk95/en.json';import es from '../../i18n/desk95/es.json';import fr from '../../i18n/desk95/fr.json';import zh from '../../i18n/desk95/zh-CN.json';import {words94} from './words94';
+export function words95(locale:string):Record<string,string>{const own=locale.startsWith('en')?en:locale.startsWith('es')?es:locale.startsWith('fr')?fr:locale.startsWith('zh')?zh:pt;return {...words94(locale),...own};}

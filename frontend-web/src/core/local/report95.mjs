@@ -1,0 +1,2 @@
+import {isCents} from './posModel.mjs';
+export function validateSummary95(s,scope,mode){if(!s||s.scope!==scope||s.mode!==mode||!['live','demo'].includes(mode)||typeof s.cash!=='string'||!s.cash||s.cash.length>200||!isCents(s.expected)||!isCents(s.counted)||!Number.isSafeInteger(s.difference)||s.counted-s.expected!==s.difference||!Number.isFinite(Date.parse(s.at)))throw Error('storageError');return s;}
