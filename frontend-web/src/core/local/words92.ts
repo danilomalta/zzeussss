@@ -1,0 +1,2 @@
+import pt from '../../i18n/closing92/pt-BR.json';import en from '../../i18n/closing92/en.json';import es from '../../i18n/closing92/es.json';import fr from '../../i18n/closing92/fr.json';import zh from '../../i18n/closing92/zh-CN.json';
+export function words92(locale:string):Record<string,string>{return locale.startsWith('en')?en:locale.startsWith('es')?es:locale.startsWith('fr')?fr:locale.startsWith('zh')?zh:pt;}

@@ -1,0 +1,16 @@
+export interface ClosingPayment92{id:string;method:string;amount:number;reference?:string;provider?:string;terminal?:string;providerConfirmed:boolean}
+export interface ClosingSale92{id:string;at:string;status:'committed'|'cancelled';payments:ClosingPayment92[]}
+export interface Paper92{id:string;method:'debit'|'credit'|'pix';amount:number;reference:string;provider:string;terminal:string;at:string;reviewed:true;void:boolean;sale:string;payment:string}
+export interface ClosingDraft92{format:'titan-closing92';scope:string;cash:string;revision:number;updated:string;counts:string[];countConfirmed:boolean;mode:'papers'|'integrated';papers:Paper92[];reason:string;approved:boolean;audit:{at:string;action:string;reference:string}[]}
+export const cashDenominations:number[];
+export function count92(counts:string[]):number;
+export function parsePaper92(text:string):{method:string;amount:string;reference:string;at:string};
+export function validPaper92(p:Paper92):Paper92;
+export function paperCandidates92(p:Paper92,sales:ClosingSale92[],minutes?:number):{sale:string;payment:string;at:string;amount:number}[];
+export function paperIssue92(p:Paper92,sales:ClosingSale92[]):string;
+export function addPaper92(d:ClosingDraft92,p:Paper92):void;
+export function bindPaper92(d:ClosingDraft92,id:string,c:{sale:string;payment:string},sales:ClosingSale92[]):void;
+export function summary92(sales:ClosingSale92[],papers:Paper92[],complete:boolean):{method:string;expected:number|null;observed:number;parts:number;matched:number;confirmed:number}[];
+export function emptyClosing92(scope:string,cash:string):ClosingDraft92;
+export function validateClosing92(d:unknown,scope:string,cash:string):ClosingDraft92;
+export function closingGate92(d:ClosingDraft92,sales:ClosingSale92[],complete:boolean,manager:boolean):string|null;

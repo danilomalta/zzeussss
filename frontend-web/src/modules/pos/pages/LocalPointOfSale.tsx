@@ -10,7 +10,8 @@ import { addCartProduct, replaceCartQuantity, restoreCartItem, selectCatalogProd
 import type { CartItem } from '../../../core/local/posModel.mjs';
 import { createPOSOperations } from '../../../core/local/posOperations.mjs';
 import type { OperationOutcome, PendingOperation } from '../../../core/local/posOperations.mjs';
-import CashCount from './CashCount';
+import CashClosing92 from './CashClosing92';
+import {checkoutScope91} from '../../../core/local/checkout91.mjs';
 import SalesHistory from './SalesHistory';
 import './localPOS.css';
 import {words90} from '../../../core/operation90/words';
@@ -98,7 +99,6 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   useEffect(()=>{if(knownCash&&!cash&&cart.length)setCart([]);},[knownCash,cash,cart.length]);
   const [opening, setOpening] = useState('');
   const [received, setReceived] = useState('');
-  const [declared, setDeclared] = useState('');
   const [closing, setClosing] = useState(cashPage);
   const [focused,setFocused]=useState(false);
   const focusedOnce=useRef(false);
@@ -168,7 +168,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       const result = outcome.result;
       const difference = result.difference_cents;
       setClosedReport({expected_cents:result.expected_cents,difference_cents:difference,declared_cents:result.expected_cents+difference});
-      setClosing(false); setDeclared('');
+      setClosing(false);
       setMessage(`Caixa fechado. Valor esperado: ${formatLocalCents(result.expected_cents)}. Diferença declarada: ${difference < 0 ? '−' : '+'}${formatLocalCents(Math.abs(difference))}.`);
     }
   }
@@ -264,11 +264,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
 
       </section>}
       {cashPage&&<p><Link className="brand-secondary pos-back" to="/local/pos">{t("posUi.backToSale")}</Link></p>}
-      {cashPage && cash && <section className="brand-panel pos-closing"><h2>{t("posUi.cashTitle")}</h2><p>{t("posUi.closeHelp")}</p>
-        <div className="pos-payment-status"><div><strong>{t("posUi.cashPayment")}</strong><span>{t("posUi.countAvailable")}</span></div></div>
-        <CashCount disabled={locked} onTotal={setDeclared} />
-        <form onSubmit={(event) => { event.preventDefault(); if (!operations || locked || cart.length) return; try { const input = { session_id: cash.session_id, operation_id: crypto.randomUUID(), declared_cents: parseMoney(declared) }; void run(() => operations.start(token, 'close', input)); } catch (failure) { setError(failureText(failure)); } }}>
-          <label>{t("posUi.countedCash")}<input required inputMode="decimal" disabled={locked} value={declared} placeholder="0,00" onChange={(event) => setDeclared(event.target.value)} /></label><button className="brand-small-primary" disabled={locked || cart.length > 0}>{t("posUi.confirmClose")}</button></form></section>}
+      {cashPage && cash && <CashClosing92 key={cash.session_id} token={token} scope={checkoutScope91(session)} cash={cash.session_id} disabled={locked || cart.length > 0} manager={capabilities?.role==="owner" || capabilities?.role==="manager"} onClose={amount=>{if(!operations || locked || cart.length)return;void run(()=>operations.start(token, 'close', {session_id:cash.session_id,operation_id:crypto.randomUUID(),declared_cents:amount}));}}/>}
       {cashPage && closedReport && <section className="brand-panel pos-closing-report" role="status"><h2>{t("posUi.closeResult")}</h2><div className="pos-payment-status"><div><span>{t("posUi.declaredCash")}</span><strong>{formatLocalCents(closedReport.declared_cents)}</strong></div><div><span>{t("posUi.expectedCash")}</span><strong>{formatLocalCents(closedReport.expected_cents)}</strong></div><div><span>{closedReport.difference_cents===0?t('posUi.balanced'):closedReport.difference_cents<0?t('posUi.shortage'):t('posUi.surplus')}</span><strong>{formatLocalCents(Math.abs(closedReport.difference_cents))}</strong></div></div></section>}
       {!cashPage && <div ref={retailRef} className="pos-retail-grid" aria-disabled={!cash}>
         <div className="pos-selling">

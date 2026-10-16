@@ -1,0 +1,6 @@
+import {createContext} from 'react';
+import {localClient} from './useLocalSession';
+import type {ClosingSale92} from './closing92.mjs';
+export interface ClosingSource92{read:(token:string,cash:string,signal:AbortSignal)=>Promise<{sales:ClosingSale92[];complete:boolean}>}
+export const closingSource92:ClosingSource92={async read(token,cash,signal){const sales:ClosingSale92[]=[];for(let offset=0;offset<1000;offset+=20){const page=await localClient.history(token,offset);if(signal.aborted)throw Error('aborted');const relevant=page.filter(s=>s.cash_session_id===cash);for(let start=0;start<relevant.length;start+=4){const group=await Promise.all(relevant.slice(start,start+4).map(async s=>{const r=await localClient.receipt(token,s.sale_id);if(r.cash_session_id!==cash||r.sale_id!==s.sale_id)throw Error('sourceError');return {id:r.sale_id,at:s.committed_at,status:r.status,payments:r.payments.map(p=>({id:p.payment_id,method:p.method,amount:p.amount_cents,providerConfirmed:false}))};}));if(signal.aborted)throw Error('aborted');sales.push(...group);}if(page.length<20)return {sales,complete:true};}return {sales,complete:false};}};
+export const ClosingSourceContext92=createContext<ClosingSource92>(closingSource92);
