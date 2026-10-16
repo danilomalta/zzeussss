@@ -14,6 +14,11 @@ import CashCount from './CashCount';
 import SalesHistory from './SalesHistory';
 import './localPOS.css';
 import {words90} from '../../../core/operation90/words';
+import {can90} from '../../../core/operation90/engine.mjs';
+import {words91} from '../../../core/local/words91';
+import {canSubmit91,confirmedChange91,tenderStore91,type Method91,type Fiscal91} from '../../../core/local/checkout91.mjs';
+import {Payment91,Completion91,Club91} from './Checkout91';
+import './checkout91.css';
 
 async function browserLock<T>(key: string, action: () => Promise<T>): Promise<T> {
   if (!navigator.locks) throw new Error('Abra o sistema em localhost usando um navegador com proteção entre abas.');
@@ -46,6 +51,7 @@ export default function LocalPointOfSale({ mode = 'sale' }: { mode?: 'sale' | 'c
 function POSWorkspace({ token, session, mode }: { token: string; session: LocalSession; mode: 'sale' | 'cash' }) {
   const {t,i18n}=useTranslation();
   const operationWords90=words90(i18n.resolvedLanguage||i18n.language);
+  const checkoutWords91=words91(i18n.resolvedLanguage||i18n.language);
   const cashPage=mode==='cash';
   const {capabilities}=useLocalAccess();
   const [operatorName,setOperatorName]=useState('');
@@ -58,8 +64,8 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const [closedReport, setClosedReport] = useState<{expected_cents:number;difference_cents:number;declared_cents:number}|null>(null);
   const invalidate = useLocalSession((state) => state.invalidate);
   const setup = useMemo(() => {
-    try { return { operations: createPOSOperations(localClient, window.localStorage, session, browserLock), error: '' }; }
-    catch (error) { return { operations: null, error: failureText(error) }; }
+    try { return { operations: createPOSOperations(localClient, window.localStorage, session, browserLock),tenders:tenderStore91(window.localStorage,session), error: '' }; }
+    catch (error) { return { operations: null,tenders:null, error: failureText(error) }; }
   }, [session]);
   const operations = setup.operations;
   const [cash, setCash] = useState<CashSession | null>(null);
@@ -74,6 +80,11 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const paymentRef = useRef<HTMLDialogElement>(null);
   const receivedRef = useRef<HTMLInputElement>(null);
   const [paying,setPaying]=useState(false);
+  const [paymentMethod91,setPaymentMethod91]=useState<Method91>('cash');
+  const [fiscal91,setFiscal91]=useState<Fiscal91>('none');
+  const [fiscalDocument91,setFiscalDocument91]=useState('');
+  const [club91,setClub91]=useState(false);
+  const [completion91,setCompletion91]=useState<{receipt:SaleReceipt;names:Record<string,{name:string;unit:string}>;change:{total:number;received:number;change:number}|null}|null>(null);
   const [help,setHelp]=useState(false);
   const [lastProduct,setLastProduct]=useState('');
   const [removed,setRemoved]=useState<CartItem|null>(null);
@@ -147,7 +158,10 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   }
   function confirmed(outcome: OperationOutcome) {
     if (outcome.kind === 'sale') {
+      let tender=null;try{tender=setup.tenders?.get(outcome.result.operation_id)||null;}catch{/* The sale is confirmed even if tender metadata is unreadable. */}
+      setCompletion91({receipt:outcome.result,names:Object.fromEntries([...products,...cart.map(item=>item.product)].map(product=>[product.id,{name:product.name,unit:product.unit}])),change:confirmedChange91(outcome.result,tender)});
       setReceipt(outcome.result); setCart([]); setRemoved(null); setLastProduct(''); setPaying(false); setReceived(''); setHistoryRevision(v=>v+1);
+      setPaymentMethod91('cash');setFiscal91('none');setFiscalDocument91('');
       setMessage(t(outcome.result.status === 'cancelled' ? 'posUi.saleCancelled' : 'posUi.saleConfirmed'));
     } else if (outcome.kind === 'open') { setOpening(''); setMessage('Abertura de caixa confirmada.'); }
     else {
@@ -182,6 +196,8 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   try { total = cartTotal(cart); } catch (failure) { calculationError = failureText(failure); }
   let change: number | null = null;
   try { const amount = parseMoney(received); if (amount >= total) change = amount - total; } catch { /* Keep payment button disabled. */ }
+  let receivedCents91:number|null=null;try{receivedCents91=parseMoney(received);}catch{/* Incomplete input remains unconfirmed. */}
+  const canCheckout91=canSubmit91({method:paymentMethod91,fiscal:fiscal91,total,received:receivedCents91});
   const locked = busy || turnBusy || loading || !!pending || !operations || !knownCash || !!calculationError;
   const [quickIDs,setQuickIDs]=useState<string[]>([]);
   const quickKey=`titan-pos-quick:${session.tenant_id}:${session.store_id}:${session.identity_id}`;
@@ -220,14 +236,17 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
 
   function submitSale() {
     if (!operations || !cash || locked || change === null) return;
-    try { const input = makeSale(cart, cash.session_id); void run(() => operations.start(token, 'sale', input)); }
-    catch (failure) { setError(failureText(failure)); }
+    if(!canCheckout91||receivedCents91===null||!setup.tenders)return;
+    try { const input = makeSale(cart, cash.session_id);setup.tenders.save(input,receivedCents91); void run(() => operations.start(token, 'sale', input)); }
+    catch (failure) { setError(failure instanceof Error&&checkoutWords91[failure.message]?checkoutWords91[failure.message]:failureText(failure)); }
   }
   return <div className={`brand-page brand-app-page pos-page ${cashPage?"pos-cash-page":""} ${!cash&&knownCash&&!cashPage?"pos-turn-closed":""}`}>
 
     <main className="brand-app-content pos-content">
       <div className="brand-app-heading pos-heading"><div><h1>{t(cashPage?"posUi.cashTitle":"posUi.title")}</h1><p className="brand-subtitle">{t("posUi.operator")}: {operatorName||t("posUi.operatorFallback")} · {cash?t("posUi.open"):knownCash?t("posUi.closed"):t("posUi.unconfirmed")}</p></div>{!cashPage&&<button type="button" className="brand-secondary pos-focus-toggle" aria-pressed={focused} onClick={()=>setFocused(v=>!v)}>{t(focused?"posUi.reduce":"posUi.expand")}</button>}
         {focused&&!cashPage&&<Link className="brand-secondary pos-menu-return" to="/local/home" onClick={()=>setFocused(false)}>← {t('navigation.backToMenu')}</Link>}
+        {!cashPage&&cash&&<Link className="brand-secondary checkout91-close-register" to="/local/cash/register" aria-disabled={locked||paying||cart.length>0} onClick={e=>{if(locked||paying||cart.length){e.preventDefault();setError(checkoutWords91.finishSaleFirst);}else setFocused(false);}}>{checkoutWords91.closeRegister}</Link>}
+        {!cashPage&&<button type="button" className="brand-secondary" disabled={busy||paying} onClick={()=>setClub91(true)}>{checkoutWords91.clubRegister}</button>}
         {!focused&&<Link className="brand-secondary" to={'/local/operation?area='+(cashPage?'closing':'pos')}>{operationWords90.operationCenter}</Link>}
         <button className="brand-secondary" disabled={busy || loading || turnBusy} onClick={() => void refreshCash(true)}>{t(turnBusy?"posUi.checkingShift":"posUi.checkShift")}</button></div>
       {(error || calculationError) && <p role="alert" className="brand-message error">{error || calculationError}</p>}
@@ -270,7 +289,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
           <nav className="brand-pagination" aria-label="Páginas de produtos"><button className="brand-secondary" disabled={loading||busy||paying||offset===0} onClick={()=>setOffset(v=>Math.max(0,v-50))}>Anterior</button><span>Página {offset/50+1}</span><button className="brand-secondary" disabled={loading||busy||paying||products.length<50} onClick={()=>setOffset(v=>v+50)}>Próxima</button><button className="brand-secondary" disabled={loading||busy||paying} onClick={()=>{setError('');setReload(v=>v+1);}}>Atualizar catálogo</button></nav>
         </div>
         <aside className="brand-panel pos-summary"><p className="brand-eyebrow">{t("posUi.summary")}</p><h2>{t("posUi.estimatedTotal")}</h2><strong className="pos-grand-total">{formatLocalCents(total)}</strong><dl className="pos-summary-lines"><div><dt>Subtotal</dt><dd>{formatLocalCents(total)}</dd></div><div><dt>Linhas de produtos</dt><dd>{cart.length}</dd></div><div><dt>Unidades (produtos unitários)</dt><dd>{String(cart.filter(i=>i.product.unit==='unit').reduce((n,i)=>n+BigInt(i.quantity_milli),0n)/1000n)}</dd></div></dl><p className="pos-note">Produtos por peso, volume ou comprimento mantêm a quantidade e a unidade de cada linha.</p>
-          <div className="pos-status-stack"><div><span>Venda</span><strong>{pending?.kind==='sale'?'Pendente de conferência':cart.length?'Em edição':receipt?'Consulte o registro abaixo':'Não iniciada'}</strong></div><div><span>Pagamento atual</span><strong>{pending?.kind==='sale'?'Resultado não confirmado':busy&&paying?'Conferindo na API':'Não registrado'}</strong></div><div><span>Documento fiscal</span><strong>Não emitido</strong></div></div>
+          <div className="pos-status-stack"><div><span>Venda</span><strong>{pending?.kind==='sale'?'Pendente de conferência':cart.length?'Em edição':receipt?'Consulte o registro abaixo':'Não iniciada'}</strong></div><div><span>Pagamento atual</span><strong>{pending?.kind==='sale'?'Resultado não confirmado':busy&&paying?'Conferindo venda':receipt?.status==='committed'&&!cart.length?checkoutWords91.paymentConfirmed:'Não registrado'}</strong></div><div><span>Documento fiscal</span><strong>Não emitido</strong></div></div>
           <div className="pos-primary-actions"><button type="button" className="brand-primary pos-checkout" disabled={locked||!cash||!cart.length||total<=0||closing} onClick={()=>{setReceived('');setPaying(true);}}>{t('posUi.pay')} · F4</button><button type="button" className="brand-secondary pos-discount" disabled title={t('posUi.discountUnavailable')}>{t('posUi.discount')} · F8</button></div>
           <button type="button" className="brand-secondary pos-discard" disabled={locked||paying||!cart.length} onClick={discardDraft}>{t('posUi.discard')}</button>
           <p className="pos-note">{t("posUi.cashOnly")}</p>
@@ -278,7 +297,9 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       </div>}
       {!cashPage && <footer className="pos-statusbar"><span>{cash?t("posUi.open"):t("posUi.closed")}</span><div className="pos-shortcut-items"><span><kbd>F2</kbd> {t('posUi.keySearch')}</span><span><kbd>F4</kbd> {t('posUi.keyPay')}</span><span><kbd>F8</kbd> {t('posUi.keyDiscount')}</span><span><kbd>Esc</kbd> {t('posUi.keyBack')}</span></div><button className="brand-secondary" aria-expanded={help} onClick={()=>setHelp(v=>!v)}>Ajuda</button></footer>}
       {!cashPage&&help&&<section className="brand-panel pos-help"><h2>Operação do caixa</h2><p>Abra seu turno, confira o local de retirada e registre por SKU, código de barras ou nome. A busca consulta a página carregada; navegue pelo catálogo para outros produtos. Altere quantidades diretamente na linha; Enter confirma a correção. Remova e desfaça a última remoção quando necessário.</p><p>A venda só é registrada após confirmação da API. Se houver perda de resposta, use a operação pendente; não abra outra venda para substituir a anterior. O carrinho ainda em edição não é salvo ao recarregar. Suspensão e retomada de rascunhos não estão disponíveis nesta entrega.</p></section>}
-      <dialog ref={paymentRef} className="pos-payment-dialog" aria-labelledby="pos-payment-title" onCancel={e=>{if(busy){e.preventDefault();return;}setPaying(false);}} onClose={()=>{setPaying(false);scanRef.current?.focus();}}><div className="pos-dialog-heading"><div><p className="brand-eyebrow">{t('posUi.cashPayment')}</p><h2 id="pos-payment-title">{t('posUi.confirmTitle')}</h2></div><button className="brand-secondary" aria-label={t('posUi.backToSale')} disabled={busy} onClick={()=>setPaying(false)}>×</button></div><div className="pos-total"><span>{t('posUi.estimatedTotal')}</span><strong>{formatLocalCents(total)}</strong></div><p>{t('posUi.confirmHelp')}</p><form onSubmit={e=>{e.preventDefault();submitSale();}}><label>{t('posUi.received')}<input ref={receivedRef} autoComplete="off" inputMode="decimal" maxLength={32} disabled={locked||!cart.length} placeholder="0,00" value={received} onChange={e=>setReceived(e.target.value)}/></label><p className="pos-change">{t('posUi.change')}: {change===null||!cart.length?'—':formatLocalCents(change)}</p>{error&&<p role="alert">{error}</p>}{pending&&<p role="status">{t('posUi.pendingResult')}</p>}<button className="brand-primary" disabled={locked||!cash||!cart.length||total<=0||change===null||closing}>{t(busy?'posUi.confirming':'posUi.confirmCash')}</button></form><p className="pos-note">{t('posUi.noFiscal')}</p></dialog>
+      <dialog ref={paymentRef} className="pos-payment-dialog checkout91-dialog" aria-labelledby="pos-payment-title" onCancel={e=>{if(busy){e.preventDefault();return;}setPaying(false);}} onClose={()=>{setPaying(false);scanRef.current?.focus();}}><div className="pos-dialog-heading"><h2 id="pos-payment-title">{checkoutWords91.checkoutTitle}</h2><button type="button" className="brand-secondary" aria-label={t('posUi.backToSale')} disabled={busy} onClick={()=>setPaying(false)}>×</button></div><Payment91 cart={cart} total={total} method={paymentMethod91} setMethod={setPaymentMethod91} fiscal={fiscal91} setFiscal={setFiscal91} document={fiscalDocument91} setDocument={setFiscalDocument91} received={received} setReceived={setReceived} inputRef={receivedRef} disabled={locked||!cart.length} busy={busy} pending={!!pending} error={error} onSubmit={submitSale} canSubmit={canCheckout91&&!!cash&&cart.length>0&&!closing} canFiscal={can90(capabilities,'fiscal')} onClub={()=>setClub91(true)}/></dialog>
+      {!cashPage&&completion91&&<Completion91 receipt={completion91.receipt} names={completion91.names} change={completion91.change} onNext={()=>{setCompletion91(null);setReceived('');scanRef.current?.focus();}}/>}
+      {club91&&<Club91 session={session} onClose={()=>setClub91(false)}/>}
       {!cashPage&&!focused&&receipt && <section className="brand-panel pos-receipt"><h2>{t(receipt.status === 'cancelled' ? 'posUi.saleCancelled' : 'posUi.saleConfirmed')}</h2><p>{t('posUi.recordedTotal')}: <strong>{formatLocalCents(receipt.total_cents)}</strong></p><details><summary>{t('posUi.details')}</summary><code>{receipt.sale_id}</code></details></section>}
       {!cashPage&&!focused&&<SalesHistory token={token} revision={historyRevision} onRead={setReceipt} />}
     </main>
