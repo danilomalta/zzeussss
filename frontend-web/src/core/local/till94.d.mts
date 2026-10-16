@@ -1,0 +1,23 @@
+import type {CartItem} from './posModel.mjs';import type {SaleReceipt} from './localClient.mjs';
+export interface Actor94{id:string;role:string;permissions:string[]}
+export interface Part94{id:string;method:string;amount:number}
+export interface Request94{id:string;at:string;actor:string;kind:string;reference:string;amount:number;reason:string;state:string;integration:string;parts?:Part94[];received?:number|null;gross?:number;item?:string;quantity?:number;outcome?:string;review?:{actor:string;at:string;reason:string}}
+export interface Bag94{id:string;cash:string;amount:number;destination:string;policy:string;state:string;difference?:number;chain:{stage:string;actor:string;at:string;count?:number;reason?:string}[]}
+export interface Suspended94{id:string;at:string;actor:string;reference:string;cart:CartItem[];state:string;sale?:string}
+export interface Till94{format:string;scope:string;cash:string;revision:number;updated:string;requests:Request94[];bags:Bag94[];suspended:Suspended94[];journal:{id:string;at:string;actor:string;kind:string;reference:string;amount:number}[]}
+export const methods94:string[];
+export function manager94(a:Actor94):boolean;
+export function fingerprint94(cart:CartItem[]):string;
+export function split94(parts:Part94[],total:number,received:number|null):{allocated:number;balance:number;cash:number;covered:boolean};
+export function empty94(scope:string,cash:string):Till94;
+export function validate94(d:unknown,scope:string,cash:string):Till94;
+export function request94(d:Till94,a:Actor94,input:{kind:string;amount:number;reason:string;reference:string;gross?:number;parts?:Part94[];received?:number|null}):string;
+export function decide94(d:Till94,a:Actor94,id:string,approve:boolean,reason:string):void;
+export function withdraw94(d:Till94,a:Actor94,id:string):void;
+export function return94(d:Till94,a:Actor94,receipt:SaleReceipt,input:{item:string;quantity:number;outcome:string;reason:string}):string;
+export function cancel94(d:Till94,a:Actor94,receipt:SaleReceipt,reason:string):string;
+export function seal94(d:Till94,a:Actor94,amount:number,destination:string,policy:string,confirmedCount:boolean):string;
+export function bagStep94(d:Till94,a:Actor94,id:string,stage:string,count?:number,reason?:string):void;
+export function suspend94(d:Till94,a:Actor94,cart:CartItem[],reference:string):string;
+export function resume94(d:Till94,a:Actor94,id:string,products:CartItem['product'][]):CartItem[];
+export function completeSuspended94(d:Till94,a:Actor94,reference:string,saleID:string):void;
