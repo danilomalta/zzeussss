@@ -1,3 +1,5 @@
+import {ClosingSourceContext92} from '../../../core/local/closingSource92';
+import Checkout96 from './Checkout96';import {useDraft96} from '../../../core/local/useDraft96';import {words96} from '../../../core/local/words96';import type {Receipt96} from '../../../core/local/checkout96.mjs';
 import {read95} from '../../../core/local/store95';
 import Desk95 from './Desk95';import Report95 from './Report95';import Receipt95 from './Receipt95';import {GatewayContext95} from '../../../core/local/service95';import {archive95} from '../../../core/local/reportStore95';import type {Summary95} from '../../../core/local/report95.mjs';import type {Domain95} from '../../../core/local/desk95.mjs';import {words95} from '../../../core/local/words95';
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -5,8 +7,8 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLocalAccess } from '../../../core/local/LocalAccess';
 import { localClient, localErrorMessage, useLocalSession } from '../../../core/local/useLocalSession';
-import { LocalAPIError, formatLocalCents } from '../../../core/local/localClient.mjs';
-import type { CashSession, LocalLocation, LocalProduct, LocalSession, SaleReceipt } from '../../../core/local/localClient.mjs';
+import { LocalAPIError } from '../../../core/local/localClient.mjs';
+import type { CashSession, LocalLocation, LocalProduct, LocalSession } from '../../../core/local/localClient.mjs';
 import { cartTotal, lineCents, makeSale, parseMoney } from '../../../core/local/posModel.mjs';
 import { addCartProduct, replaceCartQuantity, restoreCartItem, selectCatalogProduct } from '../../../core/local/cartEditing.mjs';
 import type { CartItem } from '../../../core/local/posModel.mjs';
@@ -14,9 +16,8 @@ import { createPOSOperations } from '../../../core/local/posOperations.mjs';
 import type { OperationOutcome, PendingOperation } from '../../../core/local/posOperations.mjs';
 import CashClosing92 from './CashClosing92';
 import Till94,{TillNav94} from './Till94';
-import PaymentParts94 from './PaymentParts94';
 import {useTill94} from '../../../core/local/useTill94';
-import {fingerprint94,request94,withdraw94,suspend94,completeSuspended94,type Part94} from '../../../core/local/till94.mjs';
+import {fingerprint94,suspend94,completeSuspended94,type Part94} from '../../../core/local/till94.mjs';
 import {words94} from '../../../core/local/words94';
 import SaleCustomer93 from './SaleCustomer93';
 import {words93} from '../../../core/local/words93';
@@ -25,10 +26,9 @@ import {checkoutScope91} from '../../../core/local/checkout91.mjs';
 import SalesHistory from './SalesHistory';
 import './localPOS.css';
 import {words90} from '../../../core/operation90/words';
-import {can90} from '../../../core/operation90/engine.mjs';
 import {words91} from '../../../core/local/words91';
-import {canSubmit91,confirmedChange91,tenderStore91,type Method91,type Fiscal91} from '../../../core/local/checkout91.mjs';
-import {Payment91,Completion91,Club91} from './Checkout91';
+import {confirmedChange91,tenderStore91,type Method91,type Fiscal91} from '../../../core/local/checkout91.mjs';
+import {Completion91,Club91} from './Checkout91';
 import './checkout91.css';
 
 async function browserLock<T>(key: string, action: () => Promise<T>): Promise<T> {
@@ -46,26 +46,27 @@ const quantityText = (value: number) => `${Math.trunc(value / 1000)},${String(va
 let activeDraft: { token: string; items: CartItem[] } | null = null;
 
 function CartQuantity({item,disabled,onCommit}:{item:CartItem;disabled:boolean;onCommit:(value:string)=>boolean}) {
-  const [value,setValue]=useState(quantityText(item.quantity_milli));
+  const {i18n}=useTranslation(),w=words96(i18n.resolvedLanguage||i18n.language);const [value,setValue]=useState(quantityText(item.quantity_milli));
   useEffect(()=>setValue(quantityText(item.quantity_milli)),[item.quantity_milli]);
   function commit(){if(!onCommit(value))setValue(quantityText(item.quantity_milli));}
-  return <input aria-label={`Quantidade de ${item.product.name} em ${item.product.unit}`} inputMode="decimal" maxLength={32} disabled={disabled} value={value} onChange={e=>setValue(e.target.value)} onBlur={commit} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();e.currentTarget.blur();}}}/>;
+  return <input aria-label={`${w.quantityFor96} ${item.product.name} (${item.product.unit})`} inputMode="decimal" maxLength={32} disabled={disabled} value={value} onChange={e=>setValue(e.target.value)} onBlur={commit} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();e.currentTarget.blur();}}}/>;
 }
 
 export default function LocalPointOfSale({ mode = 'sale' }: { mode?: 'sale' | 'cash' }) {
+  const gateway=useContext(GatewayContext95),existingSource=useContext(ClosingSourceContext92);const advancedSource=useMemo(()=>gateway.checkout96?.sales?{read:gateway.checkout96.sales}:existingSource,[gateway.checkout96,existingSource]);
   const token = useLocalSession((state) => state.token);
   const session = useLocalSession((state) => state.session);
   if (!token || !session) return null;
-  return <POSWorkspace key={checkoutScope91(session)} token={token} session={session} mode={mode} />;
+  return <ClosingSourceContext92.Provider value={advancedSource}><POSWorkspace key={checkoutScope91(session)} token={token} session={session} mode={mode} /></ClosingSourceContext92.Provider>;
 }
 
 function POSWorkspace({ token, session, mode }: { token: string; session: LocalSession; mode: 'sale' | 'cash' }) {
-  const {t,i18n}=useTranslation();
+  const {t,i18n}=useTranslation();const formatLocalCents=(value:number)=>new Intl.NumberFormat(i18n.language,{style:'currency',currency:'BRL'}).format(value/100);
   const operationWords90=words90(i18n.resolvedLanguage||i18n.language);
   const checkoutWords91=words91(i18n.resolvedLanguage||i18n.language);
-  const cashPage=mode==='cash';const gateway95=useContext(GatewayContext95),completeWords95=words95(i18n.resolvedLanguage||i18n.language);const [domain95,setDomain95]=useState<Domain95>('payments'),[summary95,setSummary95]=useState<Summary95|undefined>();function details95(domain:Domain95){setPaying(false);setDomain95(domain);selectWork94('complete');}
+  const [discountShortcut96,setDiscountShortcut96]=useState(false);const [exposure96,setExposure96]=useState(false);const fullWords96=words96(i18n.resolvedLanguage||i18n.language);const cashPage=mode==='cash';const gateway95=useContext(GatewayContext95),completeWords95=words95(i18n.resolvedLanguage||i18n.language);const [domain95,setDomain95]=useState<Domain95>('payments'),[summary95,setSummary95]=useState<Summary95|undefined>();
   const tillWords94=words94(i18n.resolvedLanguage||i18n.language);
-  const [work94,setWork94]=useState('sale'),[workDirty94,setWorkDirty94]=useState(false),[parts94,setParts94]=useState<Part94[]>([]),[paymentNotice94,setPaymentNotice94]=useState('');
+  const [work94,setWork94]=useState('sale'),[workDirty94,setWorkDirty94]=useState(false),[parts94,setParts94]=useState<Part94[]>([]),[,setPaymentNotice94]=useState('');
   const draftID94=useRef<string>(crypto.randomUUID());
   const customerWords93=words93(i18n.resolvedLanguage||i18n.language);
   const [customer93,setCustomer93]=useState<Customer93>({document:'',club:'skip'});
@@ -102,11 +103,11 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const paymentRef = useRef<HTMLDialogElement>(null);
   const receivedRef = useRef<HTMLInputElement>(null);
   const [paying,setPaying]=useState(false);
-  const [paymentMethod91,setPaymentMethod91]=useState<Method91>('cash');
-  const [fiscal91,setFiscal91]=useState<Fiscal91>('none');
-  const [fiscalDocument91,setFiscalDocument91]=useState('');
+  const [,setPaymentMethod91]=useState<Method91>('cash');
+  const [,setFiscal91]=useState<Fiscal91>('none');
+  const [,setFiscalDocument91]=useState('');
   const [club91,setClub91]=useState(false);
-  const [completion91,setCompletion91]=useState<{receipt:SaleReceipt;names:Record<string,{name:string;unit:string}>;change:{total:number;received:number;change:number}|null}|null>(null);
+  const [completion91,setCompletion91]=useState<{receipt:Receipt96;names:Record<string,{name:string;unit:string}>;change:{total:number;received:number;change:number}|null}|null>(null);
   const [help,setHelp]=useState(false);
   const [lastProduct,setLastProduct]=useState('');
   const [removed,setRemoved]=useState<CartItem|null>(null);
@@ -130,7 +131,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   useEffect(()=>{if(retailRef.current)retailRef.current.inert=!cash;},[cash]);
   const [pending, setPending] = useState<PendingOperation | null>(null);
   const [canDiscard, setCanDiscard] = useState(false);
-  const [receipt, setReceipt] = useState<SaleReceipt | null>(null);
+  const [receipt, setReceipt] = useState<Receipt96 | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState(setup.error);
   const [busy, setBusy] = useState(false);
@@ -219,14 +220,10 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   }
   let total = 0, calculationError = '';
   try { total = cartTotal(cart); } catch (failure) { calculationError = failureText(failure); }
-  let change: number | null = null;
-  try { const amount = parseMoney(received); if (amount >= total) change = amount - total; } catch { /* Keep payment button disabled. */ }
-  let receivedCents91:number|null=null;try{receivedCents91=parseMoney(received);}catch{/* Incomplete input remains unconfirmed. */}
   const reference94=draftID94.current+':'+fingerprint94(cart);
+  const savedDraft96=useDraft96({scope:checkoutScope91(session),mode:gateway95.mode,cash:cash?.session_id||'',token,cart,reference:draftID94.current,locations,enabled:!loading&&knownCash&&!cashPage,onRestore:(items,reference)=>{draftID94.current=reference;setCart(items);}});
   useEffect(()=>{let alive=true;setGatewayGate95(true);setGatewayError95(false);void read95(checkoutScope91(session),gateway95.mode).then(rows=>{if(alive)setGatewayGate95(rows.some(r=>r.source.startsWith(draftID94.current+':')&&['payments','credit','discount'].includes(r.domain)&&['pending','unknown','approved'].includes(r.state)));}).catch(()=>{if(alive)setGatewayError95(true);});return()=>{alive=false;};},[session,gateway95.mode,reference94,work94]);
-  function changeParts94(next:Part94[],clear=false){const apply=()=>{setParts94(next);setPaymentNotice94("");if(clear){setPaymentMethod91("cash");setReceived("");}};const ids=till94.data.requests.filter(r=>r.kind==="payment"&&r.reference===reference94&&["requested","approved"].includes(r.state)).map(r=>r.id);if(ids.length)void till94.mutate(d=>{for(const id of ids)withdraw94(d,actor94,id);}).then(ok=>{if(ok)apply();});else apply();}
   const discountBlocking94=till94.ready&&till94.data.requests.some(r=>r.kind==='discount'&&r.reference===reference94&&['requested','approved'].includes(r.state));
-  const canCheckout91=! gatewayGate95&&!gatewayError95&&till94.ready&&!till94.busy&&till94.data.cash===cash?.session_id&&!till94.error&&!parts94.length&&!discountBlocking94&&canSubmit91({method:paymentMethod91,fiscal:fiscal91,total,received:receivedCents91});
   const locked = busy || turnBusy || loading || !!pending || !operations || !knownCash || !!calculationError;
   const [quickIDs,setQuickIDs]=useState<string[]>([]);
   const quickKey=`titan-pos-quick:${session.tenant_id}:${session.store_id}:${session.identity_id}`;
@@ -236,7 +233,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
     try{localStorage.setItem(quickKey,JSON.stringify(next));setQuickIDs(next);}catch{setError(t('posUi.quickSaveError'));}
   }
   function discardDraft(){
-    if(locked||paying||!cart.length)return;
+    if(exposure96||!savedDraft96.ready||locked||paying||!cart.length)return;
     if(!window.confirm(t('posUi.discardConfirm')))return;
     setCustomer93({document:'',club:'skip'});customerAsked93.current=false;setCustomerOpen93(false);
     setCart([]);setRemoved(null);setLastProduct('');setReceived('');setSearch('');setError('');setMessage(t('posUi.discarded'));scanRef.current?.focus();
@@ -245,32 +242,32 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
     if(event.key==='Escape'){if(paying){setPaying(false);}else if(focused){setFocused(false);}else{setSearch('');scanRef.current?.focus();}return;}
     if(!cash || locked || closing)return;
     if(event.key==='F2'){event.preventDefault();scanRef.current?.focus();}
-    if(event.key==='F4' && cart.length && !paying){event.preventDefault();setReceived('');setPaying(true);}
-    if(event.key==='F8'){event.preventDefault();selectWork94('approvals');}
+    if(event.key==='F4' && cart.length && !paying){event.preventDefault();setReceived('');setDiscountShortcut96(false);setPaying(true);}
+    if(event.key==='F8'){event.preventDefault();setDiscountShortcut96(true);setPaying(true);}
   };window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[cashPage,cash,locked,closing,cart.length,paying,focused,t,customerOpen93,club91,work94]);
   const filtered = products.filter((product) => `${product.name} ${product.sku} ${product.barcode || ''}`.toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')));
   function addProduct(product: LocalProduct) {
     try {
-      if (locked || customerOpen93 || !cash || !locationID) throw new Error(t('posUi.needLocation'));
+      if (exposure96 || !savedDraft96.ready || locked || customerOpen93 || !cash || !locationID) throw new Error(t('posUi.needLocation'));
       const next=addCartProduct(cart,product,locationID,quantity);
       if(!customerAsked93.current){customerAsked93.current=true;setCustomerOpen93(true);}
       setCart(next); setReceipt(null); setRemoved(null); setLastProduct(product.id); setSearch(''); setQuantity('1'); setSearchIndex(0); setError('');scanRef.current?.focus();
     } catch (failure) { setError(failureText(failure)); }
   }
   function editQuantity(index:number,value:string):boolean {
-    if(locked||paying)return false;
+    if(exposure96||locked||paying)return false;
     try {setCart(replaceCartQuantity(cart,index,value));setRemoved(null);setError('');return true;}
     catch(failure){setError(failureText(failure));return false;}
   }
-  function undoRemove(){if(!removed||locked||paying)return;try{setCart(restoreCartItem(cart,removed));setLastProduct(removed.product.id);setRemoved(null);setError('');scanRef.current?.focus();}catch(failure){setError(failureText(failure));}}
-  function scan(){if(locked||paying||closing||customerOpen93)return;try{addProduct(selectCatalogProduct(products,search,searchIndex));}catch(failure){setError(failureText(failure));}}
+  function undoRemove(){if(!removed||exposure96||!savedDraft96.ready||locked||paying)return;try{setCart(restoreCartItem(cart,removed));setLastProduct(removed.product.id);setRemoved(null);setError('');scanRef.current?.focus();}catch(failure){setError(failureText(failure));}}
+  function scan(){if(exposure96||!savedDraft96.ready||locked||paying||closing||customerOpen93)return;try{addProduct(selectCatalogProduct(products,search,searchIndex));}catch(failure){setError(failureText(failure));}}
 
-  function submitSale() {
-    if (!operations || !cash || locked || customerOpen93 || club91 || change === null) return;
-    if(!canCheckout91||receivedCents91===null||!setup.tenders)return;
-    try { const input = makeSale(cart, cash.session_id);setup.tenders.save(input,receivedCents91); void run(() => operations.start(token, 'sale', input)); }
-    catch (failure) { setError(failure instanceof Error&&checkoutWords91[failure.message]?checkoutWords91[failure.message]:failureText(failure)); }
+  function submitSale(){
+    if(!operations||locked||!cash||!cart.length||gatewayGate95||gatewayError95||discountBlocking94||exposure96)return;
+    try{const tender=parseMoney(received),amount=cartTotal(cart);if(tender<amount||!setup.tenders)return;const input=makeSale(cart,cash.session_id,()=>draftID94.current);setup.tenders.save(input,tender);void run(()=>operations.start(token,'sale',input));}catch(failure){setError(failureText(failure));}
   }
+  function unifiedConfirmed96(result:Receipt96,change:{total:number;received:number;change:number}|null){setCompletion91({receipt:result,names:Object.fromEntries(cart.map(i=>[i.product.id,{name:i.product.name,unit:i.product.unit}])),change});setReceipt(result);setCart([]);setRemoved(null);setLastProduct('');setPaying(false);setReceived('');setHistoryRevision(n=>n+1);setExposure96(false);}
+
   return <div className={`brand-page brand-app-page pos-page ${cashPage?"pos-cash-page":""} ${!cash&&knownCash&&!cashPage?"pos-turn-closed":""}`}>
 
     <main className="brand-app-content pos-content">
@@ -282,10 +279,10 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
         <button className="brand-secondary" disabled={busy || loading || turnBusy} onClick={() => void refreshCash(true)}>{t(turnBusy?"posUi.checkingShift":"posUi.checkShift")}</button></div>
       {(error || calculationError) && <p role="alert" className="brand-message error">{error || calculationError}</p>}
       {message && <p role="status" className="brand-message">{message}</p>}
-      {pending && <section className="brand-panel pos-pending" role="status"><h2>Operação pendente de conferência</h2>
-        <p>{pending.kind === 'sale' ? `Venda ${pending.input.sale_id}` : `Turno ${pending.input.session_id}`}. O carrinho fica bloqueado até confirmar o resultado.</p>
-        <button className="brand-small-primary" disabled={busy} onClick={() => operations && void run(() => operations.retry(token))}>Verificar / reenviar mesma operação</button>
-        {canDiscard && <button className="brand-secondary" disabled={busy} onClick={() => operations && void run(() => operations.discardRejected(token))}>Editar após recusa confirmada</button>}
+      {pending && <section className="brand-panel pos-pending" role="status"><h2>{fullWords96.pendingOperation96}</h2>
+        <p>{fullWords96.pendingHelp96}</p>
+        <button className="brand-small-primary" disabled={busy} onClick={() => operations && void run(() => operations.retry(token))}>{fullWords96.retrySame96}</button>
+        {canDiscard && <button className="brand-secondary" disabled={busy} onClick={() => operations && void run(() => operations.discardRejected(token))}>{fullWords96.editRejected96}</button>}
       </section>}
       {(cashPage||!cash)&&<section className="brand-panel pos-cash"><div><h2>{loading ? t('posUi.checkingShift') : cash ? t('posUi.open') : knownCash ? t('posUi.openPrompt') : t('posUi.unconfirmed')}</h2>
         {cash && <p>{t("posUi.open")}</p>}</div>
@@ -300,46 +297,48 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       {cashPage&&cash&&work94==='complete'&&<button className="brand-secondary" onClick={()=>selectWork94('sale')}>{checkoutWords91.backPayment}</button>}
       {cashPage&&cash&&work94==='complete'&&<Desk95 scope={checkoutScope91(session)} token={token} cash={cash.session_id} reference={reference94} total={total} parts={[]} actor={actor94} initial="pairing" onDirty={setWorkDirty94}/>}
       {cashPage && closedReport && <section className="brand-panel pos-closing-report" role="status"><h2>{t("posUi.closeResult")}</h2><div className="pos-payment-status"><div><span>{t("posUi.declaredCash")}</span><strong>{formatLocalCents(closedReport.declared_cents)}</strong></div><div><span>{t("posUi.expectedCash")}</span><strong>{formatLocalCents(closedReport.expected_cents)}</strong></div><div><span>{closedReport.difference_cents===0?t('posUi.balanced'):closedReport.difference_cents<0?t('posUi.shortage'):t('posUi.surplus')}</span><strong>{formatLocalCents(Math.abs(closedReport.difference_cents))}</strong></div></div></section>}
+      {!cashPage&&cash&&<p role="status">{savedDraft96.error?fullWords96[savedDraft96.error]||fullWords96.storageError:savedDraft96.saving?fullWords96.savingDraft96:savedDraft96.ready?fullWords96.savedDraft96:fullWords96.restoringDraft96}</p>}
+      {!cashPage&&savedDraft96.review&&<section className="brand-panel"><h2>{fullWords96.reviewRestored96}</h2><p>{fullWords96.pricesChanged96}</p><ul>{savedDraft96.review.items.map(i=><li key={i.product.id}>{i.product.name} · {formatLocalCents(i.product.price_cents)}</li>)}</ul><button className="brand-primary" onClick={savedDraft96.accept}>{fullWords96.acceptRestored96}</button></section>}
       {!cashPage&&<TillNav94 tab={work94} onChange={selectWork94} closeBlocked={cart.length>0} onCloseBlocked={()=>setError(checkoutWords91.finishSaleFirst)} disabled={locked||paying||customerOpen93||club91||!cash}/>}
       {cashPage&&summary95&&<Report95 scope={checkoutScope91(session)} cash={summary95.cash} official={summary95}/>}
-      {!cashPage&&['complete','connections'].includes(work94)&&<Desk95 key={work94+domain95} scope={checkoutScope91(session)} token={token} cash={cash?.session_id||''} reference={reference94} total={total} parts={parts94} actor={actor94} initial={work94==='connections'?'devices':domain95} onDirty={setWorkDirty94}/>}
+      {!cashPage&&['complete','connections'].includes(work94)&&<Desk95 key={work94+domain95} scope={checkoutScope91(session)} token={token} cash={cash?.session_id||''} reference={reference94} total={total} parts={parts94} actor={actor94} initial={work94==='connections'?'devices':domain95} customer={customer93} onCustomer={setCustomer93} onDirty={setWorkDirty94}/>}
       {!cashPage&&!['sale','complete','connections'].includes(work94)&&<Till94 store={till94} actor={actor94} tab={work94} token={token} reference={reference94} gross={total} products={products} onDirty={setWorkDirty94} onResume={(next,reference)=>{draftID94.current=reference.slice(0,reference.indexOf(":"));setCart(next);setReceived("");setParts94([]);setWork94("sale");setFocused(true);setMessage(tillWords94.resumedHelp);}}/>}
-      {!cashPage&&work94==='sale'&&cart.length>0&&<button className="brand-secondary" disabled={locked||paying||!!parts94.length||!till94.ready||till94.busy} onClick={()=>{if(window.confirm(tillWords94.suspendHelp))void till94.mutate(d=>suspend94(d,actor94,cart,reference94)).then(ok=>{if(ok){setCart([]);setReceived("");setWork94("suspended");setFocused(false);}});}}>{tillWords94.suspendSale}</button>}
-      {!cashPage&&work94==='sale'&&cart.length>0&&<div className="customer93-summary"><span>{customerWords93.customer}: {customer93.document?'***.***.***-'+customer93.document.slice(-2):customerWords93.noCustomer}</span>{customer93.club!=='skip'&&<span>{customerWords93.clubIntent}</span>}<button className="brand-secondary" disabled={locked||paying} onClick={()=>setCustomerOpen93(true)}>{customerWords93.editCustomer}</button></div>}
+      {!cashPage&&work94==='sale'&&cart.length>0&&<button className="brand-secondary" disabled={locked||paying||exposure96||!savedDraft96.ready||!!parts94.length||!till94.ready||till94.busy} onClick={()=>{if(window.confirm(tillWords94.suspendHelp))void till94.mutate(d=>suspend94(d,actor94,cart,reference94)).then(ok=>{if(ok){setCart([]);setReceived("");setWork94("suspended");setFocused(false);}});}}>{tillWords94.suspendSale}</button>}
+      {!cashPage&&work94==='sale'&&cart.length>0&&<div className="customer93-summary"><span>{customerWords93.customer}: {customer93.document?'***.***.***-'+customer93.document.slice(-2):customerWords93.noCustomer}</span>{customer93.club!=='skip'&&<span>{customerWords93.clubIntent}</span>}<button className="brand-secondary" disabled={locked||paying||exposure96||!savedDraft96.ready} onClick={()=>setCustomerOpen93(true)}>{customerWords93.editCustomer}</button></div>}
       {!cashPage&&work94==='sale' && <div ref={retailRef} className="pos-retail-grid" aria-disabled={!cash}>
         <div className="pos-selling">
           <form className="pos-scan" onSubmit={e=>{e.preventDefault();scan();}}>
-            <label className="pos-scan-search">{t('posUi.search')} <kbd>F2</kbd><input ref={scanRef} autoFocus autoComplete="off" value={search} disabled={locked||paying||closing} placeholder={t('posUi.searchPlaceholder')} onChange={e=>{setSearch(e.target.value);setSearchIndex(0);}} onKeyDown={e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();setSearchIndex(i=>Math.min(Math.max(i+(e.key==='ArrowDown'?1:-1),0),Math.max(0,filtered.length-1)));}if(e.key==='Escape'){setSearch('');setSearchIndex(0);}}}/></label>
-            <label className="pos-scan-qty">{t("posUi.quantity")}<input inputMode="decimal" maxLength={32} value={quantity} disabled={locked||paying||closing} onChange={e=>setQuantity(e.target.value)}/></label>
+            <label className="pos-scan-search">{t('posUi.search')} <kbd>F2</kbd><input ref={scanRef} autoFocus autoComplete="off" value={search} disabled={locked||paying||closing||exposure96||!savedDraft96.ready} placeholder={t('posUi.searchPlaceholder')} onChange={e=>{setSearch(e.target.value);setSearchIndex(0);}} onKeyDown={e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();setSearchIndex(i=>Math.min(Math.max(i+(e.key==='ArrowDown'?1:-1),0),Math.max(0,filtered.length-1)));}if(e.key==='Escape'){setSearch('');setSearchIndex(0);}}}/></label>
+            <label className="pos-scan-qty">{t("posUi.quantity")}<input inputMode="decimal" maxLength={32} value={quantity} disabled={locked||paying||closing||exposure96||!savedDraft96.ready} onChange={e=>setQuantity(e.target.value)}/></label>
             <button className="brand-small-primary" disabled={locked||!cash||!locationID||!search.trim()||closing||paying}>{t("posUi.add")} ↵</button>
           </form>
-          <div className="pos-stock-source"><label>{t("posUi.pickupLocation")}<select value={locationID} disabled={locked||paying} onChange={e=>setLocationID(e.target.value)}><option value="">{t("posUi.selectLocation")}</option>{locations.map(place=><option key={place.id} value={place.id}>{place.name}</option>)}</select></label><span>{t("posUi.locationHelp")}</span></div>
+          <div className="pos-stock-source"><label>{t("posUi.pickupLocation")}<select value={locationID} disabled={locked||paying||exposure96||!savedDraft96.ready} onChange={e=>setLocationID(e.target.value)}><option value="">{t("posUi.selectLocation")}</option>{locations.map(place=><option key={place.id} value={place.id}>{place.name}</option>)}</select></label><span>{t("posUi.locationHelp")}</span></div>
           {!loading&&locations.length===0&&<p className="brand-state">{t('posUi.noLocations')}</p>}
-          {quickIDs.length>0&&<section className="pos-quick" aria-label={t('posUi.quickTitle')}><strong>{t('posUi.quickTitle')}</strong><div>{quickIDs.map(id=>{const product=products.find(row=>row.id===id);return product?<button type="button" key={id} className="brand-secondary" disabled={locked||!cash||!locationID||paying||closing} onClick={()=>addProduct(product)}>{product.name} ＋</button>:null;})}</div><small>{t('posUi.quickLoadedOnly')}</small></section>}
-          {search.trim()&&<section className="brand-panel pos-search-results" aria-label="Resultados da busca"><p>Busca na página {offset/50+1} · Use ↑ ↓ e Enter para adicionar</p>{filtered.length===0?<p>Produto não encontrado nesta página.</p>:filtered.map((product,i)=><div className="pos-product-row" key={product.id}><button type="button" className={`pos-product ${i===searchIndex?'pos-search-active':''}`} disabled={locked||!cash||!locationID||closing||paying} onClick={()=>addProduct(product)}><span><strong>{product.name}</strong><small>{product.sku} · {product.unit}</small></span><b>{formatLocalCents(product.price_cents)}</b><span aria-hidden="true">＋</span></button><button type="button" className="pos-pin" aria-label={t(quickIDs.includes(product.id)?'posUi.removeQuick':'posUi.addQuick',{name:product.name})} aria-pressed={quickIDs.includes(product.id)} onClick={()=>toggleQuick(product.id)}>{quickIDs.includes(product.id)?'★':'☆'}</button></div>)}</section>}
+          {quickIDs.length>0&&<section className="pos-quick" aria-label={t('posUi.quickTitle')}><strong>{t('posUi.quickTitle')}</strong><div>{quickIDs.map(id=>{const product=products.find(row=>row.id===id);return product?<button type="button" key={id} className="brand-secondary" disabled={locked||!cash||!locationID||paying||closing||exposure96||!savedDraft96.ready} onClick={()=>addProduct(product)}>{product.name} ＋</button>:null;})}</div><small>{t('posUi.quickLoadedOnly')}</small></section>}
+          {search.trim()&&<section className="brand-panel pos-search-results" aria-label={fullWords96.searchResults96}><p>{fullWords96.searchPage96} {offset/50+1}</p>{filtered.length===0?<p>{fullWords96.notFoundPage96}</p>:filtered.map((product,i)=><div className="pos-product-row" key={product.id}><button type="button" className={`pos-product ${i===searchIndex?'pos-search-active':''}`} disabled={locked||!cash||!locationID||closing||paying||exposure96||!savedDraft96.ready} onClick={()=>addProduct(product)}><span><strong>{product.name}</strong><small>{product.sku} · {product.unit}</small></span><b>{formatLocalCents(product.price_cents)}</b><span aria-hidden="true">＋</span></button><button type="button" className="pos-pin" aria-label={t(quickIDs.includes(product.id)?'posUi.removeQuick':'posUi.addQuick',{name:product.name})} aria-pressed={quickIDs.includes(product.id)} onClick={()=>toggleQuick(product.id)}>{quickIDs.includes(product.id)?'★':'☆'}</button></div>)}</section>}
           <section className="brand-panel pos-basket"><div className="pos-basket-heading"><div><h2>{t("posUi.currentSale")}</h2><p>{t("posUi.priceNotice")}</p></div><span className="pos-pill">{cart.length} linha(s)</span></div>
-            <div className="pos-table-scroll"><table className="pos-sale-table"><thead><tr><th scope="col">Produto</th><th scope="col">Quantidade</th><th scope="col">Preço / unidade</th><th scope="col">Subtotal</th><th scope="col"><span className="pos-sr-only">Ações</span></th></tr></thead><tbody>{cart.map((item,index)=><tr className={lastProduct===item.product.id?'pos-last-row':''} key={`${item.product.id}:${item.location_id}`}><td><strong>{item.product.name}</strong><small>{item.product.sku} · {item.product.unit} · {locations.find(p=>p.id===item.location_id)?.name||item.location_id}</small></td><td><CartQuantity item={item} disabled={locked||paying} onCommit={value=>editQuantity(index,value)}/></td><td>{formatLocalCents(item.product.price_cents)}</td><td><strong>{formatLocalCents(lineCents(item.product.price_cents,item.quantity_milli))}</strong></td><td><button type="button" className="pos-remove" disabled={locked||paying} aria-label={`Remover ${item.product.name}`} onClick={()=>{setRemoved(item);setCart(items=>items.filter((_,i)=>i!==index));scanRef.current?.focus();}}>×</button></td></tr>)}</tbody></table>{cart.length===0&&<div className="pos-empty"><span aria-hidden="true">▤</span><h3>Pronto para começar</h3><p>{t('posUi.emptyPrompt')}</p></div>}</div>
-            <div className="pos-last-item" aria-live="polite">{lastProduct&&cart.find(i=>i.product.id===lastProduct)?`Último produto: ${cart.find(i=>i.product.id===lastProduct)?.product.name}`:'Aguardando o próximo produto'}{removed&&<button className="brand-secondary" disabled={locked||paying} onClick={undoRemove}>Desfazer remoção de {removed.product.name}</button>}</div>
+            <div className="pos-table-scroll"><table className="pos-sale-table"><thead><tr><th scope="col">{fullWords96.product}</th><th scope="col">{fullWords96.quantity}</th><th scope="col">{fullWords96.unitPrice96}</th><th scope="col">{fullWords96.subtotal}</th><th scope="col"><span className="pos-sr-only">{fullWords96.actions}</span></th></tr></thead><tbody>{cart.map((item,index)=><tr className={lastProduct===item.product.id?'pos-last-row':''} key={`${item.product.id}:${item.location_id}`}><td><strong>{item.product.name}</strong><small>{item.product.sku} · {item.product.unit} · {locations.find(p=>p.id===item.location_id)?.name||item.location_id}</small></td><td><CartQuantity item={item} disabled={locked||paying||exposure96||!savedDraft96.ready} onCommit={value=>editQuantity(index,value)}/></td><td>{formatLocalCents(item.product.price_cents)}</td><td><strong>{formatLocalCents(lineCents(item.product.price_cents,item.quantity_milli))}</strong></td><td><button type="button" className="pos-remove" disabled={locked||paying||exposure96||!savedDraft96.ready} aria-label={`${fullWords96.removeProduct96} ${item.product.name}`} onClick={()=>{setRemoved(item);setCart(items=>items.filter((_,i)=>i!==index));scanRef.current?.focus();}}>×</button></td></tr>)}</tbody></table>{cart.length===0&&<div className="pos-empty"><span aria-hidden="true">▤</span><h3>{fullWords96.readyToStart96}</h3><p>{t('posUi.emptyPrompt')}</p></div>}</div>
+            <div className="pos-last-item" aria-live="polite">{lastProduct&&cart.find(i=>i.product.id===lastProduct)?`Último produto: ${cart.find(i=>i.product.id===lastProduct)?.product.name}`:'Aguardando o próximo produto'}{removed&&<button className="brand-secondary" disabled={locked||paying||exposure96||!savedDraft96.ready} onClick={undoRemove}>Desfazer remoção de {removed.product.name}</button>}</div>
           </section>
-          <details className="pos-catalog-browser"><summary>Consultar catálogo · página {offset/50+1}</summary><div className="pos-product-list">{products.map(product=><button type="button" className="pos-product" key={product.id} disabled={locked||!cash||!locationID||closing||paying} onClick={()=>addProduct(product)}><span><strong>{product.name}</strong><small>{product.sku} · {product.unit}</small></span><b>{formatLocalCents(product.price_cents)}</b><span aria-hidden="true">＋</span></button>)}</div></details>
-          <nav className="brand-pagination" aria-label="Páginas de produtos"><button className="brand-secondary" disabled={loading||busy||paying||offset===0} onClick={()=>setOffset(v=>Math.max(0,v-50))}>Anterior</button><span>Página {offset/50+1}</span><button className="brand-secondary" disabled={loading||busy||paying||products.length<50} onClick={()=>setOffset(v=>v+50)}>Próxima</button><button className="brand-secondary" disabled={loading||busy||paying} onClick={()=>{setError('');setReload(v=>v+1);}}>Atualizar catálogo</button></nav>
+          <details className="pos-catalog-browser"><summary>{fullWords96.catalogPage96} {offset/50+1}</summary><div className="pos-product-list">{products.map(product=><button type="button" className="pos-product" key={product.id} disabled={locked||!cash||!locationID||closing||paying||exposure96||!savedDraft96.ready} onClick={()=>addProduct(product)}><span><strong>{product.name}</strong><small>{product.sku} · {product.unit}</small></span><b>{formatLocalCents(product.price_cents)}</b><span aria-hidden="true">＋</span></button>)}</div></details>
+          <nav className="brand-pagination" aria-label={fullWords96.productPages96}><button className="brand-secondary" disabled={loading||busy||paying||offset===0} onClick={()=>setOffset(v=>Math.max(0,v-50))}>{fullWords96.previous96}</button><span>{fullWords96.page96} {offset/50+1}</span><button className="brand-secondary" disabled={loading||busy||paying||products.length<50} onClick={()=>setOffset(v=>v+50)}>{fullWords96.next96}</button><button className="brand-secondary" disabled={loading||busy||paying} onClick={()=>{setError('');setReload(v=>v+1);}}>{fullWords96.refreshCatalog96}</button></nav>
         </div>
-        <aside className="brand-panel pos-summary"><p className="brand-eyebrow">{t("posUi.summary")}</p><h2>{t("posUi.estimatedTotal")}</h2><strong className="pos-grand-total">{formatLocalCents(total)}</strong><dl className="pos-summary-lines"><div><dt>Subtotal</dt><dd>{formatLocalCents(total)}</dd></div><div><dt>Linhas de produtos</dt><dd>{cart.length}</dd></div><div><dt>Unidades (produtos unitários)</dt><dd>{String(cart.filter(i=>i.product.unit==='unit').reduce((n,i)=>n+BigInt(i.quantity_milli),0n)/1000n)}</dd></div></dl><p className="pos-note">Produtos por peso, volume ou comprimento mantêm a quantidade e a unidade de cada linha.</p>
-          <div className="pos-status-stack"><div><span>Venda</span><strong>{pending?.kind==='sale'?'Pendente de conferência':cart.length?'Em edição':receipt?'Consulte o registro abaixo':'Não iniciada'}</strong></div><div><span>Pagamento atual</span><strong>{pending?.kind==='sale'?'Resultado não confirmado':busy&&paying?'Conferindo venda':receipt?.status==='committed'&&!cart.length?checkoutWords91.paymentConfirmed:'Não registrado'}</strong></div><div><span>Documento fiscal</span><strong>Não emitido</strong></div></div>
-          <div className="pos-primary-actions"><button type="button" className="brand-primary pos-checkout" disabled={locked||!cash||!cart.length||total<=0||closing} onClick={()=>{setReceived('');setPaying(true);}}>{t('posUi.pay')} · F4</button><button type="button" className="brand-secondary pos-discount" disabled={locked||!cart.length} onClick={()=>selectWork94('approvals')}>{t('posUi.discount')} · F8</button></div>
+        <aside className="brand-panel pos-summary"><p className="brand-eyebrow">{t("posUi.summary")}</p><h2>{t("posUi.estimatedTotal")}</h2><strong className="pos-grand-total">{formatLocalCents(total)}</strong><dl className="pos-summary-lines"><div><dt>{fullWords96.subtotal}</dt><dd>{formatLocalCents(total)}</dd></div><div><dt>{fullWords96.productLines96}</dt><dd>{cart.length}</dd></div><div><dt>{fullWords96.unitItems96}</dt><dd>{String(cart.filter(i=>i.product.unit==='unit').reduce((n,i)=>n+BigInt(i.quantity_milli),0n)/1000n)}</dd></div></dl><p className="pos-note">{fullWords96.measurementHelp96}</p>
+          <div className="pos-status-stack"><div><span>{fullWords96.sale}</span><strong>{pending?.kind==='sale'?fullWords96.pendingOperation96:cart.length?fullWords96.editing96:receipt?fullWords96.viewRecord96:fullWords96.notStarted96}</strong></div><div><span>{fullWords96.currentPayment96}</span><strong>{pending?.kind==='sale'?fullWords96.unknown:busy&&paying?fullWords96.checkingSale96:receipt?.status==='committed'&&!cart.length?checkoutWords91.paymentConfirmed:fullWords96.notRecorded96}</strong></div><div><span>{fullWords96.fiscal}</span><strong>{receipt?.fiscal_authorized?fullWords96.issued:fullWords96.fiscalNotIssued}</strong></div></div>
+          <div className="pos-primary-actions"><button type="button" className="brand-primary pos-checkout" disabled={locked||!cash||!cart.length||total<=0||closing} onClick={()=>{setReceived('');setDiscountShortcut96(false);setPaying(true);}}>{t('posUi.pay')} · F4</button><button type="button" className="brand-secondary pos-discount" disabled={locked||!cart.length||exposure96||!savedDraft96.ready} onClick={()=>{setDiscountShortcut96(true);setPaying(true);}}>{t('posUi.discount')} · F8</button></div>
           <button type="button" className="brand-secondary pos-discard" disabled={locked||paying||!cart.length} onClick={discardDraft}>{t('posUi.discard')}</button>
           <p className="pos-note">{t("posUi.cashOnly")}</p>
         </aside>
       </div>}
-      {!cashPage&&work94==='sale' && <footer className="pos-statusbar"><span>{cash?t("posUi.open"):t("posUi.closed")}</span><div className="pos-shortcut-items"><span><kbd>F2</kbd> {t('posUi.keySearch')}</span><span><kbd>F4</kbd> {t('posUi.keyPay')}</span><span><kbd>F8</kbd> {t('posUi.keyDiscount')}</span><span><kbd>Esc</kbd> {t('posUi.keyBack')}</span></div><button className="brand-secondary" aria-expanded={help} onClick={()=>setHelp(v=>!v)}>Ajuda</button></footer>}
-      {!cashPage&&help&&<section className="brand-panel pos-help"><h2>Operação do caixa</h2><p>Abra seu turno, confira o local de retirada e registre por SKU, código de barras ou nome. A busca consulta a página carregada; navegue pelo catálogo para outros produtos. Altere quantidades diretamente na linha; Enter confirma a correção. Remova e desfaça a última remoção quando necessário.</p><p>A venda só é registrada após confirmação da API. Se houver perda de resposta, use a operação pendente; não abra outra venda para substituir a anterior. O carrinho ainda em edição não é salvo ao recarregar. </p></section>}
-      <dialog ref={paymentRef} className="pos-payment-dialog checkout91-dialog" aria-labelledby="pos-payment-title" onCancel={e=>{if(busy){e.preventDefault();return;}setPaying(false);}} onClose={()=>{setPaying(false);scanRef.current?.focus();}}><div className="pos-dialog-heading"><h2 id="pos-payment-title">{checkoutWords91.checkoutTitle}</h2><button type="button" className="brand-secondary" aria-label={t('posUi.backToSale')} disabled={busy} onClick={()=>setPaying(false)}>×</button></div><Payment91 cart={cart} total={total} method={paymentMethod91} setMethod={setPaymentMethod91} fiscal={fiscal91} setFiscal={setFiscal91} document={fiscalDocument91} setDocument={setFiscalDocument91} received={received} setReceived={setReceived} inputRef={receivedRef} disabled={locked||!cart.length} busy={busy} pending={!!pending} error={error} onSubmit={submitSale} paymentTools={<><PaymentParts94 parts={parts94} total={total} received={received} onReceived={setReceived} disabled={locked||!till94.ready||till94.busy} onChange={next=>changeParts94(next)} onClear={()=>changeParts94([],true)} onSave={()=>{void till94.mutate(d=>request94(d,actor94,{kind:'payment',amount:total,reason:tillWords94.payment,reference:reference94,parts:parts94,received:receivedCents91})).then(ok=>{if(ok)setPaymentNotice94('compositionSaved');});}}/>{paymentNotice94&&<p role="status">{tillWords94[paymentNotice94]}</p>}{till94.error&&<p role="alert">{tillWords94[till94.error]||tillWords94.invalid}</p>}{(gatewayGate95||gatewayError95)&&<p role="alert">{gatewayError95?completeWords95.storageError:completeWords95.paymentGate95}</p>}{discountBlocking94&&<p role="alert">{tillWords94.discountBlocking}</p>}</>} hideSimpleCash={parts94.length>0} canSubmit={canCheckout91&&!!cash&&cart.length>0&&!closing} canFiscal={can90(capabilities,'fiscal')} onClub={()=>setClub91(true)} onDetails={details95}/></dialog>
+      {!cashPage&&work94==='sale' && <footer className="pos-statusbar"><span>{cash?t("posUi.open"):t("posUi.closed")}</span><div className="pos-shortcut-items"><span><kbd>F2</kbd> {t('posUi.keySearch')}</span><span><kbd>F4</kbd> {t('posUi.keyPay')}</span><span><kbd>F8</kbd> {t('posUi.keyDiscount')}</span><span><kbd>Esc</kbd> {t('posUi.keyBack')}</span></div><button className="brand-secondary" aria-expanded={help} onClick={()=>setHelp(v=>!v)}>{fullWords96.help96}</button></footer>}
+      {!cashPage&&help&&<section className="brand-panel pos-help"><h2>{fullWords96.cashHelpTitle96}</h2><p>{fullWords96.cashHelp96}</p><p>{fullWords96.cashRecoveryHelp96}</p></section>}
+      <dialog ref={paymentRef} className="pos-payment-dialog checkout91-dialog" aria-labelledby="pos-payment-title" onCancel={e=>{if(busy){e.preventDefault();return;}setPaying(false);}} onClose={()=>{setPaying(false);scanRef.current?.focus();}}><div className="pos-dialog-heading"><h2 id="pos-payment-title">{checkoutWords91.checkoutTitle}</h2><button type="button" className="brand-secondary" aria-label={t('posUi.backToSale')} disabled={busy} onClick={()=>setPaying(false)}>×</button></div><Checkout96 active={paying} focusDiscount={discountShortcut96} scope={checkoutScope91(session)} source={reference94} cash={cash?.session_id||''} token={token} cart={cart} customer={customer93} onCustomer={setCustomer93} received={received} onReceived={setReceived} onCash={submitSale} onFinal={unifiedConfirmed96} onExposure={setExposure96} disabled={locked||!cart.length||!savedDraft96.ready||gatewayGate95||gatewayError95||discountBlocking94}/></dialog>
       {!cashPage&&customerOpen93&&<SaleCustomer93 value={customer93} onContinue={value=>{setCustomer93(value);setFiscalDocument91(value.document);setCustomerOpen93(false);if(value.club==='join')setClub91(true);else scanRef.current?.focus();}}/>}
       {!cashPage&&completion91&&<Completion91 receipt={completion91.receipt} names={completion91.names} change={completion91.change} onNext={()=>{setCompletion91(null);setReceived('');scanRef.current?.focus();}}/>}
       {club91&&<Club91 session={session} initialDocument={customer93.document} onClose={()=>setClub91(false)}/>}
       {!cashPage&&work94==='sale'&&!focused&&receipt && <section className="brand-panel pos-receipt"><h2>{t(receipt.status === 'cancelled' ? 'posUi.saleCancelled' : 'posUi.saleConfirmed')}</h2><p>{t('posUi.recordedTotal')}: <strong>{formatLocalCents(receipt.total_cents)}</strong></p><details><summary>{t('posUi.details')}</summary><code>{receipt.sale_id}</code></details></section>}
       {!cashPage&&work94==='sale'&&!focused&&receipt&&<Receipt95 receipt={receipt} names={Object.fromEntries(products.map(p=>[p.id,{name:p.name,unit:p.unit}]))}/>}
-      {!cashPage&&work94==='sale'&&!focused&&<SalesHistory token={token} revision={historyRevision} onRead={setReceipt} />}
+      {!cashPage&&work94==='sale'&&!focused&&!gateway95.checkout96&&<SalesHistory token={token} revision={historyRevision} onRead={setReceipt} />}
     </main>
   </div>;
 }
