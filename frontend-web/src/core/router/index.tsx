@@ -23,6 +23,7 @@ const LocalWorkbench73 = React.lazy(() => import('../../modules/tenant/pages/Loc
 const LocalIntegrations74 = React.lazy(() => import('../../modules/tenant/pages/LocalIntegrations74'));
 const LocalSettings80 = React.lazy(() => import('../../modules/tenant/pages/LocalSettings80'));
 const LocalBusiness85 = React.lazy(() => import('../../modules/tenant/pages/LocalBusiness85'));
+const LocalSectors86 = React.lazy(() => import('../../modules/tenant/pages/LocalSectors86'));
 const LocalOperations84 = React.lazy(() => import('../../modules/tenant/pages/LocalOperations84'));
 const LocalHome = React.lazy(() => import('../../modules/tenant/pages/LocalMainMenu'));
 const LocalSubscription = React.lazy(() => import('../../modules/tenant/pages/LocalSubscription'));
@@ -62,8 +63,12 @@ export const router = createBrowserRouter([
     { path: 'owner', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'map', element: <SuspenseWrapper><LocalDistributionMap /></SuspenseWrapper> },
     { path: 'settings', element: <SuspenseWrapper><LocalSettings80 /></SuspenseWrapper> },
+    { path: 'delivery', element: <SuspenseWrapper><LocalSectors86 initialArea="delivery" /></SuspenseWrapper> },
+    { path: 'recipes', element: <SuspenseWrapper><LocalSectors86 initialArea="recipes" /></SuspenseWrapper> },
+    { path: 'sectors', element: <SuspenseWrapper><LocalSectors86 initialArea="sectors" /></SuspenseWrapper> },
+    { path: 'food/previous', element: <SuspenseWrapper><LocalBusiness85 initialArea="food" /></SuspenseWrapper> },
     { path: 'fleet', element: <SuspenseWrapper><LocalBusiness85 initialArea="fleet" /></SuspenseWrapper> },
-    { path: 'food', element: <SuspenseWrapper><LocalBusiness85 initialArea="food" /></SuspenseWrapper> },
+    { path: 'food', element: <SuspenseWrapper><LocalSectors86 initialArea="food" /></SuspenseWrapper> },
     { path: 'documents', element: <SuspenseWrapper><LocalBusiness85 initialArea="documents" /></SuspenseWrapper> },
     { path: 'purchasing', element: <SuspenseWrapper><LocalBusiness85 initialArea="purchasing" /></SuspenseWrapper> },
     { path: 'commercial', element: <SuspenseWrapper><LocalBusiness85 initialArea="commercial" /></SuspenseWrapper> },

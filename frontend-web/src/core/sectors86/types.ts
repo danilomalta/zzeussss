@@ -1,0 +1,13 @@
+export type Area86='delivery'|'food'|'recipes'|'sectors';
+export type Unit86='unit'|'kg'|'g'|'litre'|'ml';
+export interface Profile86{configured:boolean;activity:string;sectors:string[];menu:boolean;kitchen:boolean;tables:boolean;production:boolean}
+export interface Stock86{id:string;name:string;unit:Unit86;quantity:number;cost:number;location:string;expiry:string;source?:string}
+export interface Recipe86{id:string;name:string;version:number;sector:string;output:number;unit:Unit86;lossBps:number;minutes:number;steps:string;archived:boolean;lines:{stockId:string;quantity:number;unit:Unit86}[];source?:string}
+export interface Job86{id:string;recipeId:string;output:number;state:'reserved'|'producing'|'completed'|'cancelled';at:string;allocations:{stockId:string;quantity:number}[];actual:number;consumed:Record<string,number>;note:string}
+export interface Courier86{id:string;name:string;phone:string;vehicle:string;active:boolean}
+export interface Delivery86{id:string;reference:string;customer:string;phone:string;address:string;sector:string;contents:string;courierId:string;at:string;window:string;fee:number;state:'queued'|'picking'|'ready'|'out'|'delivered'|'exception'|'cancelled';proof:string;note:string;timeline:{state:string;at:string;note:string}[];source?:string}
+export interface Choice86{id:string;label:string;price:number}
+export interface Group86{id:string;name:string;minimum:number;maximum:number;choices:Choice86[]}
+export interface Menu86{id:string;name:string;category:string;description:string;sku:string;price:number;recipeId:string;active:boolean;groups:Group86[];source?:string}
+export interface FoodOrder86{id:string;customer:string;table:string;at:string;state:'queued'|'preparing'|'ready'|'closed';items:{id:string;menuId:string;name:string;quantity:number;price:number;options:string}[]}
+export interface Data86{version:1;scope:string;revision:number;updated:string;demo:boolean;profile:Profile86;stocks:Stock86[];recipes:Recipe86[];jobs:Job86[];couriers:Courier86[];deliveries:Delivery86[];menu:Menu86[];orders:FoodOrder86[];forms:Record<string,Record<string,string>>;audit:{id:string;at:string;area:Area86;actor:string;action:string;reference:string}[]}

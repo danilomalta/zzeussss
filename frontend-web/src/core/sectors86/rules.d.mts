@@ -1,0 +1,16 @@
+import type {LocalCapabilities} from '../local/localClient.mjs';
+import type {Profile86,Stock86,Recipe86,Job86,Data86,Delivery86,Menu86} from './types';
+export const areas86:import('./types').Area86[];
+export function manager86(cap:LocalCapabilities|null):boolean;
+export {decimal85 as decimal86,line85 as line86,sum85 as sum86,csv85 as csv86} from '../business85/rules.mjs';
+export function can86(cap:LocalCapabilities|null,area:string):boolean;
+export function enabled86(p:Profile86,area:string):boolean;
+export function reserved86(id:string,jobs:Job86[],exclude?:string):number;
+export function available86(stock:Stock86,jobs:Job86[],today:string,exclude?:string):number;
+export function recipeCheck86(recipe:Recipe86,stocks:Stock86[]):boolean;
+export function capacity86(recipe:Recipe86,stocks:Stock86[],jobs:Job86[],today:string):number;
+export function requirements86(recipe:Recipe86,stocks:Stock86[],output:number):{stockId:string;quantity:number}[];
+export function reserve86(state:Data86,recipeId:string,output:number,id:string,today:string):void;
+export function complete86(state:Data86,jobId:string,actual:number,consumed:Record<string,number>,note:string,today:string):void;
+export function deliveryNext86(delivery:Delivery86,next:string):string;
+export function menuPrice86(item:Menu86,selections:Record<string,string[]>):number;

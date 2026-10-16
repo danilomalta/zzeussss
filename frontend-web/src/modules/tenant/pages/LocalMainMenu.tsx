@@ -1,3 +1,6 @@
+import {can86,enabled86} from '../../../core/sectors86/rules.mjs';
+import {menuWords86} from '../../../core/sectors86/menu';
+import {useProfile86} from '../../../core/sectors86/useProfile';
 import {allowed85,areas85} from '../../../core/business85/rules.mjs';
 import {menuWords85} from '../../../core/business85/menu';
 import {menuLabel84} from '../../../core/operations84/menu';
@@ -56,6 +59,7 @@ export default function LocalMainMenu({settings=false}:{settings?:boolean}){
  const w=copy72[i18n.resolvedLanguage||i18n.language]||pt72;
  const words=copy[i18n.resolvedLanguage||i18n.language]||pt;
  const {capabilities}=useLocalAccess();
+ const profile86=useProfile86(capabilities);
  const areas=allowedAreas(capabilities);
  const logout=useLocalSession(state=>state.endSession);
  return <main className="brand-app-content titan-main-menu">
@@ -76,6 +80,8 @@ export default function LocalMainMenu({settings=false}:{settings?:boolean}){
     if(lossPermitted76(capabilities)&&!planned.some(item=>item.id==='discounts')){existing.push({id:'discounts',path:'/local/losses',icon:'%',label:w.discounts,group:'operation',planned:false});}for(const item of planned){if(item.id==='discounts'&&lossPermitted76(capabilities)){item.path='/local/losses';item.planned=false;}}
     for(const item of planned){if(item.id==='production'&&allowed84(capabilities,'quality')){item.path='/local/operations?area=quality';item.planned=false;}}
     for(const area85 of areas85){const item=planned.find(item=>item.id===area85);if(allowed85(capabilities,area85)){if(item){item.path='/local/'+area85;item.label=menuWords85(i18n.resolvedLanguage||i18n.language)[area85];item.planned=false;}else existing.push({id:area85,path:'/local/'+area85,icon:'▦',label:menuWords85(i18n.resolvedLanguage||i18n.language)[area85],group:area85==='documents'?'administration':'operation',planned:false});}else if(item){item.group='restricted85';}}
+    for(const item of planned){if(item.id==='food'){if(can86(capabilities,'food')&&profile86&&enabled86(profile86,'food')){item.path='/local/food';item.label=menuWords86(i18n.resolvedLanguage||i18n.language).food;item.planned=false;}else item.group='restricted86';}if(item.id==='production'&&can86(capabilities,'recipes')){item.path='/local/recipes';item.label=menuWords86(i18n.resolvedLanguage||i18n.language).recipes;item.planned=false;}}
+    for(const a86 of ['delivery','sectors'] as const){if(can86(capabilities,a86))existing.push({id:a86,path:'/local/'+a86,icon:a86==='delivery'?'⇄':'⚙',label:menuWords86(i18n.resolvedLanguage||i18n.language)[a86],group:a86==='sectors'?'administration':'operation',planned:false});}
     const cards=[...existing,...planned,...(group==='administration'?[{id:'settings',path:'/local/settings',icon:'⚙',label:words.settings,group,planned:false}]:[])].filter(item=>item.group===group&&item.label.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
     if(!cards.length)return null;
     return <section key={group} className="menu72-section"><h2>{w[group]}</h2><nav className="titan-menu-grid" aria-label={w[group]}>{cards.map(item=>item.planned?<article className="brand-panel titan-menu-card menu72-planned" key={item.id} aria-disabled="true" title={w.unavailable}><span className="titan-menu-icon" aria-hidden="true"><MenuIcon75 id={item.id}/></span><strong>{item.label}</strong><MenuStatus75 item={item}/></article>:<Link className={'brand-panel titan-menu-card'+(item.id==='pos'?' menu75-pos':'')} key={item.id} to={item.path}><span className="titan-menu-icon" aria-hidden="true"><MenuIcon75 id={item.id}/></span><strong>{item.label}</strong>{item.id==='pos'&&<small>{v75.posDescription}</small>}<MenuStatus75 item={item}/></Link>)}</nav></section>;
