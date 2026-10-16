@@ -1,17 +1,20 @@
 import {useEffect,useState} from 'react';
-import {useBlocker} from 'react-router-dom';
+import {Link,useBlocker} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {languages} from '../../../i18n';
 import {useLocalAccess} from '../../../core/local/LocalAccess';
 import {useAppearance80} from '../../../core/settings80/runtime';
 import {defaults80,type Settings80} from '../../../core/settings80/model.mjs';
 import {raster80} from '../../../core/settings80/storage';
+import {dictionary86} from '../../../core/sectors86/words';
+import {can86} from '../../../core/sectors86/rules.mjs';
 import {words80} from '../../../core/settings80/words';
 import {ThemeToggle} from '../../../shared/brand/BrandShell';
 const states='AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' ');
 export default function LocalSettings80(){
  const context=useAppearance80(),{capabilities}=useLocalAccess(),{i18n}=useTranslation(),w=words80(i18n.resolvedLanguage||i18n.language);
  const [draft,setDraft]=useState<Settings80>(defaults80),[dirty,setDirty]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[tab,setTab]=useState('identity');
+ const businessWords=dictionary86(i18n.resolvedLanguage||i18n.language);
  const owner=capabilities?.role==='owner';
  const tabs=owner?['identity','appearance','fiscal','equipment','preferences']:['identity','appearance','preferences'];
  const current=tabs.includes(tab)?tab:'appearance';
@@ -41,6 +44,7 @@ export default function LocalSettings80(){
  }
  return <main className="brand-app-content settings80-page">
   <header><h1>{w.title}</h1><p>{w.subtitle}</p><p className="settings80-status">{w.localOnly}</p></header>
+  {can86(capabilities,'sectors')&&<section className="brand-panel"><h2>{String(businessWords.profileTitle87)}</h2><p>{String(businessWords.profileHelp87)}</p><Link className="brand-secondary" to="/local/sectors">{String(businessWords.configure87)}</Link></section>}
   <nav className="settings80-tabs" aria-label={w.title}>{tabs.map(item=><button className="brand-secondary" key={item} onClick={()=>setTab(item)} aria-pressed={current===item}>{w[item as 'identity'|'appearance'|'fiscal'|'equipment'|'preferences']}</button>)}</nav>
   <fieldset disabled={busy||!context?.loaded}>
    {current==='identity'&&<section className="brand-panel"><h2>{w.identity}</h2><label>{w.companyName}<input maxLength={100} value={draft.companyName} onChange={e=>change({companyName:e.target.value})}/></label><p>{w.logoHelp}</p><div className="settings80-grid">{(['logoLight','logoDark'] as const).map(key=><div key={key}><label>{w[key]}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>{void image(e.target.files?.[0],key);e.target.value='';}}/></label>{draft[key]&&<><img className="settings80-image" data-logo={key==='logoLight'?'light':'dark'} src={draft[key]} alt={w[key]}/><button className="brand-secondary" onClick={()=>change({[key]:''})}>{w.remove}</button></>}</div>)}</div><p>{w.filesHint}</p></section>}

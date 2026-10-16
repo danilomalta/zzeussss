@@ -687,8 +687,8 @@
   "sectorsIntro": "选择业务类型，仅启用所需功能。",
   "planningNotice": "工作区保存在本机。库存与确认仅用于本地规划。",
   "sectorsAbout": "不更改正式库存、支付或发票。后端仍需连接部门、收银台和设备。旧记录会保留。",
-  "setupTitle": "您的企业如何运营？",
-  "setupHelp": "配送独立运行。厨房、餐桌、菜单及生产仅在启用后显示。",
+  "setupTitle": "企业资料",
+  "setupHelp": "在此设置经营活动、部门和功能，供各工作区使用。",
   "yourSectors": "企业有哪些部门？",
   "enableFeatures": "使用的功能",
   "deliveryForAll": "配送适用于商店、药店、餐饮和工业等业务，无需厨房或餐桌。",
@@ -842,5 +842,16 @@
   "noPrevious": "当前上下文未找到旧记录。",
   "previousFoodRecords": "查看旧版服务记录",
   "searchRecipe": "搜索配方",
-  "yieldDifference": "规划产出差异"
+  "yieldDifference": "规划产出差异",
+  "profileTitle87": "企业资料",
+  "profileHelp87": "在此设置经营活动、部门和功能，供各工作区使用。",
+  "configure87": "配置企业",
+  "profileLocal87": "资料已保存在此计算机上，按企业和门店区分。其他设备需要服务器同步。",
+  "useProposal87": "使用注册方案中的企业资料",
+  "profileSaved87": "资料已更新，工作区已使用此配置。",
+  "profileConflict87": "其他窗口已修改资料。请重新打开此页面后保存。",
+  "featureOff87": "此功能未在企业资料中启用",
+  "featureOffHelp87": "请根据套餐和权限在设置中启用此功能。",
+  "foodNeedsProfile87": "请在设置中配置餐饮，才能使用菜单、备餐或餐桌。配送功能独立运行。",
+  "proposalHelp87": "此资料随注册方案保存。登录正确的企业后，请先在设置中核对再应用。"
 }

@@ -687,8 +687,8 @@
   "sectorsIntro": "Choisissez l’activité et activez les fonctions utiles.",
   "planningNotice": "Espace enregistré sur cet ordinateur. Stock et confirmations relèvent du planning local.",
   "sectorsAbout": "Ne modifie ni stock, paiements ni factures officiels. Le serveur doit relier secteurs, caisse et appareils. Les données antérieures sont conservées.",
-  "setupTitle": "Comment fonctionne votre entreprise ?",
-  "setupHelp": "La livraison est indépendante. Cuisine, tables, carte et production apparaissent uniquement si activées.",
+  "setupTitle": "Profil de l’entreprise",
+  "setupHelp": "Définissez ici l’activité, les services et les fonctions des espaces de travail.",
   "yourSectors": "Quels secteurs existent dans votre entreprise ?",
   "enableFeatures": "Fonctions utilisées",
   "deliveryForAll": "La livraison convient aux commerces, pharmacies, restaurants et industries. Aucune cuisine ni table requise.",
@@ -842,5 +842,16 @@
   "noPrevious": "Aucune fiche précédente trouvée dans ce contexte.",
   "previousFoodRecords": "Consulter les services de la version précédente",
   "searchRecipe": "Rechercher une recette",
-  "yieldDifference": "Écart de rendement du planning"
+  "yieldDifference": "Écart de rendement du planning",
+  "profileTitle87": "Profil de l’entreprise",
+  "profileHelp87": "Définissez ici l’activité, les services et les fonctions des espaces de travail.",
+  "configure87": "Configurer l’entreprise",
+  "profileLocal87": "Profil enregistré pour cette entreprise et ce magasin sur cet ordinateur. Les autres appareils nécessitent une synchronisation serveur.",
+  "useProposal87": "Utiliser le profil de la proposition d’inscription",
+  "profileSaved87": "Profil mis à jour. Les espaces de travail utilisent cette configuration.",
+  "profileConflict87": "Une autre fenêtre a modifié le profil. Rouvrez cette page avant d’enregistrer.",
+  "featureOff87": "Fonction désactivée dans le profil",
+  "featureOffHelp87": "Activez cette fonction dans les paramètres selon votre offre et vos droits.",
+  "foodNeedsProfile87": "Configurez la restauration pour utiliser menu, préparation ou tables. Les livraisons fonctionnent séparément.",
+  "proposalHelp87": "Ce profil accompagne la proposition. Après connexion à la bonne entreprise, vérifiez-le dans les paramètres avant de l’appliquer."
 }

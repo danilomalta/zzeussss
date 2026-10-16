@@ -687,8 +687,8 @@
   "sectorsIntro": "Elija actividad y active solo lo que utiliza.",
   "planningNotice": "Archivo guardado en este equipo. Stock y confirmaciones son de planificación local.",
   "sectorsAbout": "No modifica stock, pagos ni facturas oficiales. Falta conectar sectores, TPV y dispositivos. Se conservan registros anteriores.",
-  "setupTitle": "¿Cómo trabaja su empresa?",
-  "setupHelp": "El reparto es independiente. Cocina, mesas, carta y producción aparecen solo al activarlos.",
+  "setupTitle": "Perfil de la empresa",
+  "setupHelp": "Define aquí la actividad, las áreas y las funciones para las pantallas de trabajo.",
   "yourSectors": "¿Qué sectores tiene la empresa?",
   "enableFeatures": "Funciones utilizadas",
   "deliveryForAll": "El reparto sirve a mercados, farmacias, alimentación e industria. No requiere cocina ni mesas.",
@@ -842,5 +842,16 @@
   "noPrevious": "No se encontraron registros anteriores en este contexto.",
   "previousFoodRecords": "Consultar atenciones de versión anterior",
   "searchRecipe": "Buscar receta",
-  "yieldDifference": "Diferencia de rendimiento planificada"
+  "yieldDifference": "Diferencia de rendimiento planificada",
+  "profileTitle87": "Perfil de la empresa",
+  "profileHelp87": "Define aquí la actividad, las áreas y las funciones para las pantallas de trabajo.",
+  "configure87": "Configurar empresa",
+  "profileLocal87": "Perfil guardado para esta empresa y tienda en este equipo. Otros dispositivos requieren sincronización con el servidor.",
+  "useProposal87": "Usar perfil de la propuesta de registro",
+  "profileSaved87": "Perfil actualizado. Las áreas de trabajo ya usan esta configuración.",
+  "profileConflict87": "Otra ventana cambió el perfil. Vuelve a abrir esta página antes de guardar.",
+  "featureOff87": "Función desactivada en el perfil",
+  "featureOffHelp87": "Activa esta función en Configuración según el plan y los permisos.",
+  "foodNeedsProfile87": "Configura alimentación para usar menú, preparación o mesas. Las entregas funcionan por separado.",
+  "proposalHelp87": "El perfil acompaña la propuesta. Tras entrar en la empresa correcta, revísalo en Configuración antes de aplicarlo."
 }

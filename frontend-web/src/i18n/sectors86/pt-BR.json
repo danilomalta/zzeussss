@@ -687,8 +687,8 @@
   "sectorsIntro": "Escolha a atividade e ative apenas os recursos usados pela empresa.",
   "planningNotice": "Arquivo de trabalho salvo neste computador. Valores de estoque e confirmações são do planejamento local.",
   "sectorsAbout": "Não movimenta estoque, pagamentos ou notas oficiais. O backend ainda precisa ligar setores, PDV e aparelhos. Cadastros anteriores são preservados.",
-  "setupTitle": "Como sua empresa trabalha?",
-  "setupHelp": "Delivery é independente. Cozinha, mesas, cardápio e produção só aparecem quando você os ativa.",
+  "setupTitle": "Perfil da empresa",
+  "setupHelp": "Atividade, setores e recursos são definidos aqui e usados nas áreas de trabalho.",
   "yourSectors": "Quais setores existem na empresa?",
   "enableFeatures": "Recursos utilizados",
   "deliveryForAll": "Entregas atende mercado, farmácia, alimentação, indústria ou outro negócio. Não exige cozinha ou mesas.",
@@ -842,5 +842,16 @@
   "noPrevious": "Nenhum cadastro anterior encontrado neste contexto.",
   "previousFoodRecords": "Consultar atendimentos da versão anterior",
   "searchRecipe": "Buscar receita",
-  "yieldDifference": "Diferença de rendimento no planejamento"
+  "yieldDifference": "Diferença de rendimento no planejamento",
+  "profileTitle87": "Perfil da empresa",
+  "profileHelp87": "Atividade, setores e recursos são definidos aqui e usados nas áreas de trabalho.",
+  "configure87": "Configurar empresa",
+  "profileLocal87": "Perfil salvo para esta empresa e loja neste computador. A sincronização com outros aparelhos depende do servidor.",
+  "useProposal87": "Usar perfil da proposta de cadastro",
+  "profileSaved87": "Perfil atualizado. As áreas de trabalho já usam esta configuração.",
+  "profileConflict87": "Outra janela alterou o perfil. Reabra esta página antes de salvar.",
+  "featureOff87": "Recurso desativado no perfil",
+  "featureOffHelp87": "Você pode habilitar este recurso nas Configurações, conforme o plano e as permissões.",
+  "foodNeedsProfile87": "Configure alimentação nas Configurações para usar cardápio, cozinha ou mesas. Entregas funciona separadamente.",
+  "proposalHelp87": "Este perfil acompanha a proposta. Depois de entrar na empresa correta, revise-o em Configurações antes de aplicar."
 }

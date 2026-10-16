@@ -687,8 +687,8 @@
   "sectorsIntro": "Choose activity and enable only the features your business uses.",
   "planningNotice": "Workspace saved on this computer. Stock and confirmations belong to local planning.",
   "sectorsAbout": "Does not change official stock, payments or invoices. Backend must still connect sectors, POS and devices. Previous records are preserved.",
-  "setupTitle": "How does your business work?",
-  "setupHelp": "Delivery is independent. Kitchen, tables, menu and production appear only when enabled.",
+  "setupTitle": "Company profile",
+  "setupHelp": "Define activity, departments and features here for all work areas.",
   "yourSectors": "Which sectors exist in your business?",
   "enableFeatures": "Features used",
   "deliveryForAll": "Delivery serves shops, pharmacies, food service, industry or other businesses. No kitchen or tables required.",
@@ -842,5 +842,16 @@
   "noPrevious": "No previous records found in this context.",
   "previousFoodRecords": "View previous-version service records",
   "searchRecipe": "Search recipe",
-  "yieldDifference": "Planning yield difference"
+  "yieldDifference": "Planning yield difference",
+  "profileTitle87": "Company profile",
+  "profileHelp87": "Define activity, departments and features here for all work areas.",
+  "configure87": "Configure company",
+  "profileLocal87": "Profile saved for this company and store on this computer. Other devices require server synchronization.",
+  "useProposal87": "Use registration proposal profile",
+  "profileSaved87": "Profile updated. Work areas now use this configuration.",
+  "profileConflict87": "Another window changed the profile. Reopen this page before saving.",
+  "featureOff87": "Feature disabled in profile",
+  "featureOffHelp87": "Enable this feature in Settings, subject to your plan and permissions.",
+  "foodNeedsProfile87": "Configure food services in Settings to use menus, preparation or tables. Deliveries work separately.",
+  "proposalHelp87": "This profile accompanies the proposal. After signing in to the correct company, review it in Settings before applying."
 }
