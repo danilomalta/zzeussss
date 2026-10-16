@@ -55,5 +55,9 @@
   "filesHint": "图片将缩小以保持应用轻量，不会发送到服务器。",
   "readOnly": "您的角色可以自定义外观。税务信息和设备仅供授权负责人设置。",
   "restoreTheme": "返回浅色/深色模式",
-  "_review": "Revisão por falante nativo pendente."
+  "_review": "Revisão por falante nativo pendente.",
+  "backgroundBlur": "背景照片模糊",
+  "blurNone": "不模糊",
+  "blurMinimal": "轻微模糊",
+  "blurHelp": "仅影响背景照片。启用减少效果后会关闭模糊，以节省设备资源。"
 }

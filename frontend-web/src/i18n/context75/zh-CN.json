@@ -5,8 +5,8 @@
   "confirmed": "会话已验证",
   "company": "会话企业",
   "store": "会话门店",
-  "companyName": "企业名称不可用",
-  "storeName": "门店名称不可用",
+  "companyName": "已关联企业",
+  "storeName": "已关联门店",
   "readOnly": "只读上下文",
   "selectionHelp": "会话未确认企业与门店。服务器授权前业务模块被阻止。",
   "deniedHelp": "请重新登录。输入其他代码不能修复授权。",
@@ -28,5 +28,6 @@
   "noSwitch": "尚不能切换企业或门店。此区域不是选择器。",
   "integrationUnknown": "未连接查询集成数量、故障或状态的数据源。",
   "details": "查看详情",
-  "_review": "Native speaker review required."
+  "_review": "Native speaker review required.",
+  "localDisplayName": "本地显示名称"
 }

@@ -55,5 +55,9 @@
   "filesHint": "Les images sont réduites pour alléger l’application. Aucune image n’est envoyée au serveur.",
   "readOnly": "Votre profil peut personnaliser l’apparence. Données fiscales et équipements sont réservés au responsable autorisé.",
   "restoreTheme": "Revenir au mode clair/sombre",
-  "_review": "Revisão por falante nativo pendente."
+  "_review": "Revisão por falante nativo pendente.",
+  "backgroundBlur": "Flou de la photo",
+  "blurNone": "Sans flou",
+  "blurMinimal": "Flou minimal",
+  "blurHelp": "Seule la photo de fond est affectée. Réduire les effets désactive le flou pour économiser les ressources."
 }

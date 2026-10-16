@@ -5,8 +5,8 @@
   "confirmed": "Session vérifiée",
   "company": "Société de la session",
   "store": "Magasin de la session",
-  "companyName": "Nom de société indisponible",
-  "storeName": "Nom de magasin indisponible",
+  "companyName": "Entreprise associée",
+  "storeName": "Magasin associé",
   "readOnly": "Contexte en lecture seule",
   "selectionHelp": "La session n’a pas confirmé société et magasin. Les modules restent bloqués jusqu’à l’autorisation serveur.",
   "deniedHelp": "Reconnectez-vous. Saisir un autre code ne corrige pas l’autorisation.",
@@ -28,5 +28,6 @@
   "noSwitch": "Le changement de société ou magasin est indisponible. Ce bloc n’est pas un sélecteur.",
   "integrationUnknown": "Aucune source connectée pour consulter nombres, erreurs ou état des intégrations.",
   "details": "Voir les détails",
-  "_review": "Native speaker review required."
+  "_review": "Native speaker review required.",
+  "localDisplayName": "Nom d’affichage local"
 }

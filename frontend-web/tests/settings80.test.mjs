@@ -22,6 +22,12 @@ test('modo de foto exige imagem raster e não aceita SVG nem URL remota',()=>{
  assert.equal(image80('data:image/png;base64,AA==',10000),true);
  assert.equal(image80('data:image/png;base64,AA==',4),false);
 });
+test('preferências antigas mantêm foto nítida e opção de desfoque é restrita',()=>{
+ const old=defaults80();delete old.backgroundBlur;
+ assert.equal(validate80(old).backgroundBlur,0);
+ assert.equal(validate80({...defaults80(),backgroundBlur:3}).backgroundBlur,3);
+ assert.throws(()=>validate80({...defaults80(),backgroundBlur:25}));
+});
 test('cor escolhida mantém contraste no foco e texto legível em ambos os temas',()=>{
  for(const color of ['#ffffff','#000000','#aabbcc','#ff0000','#ffff00','#111113']){
   for(const dark of [true,false]){

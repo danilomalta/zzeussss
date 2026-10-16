@@ -5,8 +5,8 @@
   "confirmed": "Session verified",
   "company": "Session company",
   "store": "Session store",
-  "companyName": "Company name unavailable",
-  "storeName": "Store name unavailable",
+  "companyName": "Company linked",
+  "storeName": "Store linked",
   "readOnly": "Read-only context",
   "selectionHelp": "The session has not confirmed a company and store. Modules are blocked until server authorization.",
   "deniedHelp": "Sign in again for a valid session. Typing another code cannot fix authorization.",
@@ -28,5 +28,6 @@
   "noSwitch": "Company or store switching is not available yet. This block is not a selector.",
   "integrationUnknown": "No connected source to retrieve integration counts, failures or status.",
   "details": "View details",
-  "_review": "Native speaker review required."
+  "_review": "Native speaker review required.",
+  "localDisplayName": "Local display name"
 }

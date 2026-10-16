@@ -55,5 +55,9 @@
   "filesHint": "As imagens são reduzidas para manter o aplicativo leve. Nenhuma imagem é enviada a um servidor.",
   "readOnly": "Seu perfil pode personalizar a aparência. Dados fiscais e equipamentos são reservados ao responsável.",
   "restoreTheme": "Voltar ao modo claro/escuro",
-  "_review": "Texto original em português."
+  "_review": "Texto original em português.",
+  "backgroundBlur": "Desfoque da foto",
+  "blurNone": "Sem desfoque",
+  "blurMinimal": "Desfoque mínimo",
+  "blurHelp": "A escolha afeta apenas a foto de fundo. Reduzir efeitos desativa o desfoque para poupar recursos."
 }

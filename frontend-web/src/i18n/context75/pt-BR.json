@@ -5,8 +5,8 @@
   "confirmed": "Sessão verificada",
   "company": "Empresa da sessão",
   "store": "Loja da sessão",
-  "companyName": "Nome da empresa indisponível",
-  "storeName": "Nome da loja indisponível",
+  "companyName": "Empresa vinculada",
+  "storeName": "Loja vinculada",
   "readOnly": "Contexto somente para consulta",
   "selectionHelp": "A sessão não confirmou uma empresa e loja. Os módulos ficam bloqueados até a autorização do servidor.",
   "deniedHelp": "Entre novamente para obter uma sessão válida. Não é possível corrigir o contexto digitando outro código.",
@@ -27,5 +27,6 @@
   "missingNames": "A API atual não fornece os nomes da empresa e loja. Os identificadores da sessão foram conferidos, mas os nomes não são presumidos.",
   "noSwitch": "A troca de empresa ou loja ainda não está disponível. Este bloco não é um seletor.",
   "integrationUnknown": "Sem fonte conectada para consultar quantidade, falhas ou estado das integrações.",
-  "details": "Ver detalhes"
+  "details": "Ver detalhes",
+  "localDisplayName": "Nome de exibição local"
 }

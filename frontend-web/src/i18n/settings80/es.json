@@ -55,5 +55,9 @@
   "filesHint": "Las imágenes se reducen para mantener la aplicación ligera. Ninguna se envía al servidor.",
   "readOnly": "Puedes personalizar la apariencia. Datos fiscales y equipos están reservados al responsable autorizado.",
   "restoreTheme": "Volver a claro/oscuro",
-  "_review": "Revisão por falante nativo pendente."
+  "_review": "Revisão por falante nativo pendente.",
+  "backgroundBlur": "Desenfoque de la foto",
+  "blurNone": "Sin desenfoque",
+  "blurMinimal": "Desenfoque mínimo",
+  "blurHelp": "Solo afecta a la foto de fondo. Reducir efectos desactiva el desenfoque para ahorrar recursos."
 }

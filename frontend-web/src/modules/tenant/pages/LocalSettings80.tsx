@@ -24,11 +24,11 @@ export default function LocalSettings80(){
  useEffect(()=>{if(!dirty)return;const before=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue='';};window.addEventListener('beforeunload',before);return()=>window.removeEventListener('beforeunload',before);},[dirty]);
  const clearPreview=context?.clearPreview;
  useEffect(()=>()=>clearPreview?.(),[clearPreview]);
- function visual(value:Settings80):Settings80{return {...(context?.stored||defaults80()),companyName:value.companyName,logoLight:value.logoLight,logoDark:value.logoDark,background:value.background,backgroundFit:value.backgroundFit,mode:value.mode,accent:value.accent,compact:value.compact,lowEffects:value.lowEffects};}
+ function visual(value:Settings80):Settings80{return {...(context?.stored||defaults80()),companyName:value.companyName,logoLight:value.logoLight,logoDark:value.logoDark,background:value.background,backgroundFit:value.backgroundFit,backgroundBlur:value.backgroundBlur,mode:value.mode,accent:value.accent,compact:value.compact,lowEffects:value.lowEffects};}
  function change(value:Partial<Settings80>){
   const next={...draft,...value};
   setDraft(next);setDirty(true);setNotice('');
-  if(Object.keys(value).some(key=>['companyName','logoLight','logoDark','background','backgroundFit','mode','accent','compact','lowEffects'].includes(key))){try{context?.preview(visual(next));}catch{setNotice(w.error);}}
+  if(Object.keys(value).some(key=>['companyName','logoLight','logoDark','background','backgroundFit','backgroundBlur','mode','accent','compact','lowEffects'].includes(key))){try{context?.preview(visual(next));}catch{setNotice(w.error);}}
  }
  async function image(file:File|undefined,key:'logoLight'|'logoDark'|'background'){
   if(!file)return;setBusy(true);setNotice('');
@@ -51,6 +51,7 @@ export default function LocalSettings80(){
    {current==='appearance'&&<section className="brand-panel"><h2>{w.appearance}</h2><label>{w.background}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>{void image(e.target.files?.[0],'background');e.target.value='';}}/></label><p>{w.backgroundHelp}</p>{draft.background&&<><img className="settings80-image" src={draft.background} alt={w.background}/><button className="brand-secondary" onClick={()=>change({background:'',mode:'theme'})}>{w.remove}</button></>}
     <div className="settings80-actions"><button className="brand-secondary" disabled={!draft.logoDark&&!draft.logoLight} onClick={()=>change({background:draft.logoDark||draft.logoLight,backgroundFit:'contain',mode:'photo'})}>{w.useLogo}</button><button className="brand-secondary" onClick={()=>change({mode:'theme'})}>{w.restoreTheme}</button></div>
     <div className="settings80-grid"><label>{w.appearance}<select value={draft.mode} onChange={e=>change({mode:e.target.value as 'theme'|'photo'})}><option value="theme">{w.themeMode}</option><option value="photo" disabled={!draft.background}>{w.photoMode}</option></select></label><label>{w.background}<select value={draft.backgroundFit} onChange={e=>change({backgroundFit:e.target.value as 'cover'|'contain'})}><option value="cover">{w.fill}</option><option value="contain">{w.centered}</option></select></label></div>
+    {draft.background&&<label>{w.backgroundBlur}<select value={draft.backgroundBlur} onChange={e=>change({backgroundBlur:Number(e.target.value) as 0|3})}><option value={0}>{w.blurNone}</option><option value={3}>{w.blurMinimal}</option></select><span className="settings80-status">{w.blurHelp}</span></label>}
     {draft.mode==='photo'?<p className="settings80-warning">{w.photoWarning}</p>:<ThemeToggle/>}
     <label>{w.color}<input type="color" value={draft.accent||'#707070'} onChange={e=>change({accent:e.target.value})}/></label><button className="brand-secondary" onClick={()=>change({accent:''})}>{w.reset}</button><p>{w.colorHelp}</p><label className="settings80-check"><input type="checkbox" checked={draft.lowEffects} onChange={e=>change({lowEffects:e.target.checked})}/>{w.lowEffects}</label>
    </section>}

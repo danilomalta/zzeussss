@@ -50,5 +50,5 @@ export function AppearanceProvider80({children}:{children:ReactNode}){
   return vars as CSSProperties;
  },[prefs,theme,photo]);
  const words=words80(i18n.resolvedLanguage||i18n.language);
- return <Context.Provider value={{stored,prefs,photoWarning:words.photoWarning,loaded,save,preview:showPreview,clearPreview}}><div className={'appearance80-scope'+(photo?' appearance80-photo':'')+(prefs.lowEffects?' appearance80-reduced':'')+(prefs.compact?' appearance80-compact':'')} style={style}>{children}</div></Context.Provider>;
+ return <Context.Provider value={{stored,prefs,photoWarning:words.photoWarning,loaded,save,preview:showPreview,clearPreview}}><div className={'appearance80-scope'+(photo?' appearance80-photo':'')+(photo&&prefs.backgroundBlur===3?' appearance80-photo-soft':'')+(prefs.lowEffects?' appearance80-reduced':'')+(prefs.compact?' appearance80-compact':'')} style={style}>{children}</div></Context.Provider>;
 }

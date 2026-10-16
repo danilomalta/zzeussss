@@ -55,5 +55,9 @@
   "filesHint": "Images are resized to keep the app lightweight. No image is sent to a server.",
   "readOnly": "Your profile can personalize appearance. Fiscal data and equipment are restricted to the authorized administrator.",
   "restoreTheme": "Return to light/dark mode",
-  "_review": "Revisão por falante nativo pendente."
+  "_review": "Revisão por falante nativo pendente.",
+  "backgroundBlur": "Photo blur",
+  "blurNone": "No blur",
+  "blurMinimal": "Minimal blur",
+  "blurHelp": "Only the background photo is affected. Reduce effects disables blur to save resources."
 }

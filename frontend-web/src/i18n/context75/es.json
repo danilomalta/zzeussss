@@ -5,8 +5,8 @@
   "confirmed": "Sesión verificada",
   "company": "Empresa de la sesión",
   "store": "Tienda de la sesión",
-  "companyName": "Nombre de empresa no disponible",
-  "storeName": "Nombre de tienda no disponible",
+  "companyName": "Empresa vinculada",
+  "storeName": "Tienda vinculada",
   "readOnly": "Contexto de solo consulta",
   "selectionHelp": "La sesión no confirmó empresa y tienda. Los módulos se bloquean hasta autorización del servidor.",
   "deniedHelp": "Inicie sesión nuevamente. Introducir otro código no corrige la autorización.",
@@ -28,5 +28,6 @@
   "noSwitch": "Cambiar empresa o tienda aún no está disponible. Este bloque no es un selector.",
   "integrationUnknown": "Sin fuente conectada para consultar cantidades, fallos o estados de integraciones.",
   "details": "Ver detalles",
-  "_review": "Native speaker review required."
+  "_review": "Native speaker review required.",
+  "localDisplayName": "Nombre para mostrar local"
 }
