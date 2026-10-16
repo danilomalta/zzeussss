@@ -1,0 +1,15 @@
+export type Area89='pdv'|'finance'|'fiscal'|'connections'|'inventory'|'pcp'|'crm'|'channels'|'branches'|'tasks'|'privacy'|'access';
+export interface Settlement89{id:string;amount:number;date:string;method:string}
+export interface Finance89{id:string;name:string;kind:'pay'|'receive';amount:number;due:string;category:'revenue'|'expense'|'transfer';center:string;settlements:Settlement89[]}
+export interface Bank89{id:string;reference:string;date:string;kind:'pay'|'receive';amount:number;name:string;match:string}
+export interface Campaign89{id:string;name:string;sku:string;cost:number;price:number;discount:number;start:string;end:string}
+export interface Loyalty89{id:string;name:string;rate:number;minimum:number;days:number}
+export interface Channel89{id:string;name:string;provider:string;environment:'test'|'production';state:'draft'}
+export interface Order89{id:string;reference:string;channel:string;name:string;amount:number;state:'review'|'approved'|'picking'|'dispatched'|'delivered'|'cancelled'}
+export interface Branch89{id:string;name:string;city:string;uf:string;reference:string;state:'draft'}
+export interface Task89{id:string;name:string;assignee:string;due:string;priority:'normal'|'high';module:string;state:'todo'|'doing'|'review'|'done'}
+export interface Count89{id:string;name:string;sku:string;location:string;expected:number;counted:number;reason:string;state:'draft'|'reviewed'}
+export interface Document89{id:string;key:string;number:string;name:string;date:string;amount:number;model:string;protocol:string;items:number}
+export interface Activity89{id:string;at:string;area:Area89;action:string;name:string}
+export interface Data89{format:'titan-enterprise89';scope:string;revision:number;updated:string;finance:Finance89[];bank:Bank89[];campaigns:Campaign89[];loyalty:Loyalty89[];connections:Channel89[];orders:Order89[];branches:Branch89[];tasks:Task89[];counts:Count89[];documents:Document89[];activity:Activity89[]}
+export interface Source89<T>{state:'loading'|'ready'|'empty'|'unavailable'|'forbidden'|'error';rows:T[];at?:string;partial?:boolean}

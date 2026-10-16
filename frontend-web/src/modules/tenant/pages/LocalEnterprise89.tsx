@@ -1,0 +1,40 @@
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
+import {Link,useBlocker,useNavigate,useSearchParams} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import {useLocalAccess} from '../../../core/local/LocalAccess';
+import {useLocalSession} from '../../../core/local/useLocalSession';
+import {contextKey,contextOf} from '../../../core/context74/model.mjs';
+import {EnterpriseContext89,type Enterprise89} from '../../../core/enterprise89/context';
+import {areas89,can89,csv as encodeCSV} from '../../../core/enterprise89/engine.mjs';
+import {read89,write89} from '../../../core/enterprise89/storage';
+import {words89} from '../../../core/enterprise89/words';
+import type {Area89,Data89} from '../../../core/enterprise89/types';
+import {stageReport76} from '../../../core/loss76/report76.mjs';
+import '../../../core/loss76/sessionReport76';
+import {Finance89Page,Fiscal89Page} from './enterprise89/FinanceFiscal';
+import {POS89Page,Connections89Page,Inventory89Page,PCP89Page,CRM89Page,Channels89Page,Branches89Page,Tasks89Page,Access89Page} from './enterprise89/WorkAreas';
+import Privacy89Page from './enterprise89/Privacy';
+import './enterprise89/enterprise89.css';
+const pages={pdv:POS89Page,finance:Finance89Page,fiscal:Fiscal89Page,connections:Connections89Page,inventory:Inventory89Page,pcp:PCP89Page,crm:CRM89Page,channels:Channels89Page,branches:Branches89Page,tasks:Tasks89Page,privacy:Privacy89Page,access:Access89Page};
+export default function LocalEnterprise89({initialArea='connections'}:{initialArea?:Area89}){
+ const {capabilities:cap}=useLocalAccess(),session=useLocalSession(s=>s.session),token=useLocalSession(s=>s.token),{i18n}=useTranslation(),[params]=useSearchParams(),navigate=useNavigate();
+ const w=useMemo(()=>words89(i18n.resolvedLanguage||i18n.language),[i18n.resolvedLanguage,i18n.language]);
+ const requested=(params.get('area')||initialArea) as Area89,area=areas89.includes(requested)?requested:initialArea;let scope='';try{if(token)scope=contextKey(contextOf(session,cap));}catch{/* Trusted context is mandatory. */}
+ const allowed=can89(cap,area),[data,setData]=useState<Data89|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[dirtyKeys,setDirtyKeys]=useState<string[]>([]);
+ const current=useRef<Data89|null>(null),guard=useRef({scope,token,area,allowed}),latch=useRef(false);guard.current={scope,token,area,allowed};
+ const dirty=useCallback((key:string,value:boolean)=>setDirtyKeys(keys=>value?keys.includes(key)?keys:[...keys,key]:keys.filter(k=>k!==key)),[]);
+ const blocker=useBlocker(({currentLocation,nextLocation})=>dirtyKeys.length>0&&(currentLocation.pathname!==nextLocation.pathname||currentLocation.search!==nextLocation.search));
+ useEffect(()=>{if(blocker.state==='blocked'){if(window.confirm(w.unsaved)){setDirtyKeys([]);blocker.proceed();}else blocker.reset();}},[blocker,w.unsaved]);
+ useEffect(()=>{if(!dirtyKeys.length)return;const warn=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirtyKeys]);
+ const refresh=useCallback(async()=>{if(!scope||!allowed)return;try{const value=await read89(scope);if(guard.current.scope===scope&&guard.current.token===token){current.current=value;setData(value);setError('');}}catch{setError('storageError');}},[scope,allowed,token]);
+ useEffect(()=>{current.current=null;setData(null);setError('');setNotice('');setDirtyKeys([]);void refresh();},[refresh]);
+ const act=useCallback(async(action:string,name:string,change:(d:Data89)=>void)=>{if(latch.current||!current.current||current.current.scope!==scope||!guard.current.allowed||guard.current.token!==token)return false;latch.current=true;setBusy(true);setError('');try{const old=current.current,next=structuredClone(old);change(next);next.activity.push({id:crypto.randomUUID(),at:new Date().toISOString(),area,action,name:name.slice(0,240)});next.activity=next.activity.slice(-1000);const saved=await write89(next,old.revision);if(guard.current.scope===scope&&guard.current.token===token){current.current=saved;setData(saved);setNotice('saved');}return true;}catch(e){setError(e instanceof Error&&w[e.message]?e.message:'invalid');return false;}finally{latch.current=false;setBusy(false);}},[scope,token,area,w]);
+ const money=useCallback((n:number)=>{const abs=BigInt(Math.abs(n)),whole=abs/100n,number=n<0?(whole===0n?-0:-whole):whole;return new Intl.NumberFormat(i18n.language,{style:'currency',currency:'BRL'}).formatToParts(number).map(p=>p.type==='fraction'?String(abs%100n).padStart(2,'0'):p.value).join('');},[i18n.language]);
+ const date=useCallback((v:string)=>{const value=new Date(v.length===10?v+'T12:00:00':v);return Number.isFinite(+value)?new Intl.DateTimeFormat(i18n.language,{dateStyle:'short',...(v.length>10?{timeStyle:'short' as const}:{})}).format(value):'—';},[i18n.language]);
+ const csv=useCallback((rows:(string|number)[][])=>{const url=URL.createObjectURL(new Blob([encodeCSV(rows)],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Titan-'+area+'-rascunho.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);},[area]);
+ const sheets=useCallback((rows:(string|number)[][])=>{if(cap?.role!=='owner'||rows.length>500)return;const id=crypto.randomUUID();stageReport76(scope,id,w[area]+' · '+w.draft,rows);navigate('/local/sheets?report='+encodeURIComponent(id));},[cap?.role,scope,area,w,navigate]);
+ const value=useMemo<Enterprise89|null>(()=>data&&cap&&token?{data,area,scope,token,cap,w,locale:i18n.language,busy,dirty,act,error:setError,money,date,csv,sheets,refresh}:null,[data,cap,token,area,scope,w,i18n.language,busy,dirty,act,money,date,csv,sheets,refresh]);
+ if(!allowed||!scope)return <main className="brand-app-content erp89"><h1>{w[area]}</h1><p>{w.noAccess}</p><Link to="/local/home">{w.back}</Link></main>;
+ const Page=pages[area];
+ return <main className="brand-app-content erp89"><header className="erp89-heading"><div><p className="erp89-kicker">TITAN · {w.local}</p><h1>{w[area]}</h1></div><button className="brand-secondary" disabled={busy||!!dirtyKeys.length} onClick={()=>void refresh()}>{w.refresh}</button></header><details className="erp89-about"><summary>{w.about}</summary><p>{w.scopeNote}</p><p>{w.operationalNote}</p></details>{error&&<p className="erp89-error" role="alert">{w[error]||w.invalid}</p>}{notice&&<p role="status">{w[notice]}</p>}{value&&data?.scope===scope?<EnterpriseContext89.Provider value={value}><Page/><details className="brand-panel erp89-activity"><summary>{w.activity}</summary><ol>{data.activity.filter(r=>r.area===area).slice(-30).reverse().map(r=><li key={r.id}><time>{date(r.at)}</time> · {w[r.action]||w.save} · {r.name}</li>)}</ol></details></EnterpriseContext89.Provider>:<p>{w.loading}</p>}</main>;
+}

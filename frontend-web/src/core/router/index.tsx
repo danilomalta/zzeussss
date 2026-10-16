@@ -21,6 +21,7 @@ const LocalHumanResources = React.lazy(() => import('../../modules/tenant/pages/
 const LocalSpreadsheet = React.lazy(() => import('../../modules/tenant/pages/LocalSpreadsheet'));
 const LocalWorkbench73 = React.lazy(() => import('../../modules/tenant/pages/LocalWorkbench73'));
 const LocalIntegrations74 = React.lazy(() => import('../../modules/tenant/pages/LocalIntegrations74'));
+const LocalEnterprise89 = React.lazy(() => import('../../modules/tenant/pages/LocalEnterprise89'));
 const LocalSettings80 = React.lazy(() => import('../../modules/tenant/pages/LocalSettings80'));
 const LocalBusiness85 = React.lazy(() => import('../../modules/tenant/pages/LocalBusiness85'));
 const LocalSectors86 = React.lazy(() => import('../../modules/tenant/pages/LocalSectors86'));
@@ -57,12 +58,14 @@ export const router = createBrowserRouter([
     { index: true, element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
     { path: 'home', element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
     { path: 'losses', element: <SuspenseWrapper><LocalLossPrevention76 /></SuspenseWrapper> },
-    { path: 'integrations', element: <SuspenseWrapper><LocalIntegrations74 /></SuspenseWrapper> },
+    { path: 'integrations', element: <SuspenseWrapper><LocalEnterprise89 initialArea="connections" /></SuspenseWrapper> },
     { path: 'workbench', element: <SuspenseWrapper><LocalWorkbench73 /></SuspenseWrapper> },
     { path: 'overview', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'owner', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'map', element: <SuspenseWrapper><LocalDistributionMap /></SuspenseWrapper> },
     { path: 'settings', element: <SuspenseWrapper><LocalSettings80 /></SuspenseWrapper> },
+    { path: 'integrations/diagnostics', element: <SuspenseWrapper><LocalIntegrations74 /></SuspenseWrapper> },
+    { path: 'enterprise', element: <SuspenseWrapper><LocalEnterprise89 /></SuspenseWrapper> },
     { path: 'delivery', element: <SuspenseWrapper><LocalSectors86 initialArea="delivery" /></SuspenseWrapper> },
     { path: 'recipes', element: <SuspenseWrapper><LocalSectors86 initialArea="recipes" /></SuspenseWrapper> },
     { path: 'sectors', element: <SuspenseWrapper><LocalSectors86 initialArea="sectors" /></SuspenseWrapper> },

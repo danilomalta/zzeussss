@@ -1,4 +1,10 @@
 const paths:Record<string,string>={
+ inventory:'M4 3h16v18H4z M8 3v4h8V3 M7 12l2 2 4-4 M7 18h10',
+ crm:'M12 21S2 15 2 8a5 5 0 0 1 10-1a5 5 0 0 1 10 1c0 7-10 13-10 13 M8 12h8',
+ channels:'M3 4h18v12H3z M8 21h8 M12 16v5 M7 8h4 M14 8h3 M7 12h10',
+ branches:'M9 2h6v6H9z M2 16h6v6H2z M16 16h6v6h-6z M12 8v4 M5 16v-4h14v4',
+ tasks:'M4 3h16v18H4z M7 8l1 1 2-3 M13 8h4 M7 14l1 1 2-3 M13 14h4 M7 19h10',
+ privacy:'M12 2l9 4v6c0 6-9 10-9 10S3 18 3 12V6z M8 11h8v6H8z M10 11V8a2 2 0 0 1 4 0v3',
  pos:'M5 3h14v18H5z M8 6h8v4H8z M8 14h1 M12 14h1 M16 14h1 M8 18h1 M12 18h1 M16 18h1',
  sheets:'M3 3h18v18H3z M3 8h18 M8 3v18 M3 14h18 M14 8v13',
  hr:'M9 8a3 3 0 1 0 6 0a3 3 0 1 0-6 0 M5 21v-3a7 7 0 0 1 14 0v3 M2 10h3 M19 10h3',

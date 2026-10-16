@@ -1,0 +1,4 @@
+import {localClient} from '../local/useLocalSession';
+import type {Source89} from './types';
+export interface POSCheck89{catalogRows:number;cashOpen:boolean;salesRows:number;receiptsChecked:number}
+export async function pos89(token:string,signal:AbortSignal):Promise<Source89<POSCheck89>>{const [catalog,cash,sales]=await Promise.all([localClient.products(token),localClient.currentCash(token),localClient.history(token,0)]);if(signal.aborted)throw Error('aborted');let receiptsChecked=0;for(const sale of sales.slice(0,3)){await localClient.receipt(token,sale.sale_id);if(signal.aborted)throw Error('aborted');receiptsChecked++;}return {state:'ready',rows:[{catalogRows:catalog.length,cashOpen:!!cash,salesRows:sales.length,receiptsChecked}],at:new Date().toISOString(),partial:catalog.length===50||sales.length===20};}
