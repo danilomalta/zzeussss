@@ -1,0 +1,18 @@
+import type {LocalCapabilities} from '../local/localClient.mjs';
+import type {Area85,Trip85,Vehicle85,Ticket85,Stop85,Purchase85,PurchaseLine85,Deal85,Quote85} from './types';
+export const areas85:Area85[];
+export function manager85(cap:LocalCapabilities|null):boolean;
+export function allowed85(cap:LocalCapabilities|null,area:string):boolean;
+export function decimal85(value:string|number,scale?:number):number;
+export function sum85(values:number[]):number;
+export function line85(quantity:number,price:number):number;
+export function total85(items:{quantity:number;price:number}[],discount?:number,freight?:number):{subtotal:number;discount:number;freight:number;total:number};
+export function quote85(q:Quote85):number;
+export function canDispatch85(trip:Trip85,vehicles:Vehicle85[]):boolean;
+export function tripTransition85(trip:Trip85,next:string,vehicles:Vehicle85[]):string;
+export function delivered85(stop:Stop85):boolean;
+export function ticketTransition85(ticket:Ticket85,next:string):string;
+export function receiving85(purchase:Purchase85,items:PurchaseLine85[],reason:string):PurchaseLine85[];
+export function convertDeal85(deal:Deal85):string;
+export function csv85(rows:(string|number)[][]):string;
+export function uniquePlate85(plate:string,vehicles:Vehicle85[],id?:string):string;
