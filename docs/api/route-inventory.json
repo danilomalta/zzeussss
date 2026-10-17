@@ -1876,6 +1876,13 @@
       "path": "/local/v1/checkout/plans/:id/cancel",
       "authentication": "session",
       "source": "backend/internal/localapi/checkout_plans.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/sessions/:id/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_report.go"
     }
   ]
 }

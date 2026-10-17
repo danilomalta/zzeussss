@@ -1,0 +1,255 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem official closed cash-session report",
+    "version": "B02B2",
+    "description": "Read only. Original operator/store/device scope, Sell permission, no active POS license required for history. Open drawer totals are never returned. complete means full local SQLite source, not other devices or bank reconciliation. Values come from saved closure, all cash movements and persisted sale/payment rows. checkout plans and browser evidence excluded. recorded_confirmed is stored status only; do not map it to providerConfirmed. Legacy card is not debit or credit. No query parameters or GET body accepted. Returns no partial usable totals on failure."
+  },
+  "paths": {
+    "/local/v1/cash/sessions/{id}/report": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      ],
+      "get": {
+        "operationId": "readClosedCashReport",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete LOCAL closed-session snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClosedReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID, query or GET body"
+          },
+          "401": {
+            "description": "Session or device unauthorized"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "404": {
+            "description": "Session outside original operator/store/device scope or not found"
+          },
+          "409": {
+            "description": "Session open or stored history inconsistent"
+          },
+          "422": {
+            "description": "Amounts not representable as safe exact JavaScript integers"
+          },
+          "500": {
+            "description": "Storage unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "PaymentSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "cash",
+              "card",
+              "pix",
+              "other"
+            ]
+          },
+          "parts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "recorded_confirmed_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "recorded_pending_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "recorded_reversed_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "method",
+          "parts",
+          "recorded_confirmed_cents",
+          "recorded_pending_cents",
+          "recorded_reversed_cents"
+        ]
+      },
+      "CashSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "opening_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "movement_net_cents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "expected_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "declared_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "difference_cents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "supply_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "withdrawal_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "opening_cents",
+          "movement_net_cents",
+          "expected_cents",
+          "declared_cents",
+          "difference_cents",
+          "supply_cents",
+          "withdrawal_cents"
+        ]
+      },
+      "ClosedReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "opened_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "complete": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "cash": {
+            "$ref": "#/components/schemas/CashSummary"
+          },
+          "sale_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "gross_sales_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "cancelled_sales_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "net_sales_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "payments": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "$ref": "#/components/schemas/PaymentSummary"
+            }
+          },
+          "bank_settlement_available": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "financial_ledger_available": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "session_id",
+          "operation_id",
+          "opened_at",
+          "closed_at",
+          "complete",
+          "cash",
+          "sale_count",
+          "gross_sales_cents",
+          "cancelled_sales_cents",
+          "net_sales_cents",
+          "payments",
+          "bank_settlement_available",
+          "financial_ledger_available"
+        ]
+      }
+    }
+  }
+}

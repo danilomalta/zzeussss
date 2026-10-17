@@ -1,5 +1,19 @@
 # Backend e integração — matriz de progresso
 
+## B02B2 — consulta oficial de caixa encerrado
+
+Base no PC: B02B1 `b882ece`, testada e registrada com árvore limpa. Nova API GET
+`/local/v1/cash/sessions/{id}/report` lê fechamento histórico, valores oficiais,
+vendas/cancelamentos e status dos pagamentos em uma transação. Recusa caixa
+aberto e histórico inconsistente; não reaproveita sessão atual. Esquema segue45.
+
+Escopo, campos, precisão e limites:
+[B02B2_RELATORIO_OFICIAL_CAIXA.md](B02B2_RELATORIO_OFICIAL_CAIXA.md).
+Os status legados e o meio `card` não viram confirmação eletrônica ou distinção
+débito/crédito. Planos B02B1 não entram como venda. Não há banco conciliado,
+razão financeiro, mudança no encerramento ou integração de frontend97/98/99.
+Parcelas comerciais confirmadas, financeiro e aceite completo R$315 pendentes.
+
 ## B02B1 — distribuição persistida do checkout
 
 Base no PC: B02A `b1e3d80`, branch isolada `feat/backend-b02a-compat`.

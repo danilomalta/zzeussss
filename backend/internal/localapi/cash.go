@@ -13,6 +13,7 @@ import (
 
 func (s *Server) mountCash(router fiber.Router) {
 	router.Get("/cash/current", s.currentCash)
+	router.Get("/cash/sessions/:id/report", s.closedCashReport)
 	router.Post("/cash/open", s.openCash)
 	router.Post("/cash/close", s.closeCash)
 	router.Post("/cash/movements", s.moveCash)
