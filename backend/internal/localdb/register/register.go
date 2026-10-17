@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"titansystem-backend/internal/localdb"
+	"titansystem-backend/internal/localdb/cashjournal"
 	"titansystem-backend/internal/localdb/identity"
 )
 
@@ -109,6 +110,9 @@ func open(ctx context.Context, db *sql.DB, actor identity.Scope, device identity
 	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO cash_session_operators VALUES (?, ?, ?, ?)`, actor.TenantID, actor.StoreID, in.SessionID, actor.IdentityID)
 	if err != nil {
+		return Result{}, err
+	}
+	if err = cashjournal.CaptureTx(ctx, tx, actor, device, "opening", in.SessionID); err != nil {
 		return Result{}, err
 	}
 	if err = event(ctx, tx, actor, device, in.SessionID, in.SessionID, "cash.open", struct {

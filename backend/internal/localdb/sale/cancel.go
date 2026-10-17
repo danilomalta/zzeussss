@@ -14,6 +14,7 @@ import (
 
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb"
+	"titansystem-backend/internal/localdb/cashjournal"
 	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/identity"
 )
@@ -218,6 +219,9 @@ func CancelWithContract(ctx context.Context, db *sql.DB, contracts *entitlements
 		return CancelResult{}, err
 	}
 	if err = cancelWrite(ctx, tx, 1, `UPDATE sales SET status='cancelled' WHERE tenant_id=? AND id=? AND status='committed'`, actor.TenantID, in.SaleID); err != nil {
+		return CancelResult{}, err
+	}
+	if err = cashjournal.CaptureTx(ctx, tx, actor, device, "movement", cashID); err != nil {
 		return CancelResult{}, err
 	}
 	payload, err := json.Marshal(struct {

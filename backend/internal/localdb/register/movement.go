@@ -12,6 +12,7 @@ import (
 
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb"
+	"titansystem-backend/internal/localdb/cashjournal"
 	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/identity"
 )
@@ -140,6 +141,9 @@ func MoveWithContract(ctx context.Context, db *sql.DB, contracts *entitlementsto
 		return empty, err
 	}
 	if err = write(`INSERT INTO cash_adjustments(tenant_id,store_id,device_id,operation_id,session_id,actor_identity_id,kind,amount_cents,reason,movement_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)`, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.SessionID, actor.IdentityID, in.Kind, in.AmountCents, in.Reason, id, now); err != nil {
+		return empty, err
+	}
+	if err = cashjournal.CaptureTx(ctx, tx, actor, device, "movement", id); err != nil {
 		return empty, err
 	}
 	payload, err := json.Marshal(struct {

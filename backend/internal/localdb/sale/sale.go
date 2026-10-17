@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"titansystem-backend/internal/localdb"
+	"titansystem-backend/internal/localdb/cashjournal"
 	"titansystem-backend/internal/localdb/identity"
 )
 
@@ -248,6 +249,9 @@ func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO sale_operations VALUES (?,?,?,?,?,?,?)`, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, actor.IdentityID, in.SaleID, hash)
 	if err != nil {
+		return Result{}, err
+	}
+	if err = cashjournal.CaptureTx(ctx, tx, actor, device, "movement", cashID); err != nil {
 		return Result{}, err
 	}
 	payload, err := json.Marshal(struct {

@@ -1,5 +1,20 @@
 # Backend e integração — matriz de progresso
 
+## B02B4 — lançamentos operacionais do dinheiro
+
+Base no PC: B02B3 `5dbeb69`, instalação e testes confirmados. Nova migração47
+adiciona histórico imutável de abertura, venda, estorno, suprimento e sangria,
+capturado na transação original, e consulta paginada do turno encerrado.
+Backup25–47. Ajuste compartilhado no executor de migrações para suportar triggers;
+nenhuma edição em0001–0046, autenticação, sessões ou frontend.
+
+Escopo, contratos e coordenação:
+[B02B4_LANCAMENTOS_CAIXA.md](B02B4_LANCAMENTOS_CAIXA.md).
+IDs e autor preservados; fontes antigas sem vínculo permanecem não classificadas,
+sem responsável inventado. Resumo do turno inteiro, precisão exata e recusa de
+divergência sem reparar passado. Contrapartidas são controles operacionais.
+Financeiro completo, confirmação eletrônica, venda mista e adapter visual pendentes.
+
 ## B02B3 — finalização real de planos integralmente em dinheiro
 
 Base no PC: B02B2 `5dabd4a`, testada e registrada com árvore limpa. Nova rota

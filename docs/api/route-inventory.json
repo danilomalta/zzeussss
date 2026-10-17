@@ -1890,6 +1890,13 @@
       "path": "/local/v1/checkout/plans/:id/finalize-cash",
       "authentication": "session",
       "source": "backend/internal/localapi/checkout_plans.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/sessions/:id/journal",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash.go"
     }
   ]
 }

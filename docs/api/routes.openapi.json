@@ -12825,6 +12825,33 @@
           "url": "./online-purchase-documents.openapi.json"
         }
       }
+    },
+    "/local/v1/cash/sessions/{id}/journal": {
+      "get": {
+        "operationId": "local_GET__local_v1_cash_sessions__id__journal",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-journal.openapi.json"
+        }
+      }
     }
   },
   "components": {
