@@ -69,16 +69,40 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	if !valid(in) {
 		return Result{}, ErrInvalid
 	}
-	encoded, err := json.Marshal(in)
-	if err != nil {
-		return Result{}, err
-	}
-	hash := fmt.Sprintf("%x", sha256.Sum256(encoded))
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return Result{}, err
 	}
 	defer tx.Rollback()
+	result, err := completeTx(ctx, tx, actor, device, in, authorize, nil)
+	if err != nil {
+		return Result{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return Result{}, err
+	}
+	return result, nil
+}
+
+// completeTx permits checkout metadata and the existing cash sale effects to
+// commit together. Legacy callers keep random payment IDs and the same v1 hash
+// and event payload. Only the private checkout path supplies stable payment IDs.
+func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, in Input, authorize authorization, paymentIDs []string) (Result, error) {
+	limit := 8
+	if paymentIDs != nil {
+		limit = 20
+		if len(paymentIDs) != len(in.Payments) {
+			return Result{}, ErrInvalid
+		}
+	}
+	if !validWithPaymentLimit(in, limit) {
+		return Result{}, ErrInvalid
+	}
+	encoded, err := json.Marshal(in)
+	if err != nil {
+		return Result{}, err
+	}
+	hash := fmt.Sprintf("%x", sha256.Sum256(encoded))
 	if err = authorize(ctx, tx, actor, device); err != nil {
 		return Result{}, err
 	}
@@ -94,6 +118,11 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 		WHERE tenant_id = ? AND device_id = ? AND operation_id = ?`, actor.TenantID, device.DeviceID, in.OperationID).
 		Scan(&priorSale, &priorHash, &priorStore, &priorActor)
 	if err == nil {
+		// A checkout replay is resolved through its atomic completion record.
+		// Never adopt an unrelated sale that happens to reuse checkout IDs.
+		if paymentIDs != nil {
+			return Result{}, ErrConflict
+		}
 		if priorSale != in.SaleID || priorHash != hash || priorStore != actor.StoreID || priorActor != actor.IdentityID {
 			return Result{}, ErrConflict
 		}
@@ -104,9 +133,6 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 		}
 		if saleStatus != "committed" {
 			return Result{}, ErrConflict
-		}
-		if err = tx.Commit(); err != nil {
-			return Result{}, err
 		}
 		return Result{SaleID: priorSale, TotalCents: total, Repeated: true}, nil
 	}
@@ -194,10 +220,18 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 			return Result{}, err
 		}
 	}
-	for _, payment := range in.Payments {
-		id, err := localdb.NewID()
-		if err != nil {
-			return Result{}, err
+	for i, payment := range in.Payments {
+		var id string
+		if paymentIDs == nil {
+			id, err = localdb.NewID()
+			if err != nil {
+				return Result{}, err
+			}
+		} else {
+			id = paymentIDs[i]
+			if !planID(id) {
+				return Result{}, ErrInvalid
+			}
 		}
 		_, err = tx.ExecContext(ctx, `INSERT INTO sale_payments VALUES (?,?,?,'cash','confirmed',?)`, actor.TenantID, in.SaleID, id, payment.AmountCents)
 		if err != nil {
@@ -239,14 +273,15 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	if err != nil {
 		return Result{}, err
 	}
-	if err = tx.Commit(); err != nil {
-		return Result{}, err
-	}
 	return Result{SaleID: in.SaleID, TotalCents: total}, nil
 }
 
 func valid(in Input) bool {
-	if strings.TrimSpace(in.OperationID) == "" || strings.TrimSpace(in.SaleID) == "" || strings.TrimSpace(in.CashSessionID) == "" || len(in.Items) == 0 || len(in.Items) > 500 || len(in.Payments) == 0 || len(in.Payments) > 8 || len(in.OperationID) > 128 || len(in.SaleID) > 128 || len(in.CashSessionID) > 128 {
+	return validWithPaymentLimit(in, 8)
+}
+
+func validWithPaymentLimit(in Input, maxPayments int) bool {
+	if strings.TrimSpace(in.OperationID) == "" || strings.TrimSpace(in.SaleID) == "" || strings.TrimSpace(in.CashSessionID) == "" || len(in.Items) == 0 || len(in.Items) > 500 || len(in.Payments) == 0 || len(in.Payments) > maxPayments || len(in.OperationID) > 128 || len(in.SaleID) > 128 || len(in.CashSessionID) > 128 {
 		return false
 	}
 	for _, item := range in.Items {

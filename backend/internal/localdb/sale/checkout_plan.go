@@ -58,6 +58,7 @@ type Plan struct {
 	Repeated      bool              `json:"repeated"`
 	CanFinalize   bool              `json:"can_finalize"`
 	Cancellation  *PlanCancellation `json:"cancellation,omitempty"`
+	Completion    *PlanCompletion   `json:"completion,omitempty"`
 }
 
 type CancelPlanInput struct {
@@ -244,6 +245,9 @@ func readPlanTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 		result.State = "cancelled"
 		result.Cancellation = cancel
 	} else if !errors.Is(err, sql.ErrNoRows) {
+		return Plan{}, err
+	}
+	if err = readPlanCompletionTx(ctx, tx, actor, device, &result); err != nil {
 		return Plan{}, err
 	}
 	return result, nil

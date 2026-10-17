@@ -1,5 +1,21 @@
 # Backend e integração — matriz de progresso
 
+## B02B3 — finalização real de planos integralmente em dinheiro
+
+Base no PC: B02B2 `5dabd4a`, testada e registrada com árvore limpa. Nova rota
+`/local/v1/checkout/plans/{id}/finalize-cash` une plano, pagamentos com IDs
+estáveis, venda, consumo de estoque, caixa líquido, outbox e auditoria de
+recebido/troco numa transação. Esquema 46, backup compatível 25–46. Migrações
+anteriores, autenticação e frontend não foram alterados.
+
+Detalhes e coordenação da 0046:
+[B02B3_FINALIZACAO_DINHEIRO.md](B02B3_FINALIZACAO_DINHEIRO.md).
+Planos em dinheiro podem informar prontidão; finalização revalida contrato,
+turno, preço/unidade e estoque. Planos mistos continuam `can_finalize=false`.
+Cash confirmado significa recebimento declarado pelo operador, sem confirmação
+de adquirente. Finalizações são recuperáveis após reinício ou estorno da venda.
+Financeiro completo, conector eletrônico, R$315 misto e adapter visual pendentes.
+
 ## B02B2 — consulta oficial de caixa encerrado
 
 Base no PC: B02B1 `b882ece`, testada e registrada com árvore limpa. Nova API GET

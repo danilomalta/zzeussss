@@ -1883,6 +1883,13 @@
       "path": "/local/v1/cash/sessions/:id/report",
       "authentication": "session",
       "source": "backend/internal/localapi/cash_report.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/plans/:id/finalize-cash",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_plans.go"
     }
   ]
 }

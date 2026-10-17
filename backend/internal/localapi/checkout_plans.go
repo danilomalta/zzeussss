@@ -12,6 +12,37 @@ func (s *Server) mountCheckoutPlans(r fiber.Router) {
 	r.Post("/checkout/plans", s.createCheckoutPlan)
 	r.Get("/checkout/plans/:id", s.readCheckoutPlan)
 	r.Post("/checkout/plans/:id/cancel", s.cancelCheckoutPlan)
+	r.Post("/checkout/plans/:id/finalize-cash", s.finalizeCashCheckoutPlan)
+}
+
+func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
+	c.Set(fiber.HeaderCacheControl, "no-store")
+	if s.contracts == nil {
+		return c.SendStatus(503)
+	}
+	if c.Context().QueryArgs().Len() != 0 {
+		return c.SendStatus(400)
+	}
+	if len(c.Body()) > 4096 {
+		return c.SendStatus(413)
+	}
+	if _, err := exactSaleObject(c.Body(), []string{"operation_id", "received_cents"}); err != nil {
+		return c.SendStatus(400)
+	}
+	var in sale.FinalizeCashPlanInput
+	if err := json.Unmarshal(c.Body(), &in); err != nil {
+		return c.SendStatus(400)
+	}
+	session := c.Locals("session").(localauth.Session)
+	v, err := sale.FinalizeCashPlan(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, c.Params("id"), in)
+	if err != nil {
+		return saleError(c, err)
+	}
+	status := 201
+	if v.Repeated {
+		status = 200
+	}
+	return c.Status(status).JSON(v)
 }
 
 func (s *Server) createCheckoutPlan(c *fiber.Ctx) error {
