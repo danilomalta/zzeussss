@@ -1,0 +1,166 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Autorizacao local de recebimento",
+    "version": "1.0.0",
+    "description": "Local human receiving workflow. Does not imply supplier transmission or external acknowledgement. Tenant/store/device derived from session."
+  },
+  "paths": {
+    "/local/v1/purchase-orders/{id}/authorize-receiving": {
+      "post": {
+        "summary": "Autorizacao local de recebimento",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success or exact replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "order_id",
+                    "repeated",
+                    "authorization"
+                  ],
+                  "properties": {
+                    "order_id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "repeated": {
+                      "type": "boolean"
+                    },
+                    "authorization": {
+                      "type": "object",
+                      "required": [
+                        "operation_id",
+                        "device_id",
+                        "actor_id",
+                        "reference",
+                        "reason",
+                        "created_at"
+                      ],
+                      "properties": {
+                        "operation_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "device_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "actor_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "reference": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Permission or contract denied"
+          },
+          "404": {
+            "description": "Order not in authenticated scope"
+          },
+          "409": {
+            "description": "Conflict or inconsistent evidence"
+          },
+          "413": {
+            "description": "Body exceeds limit"
+          },
+          "500": {
+            "description": "Unexpected database error"
+          },
+          "503": {
+            "description": "Issuer unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "reference",
+                  "reason"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "reference": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

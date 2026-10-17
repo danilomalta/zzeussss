@@ -1,0 +1,403 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan Local Production Recipes P02",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/production/recipe-versions": {
+      "post": {
+        "operationId": "publishRecipeVersion",
+        "description": "Append immutable version. Requires manage_production and signed Production/Core/Inventory contract. Exact duplicate-free JSON; no stock mutation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid input or ambiguous JSON/query"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission or contract denied"
+          },
+          "409": {
+            "description": "Conflict or clock rollback"
+          },
+          "413": {
+            "description": "Body exceeds 65536 bytes"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Trusted verifier unavailable"
+          },
+          "201": {
+            "description": "Published",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Repeated operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listRecipeVersions",
+        "description": "Authorized reads remain available after contract expiry. Returns all versions ordered by recipe_id,revision.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "recipe_id",
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid query"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "500": {
+            "description": "Internal failure"
+          },
+          "200": {
+            "description": "Version page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Version"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/production/recipe-versions/{version_id}": {
+      "get": {
+        "operationId": "getRecipeVersion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Durable immutable snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID or query"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "404": {
+            "description": "Version not found in scope"
+          },
+          "500": {
+            "description": "Internal failure"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Unit": {
+        "type": "string",
+        "enum": [
+          "unit",
+          "kg",
+          "g",
+          "liter",
+          "ml",
+          "meter"
+        ]
+      },
+      "Quantity": {
+        "type": "integer",
+        "format": "int64",
+        "minimum": 1,
+        "maximum": 9007199254740991,
+        "description": "Integer thousandths of stated unit; no implicit conversion."
+      },
+      "Ingredient": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_id",
+          "unit",
+          "quantity_milli"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "$ref": "#/components/schemas/Unit"
+          },
+          "quantity_milli": {
+            "$ref": "#/components/schemas/Quantity"
+          }
+        }
+      },
+      "PublishInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "recipe_id",
+          "version_id",
+          "expected_revision",
+          "name",
+          "output_product_id",
+          "output_unit",
+          "yield_milli",
+          "ingredients"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "recipe_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "version_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "output_product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "output_unit": {
+            "$ref": "#/components/schemas/Unit"
+          },
+          "yield_milli": {
+            "$ref": "#/components/schemas/Quantity"
+          },
+          "ingredients": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Ingredient"
+            }
+          }
+        }
+      },
+      "Result": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "recipe_id",
+          "version_id",
+          "revision",
+          "repeated"
+        ],
+        "properties": {
+          "recipe_id": {
+            "type": "string"
+          },
+          "version_id": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Version": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "recipe_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "version_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "output_product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "output_unit": {
+            "$ref": "#/components/schemas/Unit"
+          },
+          "yield_milli": {
+            "$ref": "#/components/schemas/Quantity"
+          },
+          "ingredients": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Ingredient"
+            }
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "recipe_id",
+          "version_id",
+          "expected_revision",
+          "name",
+          "output_product_id",
+          "output_unit",
+          "yield_milli",
+          "ingredients",
+          "revision",
+          "created_at",
+          "created_by"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

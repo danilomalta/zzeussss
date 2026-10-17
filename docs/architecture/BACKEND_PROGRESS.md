@@ -1,5 +1,58 @@
 # Backend e integração — matriz de progresso
 
+## B02A — pré-requisito de compatibilidade com produção
+
+Base de aplicação no PC: B01 `c557980` em `feat/backend-checkout-authority`.
+Fonte de produção conferida: `ba29cbdf6a0a2081754609de63ce003414c74f79`.
+Esta entrega integra no backend as migrações 0028–0044 e os serviços/testes
+existentes dessa revisão de produção, preservando os arquivos SQL byte a byte.
+Não cria 0045, não renumera migrações e não faz merge de branches/histórico.
+Novas mudanças da produção devem ser comparadas com esse snapshot antes de
+integrar; não reaplicar patches de produção já incorporados.
+
+A produção acrescenta receitas, ordens, materiais, resultados, perdas, etapas,
+lotes, qualidade, edição/inativação de catálogo e operações de compras. O
+inventário foi atualizado a partir das rotas Fiber reais; os OpenAPI da fonte
+acompanham os serviços. Isso é integração de backend, não aceite das telas.
+
+A regra transacional `stockreservation.FreeTx` agora é usada pelo cálculo
+compartilhado de cotação e finalização da B01. Saldo físico reservado não pode
+ser vendido, nem por linhas repetidas. Produto inativo não gera nova cotação
+ou venda; consulta e replay de venda já confirmada continuam disponíveis.
+Perdas, transferências e contagem reutilizam as proteções da produção.
+
+Backup/restauração passam a aceitar os esquemas 25–44 conforme o código da
+produção, mantendo ValidateSchema, checksums, integridade, chaves estrangeiras,
+conferência de aparelho e revogação de sessões na restauração.
+
+Testes específicos exercitam reserva pelo serviço real, recusa de saldo
+comprometido, venda do saldo livre, repetição e liberação de reserva; também
+testam inativação sem apagar nem bloquear recuperação de uma venda anterior.
+Os testes existentes de migração/restauração cobrem a cadeia incorporada.
+
+B02A NÃO implementa parcelas persistidas, financeiro ou fechamento misto.
+Ela resolve o requisito de compatibilidade necessário antes desse esquema:
+o backend estava em 27, enquanto produção já ocupava 28–44. A próxima parte
+da B02 deve implementar o ciclo financeiro sobre esta base unificada, com
+numeração de migração coordenada. O cenário de R$315 permanece pendente.
+Frontend, autenticação, sessões e PostgreSQL não foram alterados nesta entrega.
+
+Validação B02A: suíte Go completa e go vet passaram. Race passou nos pacotes
+sale, stock, stockreservation, inventory, production e backup e nos testes HTTP
+selecionados de compatibilidade/reservas/isolamento de todas as rotas. Os 68
+testes Python passaram. O build estático de titan-local passou em uma cópia
+com os mesmos arquivos de backend e diretório Git próprio: na worktree deste
+ambiente, o Go tentava obter metadados VCS do diretório externo /workspace e
+falhava antes de compilar. O frontend desta revisão completa do usuário não
+está disponível aqui; seus testes/build serão repetidos pelo aplicador no PC.
+Dois testes de contratos falharam na primeira suíte por campos novos não
+declarados; os contratos foram estendidos, e a suíte completa passou depois.
+Não foram executados PostgreSQL real, hardware, banco comercial, pagamentos
+externos, reconciliação entre aparelhos ou validação visual da produção.
+
+As seções seguintes preservam a auditoria e as evidências históricas da B01;
+o estado atual é complementado por esta seção e pelos testes da B02A.
+
 Backend auditado: main pública `7140b25c4deb164989a95d1a1b9876e2e46a9a51`.
 Base de aplicação desta adaptação: `0f6cd3931ba1ea00bf9401c77786b88e58fe9e9f`.
 O proprietário forneceu a lista completa de alterações do commit (frontend e

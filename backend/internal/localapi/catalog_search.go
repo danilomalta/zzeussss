@@ -12,11 +12,14 @@ func (s *Server) searchCatalog(c *fiber.Ctx) error {
 	seen := map[string]bool{}
 	c.Context().QueryArgs().VisitAll(func(k, v []byte) {
 		name := string(k)
-		if seen[name] || name != "q" && name != "unit" && name != "pending" && name != "offset" {
+		if seen[name] || name != "status" && name != "q" && name != "unit" && name != "pending" && name != "offset" {
 			valid = false
 		}
 		seen[name] = true
 	})
+	if seen["status"] && len(c.Context().QueryArgs().Peek("status")) == 0 {
+		valid = false
+	}
 	if !valid {
 		return c.SendStatus(400)
 	}
@@ -25,7 +28,7 @@ func (s *Server) searchCatalog(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	v := c.Locals("session").(localauth.Session)
-	out, e := catalog.Search(c.UserContext(), s.DB, v.Actor, v.Device, catalog.SearchInput{Query: c.Query("q"), Unit: c.Query("unit"), Pending: c.Query("pending"), Offset: offset})
+	out, e := catalog.Search(c.UserContext(), s.DB, v.Actor, v.Device, catalog.SearchInput{Status: c.Query("status"), Query: c.Query("q"), Unit: c.Query("unit"), Pending: c.Query("pending"), Offset: offset})
 	if e != nil {
 		return catalogError(c, e)
 	}

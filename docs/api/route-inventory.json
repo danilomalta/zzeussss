@@ -1400,6 +1400,461 @@
       "path": "/api/v1/purchase-documents/operations/:operation_id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/products/:id/edit-details",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/operations/:kind/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/products/:id/edit-state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/products/:id/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_product_state.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/products/:id/state-history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_product_state_history.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-suppliers/:id/edit-state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_supplier_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-suppliers/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_supplier_history.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-supplier-operations/:id/receipt",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_supplier_operation.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-order-search",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_search.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-orders/:id/trace",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_trace.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-cancellation-operations/:id/receipt",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_cancel_operation.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-orders/:id/receiving-trace",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receiving_trace.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-orders/:id/receiving-history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receiving_history.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-receiving/operations/:kind/:id/receipt",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receiving_operations.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/recipe-versions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/recipe-versions/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/operations/:kind/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_operations.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/recipes/:id/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_recipe_state.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/capacity",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_capacity.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_orders.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_orders.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_orders.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/material-reservations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_materials.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/results/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_results.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/losses/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_losses.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/losses/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_losses.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/results/:id/losses",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_losses.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id/stages/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_stages.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id/stages",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_stages.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/lots/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lots.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/lots/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lots.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/results/:id/lots",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lots.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/lots/:id/quality/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_quality.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/lots/:id/quality",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_quality.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id/trace",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_trace.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/order-search",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_search.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/lot-search",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lot_search.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/products/:id/production-usage",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_product_usage.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/availability",
+      "authentication": "session",
+      "source": "backend/internal/localapi/stock_availability.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/reservations",
+      "authentication": "session",
+      "source": "backend/internal/localapi/stock_reservations.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/operations/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/stock.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/operations/:id/receipt",
+      "authentication": "session",
+      "source": "backend/internal/localapi/stock.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/catalog/products/:id/update",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/catalog/products/:id/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_product_state.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-suppliers/:id/update",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_supplier_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_cancel.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/authorize-receiving",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receiving_authorization.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/receipts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receipts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/rejections",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_rejections.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/receipts/:receipt_id/void",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receipt_voids.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/recipe-versions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/recipe-state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_recipe_state.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/capacity/alternatives",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_capacity.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/orders",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_orders.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/orders/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_orders.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/material-reservations",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_materials.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/material-reservations/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_materials.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/results",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_results.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/losses",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_losses.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/losses/void",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_losses.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/stage-plans",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_stages.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/stages/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_stages.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/lots",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lots.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/lots/void",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lots.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/quality-reviews",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_quality.go"
     }
   ]
 }

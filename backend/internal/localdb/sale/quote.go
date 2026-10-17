@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"titansystem-backend/internal/core/modules"
+	"titansystem-backend/internal/localdb/catalog"
 	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/localdb/stockreservation"
 )
 
 // QuoteInput carries no prices, payment approval, tenant or identity claims.
@@ -121,6 +123,9 @@ func priceItemsTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, items [
 		if err != nil {
 			return nil, 0, err
 		}
+		if err = catalog.RequireActiveProductTx(ctx, tx, actor.TenantID, item.ProductID); err != nil {
+			return nil, 0, err
+		}
 		if kind != "shelf" || (unit == "unit" && item.QuantityMilli%1000 != 0) {
 			return nil, 0, ErrInvalid
 		}
@@ -139,10 +144,17 @@ func priceItemsTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, items [
 			WHERE tenant_id=? AND store_id=? AND product_id=? AND location_id=?`, actor.TenantID, actor.StoreID, item.ProductID, item.LocationID).Scan(&balance); err != nil {
 			return nil, 0, err
 		}
-		if balance < consumed[key] {
+		free, err := stockreservation.FreeTx(ctx, tx, actor.TenantID, actor.StoreID, item.ProductID, item.LocationID, balance)
+		if errors.Is(err, stockreservation.ErrUnavailable) {
 			return nil, 0, ErrNoStock
 		}
-		priced = append(priced, QuoteItem{Item: item, Unit: unit, UnitPriceCents: price, TotalCents: line, AvailableMilli: balance})
+		if err != nil {
+			return nil, 0, err
+		}
+		if free < consumed[key] {
+			return nil, 0, ErrNoStock
+		}
+		priced = append(priced, QuoteItem{Item: item, Unit: unit, UnitPriceCents: price, TotalCents: line, AvailableMilli: free})
 	}
 	if total <= 0 {
 		return nil, 0, ErrInvalid

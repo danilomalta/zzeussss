@@ -1,0 +1,177 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "P22 estado operacional das receitas",
+    "version": "P22"
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/production/recipes/{id}/state": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado operacional/resultante; replay retorna repeated=true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/State"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Sem permissao/contrato ativo para mutacao"
+          },
+          "404": {
+            "description": "Receita ausente no escopo"
+          },
+          "409": {
+            "description": "Revisao, replay ou auditoria conflitante"
+          },
+          "500": {
+            "description": "Falha interna"
+          }
+        }
+      }
+    },
+    "/production/recipe-state": {
+      "post": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "recipe_id",
+                  "status",
+                  "reason",
+                  "expected_revision"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string"
+                  },
+                  "recipe_id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "inactive"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "expected_revision": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0,
+                    "maximum": 2147483646
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado operacional/resultante; replay retorna repeated=true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/State"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Sem permissao/contrato ativo para mutacao"
+          },
+          "404": {
+            "description": "Receita ausente no escopo"
+          },
+          "409": {
+            "description": "Revisao, replay ou auditoria conflitante"
+          },
+          "500": {
+            "description": "Falha interna"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "State": {
+        "type": "object",
+        "properties": {
+          "recipe_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "recipe_id",
+          "status",
+          "revision",
+          "repeated"
+        ]
+      }
+    }
+  }
+}

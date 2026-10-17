@@ -12,6 +12,7 @@ import (
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/localdb/stockreservation"
 )
 
 var (
@@ -85,6 +86,16 @@ func Count(ctx context.Context, db *sql.DB, actor identity.Scope, device identit
 	}
 	if previous < 0 {
 		return Result{}, ErrInvalid
+	}
+	held, err := stockreservation.HeldTx(ctx, tx, actor.TenantID, actor.StoreID, in.ProductID, in.LocationID)
+	if errors.Is(err, stockreservation.ErrUnavailable) {
+		return Result{}, ErrConflict
+	}
+	if err != nil {
+		return Result{}, err
+	}
+	if in.CountedMilli < held {
+		return Result{}, ErrConflict
 	}
 	difference = in.CountedMilli - previous
 	now := time.Now().UTC().Format(time.RFC3339Nano)

@@ -60,7 +60,7 @@
           "unit": {"type": "string", "enum": ["unit", "kg", "g", "liter", "ml", "meter"]},
           "unit_price_cents": {"$ref": "#/components/schemas/Amount"},
           "total_cents": {"$ref": "#/components/schemas/Amount"},
-          "available_milli": {"allOf": [{"$ref": "#/components/schemas/Amount"}], "description": "Saldo atual do produto/local, repetido para linhas equivalentes; não somar saldos repetidos. Todas as linhas precisam caber cumulativamente."}
+          "available_milli": {"allOf": [{"$ref": "#/components/schemas/Amount"}], "description": "Saldo livre do produto/local após descontar reservas de produção ativas, repetido para linhas equivalentes; não somar saldos repetidos. Todas as linhas precisam caber cumulativamente. Produto inativo é recusado tanto na cotação quanto na venda."}
         }
       },
       "Quote": {
