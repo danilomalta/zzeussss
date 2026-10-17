@@ -1855,6 +1855,27 @@
       "path": "/local/v1/production/quality-reviews",
       "authentication": "session",
       "source": "backend/internal/localapi/production_quality.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/plans",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_plans.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/plans/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_plans.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/plans/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_plans.go"
     }
   ]
 }

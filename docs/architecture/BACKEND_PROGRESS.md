@@ -1,5 +1,29 @@
 # Backend e integração — matriz de progresso
 
+## B02B1 — distribuição persistida do checkout
+
+Base no PC: B02A `b1e3d80`, branch isolada `feat/backend-b02a-compat`.
+Novo esquema 0045, sem alteração nas migrações anteriores da produção.
+Detalhes, arquivos compartilhados e coordenação:
+[B02B1_PARCELAS_PERSISTIDAS.md](B02B1_PARCELAS_PERSISTIDAS.md).
+
+Três APIs criam, recuperam e cancelam planos duráveis com IDs estáveis de
+checkout/operação/parcela, soma exata, snapshot de preços e histórico.
+Recuperação após reinício e repetição não reprecificam nem duplicam o plano.
+Produtos ativos e saldo livre são verificados na criação; nenhum saldo é
+reservado por um plano. Backup/restauração passam a aceitar também 45.
+
+Todas as parcelas permanecem `not_requested`, `provider_confirmed=false`, e
+`can_finalize=false`. O caso R$315 é distribuição persistida, não venda mista
+concluída. Confirmação de cobranças, financeiro, fechamento por meio e ligação
+ao adapter Checkout96/frontend97/98 continuam pendentes. Eventos da outbox
+não possuem aplicação comercial no transporte atual.
+
+Os testes HTTP do pacote verificam reinício, resposta perdida, concorrência no
+processo, rollback, precisão, autorização, isolamento e backup/restauração.
+Resultados da execução acompanham a entrega; aceite no PC exige o aplicador.
+As seções seguintes registram o escopo e as evidências das entregas anteriores.
+
 ## B02A — pré-requisito de compatibilidade com produção
 
 Base de aplicação no PC: B01 `c557980` em `feat/backend-checkout-authority`.

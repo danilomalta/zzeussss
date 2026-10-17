@@ -118,6 +118,7 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 	s.mountRecipeState(protected)
 	s.mountProductionCapacity(protected)
 	s.mountProductionOrders(protected)
+	s.mountCheckoutPlans(protected)
 	s.mountProductionMaterials(protected)
 	s.mountProductionResults(protected)
 	s.mountProductionLosses(protected)
