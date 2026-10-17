@@ -10,6 +10,7 @@ import { localClient, localErrorMessage, useLocalSession } from '../../../core/l
 import { LocalAPIError } from '../../../core/local/localClient.mjs';
 import type { CashSession, LocalLocation, LocalProduct, LocalSession } from '../../../core/local/localClient.mjs';
 import { cartTotal, lineCents, makeSale, parseMoney } from '../../../core/local/posModel.mjs';
+import { confirmCashQuote } from '../../../core/local/quotedCart.mjs';
 import { addCartProduct, replaceCartQuantity, restoreCartItem, selectCatalogProduct } from '../../../core/local/cartEditing.mjs';
 import type { CartItem } from '../../../core/local/posModel.mjs';
 import { createPOSOperations } from '../../../core/local/posOperations.mjs';
@@ -264,7 +265,17 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
 
   function submitSale(){
     if(!operations||locked||!cash||!cart.length||gatewayGate95||gatewayError95||discountBlocking94||exposure96)return;
-    try{const tender=parseMoney(received),amount=cartTotal(cart);if(tender<amount||!setup.tenders)return;const input=makeSale(cart,cash.session_id,()=>draftID94.current);setup.tenders.save(input,tender);void run(()=>operations.start(token,'sale',input));}catch(failure){setError(failureText(failure));}
+    try {
+      const tender=parseMoney(received),amount=cartTotal(cart),tenders=setup.tenders;
+      if(tender<amount||!tenders)return;
+      const cashSessionID=cash.session_id;
+      const saleReference=draftID94.current;
+      void run(()=>confirmCashQuote(localClient,token,cart,cashSessionID,tender,setCart,async confirmedCart=>{
+        const input=makeSale(confirmedCart,cashSessionID,()=>saleReference);
+        tenders.save(input,tender);
+        return operations.start(token,'sale',input);
+      }).catch(failure=>{setPaying(false);throw failure;}));
+    } catch(failure) {setError(failureText(failure));}
   }
   function unifiedConfirmed96(result:Receipt96,change:{total:number;received:number;change:number}|null){setCompletion91({receipt:result,names:Object.fromEntries(cart.map(i=>[i.product.id,{name:i.product.name,unit:i.product.unit}])),change});setReceipt(result);setCart([]);setRemoved(null);setLastProduct('');setPaying(false);setReceived('');setHistoryRevision(n=>n+1);setExposure96(false);}
 

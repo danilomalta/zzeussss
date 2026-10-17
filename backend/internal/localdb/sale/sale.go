@@ -120,19 +120,12 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	if existingSale != 0 {
 		return Result{}, ErrConflict
 	}
-	var operator, sessionDevice string
-	err = tx.QueryRowContext(ctx, `SELECT b.identity_id, c.device_id FROM cash_sessions c
-		JOIN cash_session_operators b ON b.tenant_id = c.tenant_id AND b.session_id = c.id
-		WHERE c.tenant_id = ? AND c.store_id = ? AND c.id = ? AND c.closed_at IS NULL`,
-		actor.TenantID, actor.StoreID, in.CashSessionID).Scan(&operator, &sessionDevice)
-	if errors.Is(err, sql.ErrNoRows) {
-		return Result{}, ErrCashClosed
-	}
-	if err != nil {
+	if err = checkShiftTx(ctx, tx, actor, device, in.CashSessionID); err != nil {
 		return Result{}, err
 	}
-	if operator != actor.IdentityID || sessionDevice != device.DeviceID {
-		return Result{}, identity.ErrDenied
+	quotedItems, total, err := priceItemsTx(ctx, tx, actor, in.Items)
+	if err != nil {
+		return Result{}, err
 	}
 	prices := make([]int64, len(in.Items))
 	lineTotals := make([]int64, len(in.Items))
@@ -142,51 +135,9 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 		TotalCents     int64 `json:"total_cents"`
 	}
 	pricedItems := make([]pricedItem, 0, len(in.Items))
-	consumed := make(map[string]int64)
-	var total int64
-	for i, item := range in.Items {
-		var price int64
-		var unit, kind string
-		err = tx.QueryRowContext(ctx, `SELECT p.price_cents, p.unit, l.kind FROM products p
-			JOIN stock_locations l ON l.tenant_id = p.tenant_id
-			WHERE p.tenant_id = ? AND p.id = ? AND l.store_id = ? AND l.id = ?`,
-			actor.TenantID, item.ProductID, actor.StoreID, item.LocationID).Scan(&price, &unit, &kind)
-		if errors.Is(err, sql.ErrNoRows) {
-			return Result{}, ErrInvalid
-		}
-		if err != nil {
-			return Result{}, err
-		}
-		if kind != "shelf" {
-			return Result{}, ErrInvalid
-		}
-		if unit == "unit" && item.QuantityMilli%1000 != 0 {
-			return Result{}, ErrInvalid
-		}
-		line, err := roundedCents(price, item.QuantityMilli)
-		if err != nil || line > math.MaxInt64-total {
-			return Result{}, ErrInvalid
-		}
-		prices[i], lineTotals[i] = price, line
-		pricedItems = append(pricedItems, pricedItem{item, price, line})
-		total += line
-		key := item.ProductID + "\x00" + item.LocationID
-		if consumed[key] > math.MaxInt64-item.QuantityMilli {
-			return Result{}, ErrInvalid
-		}
-		consumed[key] += item.QuantityMilli
-		var balance int64
-		if err := tx.QueryRowContext(ctx, `SELECT COALESCE(SUM(quantity_milli),0) FROM stock_movements
-			WHERE tenant_id=? AND store_id=? AND product_id=? AND location_id=?`,
-			actor.TenantID, actor.StoreID, item.ProductID, item.LocationID).Scan(&balance); err != nil {
-			return Result{}, err
-		}
-		if balance < consumed[key] {
-			return Result{}, ErrNoStock
-		}
-	}
-	if total <= 0 {
-		return Result{}, ErrInvalid
+	for i, item := range quotedItems {
+		prices[i], lineTotals[i] = item.UnitPriceCents, item.TotalCents
+		pricedItems = append(pricedItems, pricedItem{item.Item, item.UnitPriceCents, item.TotalCents})
 	}
 	var paid int64
 	for _, payment := range in.Payments {

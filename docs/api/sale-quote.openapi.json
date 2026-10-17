@@ -1,0 +1,81 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "Titan local — cotação de venda", "version": "1.0.0"},
+  "paths": {
+    "/local/v1/sales/quote": {
+      "post": {
+        "summary": "Confere preços e saldo da venda sem reservar nem cobrar",
+        "description": "Exige sessão local, caixa aberto do operador/aparelho, permissão Sell e contrato POS com dependências. Apenas dinheiro disponível. Descontos e pontos não implementados. A finalização revalida preços e estoque; esta resposta não trava preços nem saldo. Repetir a consulta não cria operação comercial. RequireTx atualiza somente a referência temporal da licença.",
+        "security": [{"localSession": []}],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/QuoteInput"}}}
+        },
+        "responses": {
+          "200": {
+            "description": "Cotação atual. Cache-Control: no-store.",
+            "headers": {"Cache-Control": {"schema": {"type": "string", "enum": ["no-store"]}}},
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Quote"}}}
+          },
+          "400": {"description": "Referência/quantidade inválida, dinheiro fora do limite exato do cliente, JSON duplicado/extra/null ou quantidade fracionada de unidade indivisível."},
+          "401": {"description": "Sessão/contexto revogado ou ausente."},
+          "403": {"description": "Permissão, aparelho, contrato, vigência ou referência temporal recusados."},
+          "409": {"description": "Estoque insuficiente ou caixa fechado/inexistente."},
+          "413": {"description": "Corpo maior que 128 KiB."},
+          "500": {"description": "Falha interna; nenhuma confirmação comercial."},
+          "503": {"description": "Verificador/contrato indisponível."}
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {"localSession": {"type": "http", "scheme": "bearer"}},
+    "schemas": {
+      "ID": {"type": "string", "minLength": 1, "maxLength": 128},
+      "Amount": {"type": "integer", "format": "int64", "minimum": 0, "maximum": 9007199254740991},
+      "Item": {
+        "type": "object", "additionalProperties": false,
+        "required": ["product_id", "location_id", "quantity_milli"],
+        "properties": {
+          "product_id": {"$ref": "#/components/schemas/ID"},
+          "location_id": {"$ref": "#/components/schemas/ID"},
+          "quantity_milli": {"type": "integer", "format": "int64", "minimum": 1, "maximum": 9007199254740991}
+        }
+      },
+      "QuoteInput": {
+        "type": "object", "additionalProperties": false,
+        "required": ["cash_session_id", "items"],
+        "properties": {
+          "cash_session_id": {"$ref": "#/components/schemas/ID"},
+          "items": {"type": "array", "minItems": 1, "maxItems": 500, "items": {"$ref": "#/components/schemas/Item"}}
+        }
+      },
+      "QuoteItem": {
+        "type": "object", "additionalProperties": false,
+        "required": ["product_id", "location_id", "quantity_milli", "unit", "unit_price_cents", "total_cents", "available_milli"],
+        "properties": {
+          "product_id": {"$ref": "#/components/schemas/ID"},
+          "location_id": {"$ref": "#/components/schemas/ID"},
+          "quantity_milli": {"type": "integer", "format": "int64", "minimum": 1, "maximum": 9007199254740991},
+          "unit": {"type": "string", "enum": ["unit", "kg", "g", "liter", "ml", "meter"]},
+          "unit_price_cents": {"$ref": "#/components/schemas/Amount"},
+          "total_cents": {"$ref": "#/components/schemas/Amount"},
+          "available_milli": {"allOf": [{"$ref": "#/components/schemas/Amount"}], "description": "Saldo atual do produto/local, repetido para linhas equivalentes; não somar saldos repetidos. Todas as linhas precisam caber cumulativamente."}
+        }
+      },
+      "Quote": {
+        "type": "object", "additionalProperties": false,
+        "required": ["cash_session_id", "items", "total_cents", "payment_methods", "discounts_supported", "loyalty_supported", "reserved"],
+        "properties": {
+          "cash_session_id": {"$ref": "#/components/schemas/ID"},
+          "items": {"type": "array", "minItems": 1, "maxItems": 500, "items": {"$ref": "#/components/schemas/QuoteItem"}},
+          "total_cents": {"type": "integer", "format": "int64", "minimum": 1, "maximum": 9007199254740991},
+          "payment_methods": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"type": "string", "enum": ["cash"]}},
+          "discounts_supported": {"type": "boolean", "enum": [false]},
+          "loyalty_supported": {"type": "boolean", "enum": [false]},
+          "reserved": {"type": "boolean", "enum": [false]}
+        }
+      }
+    }
+  }
+}

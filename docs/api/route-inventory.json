@@ -283,6 +283,13 @@
     },
     {
       "api": "local",
+      "method": "POST",
+      "path": "/local/v1/sales/quote",
+      "authentication": "session",
+      "source": "backend/internal/localapi/sale_quote.go"
+    },
+    {
+      "api": "local",
       "method": "GET",
       "path": "/local/v1/sales/:id",
       "authentication": "session",
