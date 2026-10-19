@@ -290,6 +290,15 @@ func CancelPlan(ctx context.Context, db *sql.DB, actor identity.Scope, device id
 	if result.State != "prepared" {
 		return Plan{}, ErrConflict
 	}
+	// Documentary withdrawal/rejection does not prove that an external charge
+	// was absent or refunded. Keep the allocation until external resolution.
+	var proofs int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM checkout_payment_proofs WHERE tenant_id=? AND checkout_id=?`, actor.TenantID, id).Scan(&proofs); err != nil {
+		return Plan{}, err
+	}
+	if proofs != 0 {
+		return Plan{}, ErrConflict
+	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	_, err = tx.ExecContext(ctx, `INSERT INTO checkout_plan_cancellations VALUES (?,?,?,?,?,?)`, actor.TenantID, id, in.OperationID, actor.IdentityID, in.Reason, now)
 	if err != nil {

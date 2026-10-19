@@ -14097,6 +14097,753 @@
           "url": "./cash-vault-counts.openapi.json"
         }
       }
+    },
+    "/local/v1/checkout/plans/{id}/parts/{part}/proofs": {
+      "post": {
+        "summary": "Registra referencia manual de comprovante",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./checkout-proofs.openapi.json#/components/schemas/ProofResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./checkout-proofs.openapi.json#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "part",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./checkout-proofs.openapi.json#/components/schemas/SubmitProof"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/checkout_proofs.go",
+        "externalDocs": {
+          "description": "Contrato documental do checkout",
+          "url": "./checkout-proofs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/checkout/proofs": {
+      "get": {
+        "summary": "Fila documental para gestao",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./checkout-proofs.openapi.json#/components/schemas/ProofPage"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "submitted",
+                "accepted",
+                "rejected",
+                "withdrawn",
+                "revoked"
+              ],
+              "default": "submitted"
+            }
+          }
+        ],
+        "x-source": "backend/internal/localapi/checkout_proofs.go",
+        "externalDocs": {
+          "description": "Contrato documental do checkout",
+          "url": "./checkout-proofs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/report": {
+      "get": {
+        "summary": "Relatorio de evidencias sem liquidacao",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./checkout-proofs.openapi.json#/components/schemas/ProofReport"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/checkout_proofs.go",
+        "externalDocs": {
+          "description": "Contrato documental do checkout",
+          "url": "./checkout-proofs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/report.csv": {
+      "get": {
+        "summary": "CSV documental completo",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/checkout_proofs.go",
+        "externalDocs": {
+          "description": "Contrato documental do checkout",
+          "url": "./checkout-proofs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/operations/{id}": {
+      "get": {
+        "summary": "Recibo original do autor",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./checkout-proofs.openapi.json#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "x-source": "backend/internal/localapi/checkout_proofs.go",
+        "externalDocs": {
+          "description": "Contrato documental do checkout",
+          "url": "./checkout-proofs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/{id}": {
+      "get": {
+        "summary": "Consulta evidencia do operador ou gestor",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./checkout-proofs.openapi.json#/components/schemas/PaymentProof"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "x-source": "backend/internal/localapi/checkout_proofs.go",
+        "externalDocs": {
+          "description": "Contrato documental do checkout",
+          "url": "./checkout-proofs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/{id}/accept": {
+      "post": {
+        "summary": "Transicao documental accept",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./checkout-proofs.openapi.json#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./checkout-proofs.openapi.json#/components/schemas/ReviewProof"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/checkout_proofs.go",
+        "externalDocs": {
+          "description": "Contrato documental do checkout",
+          "url": "./checkout-proofs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/{id}/reject": {
+      "post": {
+        "summary": "Transicao documental reject",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./checkout-proofs.openapi.json#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./checkout-proofs.openapi.json#/components/schemas/ReviewProof"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/checkout_proofs.go",
+        "externalDocs": {
+          "description": "Contrato documental do checkout",
+          "url": "./checkout-proofs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/{id}/withdraw": {
+      "post": {
+        "summary": "Transicao documental withdraw",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./checkout-proofs.openapi.json#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./checkout-proofs.openapi.json#/components/schemas/ReviewProof"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/checkout_proofs.go",
+        "externalDocs": {
+          "description": "Contrato documental do checkout",
+          "url": "./checkout-proofs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/{id}/revoke": {
+      "post": {
+        "summary": "Transicao documental revoke",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./checkout-proofs.openapi.json#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./checkout-proofs.openapi.json#/components/schemas/ReviewProof"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/checkout_proofs.go",
+        "externalDocs": {
+          "description": "Contrato documental do checkout",
+          "url": "./checkout-proofs.openapi.json"
+        }
+      }
     }
   },
   "components": {

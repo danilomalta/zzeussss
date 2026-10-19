@@ -2107,6 +2107,76 @@
       "path": "/local/v1/cash/vault-counts/:id/cancel",
       "authentication": "session",
       "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/plans/:id/parts/:part/proofs",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/proofs",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/proofs/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/proofs/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/proofs/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/proofs/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/proofs/:id/accept",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/proofs/:id/reject",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/proofs/:id/withdraw",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/proofs/:id/revoke",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
     }
   ]
 }

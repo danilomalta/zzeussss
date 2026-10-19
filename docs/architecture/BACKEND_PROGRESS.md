@@ -1,5 +1,20 @@
 # Backend e integração — matriz de progresso
 
+## B02B9 — comprovantes de parcelas e pendências documentais
+
+Base no PC: B02B8 `9eec12d`, Go/race,89 testes locais do frontend, build e árvore
+limpa confirmados. Dois fluxos: referências manuais vinculadas às parcelas e
+revisão independente; fila gerencial, relatório/CSV sem duplicar substituições.
+Dez operações HTTP, migração51, backup25–51. Cancelamento automático de plano
+com qualquer histórico externo bloqueado até resolução externa futura.
+
+ProviderConfirmed continua falso e liquidado desconhecido. Aceite é documental,
+não finaliza venda, não cria caixa/estoque/recebível e não aprova cartão/Pix.
+R$315 misto permanece pendente. Contratos, critérios e coordenação:
+[B02B9_COMPROVANTES_E_PENDENCIAS_CHECKOUT.md](B02B9_COMPROVANTES_E_PENDENCIAS_CHECKOUT.md).
+Sem edição de autenticação/sessões, migrações0001–0050, protocolo legado ou
+frontend. Provedor, estorno, resolução externa, financeiro e integração visual pendentes.
+
 ## B02B8 — conferência física e relatório dos cofres
 
 Base no PC: B02B7 `c686c44`, Go/race,89 testes locais do frontend, build e árvore

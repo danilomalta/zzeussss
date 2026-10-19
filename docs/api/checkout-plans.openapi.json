@@ -3,7 +3,7 @@
   "info": {
     "title": "TitanSystem durable checkout allocations",
     "version": "B02B3",
-    "description": "Durable allocations with atomic cash-only finalization. Noncash parts stay not_requested; electronic confirmation and financial ledger unavailable. Cash finalization requires received_cents and rechecks current POS contract, shift, active products, exact prices/units and free stock. Can_finalize is a cash readiness hint, not an authorization or reservation. Replays recover the stored completion and do not sell again, even after sale cancellation. Existing sale receipt endpoint provides the operational record; no fiscal authorization."
+    "description": "Durable allocations with atomic cash-only finalization. Noncash parts stay not_requested; electronic confirmation and financial ledger unavailable. Cash finalization requires received_cents and rechecks current POS contract, shift, active products, exact prices/units and free stock. Can_finalize is a cash readiness hint, not an authorization or reservation. Replays recover the stored completion and do not sell again, even after sale cancellation. Existing sale receipt endpoint provides the operational record; no fiscal authorization. B02B9: plano com qualquer historico de comprovante externo recusa cancelamento automatico409, inclusive apos retirada/rejeicao/revogacao documental; essas acoes nao provam estorno. Os estados de pagamento e can_finalize permanecem inalterados."
   },
   "paths": {
     "/local/v1/checkout/plans": {
