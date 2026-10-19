@@ -1,5 +1,21 @@
 # Backend e integração — matriz de progresso
 
+## B02B11 — documentos de fornecedores e agenda de vencimentos
+
+Base no PC: B02B10 `446319a`, instalação, Go/race,89 testes locais do frontend,
+build e commit confirmados no log. Dois fluxos: contas a pagar manuais com parcelas
+exatas e aprovação independente; agenda por vencimento com CSV integral.
+Nove operações HTTP, nova migração52, backup25–52. Cadastro de fornecedores apenas
+consultado; autenticação/sessões, SQL0001–0051 e frontend preservados.
+
+Aprovação é documental, não baixa dinheiro. `payment_execution_available=false`,
+liquidado desconhecido. Documento rejeitado/cancelado mantém referência reservada.
+Escritas ManageCash + Finance; leituras ViewAccounting sem licença Finance atual.
+Os limites, contratos, arquivos compartilhados e ensaios estão em
+[B02B11_CONTAS_A_PAGAR.md](B02B11_CONTAS_A_PAGAR.md).
+Pagamentos, correções versionadas, integração com recebimento, bancos, venda mista,
+contabilidade completa e integração visual permanecem pendentes.
+
 ## B02B10 — caixas encerrados para contabilidade
 
 Base no PC: B02B9 `1d5aa41`, Go/race,89 testes locais do frontend, build e árvore

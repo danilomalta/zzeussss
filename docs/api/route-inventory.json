@@ -2205,6 +2205,69 @@
       "path": "/local/v1/accounting/cash/report.csv",
       "authentication": "session",
       "source": "backend/internal/localapi/cash_accounting.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payables",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/:id/approve",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/:id/reject",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
     }
   ]
 }

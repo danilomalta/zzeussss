@@ -15169,6 +15169,49 @@
           "url": "./cash-accounting.openapi.json"
         }
       }
+    },
+    "/local/v1/finance/payables": {
+      "post": {
+        "$ref": "./supplier-payables.openapi.json#/paths/~1local~1v1~1finance~1payables/post"
+      },
+      "get": {
+        "$ref": "./supplier-payables.openapi.json#/paths/~1local~1v1~1finance~1payables/get"
+      }
+    },
+    "/local/v1/finance/payables/report": {
+      "get": {
+        "$ref": "./supplier-payables.openapi.json#/paths/~1local~1v1~1finance~1payables~1report/get"
+      }
+    },
+    "/local/v1/finance/payables/report.csv": {
+      "get": {
+        "$ref": "./supplier-payables.openapi.json#/paths/~1local~1v1~1finance~1payables~1report.csv/get"
+      }
+    },
+    "/local/v1/finance/payables/operations/{id}": {
+      "get": {
+        "$ref": "./supplier-payables.openapi.json#/paths/~1local~1v1~1finance~1payables~1operations~1{id}/get"
+      }
+    },
+    "/local/v1/finance/payables/{id}": {
+      "get": {
+        "$ref": "./supplier-payables.openapi.json#/paths/~1local~1v1~1finance~1payables~1{id}/get"
+      }
+    },
+    "/local/v1/finance/payables/{id}/approve": {
+      "post": {
+        "$ref": "./supplier-payables.openapi.json#/paths/~1local~1v1~1finance~1payables~1{id}~1approve/post"
+      }
+    },
+    "/local/v1/finance/payables/{id}/reject": {
+      "post": {
+        "$ref": "./supplier-payables.openapi.json#/paths/~1local~1v1~1finance~1payables~1{id}~1reject/post"
+      }
+    },
+    "/local/v1/finance/payables/{id}/cancel": {
+      "post": {
+        "$ref": "./supplier-payables.openapi.json#/paths/~1local~1v1~1finance~1payables~1{id}~1cancel/post"
+      }
     }
   },
   "components": {
