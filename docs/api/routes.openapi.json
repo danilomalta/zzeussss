@@ -13120,6 +13120,274 @@
           "url": "./cash-bags.openapi.json"
         }
       }
+    },
+    "/local/v1/cash/vaults": {
+      "post": {
+        "operationId": "local_createCashVault",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_vaults.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-vaults.openapi.json"
+        }
+      },
+      "get": {
+        "operationId": "local_listCashVaults",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_vaults.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-vaults.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vaults/pending-bags": {
+      "get": {
+        "operationId": "local_pendingVaultBags",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_vaults.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-vaults.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vaults/operations/{id}": {
+      "get": {
+        "operationId": "local_readVaultOperation",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_vaults.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-vaults.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vaults/{id}": {
+      "get": {
+        "operationId": "local_readCashVault",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_vaults.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-vaults.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vaults/{id}/statement": {
+      "get": {
+        "operationId": "local_readVaultStatement",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_vaults.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-vaults.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vaults/{id}/deposit": {
+      "post": {
+        "operationId": "local_depositCashVault",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_vaults.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-vaults.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vaults/{id}/transfer": {
+      "post": {
+        "operationId": "local_transferCashVault",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_vaults.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-vaults.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vaults/{id}/supply": {
+      "post": {
+        "operationId": "local_supplyCashVault",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_vaults.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-vaults.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vaults/{id}/archive": {
+      "post": {
+        "operationId": "local_archiveCashVault",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_vaults.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-vaults.openapi.json"
+        }
+      }
     }
   },
   "components": {

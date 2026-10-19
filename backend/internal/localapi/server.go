@@ -135,6 +135,7 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 	s.mountStock(protected)
 	s.mountCash(protected)
 	s.mountCashBags(protected)
+	s.mountCashVaults(protected)
 	s.mountSales(protected)
 	return app, nil
 }

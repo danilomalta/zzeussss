@@ -1,5 +1,20 @@
 # Backend e integração — matriz de progresso
 
+## B02B7 — cofres e suprimento financiado
+
+Base no PC: B02B6 `8ac7f0c`, instalação, testes/build e árvore limpa confirmados.
+Dois fluxos no pacote: cofres com crédito único do valor contado de malotes
+recebidos e transferências; suprimento real do caixa com débito atômico no cofre.
+Dez operações HTTP, extrato, pendências por recebedor e recuperação de recibos.
+
+Migração49, backup25–49, valores inteiros, histórico imutável, rollback conjunto
+e fila privada local. Cofres começam em zero; nenhuma conta bancária ou crédito
+livre é inventado. Helpers de leitura do malote e movimento do caixa passam a
+aceitar transação do chamador. Contratos e coordenação:
+[B02B7_COFRES_E_SUPRIMENTO.md](B02B7_COFRES_E_SUPRIMENTO.md).
+Sem edição de autenticação/sessões, scripts0001–0048, frontend ou protocolo legado.
+Conectores, banco, transporte remoto, R$315 misto e integração visual pendentes.
+
 ## B02B6 — malotes persistidos e recebimento/conciliação
 
 Base no PC: B02B5 `79799ab`, testes/build e árvore limpa confirmados.

@@ -18,7 +18,22 @@ func Read(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceCo
 		return Bag{}, err
 	}
 	defer tx.Rollback()
-	if err = identity.CanOperateTx(ctx, tx, a, d, identity.ManageCash); err != nil {
+	b, err := ReadTx(ctx, tx, a, d, id)
+	if err != nil {
+		return Bag{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return Bag{}, err
+	}
+	return b, nil
+}
+
+// ReadTx validates the bag within a caller-owned transaction and never commits.
+func ReadTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, id string) (Bag, error) {
+	if tx == nil || !pathID(id) {
+		return Bag{}, ErrInvalid
+	}
+	if err := identity.CanOperateTx(ctx, tx, a, d, identity.ManageCash); err != nil {
 		return Bag{}, err
 	}
 	b, err := load(ctx, tx, a, d, id)
@@ -26,9 +41,6 @@ func Read(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceCo
 		return Bag{}, err
 	}
 	if err = validateHistory(b); err != nil {
-		return Bag{}, err
-	}
-	if err = tx.Commit(); err != nil {
 		return Bag{}, err
 	}
 	return visible(b, a.IdentityID), nil

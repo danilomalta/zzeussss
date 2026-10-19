@@ -41,20 +41,37 @@ type MovementResult struct {
 // MoveWithContract changes cash and its audit/outbox together. It has no
 // permission-only fallback and never reveals the expected drawer balance.
 func MoveWithContract(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, in MovementInput) (MovementResult, error) {
+	if db == nil {
+		return MovementResult{}, ErrInvalid
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return MovementResult{}, err
+	}
+	defer tx.Rollback()
+	r, err := MoveTxWithContract(ctx, tx, contracts, actor, device, in)
+	if err != nil {
+		return r, err
+	}
+	if err = tx.Commit(); err != nil {
+		return MovementResult{}, err
+	}
+	return r, nil
+}
+
+// MoveTxWithContract performs the same authorized movement without committing.
+// The caller owns this transaction and must roll it back on every error.
+func MoveTxWithContract(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, in MovementInput) (MovementResult, error) {
 	var empty MovementResult
 	validID := func(id string) bool {
 		return id != "" && id == strings.TrimSpace(id) && len(id) <= 128 && !strings.ContainsRune(id, 0) && utf8.ValidString(id)
 	}
-	if db == nil || !validID(in.SessionID) || !validID(in.OperationID) || in.AmountCents <= 0 ||
+	if tx == nil || !validID(in.SessionID) || !validID(in.OperationID) || in.AmountCents <= 0 ||
 		(in.Kind != "withdrawal" && in.Kind != "supply") || !utf8.ValidString(in.Reason) ||
 		strings.TrimSpace(in.Reason) == "" || utf8.RuneCountInString(in.Reason) > 500 || strings.ContainsRune(in.Reason, 0) {
 		return empty, ErrInvalid
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return empty, err
-	}
-	defer tx.Rollback()
+	var err error
 	if err = contracts.RequireTx(ctx, tx, actor, device, identity.ManageCash, modules.POS); err != nil {
 		return empty, err
 	}
@@ -66,9 +83,6 @@ func MoveWithContract(ctx context.Context, db *sql.DB, contracts *entitlementsto
 	if err == nil {
 		if previousActor != actor.IdentityID || previous.SessionID != in.SessionID || previous.Kind != in.Kind || previous.AmountCents != in.AmountCents || previous.Reason != in.Reason {
 			return empty, ErrConflict
-		}
-		if err = tx.Commit(); err != nil {
-			return empty, err
 		}
 		previous.Repeated = true
 		return previous, nil
@@ -163,9 +177,6 @@ func MoveWithContract(ctx context.Context, db *sql.DB, contracts *entitlementsto
 		return empty, err
 	}
 	if err = write(`INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,'cash.movement',1,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.SessionID, string(payload), now); err != nil {
-		return empty, err
-	}
-	if err = tx.Commit(); err != nil {
 		return empty, err
 	}
 	return MovementResult{SessionID: in.SessionID, OperationID: in.OperationID, Kind: in.Kind, AmountCents: in.AmountCents, Reason: in.Reason, MovementID: id, CreatedAt: now}, nil

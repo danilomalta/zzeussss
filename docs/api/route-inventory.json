@@ -1967,6 +1967,76 @@
       "path": "/local/v1/cash/sessions/:id/custody",
       "authentication": "session",
       "source": "backend/internal/localapi/cash_bags.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vaults",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/pending-bags",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/:id/statement",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vaults/:id/deposit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vaults/:id/transfer",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vaults/:id/supply",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vaults/:id/archive",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
     }
   ]
 }
