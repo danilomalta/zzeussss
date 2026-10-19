@@ -13388,6 +13388,715 @@
           "url": "./cash-vaults.openapi.json"
         }
       }
+    },
+    "/local/v1/cash/vaults/report": {
+      "get": {
+        "summary": "Relatorio integral dos cofres",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-vault-counts.openapi.json#/components/schemas/VaultReport"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_vault_counts.go",
+        "externalDocs": {
+          "description": "Contrato de conferencia e relatorio",
+          "url": "./cash-vault-counts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vaults/report.csv": {
+      "get": {
+        "summary": "CSV integral dos cofres",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_vault_counts.go",
+        "externalDocs": {
+          "description": "Contrato de conferencia e relatorio",
+          "url": "./cash-vault-counts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts": {
+      "post": {
+        "summary": "Inicia conferencia e bloqueia cofre",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-vault-counts.openapi.json#/components/schemas/CountResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-vault-counts.openapi.json#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./cash-vault-counts.openapi.json#/components/schemas/CreateCount"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_vault_counts.go",
+        "externalDocs": {
+          "description": "Contrato de conferencia e relatorio",
+          "url": "./cash-vault-counts.openapi.json"
+        }
+      },
+      "get": {
+        "summary": "Lista conferencias",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-vault-counts.openapi.json#/components/schemas/CountPage"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "x-source": "backend/internal/localapi/cash_vault_counts.go",
+        "externalDocs": {
+          "description": "Contrato de conferencia e relatorio",
+          "url": "./cash-vault-counts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts/operations/{id}": {
+      "get": {
+        "summary": "Recibo original do autor",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-vault-counts.openapi.json#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "x-source": "backend/internal/localapi/cash_vault_counts.go",
+        "externalDocs": {
+          "description": "Contrato de conferencia e relatorio",
+          "url": "./cash-vault-counts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts/{id}": {
+      "get": {
+        "summary": "Consulta conferencia",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-vault-counts.openapi.json#/components/schemas/VaultCount"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "x-source": "backend/internal/localapi/cash_vault_counts.go",
+        "externalDocs": {
+          "description": "Contrato de conferencia e relatorio",
+          "url": "./cash-vault-counts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts/{id}/submit": {
+      "post": {
+        "summary": "Transicao submit",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-vault-counts.openapi.json#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./cash-vault-counts.openapi.json#/components/schemas/SubmitCount"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_vault_counts.go",
+        "externalDocs": {
+          "description": "Contrato de conferencia e relatorio",
+          "url": "./cash-vault-counts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts/{id}/accept": {
+      "post": {
+        "summary": "Transicao accept",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-vault-counts.openapi.json#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./cash-vault-counts.openapi.json#/components/schemas/ReviewCount"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_vault_counts.go",
+        "externalDocs": {
+          "description": "Contrato de conferencia e relatorio",
+          "url": "./cash-vault-counts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts/{id}/reject": {
+      "post": {
+        "summary": "Transicao reject",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-vault-counts.openapi.json#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./cash-vault-counts.openapi.json#/components/schemas/ReviewCount"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_vault_counts.go",
+        "externalDocs": {
+          "description": "Contrato de conferencia e relatorio",
+          "url": "./cash-vault-counts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts/{id}/cancel": {
+      "post": {
+        "summary": "Transicao cancel",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-vault-counts.openapi.json#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./cash-vault-counts.openapi.json#/components/schemas/ReviewCount"
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_vault_counts.go",
+        "externalDocs": {
+          "description": "Contrato de conferencia e relatorio",
+          "url": "./cash-vault-counts.openapi.json"
+        }
+      }
     }
   },
   "components": {

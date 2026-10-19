@@ -1,5 +1,21 @@
 # Backend e integração — matriz de progresso
 
+## B02B8 — conferência física e relatório dos cofres
+
+Base no PC: B02B7 `c686c44`, Go/race,89 testes locais do frontend, build e árvore
+limpa confirmados. Dois fluxos no pacote: congelar cofre, registrar contagem por
+outro responsável e revisar sem autoajuste; relatório integral/CSV dos cofres e
+suas últimas conferências. Dez operações HTTP, migração50, backup25–50.
+
+Contagem não movimenta dinheiro. Estado/recibos preservados, transferências
+bloqueadas nas duas pontas e divergências registradas sem apagar o passado.
+Omissão do esperado no formulário não revoga consultas de saldo dos gestores.
+Detalhes, limites e coordenação:
+[B02B8_CONFERENCIA_E_RELATORIO_COFRES.md](B02B8_CONFERENCIA_E_RELATORIO_COFRES.md).
+Sem edição de autenticação/sessões, migrações0001–0049, frontend ou protocolo
+legado. Banco, adquirente, pagamentos mistos, ajustes de diferença, financeiro
+contábil completo e integração visual pendentes.
+
 ## B02B7 — cofres e suprimento financiado
 
 Base no PC: B02B6 `8ac7f0c`, instalação, testes/build e árvore limpa confirmados.

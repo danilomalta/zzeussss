@@ -2037,6 +2037,76 @@
       "path": "/local/v1/cash/vaults/:id/archive",
       "authentication": "session",
       "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vault-counts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vault-counts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vault-counts/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vault-counts/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vault-counts/:id/submit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vault-counts/:id/accept",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vault-counts/:id/reject",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vault-counts/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
     }
   ]
 }

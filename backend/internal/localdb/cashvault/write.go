@@ -152,6 +152,9 @@ func Apply(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a
 	if v.State != "active" {
 		return Result{}, ErrConflict
 	}
+	if err = requireUnfrozen(ctx, tx, a, d, id); err != nil {
+		return Result{}, err
+	}
 	before := []Vault{v}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	r := Result{OperationID: in.OperationID, Kind: kind, Reason: in.Reason, CreatedAt: now, Vaults: []Vault{v}, Entries: []Entry{}}
@@ -192,6 +195,9 @@ func Apply(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a
 		}
 		if to.State != "active" {
 			return Result{}, ErrConflict
+		}
+		if err = requireUnfrozen(ctx, tx, a, d, to.ID); err != nil {
+			return Result{}, err
 		}
 		if to.BalanceCents > maxSafe-in.AmountCents {
 			return Result{}, ErrRange
