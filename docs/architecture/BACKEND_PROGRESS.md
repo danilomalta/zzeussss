@@ -1,5 +1,21 @@
 # Backend e integração — matriz de progresso
 
+## B02B10 — caixas encerrados para contabilidade
+
+Base no PC: B02B9 `1d5aa41`, Go/race,89 testes locais do frontend, build e árvore
+limpa confirmados. Duas frentes: turnos de vários operadores por período para
+ViewAccounting e journal operacional com CSV integral. Quatro operações HTTP,
+fontes oficiais/journal validados em transação única. Nenhuma migração; esquema51.
+
+Endpoints antigos mantêm operador próprio/Sell. Contador usa permissão existente;
+operador do turno e ator do lançamento permanecem preservados. Somatórios de
+aberturas/fechamentos não são saldo disponível. Comprovantes B02B9 não entram como
+dinheiro confirmado. Detalhes e limites:
+[B02B10_CAIXAS_PARA_CONTABILIDADE.md](B02B10_CAIXAS_PARA_CONTABILIDADE.md).
+Sem escrita financeira, autenticação/sessões, alterações de migração ou frontend.
+Outros aparelhos, banco/adquirente, venda mistaR$315, contabilidade estatutária,
+envio ao contador e integração visual permanecem pendentes.
+
 ## B02B9 — comprovantes de parcelas e pendências documentais
 
 Base no PC: B02B8 `9eec12d`, Go/race,89 testes locais do frontend, build e árvore

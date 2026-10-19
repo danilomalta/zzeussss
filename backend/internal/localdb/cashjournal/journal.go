@@ -124,6 +124,40 @@ func readSnapshot(ctx context.Context, db *sql.DB, actor identity.Scope, device 
 	if err = identity.CanOperateTx(ctx, tx, actor, device, identity.Sell); err != nil {
 		return Page{}, err
 	}
+	page, err := readSnapshotTx(ctx, tx, actor, device, id, limit, offset, maxRows)
+	if err != nil {
+		return Page{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return Page{}, err
+	}
+	return page, nil
+}
+
+// ReadForAccountingTx reads all postings for a closed turn inside the caller's
+// transaction. It requires ViewAccounting and derives the original operator.
+func ReadForAccountingTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, id string, maxRows int) (Page, error) {
+	if tx == nil || id == "" || id != strings.TrimSpace(id) || len(id) > 128 || strings.ContainsRune(id, 0) || maxRows < 1 || maxRows > MaxExportEntries {
+		return Page{}, ErrInvalid
+	}
+	if err := identity.CanOperateTx(ctx, tx, actor, device, identity.ViewAccounting); err != nil {
+		return Page{}, err
+	}
+	var operator string
+	err := tx.QueryRowContext(ctx, `SELECT operator_id FROM cash_sessions WHERE tenant_id=? AND store_id=? AND device_id=? AND id=?`, actor.TenantID, actor.StoreID, device.DeviceID, id).Scan(&operator)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Page{}, ErrNotFound
+	}
+	if err != nil {
+		return Page{}, err
+	}
+	original := actor
+	original.IdentityID = operator
+	return readSnapshotTx(ctx, tx, original, device, id, maxRows, 0, maxRows)
+}
+
+func readSnapshotTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, id string, limit, offset, maxRows int) (Page, error) {
+	var err error
 	var closed sql.NullString
 	err = tx.QueryRowContext(ctx, `SELECT c.closed_at FROM cash_sessions c JOIN cash_session_operators o ON o.tenant_id=c.tenant_id AND o.store_id=c.store_id AND o.session_id=c.id WHERE c.tenant_id=? AND c.store_id=? AND c.device_id=? AND c.id=? AND c.operator_id=? AND o.identity_id=?`, actor.TenantID, actor.StoreID, device.DeviceID, id, actor.IdentityID, actor.IdentityID).Scan(&closed)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -249,9 +283,6 @@ func readSnapshot(ctx context.Context, db *sql.DB, actor identity.Scope, device 
 		page.NextOffset = &n
 	}
 	page.SourceComplete = true
-	if err = tx.Commit(); err != nil {
-		return Page{}, err
-	}
 	return page, nil
 }
 

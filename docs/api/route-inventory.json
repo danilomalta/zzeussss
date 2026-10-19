@@ -2177,6 +2177,34 @@
       "path": "/local/v1/checkout/proofs/:id/revoke",
       "authentication": "session",
       "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/accounting/cash/sessions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_accounting.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/accounting/cash/journal",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_accounting.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/accounting/cash/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_accounting.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/accounting/cash/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_accounting.go"
     }
   ]
 }

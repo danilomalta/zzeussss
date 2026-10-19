@@ -81,6 +81,41 @@ func ReadClosedReport(ctx context.Context, db *sql.DB, actor identity.Scope, dev
 	if err = authorizeLegacy(ctx, tx, actor, device); err != nil {
 		return ClosedReport{}, err
 	}
+	v, err := readClosedReportTx(ctx, tx, actor, device, id)
+	if err != nil {
+		return ClosedReport{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return ClosedReport{}, err
+	}
+	return v, nil
+}
+
+// ReadClosedReportForAccountingTx permits a store-authorized accounting reader
+// to inspect a closed turn. The original operator is resolved by the database,
+// never supplied by the HTTP client. The caller owns the read transaction.
+func ReadClosedReportForAccountingTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, id string) (ClosedReport, error) {
+	if tx == nil || id == "" || id != strings.TrimSpace(id) || len(id) > 128 || strings.ContainsRune(id, 0) || !utf8.ValidString(id) {
+		return ClosedReport{}, ErrInvalid
+	}
+	if err := identity.CanOperateTx(ctx, tx, actor, device, identity.ViewAccounting); err != nil {
+		return ClosedReport{}, err
+	}
+	var operator string
+	err := tx.QueryRowContext(ctx, `SELECT operator_id FROM cash_sessions WHERE tenant_id=? AND store_id=? AND device_id=? AND id=?`, actor.TenantID, actor.StoreID, device.DeviceID, id).Scan(&operator)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ClosedReport{}, ErrReportNotFound
+	}
+	if err != nil {
+		return ClosedReport{}, err
+	}
+	original := actor
+	original.IdentityID = operator
+	return readClosedReportTx(ctx, tx, original, device, id)
+}
+
+func readClosedReportTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, id string) (ClosedReport, error) {
+	var err error
 	v := ClosedReport{SessionID: id, Payments: []PaymentSummary{{Method: "cash"}, {Method: "card"}, {Method: "pix"}, {Method: "other"}}}
 	var closed sql.NullString
 	err = tx.QueryRowContext(ctx, `SELECT c.opened_at,c.closed_at,c.opening_cents FROM cash_sessions c
@@ -179,9 +214,6 @@ func ReadClosedReport(ctx context.Context, db *sql.DB, actor identity.Scope, dev
 		return ClosedReport{}, ErrReportInconsistent
 	}
 	v.Complete = true
-	if err = tx.Commit(); err != nil {
-		return ClosedReport{}, err
-	}
 	return v, nil
 }
 

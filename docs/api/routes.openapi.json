@@ -14844,6 +14844,331 @@
           "url": "./checkout-proofs.openapi.json"
         }
       }
+    },
+    "/local/v1/accounting/cash/sessions": {
+      "get": {
+        "summary": "Consulta operacional contabil de caixas encerrados: sessions",
+        "description": "ViewAccounting existente; tenant/loja/aparelho da sessao. Periodo de encerramento [from,to), max31dias. Valida relatorio/journal em transacao unica, sem POS atual para historico. Somatorios de aberturas/fechamentos nao sao saldo disponivel. Comprovantes manuais e cofres nao entram.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "401": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "403": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "404": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "409": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "422": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "500": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "200": {
+            "description": "Historico operacional local conferido; nao e livro estatutario nem liquidacao bancaria.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-accounting.openapi.json#/components/schemas/SessionPage"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_accounting.go",
+        "externalDocs": {
+          "description": "Contrato de leitura contabil operacional",
+          "url": "./cash-accounting.openapi.json"
+        }
+      }
+    },
+    "/local/v1/accounting/cash/journal": {
+      "get": {
+        "summary": "Consulta operacional contabil de caixas encerrados: journal",
+        "description": "ViewAccounting existente; tenant/loja/aparelho da sessao. Periodo de encerramento [from,to), max31dias. Valida relatorio/journal em transacao unica, sem POS atual para historico. Somatorios de aberturas/fechamentos nao sao saldo disponivel. Comprovantes manuais e cofres nao entram.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "401": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "403": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "404": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "409": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "422": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "500": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "200": {
+            "description": "Historico operacional local conferido; nao e livro estatutario nem liquidacao bancaria.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-accounting.openapi.json#/components/schemas/PostingPage"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_accounting.go",
+        "externalDocs": {
+          "description": "Contrato de leitura contabil operacional",
+          "url": "./cash-accounting.openapi.json"
+        }
+      }
+    },
+    "/local/v1/accounting/cash/report": {
+      "get": {
+        "summary": "Consulta operacional contabil de caixas encerrados: report",
+        "description": "ViewAccounting existente; tenant/loja/aparelho da sessao. Periodo de encerramento [from,to), max31dias. Valida relatorio/journal em transacao unica, sem POS atual para historico. Somatorios de aberturas/fechamentos nao sao saldo disponivel. Comprovantes manuais e cofres nao entram.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "401": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "403": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "404": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "409": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "422": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "500": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "200": {
+            "description": "Historico operacional local conferido; nao e livro estatutario nem liquidacao bancaria.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./cash-accounting.openapi.json#/components/schemas/AccountingReport"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_accounting.go",
+        "externalDocs": {
+          "description": "Contrato de leitura contabil operacional",
+          "url": "./cash-accounting.openapi.json"
+        }
+      }
+    },
+    "/local/v1/accounting/cash/report.csv": {
+      "get": {
+        "summary": "Consulta operacional contabil de caixas encerrados: report.csv",
+        "description": "ViewAccounting existente; tenant/loja/aparelho da sessao. Periodo de encerramento [from,to), max31dias. Valida relatorio/journal em transacao unica, sem POS atual para historico. Somatorios de aberturas/fechamentos nao sao saldo disponivel. Comprovantes manuais e cofres nao entram.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "401": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "403": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "404": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "409": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "422": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "500": {
+            "description": "Recusa sem numeros ou arquivo parcial; nenhuma mutacao."
+          },
+          "200": {
+            "description": "Historico operacional local conferido; nao e livro estatutario nem liquidacao bancaria.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "x-source": "backend/internal/localapi/cash_accounting.go",
+        "externalDocs": {
+          "description": "Contrato de leitura contabil operacional",
+          "url": "./cash-accounting.openapi.json"
+        }
+      }
     }
   },
   "components": {
