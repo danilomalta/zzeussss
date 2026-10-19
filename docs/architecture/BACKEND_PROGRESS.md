@@ -1,5 +1,21 @@
 # Backend e integração — matriz de progresso
 
+## B02B6 — malotes persistidos e recebimento/conciliação
+
+Base no PC: B02B5 `79799ab`, testes/build e árvore limpa confirmados.
+Dois fluxos no pacote: preparação/despacho/cancelamento de malote vinculado à
+sangria e contagem por outro responsável com recebimento/recusa/divergências.
+Nove operações HTTP, lista/histórico e recibos originais recuperáveis. A
+conciliação do turno encerra a cadeia das sangrias sem inserir dinheiro em dobro.
+
+Migração48, backup25–48, autoria e operação estáveis, controle de concorrência,
+proteções de histórico e fila durável própria. O protocolo antigo não suporta
+eventos de malote; transporte comercial continua pendente. Fonte de valor é
+a sangria auditada. Valores ocultos ao recebedor antes da contagem gravada.
+Contrato/coordenação: [B02B6_MALOTES_E_CONFERENCIA.md](B02B6_MALOTES_E_CONFERENCIA.md).
+Sem edição em autenticação/sessões, scripts0001–0047 ou frontend. Financeiro
+completo, R$315 misto, confirmação eletrônica e integração visual pendentes.
+
 ## B02B5 — exportação dos lançamentos do turno encerrado
 
 Base no PC: B02B4 `e8ee0d2`, testes e árvore limpa confirmados. Nova API GET

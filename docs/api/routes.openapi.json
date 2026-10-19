@@ -12879,6 +12879,247 @@
           "url": "./cash-journal-export.openapi.json"
         }
       }
+    },
+    "/local/v1/cash/bags": {
+      "post": {
+        "operationId": "local_createCashBag",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_bags.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-bags.openapi.json"
+        }
+      },
+      "get": {
+        "operationId": "local_listCashBags",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_bags.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-bags.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/bags/operations/{id}": {
+      "get": {
+        "operationId": "local_readCashBagOperationReceipt",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_bags.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-bags.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/bags/{id}": {
+      "get": {
+        "operationId": "local_readCashBag",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_bags.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-bags.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/bags/{id}/dispatch": {
+      "post": {
+        "operationId": "local_dispatchCashBag",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_bags.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-bags.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/bags/{id}/cancel": {
+      "post": {
+        "operationId": "local_cancelCashBag",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_bags.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-bags.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/bags/{id}/receive": {
+      "post": {
+        "operationId": "local_receiveCashBag",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_bags.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-bags.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/bags/{id}/reject": {
+      "post": {
+        "operationId": "local_rejectCashBag",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_bags.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-bags.openapi.json"
+        }
+      }
+    },
+    "/local/v1/cash/sessions/{id}/custody": {
+      "get": {
+        "operationId": "local_readWithdrawalCustodyCoverage",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/cash_bags.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado local",
+          "url": "./cash-bags.openapi.json"
+        }
+      }
     }
   },
   "components": {
