@@ -1897,6 +1897,13 @@
       "path": "/local/v1/cash/sessions/:id/journal",
       "authentication": "session",
       "source": "backend/internal/localapi/cash.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/sessions/:id/journal.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash.go"
     }
   ]
 }

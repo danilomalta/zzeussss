@@ -15,6 +15,7 @@ func (s *Server) mountCash(router fiber.Router) {
 	router.Get("/cash/current", s.currentCash)
 	router.Get("/cash/sessions/:id/report", s.closedCashReport)
 	router.Get("/cash/sessions/:id/journal", s.closedCashJournal)
+	router.Get("/cash/sessions/:id/journal.csv", s.exportCashJournal)
 	router.Post("/cash/open", s.openCash)
 	router.Post("/cash/close", s.closeCash)
 	router.Post("/cash/movements", s.moveCash)

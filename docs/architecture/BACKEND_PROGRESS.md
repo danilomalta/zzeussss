@@ -1,5 +1,19 @@
 # Backend e integração — matriz de progresso
 
+## B02B5 — exportação dos lançamentos do turno encerrado
+
+Base no PC: B02B4 `e8ee0d2`, testes e árvore limpa confirmados. Nova API GET
+`/local/v1/cash/sessions/{id}/journal.csv` exporta o histórico operacional e o
+resumo conferido em uma única leitura. CSV completo em centavos, até10000
+entradas/16MiB, sem arquivo parcial em erro. IDs e proveniência preservados;
+texto incompatível com CSV é recusado sem alterar a consulta JSON.
+
+Contrato e limites: [B02B5_EXPORTACAO_CAIXA.md](B02B5_EXPORTACAO_CAIXA.md).
+Sem migração, mudança de backup, autenticação/sessões ou frontend. A conferência
+reversa de fontes usa os índices existentes para suportar volume sem relaxar
+consistência. Esquema47 mantido. Não é exportação fiscal/contábil oficial.
+Financeiro completo, confirmação eletrônica, venda mista e integração visual pendentes.
+
 ## B02B4 — lançamentos operacionais do dinheiro
 
 Base no PC: B02B3 `5dbeb69`, instalação e testes confirmados. Nova migração47

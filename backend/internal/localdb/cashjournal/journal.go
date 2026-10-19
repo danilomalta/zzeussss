@@ -104,7 +104,16 @@ func safe(n *big.Int) (int64, error) {
 // snapshot. It is restricted to the original operator's closed local drawer.
 // Pagination does not mean that every page has already been retrieved.
 func Read(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, id string, limit, offset int) (Page, error) {
-	if db == nil || id == "" || id != strings.TrimSpace(id) || len(id) > 128 || strings.ContainsRune(id, 0) || limit < 1 || limit > 100 || offset < 0 || offset > 1000000000 {
+	if limit < 1 || limit > 100 {
+		return Page{}, ErrInvalid
+	}
+	return readSnapshot(ctx, db, actor, device, id, limit, offset, 0)
+}
+
+// maxRows is an export-only bound. Summary, source validation and entry rows
+// share this transaction; exports never concatenate separately read pages.
+func readSnapshot(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, id string, limit, offset, maxRows int) (Page, error) {
+	if db == nil || id == "" || id != strings.TrimSpace(id) || len(id) > 128 || strings.ContainsRune(id, 0) || limit < 1 || offset < 0 || offset > 1000000000 {
 		return Page{}, ErrInvalid
 	}
 	tx, err := db.BeginTx(ctx, nil)
@@ -159,6 +168,10 @@ func Read(ctx context.Context, db *sql.DB, actor identity.Scope, device identity
 		balance.Add(balance, big.NewInt(delta))
 		turnover.Add(turnover, new(big.Int).Abs(big.NewInt(delta)))
 		page.TotalCount++
+		if maxRows > 0 && page.TotalCount > int64(maxRows) {
+			rows.Close()
+			return Page{}, ErrExportLimit
+		}
 		if category == "unclassified" {
 			page.Summary.UnclassifiedCount++
 		}
@@ -251,7 +264,11 @@ func checkSources(ctx context.Context, tx *sql.Tx, actor identity.Scope, device 
 	if damaged != 0 {
 		return ErrInconsistent
 	}
-	err = tx.QueryRowContext(ctx, `SELECT count(*) FROM cash_journal_entries j LEFT JOIN cash_journal_sources s ON s.tenant_id=j.tenant_id AND s.entry_id=j.entry_id WHERE j.tenant_id=? AND j.store_id=? AND j.device_id=? AND j.session_id=? AND s.entry_id IS NULL`, actor.TenantID, actor.StoreID, device.DeviceID, id).Scan(&damaged)
+	err = tx.QueryRowContext(ctx, `SELECT count(*) FROM cash_journal_entries j
+ LEFT JOIN cash_sessions c ON c.tenant_id=j.tenant_id AND c.store_id=j.store_id AND c.device_id=j.device_id AND c.id=j.session_id
+ LEFT JOIN cash_movements m ON m.tenant_id=j.tenant_id AND m.store_id=j.store_id AND m.cash_session_id=j.session_id AND m.id=j.source_id
+ WHERE j.tenant_id=? AND j.store_id=? AND j.device_id=? AND j.session_id=?
+ AND (c.id IS NULL OR (j.source_kind='opening' AND c.id<>j.source_id) OR (j.source_kind='movement' AND m.id IS NULL))`, actor.TenantID, actor.StoreID, device.DeviceID, id).Scan(&damaged)
 	if err != nil {
 		return err
 	}

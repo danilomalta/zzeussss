@@ -43,7 +43,18 @@ func (s *Server) closedCashJournal(c *fiber.Ctx) error {
 	}
 	session := c.Locals("session").(localauth.Session)
 	v, err := cashjournal.Read(c.UserContext(), s.DB, session.Actor, session.Device, c.Params("id"), limit, offset)
+	if err != nil {
+		return cashJournalError(c, err)
+	}
+	return c.JSON(v)
+}
+
+func cashJournalError(c *fiber.Ctx, err error) error {
 	switch {
+	case errors.Is(err, cashjournal.ErrExportLimit):
+		return c.SendStatus(413)
+	case errors.Is(err, cashjournal.ErrExportText):
+		return c.SendStatus(422)
 	case errors.Is(err, cashjournal.ErrInvalid):
 		return c.SendStatus(400)
 	case errors.Is(err, cashjournal.ErrNotFound):
@@ -55,6 +66,6 @@ func (s *Server) closedCashJournal(c *fiber.Ctx) error {
 	case err != nil:
 		return catalogError(c, err)
 	default:
-		return c.JSON(v)
+		return c.SendStatus(500)
 	}
 }
