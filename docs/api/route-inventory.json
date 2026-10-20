@@ -2296,6 +2296,34 @@
       "path": "/local/v1/finance/payable-cash/operations/:id",
       "authentication": "session",
       "source": "backend/internal/localapi/payable_cash.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payable-cash/:id/return-sources",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_readiness.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/:id/cash-sources",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_readiness.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/:id/installment-balances",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_readiness.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/movements/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_movement_receipt.go"
     }
   ]
 }

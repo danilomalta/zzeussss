@@ -15230,6 +15230,26 @@
       "get": {
         "$ref": "./payable-cash.openapi.json#/paths/~1local~1v1~1finance~1payable-cash~1operations~1{id}/get"
       }
+    },
+    "/local/v1/finance/payables/{id}/installment-balances": {
+      "get": {
+        "$ref": "./payable-readiness.openapi.json#/paths/~1local~1v1~1finance~1payables~1{id}~1installment-balances/get"
+      }
+    },
+    "/local/v1/finance/payables/{id}/cash-sources": {
+      "get": {
+        "$ref": "./payable-readiness.openapi.json#/paths/~1local~1v1~1finance~1payables~1{id}~1cash-sources/get"
+      }
+    },
+    "/local/v1/finance/payable-cash/{id}/return-sources": {
+      "get": {
+        "$ref": "./payable-readiness.openapi.json#/paths/~1local~1v1~1finance~1payable-cash~1{id}~1return-sources/get"
+      }
+    },
+    "/local/v1/cash/movements/operations/{id}": {
+      "get": {
+        "$ref": "./cash-movement-receipt.openapi.json#/paths/~1local~1v1~1cash~1movements~1operations~1{id}/get"
+      }
     }
   },
   "components": {
