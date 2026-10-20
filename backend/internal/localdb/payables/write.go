@@ -119,6 +119,13 @@ func Transition(ctx context.Context, db *sql.DB, contracts *entitlementstore.Sto
 	if err != nil {
 		return Result{}, err
 	}
+	_, cash, _, e := cashForDocument(ctx, tx, a, d, p)
+	if e != nil {
+		return Result{}, e
+	}
+	if action == "cancel" && cash.AppliedCents > 0 {
+		return Result{}, ErrConflict
+	}
 	before := p.State
 	after := ""
 	switch action {

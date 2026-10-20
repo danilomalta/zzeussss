@@ -2268,6 +2268,34 @@
       "path": "/local/v1/finance/payables/report.csv",
       "authentication": "session",
       "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/:id/cash-payments",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_cash.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/:id/cash-payments",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_cash.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payable-cash/:id/return",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_cash.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payable-cash/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_cash.go"
     }
   ]
 }

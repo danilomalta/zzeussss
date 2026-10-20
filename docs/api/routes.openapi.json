@@ -15212,6 +15212,24 @@
       "post": {
         "$ref": "./supplier-payables.openapi.json#/paths/~1local~1v1~1finance~1payables~1{id}~1cancel/post"
       }
+    },
+    "/local/v1/finance/payables/{id}/cash-payments": {
+      "post": {
+        "$ref": "./payable-cash.openapi.json#/paths/~1local~1v1~1finance~1payables~1{id}~1cash-payments/post"
+      },
+      "get": {
+        "$ref": "./payable-cash.openapi.json#/paths/~1local~1v1~1finance~1payables~1{id}~1cash-payments/get"
+      }
+    },
+    "/local/v1/finance/payable-cash/{id}/return": {
+      "post": {
+        "$ref": "./payable-cash.openapi.json#/paths/~1local~1v1~1finance~1payable-cash~1{id}~1return/post"
+      }
+    },
+    "/local/v1/finance/payable-cash/operations/{id}": {
+      "get": {
+        "$ref": "./payable-cash.openapi.json#/paths/~1local~1v1~1finance~1payable-cash~1operations~1{id}/get"
+      }
     }
   },
   "components": {

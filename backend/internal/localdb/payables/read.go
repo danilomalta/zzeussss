@@ -19,6 +19,11 @@ func Get(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceCon
 	if e != nil {
 		return p, e
 	}
+	_, summary, _, e := cashForDocument(ctx, tx, a, d, p)
+	if e != nil {
+		return Payable{}, e
+	}
+	p.Cash = &summary
 	return p, tx.Commit()
 }
 func Receipt(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, id string) (Result, error) {
@@ -82,6 +87,11 @@ func all(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceCon
 		if e != nil {
 			return nil, e
 		}
+		_, summary, _, e := cashForDocument(ctx, tx, a, d, p)
+		if e != nil {
+			return nil, e
+		}
+		p.Cash = &summary
 		out = append(out, p)
 	}
 	return out, nil

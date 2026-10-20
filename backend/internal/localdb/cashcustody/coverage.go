@@ -5,11 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"math/big"
+	"titansystem-backend/internal/localdb/payables"
 
 	"titansystem-backend/internal/localdb/identity"
 )
 
 type Coverage struct {
+	SupplierPaidCents     int64  `json:"supplier_paid_cents"`
+	SupplierReturnedCents int64  `json:"supplier_returned_cents"`
 	SessionID             string `json:"session_id"`
 	Scope                 string `json:"scope"`
 	Complete              bool   `json:"complete"`
@@ -92,7 +95,7 @@ func Reconcile(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Dev
 	}
 	v := Coverage{SessionID: id, Scope: "audited_local_withdrawals", WithdrawalCount: int64(len(ids))}
 	sums := map[string]*big.Int{}
-	for _, key := range []string{"total", "unassigned", "prepared", "in_transit", "received", "counted", "difference"} {
+	for _, key := range []string{"total", "unassigned", "prepared", "in_transit", "received", "counted", "difference", "supplier_paid", "supplier_returned"} {
 		sums[key] = new(big.Int)
 	}
 	// Validate every bag, including terminal and orphaned records, before
@@ -142,6 +145,21 @@ func Reconcile(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Dev
 			return Coverage{}, err
 		}
 		sums["total"].Add(sums["total"], big.NewInt(o.Amount))
+		paid, returned, e := payables.WithdrawalUseTx(ctx, tx, a, d, op)
+		if e != nil {
+			if errors.Is(e, payables.ErrRange) {
+				return Coverage{}, ErrRange
+			}
+			return Coverage{}, ErrInconsistent
+		}
+		if paid > 0 {
+			if _, exists := assigned[op]; exists || paid != o.Amount {
+				return Coverage{}, ErrInconsistent
+			}
+			sums["supplier_paid"].Add(sums["supplier_paid"], big.NewInt(paid))
+			sums["supplier_returned"].Add(sums["supplier_returned"], big.NewInt(returned))
+			continue
+		}
 		b, exists := assigned[op]
 		if !exists {
 			sums["unassigned"].Add(sums["unassigned"], big.NewInt(o.Amount))
@@ -159,7 +177,7 @@ func Reconcile(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Dev
 			}
 		}
 	}
-	for key, target := range map[string]*int64{"total": &v.WithdrawnCents, "unassigned": &v.UnassignedCents, "prepared": &v.PreparedCents, "in_transit": &v.InTransitCents, "received": &v.ReceivedDeclaredCents, "counted": &v.ReceivedCountedCents, "difference": &v.DifferenceCents} {
+	for key, target := range map[string]*int64{"supplier_paid": &v.SupplierPaidCents, "supplier_returned": &v.SupplierReturnedCents, "total": &v.WithdrawnCents, "unassigned": &v.UnassignedCents, "prepared": &v.PreparedCents, "in_transit": &v.InTransitCents, "received": &v.ReceivedDeclaredCents, "counted": &v.ReceivedCountedCents, "difference": &v.DifferenceCents} {
 		n := sums[key]
 		if !n.IsInt64() || n.Cmp(big.NewInt(maxSafe)) > 0 || n.Cmp(big.NewInt(-maxSafe)) < 0 {
 			return Coverage{}, ErrRange
@@ -169,6 +187,7 @@ func Reconcile(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Dev
 	accounted := new(big.Int).Add(sums["unassigned"], sums["prepared"])
 	accounted.Add(accounted, sums["in_transit"])
 	accounted.Add(accounted, sums["received"])
+	accounted.Add(accounted, sums["supplier_paid"])
 	if accounted.Cmp(sums["total"]) != 0 {
 		return Coverage{}, ErrInconsistent
 	}

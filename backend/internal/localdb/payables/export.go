@@ -52,12 +52,12 @@ func encodeCSV(ctx context.Context, r Report) ([]byte, error) {
 	w := csv.NewWriter(&b)
 	w.Comma = ';'
 	w.UseCRLF = true
-	if e := w.Write([]string{"format_version", "row_type", "scope", "from", "to", "as_of", "currency", "metric", "metric_value", "payable_id", "supplier_id", "supplier_name", "document_reference", "state", "installment_id", "due_on", "amount_cents", "timing"}); e != nil {
+	if e := w.Write([]string{"format_version", "row_type", "scope", "from", "to", "as_of", "currency", "metric", "metric_value", "payable_id", "supplier_id", "supplier_name", "document_reference", "state", "installment_id", "due_on", "amount_cents", "timing", "cash_applied_cents", "outstanding_cents"}); e != nil {
 		return nil, e
 	}
 	base := func(kind string) []string {
-		x := make([]string, 18)
-		copy(x, []string{"1", kind, r.Scope, r.Window.From, r.Window.To, r.Window.AsOf, r.Currency})
+		x := make([]string, 20)
+		copy(x, []string{"2", kind, r.Scope, r.Window.From, r.Window.To, r.Window.AsOf, r.Currency})
 		return x
 	}
 	keys := []string{}
@@ -78,7 +78,7 @@ func encodeCSV(ctx context.Context, r Report) ([]byte, error) {
 			return nil, e
 		}
 		x := base("installment")
-		copy(x[9:], []string{v.PayableID, v.SupplierID, v.SupplierName, v.DocumentReference, v.State, v.Installment.ID, v.Installment.DueOn, strconv.FormatInt(v.Installment.AmountCents, 10), v.Timing})
+		copy(x[9:], []string{v.PayableID, v.SupplierID, v.SupplierName, v.DocumentReference, v.State, v.Installment.ID, v.Installment.DueOn, strconv.FormatInt(v.Installment.AmountCents, 10), v.Timing, strconv.FormatInt(v.CashAppliedCents, 10), strconv.FormatInt(v.OutstandingCents, 10)})
 		for _, i := range []int{9, 10, 11, 12, 13, 14, 15, 17} {
 			if e := exportText(x[i]); e != nil {
 				return nil, e

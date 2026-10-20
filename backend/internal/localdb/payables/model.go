@@ -38,6 +38,7 @@ type Event struct {
 	CreatedAt   string `json:"created_at"`
 }
 type Payable struct {
+	Cash                      *CashSummary  `json:"cash,omitempty"`
 	ID                        string        `json:"id"`
 	SupplierID                string        `json:"supplier_id"`
 	SupplierName              string        `json:"supplier_name"`

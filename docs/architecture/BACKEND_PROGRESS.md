@@ -1,5 +1,22 @@
 # Backend e integração — matriz de progresso
 
+## B02B12 — aplicação de espécie e devoluções de fornecedores
+
+Base no PC: B02B11 `d176beb`, Go/race,89 testes locais, build e árvore limpa
+confirmados no log. Dois fluxos: pagamento declarado vinculado a sangria auditada
+e devolução integral vinculada a suprimento auditado, sem duplicar dinheiro.
+Quatro operações novas, saldo de parcelas/documentos, agenda CSVformato2 e
+conciliação com malotes. Nova0053, backup25–53; SQL0001–0052 preservados.
+
+Fonte exclusiva entre malote e pagamento, e entre cofre e devolução. Cancelamento
+bloqueado enquanto houver valor aplicado. Recibos e movimentos anteriores
+preservados. Execução automática/banco permanecem indisponíveis, settled=null;
+valor conhecido de espécie está nos campos cash, com origem declarada/auditada.
+Contratos, limites, arquivos compartilhados e evidências:
+[B02B12_PAGAMENTOS_EM_ESPECIE.md](B02B12_PAGAMENTOS_EM_ESPECIE.md).
+Sem autenticação/sessões ou frontend. Pagamento direto, cofre, meios eletrônicos,
+correção versionada, recebimento/fiscal, contabilidade e integração visual pendentes.
+
 ## B02B11 — documentos de fornecedores e agenda de vencimentos
 
 Base no PC: B02B10 `446319a`, instalação, Go/race,89 testes locais do frontend,

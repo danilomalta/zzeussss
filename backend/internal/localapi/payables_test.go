@@ -112,7 +112,7 @@ func TestHTTPPayablesScheduleReviewAndNoFinancialEffects(t *testing.T) {
 		t.Fatal(accepted)
 	}
 	report := payableReport(t, f, accountant, payableQueryString, 200)
-	expected := map[string]int64{"installment_count": 3, "pending_cents": 0, "approved_cents": 31500, "rejected_cents": 0, "cancelled_cents": 0, "approved_overdue_cents": 10000, "approved_today_cents": 9600, "approved_future_cents": 11900}
+	expected := map[string]int64{"installment_count": 3, "pending_cents": 0, "approved_cents": 31500, "rejected_cents": 0, "cancelled_cents": 0, "approved_overdue_cents": 10000, "approved_today_cents": 9600, "approved_future_cents": 11900, "cash_applied_cents": 0, "approved_outstanding_cents": 31500, "approved_outstanding_overdue_cents": 10000, "approved_outstanding_today_cents": 9600, "approved_outstanding_future_cents": 11900}
 	if !report.Complete || report.Scope != "local_supplier_obligations" || report.SettledCents != nil || report.PaymentExecutionAvailable || !reflect.DeepEqual(expected, report.Summary) {
 		t.Fatal(report)
 	}
@@ -303,10 +303,10 @@ func TestHTTPPayablesCSVExactDatesAndNoFormulaRewrite(t *testing.T) {
 	reader := csv.NewReader(bytes.NewReader(b[3:]))
 	reader.Comma = ';'
 	rows, e := reader.ReadAll()
-	if e != nil || len(rows) != 12 {
+	if e != nil || len(rows) != 17 {
 		t.Fatal(len(rows), e)
 	}
-	if rows[9][16] != "10000" || rows[10][16] != "9600" || rows[11][16] != "11900" {
+	if rows[14][16] != "10000" || rows[15][16] != "9600" || rows[16][16] != "11900" {
 		t.Fatal(rows)
 	}
 	// This is a newly created unsafe supplier snapshot, not a mutation of immutable history.

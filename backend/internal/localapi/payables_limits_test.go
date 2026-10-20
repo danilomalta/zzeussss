@@ -56,7 +56,7 @@ func TestHTTPPayablesReportTenThousandInstallmentsAndExplicitLimit(t *testing.T)
 	if len(r.Items) != 10000 || r.Summary["pending_cents"] != 10000 {
 		t.Fatal(len(r.Items), r.Summary)
 	}
-	if s, b := request(t, f.app, "GET", payablesPath+"/report.csv"+payableQueryString, "", f.token); s != 200 || strings.Count(string(b), "\r\n") != 10009 {
+	if s, b := request(t, f.app, "GET", payablesPath+"/report.csv"+payableQueryString, "", f.token); s != 200 || strings.Count(string(b), "\r\n") != 10014 {
 		t.Fatal(s, len(b))
 	}
 	create(84, 1)

@@ -11,7 +11,7 @@ import (
 )
 
 func valid(p Payable) error {
-	if !key(p.ID) || !text(p.SupplierID, 128) || !text(p.SupplierName, 255) || !key(p.DocumentReference) || !text(p.Description, 500) || p.Currency != "BRL" || !schedule(p.Installments, p.TotalCents, p.IssuedOn) || !text(p.CreatorID, 128) || p.PaymentExecutionAvailable || p.SettledCents != nil || len(p.History) < 1 || len(p.History) > 3 {
+	if !key(p.ID) || !text(p.SupplierID, 128) || !text(p.SupplierName, 255) || !key(p.DocumentReference) || !text(p.Description, 500) || p.Currency != "BRL" || !schedule(p.Installments, p.TotalCents, p.IssuedOn) || !text(p.CreatorID, 128) || p.PaymentExecutionAvailable || p.SettledCents != nil || p.Cash != nil || len(p.History) < 1 || len(p.History) > 3 {
 		return ErrInconsistent
 	}
 	state := ""

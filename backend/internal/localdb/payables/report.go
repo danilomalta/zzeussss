@@ -14,6 +14,8 @@ type Window struct {
 	AsOf string `json:"as_of"`
 }
 type DueItem struct {
+	CashAppliedCents  int64       `json:"cash_applied_cents"`
+	OutstandingCents  int64       `json:"outstanding_cents"`
 	PayableID         string      `json:"payable_id"`
 	SupplierID        string      `json:"supplier_id"`
 	SupplierName      string      `json:"supplier_name"`
@@ -53,7 +55,7 @@ func ReadReport(ctx context.Context, db *sql.DB, a identity.Scope, d identity.De
 		return Report{}, e
 	}
 	r := Report{Scope: "local_supplier_obligations", Window: w, Currency: "BRL", GeneratedAt: time.Now().UTC().Format(time.RFC3339Nano), Complete: true, Summary: map[string]int64{}, Items: []DueItem{}}
-	for _, k := range []string{"installment_count", "pending_cents", "approved_cents", "rejected_cents", "cancelled_cents", "approved_overdue_cents", "approved_today_cents", "approved_future_cents"} {
+	for _, k := range []string{"installment_count", "pending_cents", "approved_cents", "rejected_cents", "cancelled_cents", "approved_overdue_cents", "approved_today_cents", "approved_future_cents", "cash_applied_cents", "approved_outstanding_cents", "approved_outstanding_overdue_cents", "approved_outstanding_today_cents", "approved_outstanding_future_cents"} {
 		r.Summary[k] = 0
 	}
 	add := func(k string, n int64) error {
@@ -64,6 +66,10 @@ func ReadReport(ctx context.Context, db *sql.DB, a identity.Scope, d identity.De
 		return nil
 	}
 	for _, p := range items {
+		_, _, paid, e := cashForDocument(ctx, tx, a, d, p)
+		if e != nil {
+			return Report{}, e
+		}
 		for _, part := range p.Installments {
 			if part.DueOn < w.From || part.DueOn > w.To {
 				continue
@@ -85,8 +91,23 @@ func ReadReport(ctx context.Context, db *sql.DB, a identity.Scope, d identity.De
 					return Report{}, e
 				}
 			}
+			if e = add("cash_applied_cents", paid[part.ID]); e != nil {
+				return Report{}, e
+			}
+			remaining := part.AmountCents - paid[part.ID]
+			if p.State != "approved" {
+				remaining = 0
+			}
+			if p.State == "approved" {
+				if e = add("approved_outstanding_cents", remaining); e != nil {
+					return Report{}, e
+				}
+				if e = add("approved_outstanding_"+timing+"_cents", remaining); e != nil {
+					return Report{}, e
+				}
+			}
 			r.Summary["installment_count"]++
-			r.Items = append(r.Items, DueItem{p.ID, p.SupplierID, p.SupplierName, p.DocumentReference, p.State, part, timing})
+			r.Items = append(r.Items, DueItem{paid[part.ID], remaining, p.ID, p.SupplierID, p.SupplierName, p.DocumentReference, p.State, part, timing})
 		}
 	}
 	sort.Slice(r.Items, func(i, j int) bool {

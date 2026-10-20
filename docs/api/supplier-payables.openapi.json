@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Titan contas a pagar locais",
-    "version": "1.0.0",
-    "description": "Obrigacoes manuais em BRL de fornecedores existentes. Nao implica recebimento, autorizacao fiscal, liquidacao, despesa contabil, banco ou baixa de caixa. Documento fica reservado apos cancelamento/rejeicao; substituicao versionada futura. Datas civis ISO sem fuso. Sem reserva de fundos."
+    "version": "1.1.0",
+    "description": "Obrigacoes manuais em BRL de fornecedores existentes. Nao implica recebimento, autorizacao fiscal, liquidacao, despesa contabil, banco ou baixa de caixa. Documento fica reservado apos cancelamento/rejeicao; substituicao versionada futura. Datas civis ISO sem fuso. Sem reserva de fundos. B02B12 acrescenta cash nos GET atuais; recibos documentais antigos preservados sem cash. Settled permanece null para meios externos. Agenda CSVformato2 preserva colunas anteriores e acrescenta aplicado/saldo declarado. as_of classifica vencimento,nao retrocede o livro de pagamentos: pagamentos sao estado atual na hora da leitura."
   },
   "paths": {
     "/local/v1/finance/payables": {
@@ -167,7 +167,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados. Vencimentos from/to inclusivos, ate366datas; as_of explicito. Resumo integral separado por estado. Limites1000documentos locais e10000parcelas no periodo. complete so cobre estas fontes locais.",
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados. Vencimentos from/to inclusivos, ate366datas; as_of explicito. Resumo integral separado por estado. Limites1000documentos locais e10000parcelas no periodo. complete so cobre estas fontes locais. cash_applied/saldo sao atuais; as_of nao e corte historico dos pagamentos. Nao somar totais documentais novamente com saldo/aplicado.",
         "responses": {
           "400": {
             "description": "Entrada invalida"
@@ -246,7 +246,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados. Vencimentos from/to inclusivos, ate366datas; as_of explicito. Resumo integral separado por estado. Limites1000documentos locais e10000parcelas no periodo. complete so cobre estas fontes locais.",
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados. Vencimentos from/to inclusivos, ate366datas; as_of explicito. Resumo integral separado por estado. Limites1000documentos locais e10000parcelas no periodo. complete so cobre estas fontes locais. cash_applied/saldo sao atuais; as_of nao e corte historico dos pagamentos. Nao somar totais documentais novamente com saldo/aplicado.",
         "responses": {
           "400": {
             "description": "Entrada invalida"
@@ -276,7 +276,7 @@
             "description": "Verificador indisponivel"
           },
           "200": {
-            "description": "CSV integral UTF8 BOM, ponto e virgula e CRLF; formato1; ate4MiB,10000parcelas. Valores centavos, liquidacao desconhecida. Sem soma entre resumo e detalhes.",
+            "description": "CSV integral UTF8 BOM, ponto e virgula e CRLF; formato2; ate4MiB,10000parcelas. Valores centavos, liquidacao desconhecida. Sem soma entre resumo e detalhes. Colunas cash_applied_cents,outstanding_cents anexadas. Saldo nao inclui pagamentos externos desconhecidos.",
             "content": {
               "text/csv": {
                 "schema": {
@@ -871,6 +871,9 @@
             "enum": [
               null
             ]
+          },
+          "cash": {
+            "$ref": "#/components/schemas/CashSummary"
           }
         }
       },
@@ -1034,7 +1037,9 @@
           "document_reference",
           "state",
           "installment",
-          "timing"
+          "timing",
+          "cash_applied_cents",
+          "outstanding_cents"
         ],
         "properties": {
           "payable_id": {
@@ -1074,6 +1079,16 @@
               "today",
               "future"
             ]
+          },
+          "cash_applied_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outstanding_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           }
         }
       },
@@ -1161,7 +1176,12 @@
               "cancelled_cents",
               "approved_overdue_cents",
               "approved_today_cents",
-              "approved_future_cents"
+              "approved_future_cents",
+              "cash_applied_cents",
+              "approved_outstanding_cents",
+              "approved_outstanding_overdue_cents",
+              "approved_outstanding_today_cents",
+              "approved_outstanding_future_cents"
             ],
             "properties": {
               "installment_count": {
@@ -1203,6 +1223,31 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              "cash_applied_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_outstanding_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_outstanding_overdue_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_outstanding_today_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_outstanding_future_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
               }
             }
           },
@@ -1212,6 +1257,45 @@
               "$ref": "#/components/schemas/DueItem"
             },
             "maxItems": 10000
+          }
+        }
+      },
+      "CashSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "paid_cents",
+          "returned_cents",
+          "applied_cents",
+          "outstanding_cents",
+          "basis"
+        ],
+        "properties": {
+          "paid_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returned_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "applied_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outstanding_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "declared_cash_audited_sources"
+            ]
           }
         }
       }

@@ -13,6 +13,7 @@ import (
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/localdb/payables"
 )
 
 func hash(v any) string { body, _ := json.Marshal(v); return fmt.Sprintf("%x", sha256.Sum256(body)) }
@@ -124,6 +125,13 @@ func Create(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, 
 			err = tx.Commit()
 		}
 		return r, err
+	}
+	paid, _, err := payables.WithdrawalUseTx(ctx, tx, a, d, in.WithdrawalOperationID)
+	if err != nil {
+		return Result{}, err
+	}
+	if paid > 0 {
+		return Result{}, ErrConflict
 	}
 	o, err := source(ctx, tx, a, d, in.WithdrawalOperationID)
 	if err != nil {

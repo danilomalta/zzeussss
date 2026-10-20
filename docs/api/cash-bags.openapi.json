@@ -3,7 +3,7 @@
   "info": {
     "title": "TitanSystem local cash bags and counted custody",
     "version": "B02B6",
-    "description": "Two workflows: durable preparation/dispatch/cancellation from existing audited withdrawal; independent receiver count/rejection and per-closed-turn coverage. All endpoints ManageCash; writes also POS contract. Reads require no current license. Store/device derived from session. Receiver must differ from sender AND drawer operator. Declared amount is null for other managers until receipt is committed; never supplied in receive input. Same local SQLite only, no remote-delivery guarantee. Each withdrawal has at most one active/received bag; canceled/rejected history remains and permits new bag with new seal. No cash/stock/journal movements created by custody. Count differences remain recorded, not automatic expenses or bank settlement. Operations return original snapshot on replay; GET bag returns current state. Operation receipts accessible only to their actor. GET rejects body; unknown/repeated query parameters rejected. Coverage is only audited local withdrawals, not all outflows or a bank balance; only closed original drawer operator with ManageCash."
+    "description": "Two workflows: durable preparation/dispatch/cancellation from existing audited withdrawal; independent receiver count/rejection and per-closed-turn coverage. All endpoints ManageCash; writes also POS contract. Reads require no current license. Store/device derived from session. Receiver must differ from sender AND drawer operator. Declared amount is null for other managers until receipt is committed; never supplied in receive input. Same local SQLite only, no remote-delivery guarantee. Each withdrawal has at most one active/received bag; canceled/rejected history remains and permits new bag with new seal. No cash/stock/journal movements created by custody. Count differences remain recorded, not automatic expenses or bank settlement. Operations return original snapshot on replay; GET bag returns current state. Operation receipts accessible only to their actor. GET rejects body; unknown/repeated query parameters rejected. Coverage is only audited local withdrawals, not all outflows or a bank balance; only closed original drawer operator with ManageCash. B02B12: supplier_paid_cents classifica sangrias vinculadas a fornecedor e sai de unassigned; supplier_returned_cents informativo,nao subtrair da sangria original nem somar de novo ao caixa. Devolucao tem suprimento proprio. Sangria com qualquer historico de malote nao pode virar pagamento."
   },
   "paths": {
     "/local/v1/cash/bags": {
@@ -856,7 +856,9 @@
           "divergent_count",
           "cancelled_bags",
           "rejected_bags",
-          "difference_cents"
+          "difference_cents",
+          "supplier_paid_cents",
+          "supplier_returned_cents"
         ],
         "properties": {
           "session_id": {
@@ -924,6 +926,16 @@
           "difference_cents": {
             "type": "integer",
             "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "supplier_paid_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "supplier_returned_cents": {
+            "type": "integer",
+            "minimum": 0,
             "maximum": 9007199254740991
           }
         }
