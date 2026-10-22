@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 12 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 13 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -556,3 +556,46 @@ A ferramenta de preenchimento direto dos campos datetime-local não alterou seus
 Homologação pendente com build/schema/banco descartável autorizados: sessões reais view_accounting com/sem dono, licença expirada, fuso/horário de verão, fronteiras exclusivas com nanossegundos, janelas sobrepostas/desiguais, produtos gratuitos/anteriores/zerados, empate ABC entre páginas, volume100.000/100.001, metadados/unidades alterados, cancelamento e devolução em fluxos distintos, CSV e revogação durante resposta. Não usar este relatório como liquidação ou DRE; coordenar contrato futuro para receita líquida de devoluções se exigido. Não iniciar serviço nem escolher banco/estação/chaves por conta própria.
 
 A consulta comercial de produtos deixa de ser lacuna de implementação. Painel executivo amplo, caixa/fechamento/pagamentos/fiscal, demais ciclos de compras/fornecedor/logística/financeiro/RH e integrações continuam conforme matriz. O frontend inteiro ainda não está concluído nem homologado. Continuar unidades independentes usando contratos atuais e preservar ideias de expansão fora do fechamento inicial.
+
+
+## Entrega de22/10/2026 — prévia de reposição por demanda observada
+
+Base incremental `ff98a15c105cad6ef1bb6d5d60ce36ee69b28e87`, hash local/remoto conferidos. A retomada confirmou a mesma branch e as mesmas alterações preparadas. Permissões do ambiente foram atualizadas; escrita efetiva testada novamente após liberação técnica apenas de frontend/docs/Git. Hashes das preimagens e dos arquivos já aplicados conferidos, sem conflito. Fonte principal continua Downloads/zzeus-frontend-backend; backend não alterado/iniciado, sem banco, dependência, ZIP, Electron, main/merge/reset/clean.
+
+### Fluxo preservado e complemento
+
+O115já configura política, calcula sugestão durável, exige revisão humana e pode criar pedido local. NÃO foi recriado. A nova seção aparece na aba Reposição do115, sob o produto escolhido com política existente, apenas com manage_stock E manage_replenishment (além do acesso já exigido à área de pedidos). O117de conferência por fornecedor e as duas filas115 permanecem preservados.
+
+Prévia é hipótese READ-ONLY por contrato, embora use POST `/local/v1/management/replenishment/preview`. Não tem operation_id, não grava fila, não adquire lock de mutação, não exige licença de escrita e não modifica política/sugestão/decisão/pedido. O transporte específico revalida suas duas permissões e contexto; não ampliamos o scopedFetch das mutações115 nem sua autorização. A interface com licença expirada continua bloqueando salvar política/criar pedido, mas permite esta consulta autorizada. Nenhuma política, compra, reserva ou contato com fornecedor é assumido.
+
+Usuário informa prazo0–365dias inteiros, cobertura1–365e segurança explícita (zero permitido), com observação de1hora a366dias. Esses campos começam vazios; não se inventa condição de fornecedor nem segurança comercial. Períodos no fuso do aparelho, início incluído e fim excluído; cálculo usa instantes exatos. Produto/unidade são vinculados ao item selecionado. Edição pendente da política/revisão bloqueia a prévia e retira o resultado anterior; trocar hipóteses invalida o resultado sem recálculo automático.
+
+Demanda observada de itens de vendas committed da mesma loja, não garantia futura ou receita/devolução líquida. Estoque físico/reservado/livre agrega TODOS os locais locais da loja no mesmo snapshot. Não representa estoque global offline. Mínimo = demanda diária × prazo + segurança; alvo = demanda diária × (prazo+cobertura) + segurança; ambos respeitam os pisos da política oficial. Arredondamento para cima a unidade comercial inteira ou milésimo das demais. Sugestão apenas quando livre<=mínimo e livre<alvo, descontando o livre, sem confundir físico com disponível. Sem vendas, demanda0e pisos/segurança explícitos, sem forecast inventado.
+
+Cálculo devolvido é conferido com BigInt/racionais exatos, inclusive demanda fracionária, overflow, diferença de unidade/período e quantidade comercial. Exibição de dízima como fração exata, não decimal arredondado apresentado como verdade. Política é a oficial do momento da consulta; se revisão/mínimo/alvo divergirem da lista antiga, a tela avisa para atualizar/conferir antes de gravar qualquer alteração no115. A prévia nunca copia automaticamente a sugestão aos campos da política e não aprova nada.
+
+Sessão, empresa, loja, usuário, aparelho e permissões conferidos antes/depois de resposta/corpo e antes de apresentar o resultado. Hipóteses/produto clonados antes da espera. Falha não vira zero nem cria tentativa de mutação. API ausente/política inexistente, conflito e limite/invalidez aparecem com mensagens; nenhuma resposta fictícia na rota real. A empresa decide comprar; fornecedor confirma atendimento e condições pelo fluxo próprio. Sazonalidade, validade, margem e compromissos devem ser considerados, sem concluir prejuízo pela baixa saída.
+
+### Arquivos e referência
+
+Novos: `frontend-web/src/core/restockPreview/model.mjs`, `model.d.mts`, `source.mjs`, `source.d.mts`, `words.ts`; `frontend-web/src/modules/catalog/pages/RestockPreview.tsx`, `restockPreview.css`; `frontend-web/tests/restockPreview.test.mjs`.
+
+Alterados: `frontend-web/src/core/orders115/source.mjs`, `source.d.mts` (adaptador e verificação de acesso somente da prévia); `frontend-web/src/modules/catalog/pages/Orders115.tsx` (composição sob política/produto escolhido) e este registro. Lógica de submit/recover/locks/filas anteriores intacta.
+
+Referência somente lida: `zzeus-frontend-backend-b02a/docs/api/management-production.openapi.json`, `backend/internal/localdb/stock/restock_preview.go`, `backend/internal/localapi/management_reports.go`, disponibilidade/identidade relacionados. Contrato local não comprova serviço atualizado. Busca inicial por diretório replenishment115 não existente foi corrigida usando os fontes reais orders115 e local/replenishmentClient; não se implementou função duplicada a partir de nome suposto.
+
+### Verificação real e limites
+
+47testes novos aprovados; suíte completa final1362aprovados,0falhas,0ignorados, incluindo regressões anteriores115/financeiro116/117. TypeScript final aprovado; build Vite/React final isolado em20.004s, sem carregar arquivo de ambiente/configuração, preservando dist existente. `git diff --check` aprovado. Aviso do chunk grande de planilha continua. Não houve benchmark em PC antigo ou homologação de serviço.
+
+Testes: política/pisos, mínimo exato, acima do mínimo sem pedido, estoque reservado/livre, unidade comercial e kg, fração/overflow/tempo/nanossegundo, ausência de vendas, pedidos proibidos na resposta, ambos os permissions, contexto/troca de sessão/corpo atrasado, abort, clone, ausência de política e falhas. Adaptador115consultado com storage/locks que lançam erro se acessados: a prévia não toca filas nem pede lock. Sem Web Locks/licença de escrita a leitura permanece autorizada; remover uma das permissões bloqueia até o POST de cálculo.
+
+Prévia EXPLÍCITA em memória usando a composição REAL Orders115 e seu cliente, sem serviço ou banco:7unidades vendidas/7dias →1un/dia; físico4, reservado2, livre2. Prazo2, cobertura3, segurança1 →mínimo3, alvo6, sugestão4, sem pedido criado ou fila gravada. Sem vendas →pisos2/5e sugestão3. Política simulada alterada para revisão3/10/15 →aviso de atualizar e sugestão13, sem gravar a política. Cinco idiomas percorridos e claro/escuro observados. Perfil kg:1kg/7dias →1/7kg por dia, mínimo0,143kg, alvo/sugestão0,286kg. Edição de política na prévia remove resultado e desabilita consulta; desbloquear não consulta automaticamente. Nova consulta explícita refez o resultado. Não cobrimos todas as combinações de idioma/tema/viewport nem leitor de tela completo.
+
+A revisão visual encontrou herança de `.o115 dl>div` que apertava rótulos/números. CSS próprio e restrito à prévia separa rótulo/valor e amplia as colunas, sem alterar o115inteiro. Aplicação/estilo conferidos com captura de dados descartáveis em outputs. Na retomada o vínculo da ferramenta de navegador havia sido reinicializado; a aba existente foi recuperada e o ajuste final recarregado, com hipóteses reintroduzidas. No laboratório TypeScript inicial faltava vínculo de leitura dos cinco JSON115; vínculo corrigido e checagens refeitas, sem mudar traduções legadas ou instalar dependência.
+
+Evidências/preimagens/hashes/logs privados em `work/restock-preview-20261022/`. O servidor da prévia desta unidade foi encerrado após a verificação; nenhum backend comercial foi executado. Não copiar laboratório/builds para o projeto ou pacotes.
+
+Integração pendente: responsável fornecer build/schema/URL/perfil e banco DESCARTÁVEL identificados. Validar catálogo/política, ambos os permissions, licença expirada de leitura, concorrência de política/reservas, todos os locais (limite500), origem de vendas (limite100.000linhas), ausência de vendas, unidades alteradas, fronteiras/horário de verão, volume/overflow e reconsulta após revogação. Backend sinaliza alguns limites como400genérico; frontend não inventa qual limite exato ocorreu. Não iniciar serviço nem selecionar banco/estação/chaves sem definição do responsável.
+
+Esta hipótese de reposição deixa de ser lacuna de interface. Confirmação entre empresas, atendimento do fornecedor, doca, motorista/coleta, financeiro/fiscal e outros fluxos da matriz ainda precisam das unidades e integrações correspondentes. O frontend inteiro não está concluído/homologado; os1362testes isolados não substituem esses aceites. Próxima frente independente deve priorizar as lacunas comerciais/operacionais ou o desempenho da planilha já medido como chunk grande, sem confundir otimização de bundle com redução comprovada de tempo/memória no aparelho.
