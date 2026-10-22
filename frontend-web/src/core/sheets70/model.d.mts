@@ -11,7 +11,7 @@ export interface Block {
   interval: number;
   detached?: boolean;
   partial?: boolean;
-  filters?: { location_id?: string; q: string; from: string; to: string };
+  filters?: { location_id?: string; as_of?: string; q: string; from: string; to: string };
   columns?: string[];
 }
 export function namespace(session: {

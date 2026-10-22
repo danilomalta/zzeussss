@@ -12,3 +12,5 @@
 @media print{body *{visibility:hidden!important}.sheet69-printdialog,.sheet69-printdialog *{visibility:visible!important}.sheet69-printdialog{position:absolute!important;inset:0!important;max-height:none!important;max-width:none!important;width:100%!important;margin:0!important;border:0!important;padding:0!important;background:#fff!important;color:#000!important;overflow:visible!important}.sheet69-printdialog header{display:none!important}.sheet69-printdialog td{min-width:0;font-size:10pt;white-space:normal}.sheet69-printdialog tr{break-inside:avoid}.sheet69-printdialog::backdrop{background:none}}
 
 .sheet-editor-actions{border:0;padding:0;margin:0;min-width:0}
+
+.sheet70-source-errors{max-height:120px;overflow:auto;flex-shrink:0}.sheet70-source-errors p{margin:6px 0;font-size:13px;color:var(--text)}

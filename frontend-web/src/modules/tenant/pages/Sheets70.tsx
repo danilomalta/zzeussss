@@ -1,3 +1,4 @@
+import {sheetFinanceWords} from '../../../core/sheets70/financeWords.mjs';
 import {sheetStockLocations} from '../../../core/sheets70/stockSnapshot.mjs';
 import {sheetStockWords} from '../../../core/sheets70/stockWords';
 import { useEffect, useRef, useState } from 'react';
@@ -75,7 +76,9 @@ export default function Sheets70(props: Props) {
     pendingRefresh=useRef(''),
     mounted = useRef(true),
     controller = useRef<AbortController>();
+  const [blockErrors,setBlockErrors]=useState<Record<string,string>>({});
   const [stockLocations,setStockLocations]=useState<{id:string;name:string}[]>([]);
+  const financeWords=sheetFinanceWords(i18n.resolvedLanguage||i18n.language);
   const stockWords=sheetStockWords(i18n.resolvedLanguage||i18n.language);
   const [panel, setPanel] = useState(parameters.has('source') ? 'data' : ''),
     [status, setStatus] = useState(''),
@@ -130,7 +133,7 @@ export default function Sheets70(props: Props) {
     window.addEventListener('titan-sheets70-command', track);
     return () => window.removeEventListener('titan-sheets70-command', track);
   }, []);
-  const label = (key: string) => (stockWords as Record<string,string>)[key] || (w as Record<string, string>)[key] || key;
+  const label = (key: string) => financeWords[key] || (stockWords as Record<string,string>)[key] || (w as Record<string, string>)[key] || key;
   const time = (at: number) =>
     new Intl.DateTimeFormat(i18n.resolvedLanguage || 'pt-BR', {
       dateStyle: 'short',
@@ -148,7 +151,7 @@ export default function Sheets70(props: Props) {
       if (doc.current && doc.current.workbook.id !== live.id) {
         doc.current = null;
         blocks.current = [];
-        setBlockList([]);
+        setBlockList([]);setBlockErrors({});
         serial.current = '';
       }
       const safe = cleanSnapshot(live, blocks.current),
@@ -208,6 +211,7 @@ export default function Sheets70(props: Props) {
     blocks.current = [];
     serial.current = '';
     pendingRefresh.current='';
+    setBlockErrors({});
     let bootstrap: number | undefined;
     void sheetStorage()
       .list(scope)
@@ -287,6 +291,7 @@ export default function Sheets70(props: Props) {
     serial.current = '';
     latest.current.clearCache();
     pendingRefresh.current=file.workbook.id;
+    setBlockErrors({});
     latest.current.load(file.workbook);
     setPanel('');
   }
@@ -310,7 +315,7 @@ export default function Sheets70(props: Props) {
     if(!token||!session||!capabilities)throw Error('permission');
     const origin=[session.tenant_id,session.store_id,session.identity_id,session.device_id];
     const sameSession=()=>{const current=useLocalSession.getState();return mounted.current&&current.token===token&&origin.every((value,index)=>value===[current.session?.tenant_id,current.session?.store_id,current.session?.identity_id,current.session?.device_id][index]);};
-    return {token,session,capabilities,signal,sameSession,isCurrent:()=>sameSession()&&sourceAllowed(selected,auth.current.capabilities)};
+    return {token,session,capabilities,signal,locale:i18n.resolvedLanguage||i18n.language,sameSession,isCurrent:()=>sameSession()&&sourceAllowed(selected,auth.current.capabilities)};
   }
   useEffect(()=>{
     setStockLocations([]);if(panel!=='data'||source!=='stock')return;
@@ -347,6 +352,7 @@ export default function Sheets70(props: Props) {
       if(attempt&&!attempt.sameSession())return;
       if (e instanceof LocalAPIError && (e.status === 401 || e.status === 403))
         scrubSource(source, e.status);
+      if(e instanceof Error&&['financeSheetRange','financeSheetLimit','financeSheetRows'].includes(e.message)&&!ctrl.signal.aborted){setError(e.message);return;}
       if (!ctrl.signal.aborted)
         setError(
           (e instanceof LocalAPIError && [401, 403].includes(e.status)) ||
@@ -361,7 +367,10 @@ export default function Sheets70(props: Props) {
   async function fetchBlock(block: Block) {
     if (!latest.current.ready || !token || !capabilities || !sourceAllowed(block.source, capabilities)) return;
     let attempt:ReturnType<typeof sourceContext>|undefined;
+    let workbookID='';
+    const sameDocument=()=>{try{return latest.current.ready&&latest.current.get().id===workbookID&&blocks.current.some(value=>value.id===block.id);}catch{return false;}};
     try {
+      workbookID=latest.current.get().id;
       const ctrl = new AbortController();
       attempt=sourceContext(block.source,ctrl.signal);
       const result = await sources[block.source](
@@ -370,6 +379,7 @@ export default function Sheets70(props: Props) {
       );
       if (
         !attempt.sameSession() ||
+        !sameDocument() ||
         !mounted.current ||
         auth.current.token !== token ||
         !sourceAllowed(block.source, auth.current.capabilities)
@@ -389,11 +399,14 @@ export default function Sheets70(props: Props) {
       setBlockList([...blocks.current]);
       props.cache(block.source, result);
       activity('refresh');
+      setBlockErrors(previous=>{const next={...previous};delete next[block.id];return next;});
     } catch (error) {
-      if(attempt&&!attempt.sameSession())return;
+      if(attempt&&!attempt.sameSession()||!sameDocument())return;
+      const message=error instanceof LocalAPIError&&[401,403].includes(error.status)?'permission':error instanceof Error&&['financeSheetRange','financeSheetLimit','financeSheetRows'].includes(error.message)?error.message:'offline';
+      setBlockErrors(previous=>({...previous,[block.id]:message}));
       if (error instanceof LocalAPIError && (error.status === 401 || error.status === 403))
         scrubSource(block.source, error.status);
-      else setError('offline');
+
     }
   }
 
@@ -458,7 +471,7 @@ export default function Sheets70(props: Props) {
     const book = templateBook(props.get(), kind, label);
     doc.current = null;
     blocks.current = [];
-    setBlockList([]);
+    setBlockList([]);setBlockErrors({});
     serial.current = '';
     props.clearCache();
     props.load(book);
@@ -571,7 +584,7 @@ export default function Sheets70(props: Props) {
                   if (!ok) return;
                   doc.current = null;
                   blocks.current = [];
-                  setBlockList([]);
+                  setBlockList([]);setBlockErrors({});
                   serial.current = '';
                   props.create();
                 });
@@ -617,6 +630,7 @@ export default function Sheets70(props: Props) {
             </summary>
             {b.partial&&<p>{w.partial}</p>}
             {b.source==='stock'&&<p>{stockWords.help}</p>}
+            {b.source==='finance'&&<p>{financeWords.financeHelp}</p>}
             <button disabled={b.detached} onClick={() => void fetchBlock(b)}>
               {w.refresh}
             </button>
@@ -655,6 +669,7 @@ export default function Sheets70(props: Props) {
           </details>
         ))}
       </div>
+      <div className="sheet70-source-errors">{blockList.filter(block=>blockErrors[block.id]).map(block=><p role="alert" key={block.id}>{label(block.source)}: {label(blockErrors[block.id])}</p>)}</div>
       {panel && (
         <dialog
           ref={dialog}
@@ -798,10 +813,12 @@ export default function Sheets70(props: Props) {
                   ))}
                 </select>
               </label>
+              {source==='finance'&&<><p>{financeWords.financeHelp}</p><label>{financeWords.finance_as_of}<input type="date" value={filters.as_of||''} onChange={e=>{controller.current?.abort();setLoading(false);setData(undefined);setFilters({...filters,as_of:e.target.value});}}/></label></>}
               {source==='stock'&&<><p>{stockWords.help}</p><label>{stockWords.location}<select value={filters.location_id||''} onChange={e=>{controller.current?.abort();setLoading(false);setData(undefined);setFilters({...filters,location_id:e.target.value});}}><option value="">{stockWords.choose}</option>{stockLocations.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label></>}
               <label>
                 {w.search}
                 <input
+                  maxLength={240}
                   value={filters.q}
                   onChange={(e) => {controller.current?.abort();setLoading(false);setData(undefined);setFilters({ ...filters, q: e.target.value });}}
                 />
@@ -810,21 +827,21 @@ export default function Sheets70(props: Props) {
                 {w.from}
                 <input
                   type="date"
-                  disabled={!['sales', 'purchases'].includes(source)}
+                  disabled={!['sales', 'purchases','finance'].includes(source)}
                   value={filters.from}
-                  onChange={(e) => setFilters({ ...filters, from: e.target.value })}
+                  onChange={(e) => {controller.current?.abort();setLoading(false);setData(undefined);setFilters({ ...filters, from: e.target.value });}}
                 />
               </label>
               <label>
                 {w.to}
                 <input
                   type="date"
-                  disabled={!['sales', 'purchases'].includes(source)}
+                  disabled={!['sales', 'purchases','finance'].includes(source)}
                   value={filters.to}
-                  onChange={(e) => setFilters({ ...filters, to: e.target.value })}
+                  onChange={(e) => {controller.current?.abort();setLoading(false);setData(undefined);setFilters({ ...filters, to: e.target.value });}}
                 />
               </label>
-              <button disabled={loading||source==='stock'&&!stockLocations.some(item=>item.id===filters.location_id)} onClick={() => void fetchData()}>
+              <button disabled={loading||source==='finance'&&(!filters.from||!filters.to||!filters.as_of)||source==='stock'&&!stockLocations.some(item=>item.id===filters.location_id)} onClick={() => void fetchData()}>
                 {w.preview}
               </button>
               {data && (

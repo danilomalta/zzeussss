@@ -1,3 +1,4 @@
+import {literalSheetMatrix} from '../../../core/sheets70/literalData.mjs';
 import {takeReport76,reportBook76} from '../../../core/loss76/report76.mjs';
 import {contextOf,contextKey} from '../../../core/context74/model.mjs';
 import '../../../core/loss76/sessionReport76';
@@ -371,7 +372,7 @@ export default function LocalSpreadsheet() {
           if (r >= result.row + result.height || c >= result.col + result.width)
             sheet.getRange(r, c, 1, 1).setValue('');
     }
-    sheet.getRange(result.row, result.col, matrix.length, matrix[0].length).setValues(matrix);
+    sheet.getRange(result.row, result.col, matrix.length, matrix[0].length).setValues(literalSheetMatrix(matrix));
     const api = runtime.current!.univerAPI;
     sheet
       .getRange(result.row, result.col, matrix.length, matrix[0].length)
