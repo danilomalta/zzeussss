@@ -21,7 +21,9 @@ import {
   limits68,
 } from '../../../core/local/sheetFiles68.mjs';
 import { applyStructure69, previewMatrix69 } from '../../../core/local/sheetActions69.mjs';
-import { mountSheetEditor } from './sheetRuntime70';
+import type { mountSheetEditor } from './sheetRuntime70';
+import {currentSheetEditor} from '../../../core/sheets70/editorLoader.mjs';
+import {sheetEditorWords} from '../../../core/sheets70/editorWords';
 import {loadSheetLanguage} from './sheetLanguage70';
 import {currentSheetLanguage} from '../../../core/sheets70/language.mjs';
 import pt from '../../../i18n/sheets/pt-BR.json';
@@ -45,17 +47,19 @@ export default function LocalSpreadsheet() {
     token = useLocalSession((s) => s.token);
   const languageRef=useRef(i18n.resolvedLanguage||i18n.language),themeRef=useRef(theme);
   languageRef.current=i18n.resolvedLanguage||i18n.language;themeRef.current=theme;
-  const [editorLoading,setEditorLoading]=useState(false);
+  const [editorLoading,setEditorLoading]=useState(true);
+  const editorReady=useRef(false);
   const caps70 = useRef(capabilities);
   caps70.current = capabilities;
   const permitted = allowedAreas(capabilities).includes('sheets');
-  const scope = [
+  const scopeParts = [
     session?.tenant_id,
     session?.store_id,
     session?.device_id,
     session?.identity_id,
     token,
-  ].join(':');
+  ];
+  const scope=JSON.stringify(scopeParts);
   const host = useRef<HTMLDivElement>(null),
     runtime = useRef<Runtime | null>(null),
     snapshot = useRef(emptySnapshot()),
@@ -116,7 +120,7 @@ export default function LocalSpreadsheet() {
       setMessage('');
     }
     if (!permitted || !host.current) return;
-    let active=true;setEditorLoading(true);
+    let active=true;editorReady.current=false;setEditorLoading(true);setError('');
     let listener: { dispose: () => void } | undefined;
     let instance: Runtime | null = null;
     const container = document.createElement('div');
@@ -125,12 +129,12 @@ export default function LocalSpreadsheet() {
     const frame = requestAnimationFrame(() => { void initialize(); });
     async function initialize(){
       try {
-        const pack=await currentSheetLanguage(()=>languageRef.current,()=>active,loadSheetLanguage);
-        if(!pack)return;
-        instance = mountSheetEditor(
+        const ready=await currentSheetEditor(()=>languageRef.current,()=>active,()=>import('./sheetRuntime70'),loadSheetLanguage);
+        if(!ready||!active)return;
+        instance = ready.editor.mountSheetEditor(
           container,
           languageRef.current,
-          themeRef.current === 'dark',pack
+          themeRef.current === 'dark',ready.pack
         );
         runtime.current = instance;
         const incoming76=takeReport76(contextKey(contextOf(session,caps70.current)),new URLSearchParams(window.location.search).get('report')||'');
@@ -151,12 +155,16 @@ export default function LocalSpreadsheet() {
             setDirty(true);
           }
         });
+        editorReady.current=true;
       } catch {
+        if(active)editorReady.current=false;
+        listener?.dispose();listener=undefined;
+        if(instance){const failed=instance;instance=null;if(runtime.current===failed)runtime.current=null;queueMicrotask(()=>failed.univer.dispose());}
         if(active)setError(words.error);
       }finally{if(active)setEditorLoading(false);}
     }
     return () => {
-      active=false;
+      active=false;editorReady.current=false;
       cancelAnimationFrame(frame);
       listener?.dispose();
       container.remove();
@@ -183,6 +191,7 @@ export default function LocalSpreadsheet() {
     return()=>{active=false;};
   }, [i18n.resolvedLanguage, i18n.language]);
   function live() {
+    if(!editorReady.current)throw new Error();
     const workbook = runtime.current?.univerAPI.getActiveWorkbook();
     if (!workbook) throw new Error();
     return workbook.save();
@@ -228,7 +237,7 @@ export default function LocalSpreadsheet() {
     const keyboard = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
         event.preventDefault();
-        void save('titan');
+        if(editorReady.current&&!busy)void save('titan');
       }
     };
     window.addEventListener('keydown', keyboard);
@@ -236,6 +245,7 @@ export default function LocalSpreadsheet() {
   });
   function replace(book: ReturnType<typeof emptySnapshot>) {
     if (dirty && !window.confirm(words.confirmNew)) return;
+    editorReady.current=false;
     skipSave.current = true;
     snapshot.current = book;
     setName(book.name);
@@ -271,6 +281,7 @@ export default function LocalSpreadsheet() {
     }
   }
   function selected() {
+    if(!editorReady.current)throw new Error();
     const workbook = runtime.current?.univerAPI.getActiveWorkbook(),
       sheet = workbook?.getActiveSheet(),
       range = workbook?.getActiveRange();
@@ -421,6 +432,8 @@ export default function LocalSpreadsheet() {
       setError(words.error);
     }
   }
+  const editorAvailable=editorReady.current&&!editorLoading;
+  const editorWords=sheetEditorWords(i18n.resolvedLanguage||i18n.language);
   if (!permitted) return <Navigate to="/local/home" replace />;
   const peak = Math.max(1, ...groups.map((g) => Math.abs(g.sum))),
     format = (value: number) =>
@@ -437,6 +450,7 @@ export default function LocalSpreadsheet() {
           {words.name}
           <input
             maxLength={120}
+            disabled={!editorAvailable||busy}
             value={name}
             onChange={(event) => {
               setName(event.target.value);
@@ -446,11 +460,15 @@ export default function LocalSpreadsheet() {
           />
         </label>
       </header>
-      {(busy||editorLoading) && <span role="status">{words.working}</span>}
+      {(busy||editorLoading) && <span role="status">{editorLoading?editorWords.loading:words.working}</span>}
+      {!editorLoading&&!editorReady.current&&<button className="brand-secondary" onClick={()=>setRevision(value=>value+1)}>{editorWords.retry}</button>}
+      <fieldset className="sheet-editor-actions" disabled={!editorAvailable||busy}>
       <Sheets70
+        ready={editorAvailable&&!busy}
         name={name}
         get={live}
         load={(book) => {
+          editorReady.current=false;
           skipSave.current = true;
           snapshot.current = book;
           setName(book.name);
@@ -616,6 +634,7 @@ export default function LocalSpreadsheet() {
         </div>
         <p>{words.selectionHelp69}</p>
       </section>
+      </fieldset>
       {error && (
         <div className="sheet-message error" role="alert">
           {error}

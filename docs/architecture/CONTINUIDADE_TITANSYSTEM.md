@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 13 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 14 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -599,3 +599,26 @@ Evidências/preimagens/hashes/logs privados em `work/restock-preview-20261022/`.
 Integração pendente: responsável fornecer build/schema/URL/perfil e banco DESCARTÁVEL identificados. Validar catálogo/política, ambos os permissions, licença expirada de leitura, concorrência de política/reservas, todos os locais (limite500), origem de vendas (limite100.000linhas), ausência de vendas, unidades alteradas, fronteiras/horário de verão, volume/overflow e reconsulta após revogação. Backend sinaliza alguns limites como400genérico; frontend não inventa qual limite exato ocorreu. Não iniciar serviço nem selecionar banco/estação/chaves sem definição do responsável.
 
 Esta hipótese de reposição deixa de ser lacuna de interface. Confirmação entre empresas, atendimento do fornecedor, doca, motorista/coleta, financeiro/fiscal e outros fluxos da matriz ainda precisam das unidades e integrações correspondentes. O frontend inteiro não está concluído/homologado; os1362testes isolados não substituem esses aceites. Próxima frente independente deve priorizar as lacunas comerciais/operacionais ou o desempenho da planilha já medido como chunk grande, sem confundir otimização de bundle com redução comprovada de tempo/memória no aparelho.
+
+
+## Entrega de22/10/2026 — inicialização adiada do editor de planilhas
+
+Base `a4fb332b337db54c554a39dd0d771c85ef6f6817`, branch feat/backend-checkout-authority, árvore limpa na retomada. Regras relidas; caminho real Downloads/zzeus-frontend-backend confirmado. Nova concessão técnica de escrita foi seguida de teste efetivo criar/fsync/reler/remover arquivo temporário exclusivamente em frontend/docs. Preimagens conferidas antes da aplicação; sem conflito. Backend, Electron,117e suas filas preservados; nenhuma dependência instalada, ZIP ou banco usado.
+
+O editor Univer deixou de ser dependência estática da página. Interface inicial e indicador de carregamento podem aparecer antes do motor. Editor e idioma são importados em paralelo; idioma é conferido novamente quando o motor termina, protegendo mudança durante a espera. Navegação/contexto obsoleto não monta editor. Falha mantém estado indisponível e oferece nova tentativa. A falha tardia de uma instância descartada não desativa uma nova instância válida.
+
+Comandos, campos e persistência automática aguardam editor pronto. Substituir/reabrir documento desativa a prontidão imediatamente. A biblioteca permanece montada entre reinicializações, preservando identidade, versões e blocos. Atualizar blocos após abrir arquivo aguarda o workbook correto, substituindo a espera fixa de300ms. Função TITAN e verificações de acesso preservadas; não foi movida a worker, pois captura estado de permissão/cache. Todos os presets atuais foram mantidos. Paleta primária do motor usa o cinza existente, retirando os valores dourados explícitos.
+
+Arquivos novos: core/sheets70/editorLoader.mjs, editorLoader.d.mts, editorWords.ts; tests/sheetEditorLoader.test.mjs. Alterados: LocalSpreadsheet.tsx, Sheets70.tsx, sheetRuntime70.ts, spreadsheet.css, neste caso dentro de frontend-web/src/modules/tenant/pages; além deste registro. Rascunhos antigos não usados.
+
+### Medição e verificação
+
+Builds isolados antes/depois com a mesma configuração Vite/React, sem configFile/envFile, em work/spreadsheet-performance-20261022. Grafo de imports ESTÁTICOS da página, descontados os chunks já estáticos da entrada principal:6.717.446→118.885bytes; gzip calculado por arquivo:1.809.197→48.107bytes. Chunk que contém LocalSpreadsheet:6.659.122→60.358bytes. O motor foi adiado, NÃO removido: todos os chunks JS somados18.629.097→18.630.914bytes. Continua existindo chunk grande do runtime. Não chamar isso de diminuição do instalador ou ganho medido de abertura/memória em PC antigo. Build antes19,638s, depois19,887s; são duas observações, sem inferência de desempenho de execução.
+
+13testes novos: importações paralelas, contexto inativo, logout/navegação, troca de idioma antes do motor e durante nova carga, falhas e cinco idiomas. Suíte completa1375aprovados,0falhas,0ignorados; TypeScript aprovado; build aprovado; diff --check conferido antes do checkpoint.
+
+Prévia EXPLÍCITA isolada em127.0.0.1:4332, sem backend e sem dados comerciais, com usuário employee sem permissões adicionais. Grade real: A1=10,A2=20,A3=SUM(A1:A2)→30. Salvamento IndexedDB local, recarga da página e reabertura pela biblioteca mantiveram valores/fórmula; controles foram bloqueados durante a reinicialização e liberados depois. Claro/escuro e cinco seleções de idioma percorridos; francês e chinês conferidos também no motor após a importação terminar. Trocas rápidas podem mostrar a tradução anterior por instantes enquanto o pacote carrega; resultado final chinês/português conferido. Nenhum erro de console no circuito final. Captura em outputs/planilha-carregamento-validado-2026-10-22.png, somente dados descartáveis.
+
+O laboratório inicialmente usou papel operator que o contrato não reconhece; rejeição das capacidades foi preservada e o papel de teste corrigido para employee, sem ampliar permissões do produto. A primeira composição do laboratório não reproduzia o contêiner de altura limitada da aplicação e escondia a grade; somente o HTML do laboratório foi ajustado. Timeout da captura de acessibilidade após digitar não foi considerado falha das células: screenshot posterior confirmou10/20/30. A biblioteca inicialmente mostrou vazio durante leitura assíncrona; resultado posterior confirmou o documento. Não se afirmou êxito com base nesses estados intermediários.
+
+Continuam pendentes medição no hardware alvo, matriz completa teclado/touch/leitor de tela/viewport, fontes reais e compartilhamento/colaboração da planilha; não houve homologação do backend ou do frontend inteiro. Próximas unidades devem conectar fontes reais existentes e concluir os fluxos parciais da matriz, sem converter arquivo local em persistência comercial.

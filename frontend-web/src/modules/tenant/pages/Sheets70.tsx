@@ -39,6 +39,7 @@ export const dictionaries70: Record<string, typeof pt> = {
   zh,
 };
 interface Props {
+  ready: boolean;
   name: string;
   get: () => IWorkbookData;
   load: (book: IWorkbookData) => void;
@@ -69,6 +70,7 @@ export default function Sheets70(props: Props) {
     blocks = useRef<Block[]>([]),
     serial = useRef(''),
     queue = useRef(false),
+    pendingRefresh=useRef(''),
     mounted = useRef(true),
     controller = useRef<AbortController>();
   const [panel, setPanel] = useState(parameters.has('source') ? 'data' : ''),
@@ -135,7 +137,7 @@ export default function Sheets70(props: Props) {
       doc.current.activity = [...doc.current.activity, { at: Date.now(), action }].slice(-100);
   }
   async function persist(force = false) {
-    if (queue.current || !scope) return false;
+    if (!latest.current.ready || queue.current || !scope) return false;
     queue.current = true;
     try {
       const live = latest.current.get();
@@ -201,6 +203,7 @@ export default function Sheets70(props: Props) {
     doc.current = null;
     blocks.current = [];
     serial.current = '';
+    pendingRefresh.current='';
     let bootstrap: number | undefined;
     void sheetStorage()
       .list(scope)
@@ -212,10 +215,8 @@ export default function Sheets70(props: Props) {
           doc.current = file;
           blocks.current = file.blocks || [];
           setBlockList(blocks.current);
+          pendingRefresh.current=file.workbook.id;
           latest.current.load(file.workbook);
-          setTimeout(() => {
-            for (const block of blocks.current.filter((b) => !b.detached)) void fetchBlock(block);
-          }, 300);
         }, 300);
       })
       .catch(() => setError('saveError'));
@@ -231,6 +232,7 @@ export default function Sheets70(props: Props) {
     const keyboard = (event: KeyboardEvent) => {
       if (!(event.ctrlKey || event.metaKey)) return;
       const key = event.key.toLowerCase();
+      if(!latest.current.ready){if(['s','f','h'].includes(key)){event.preventDefault();event.stopImmediatePropagation();}return;}
       if (key === 's') {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -280,12 +282,9 @@ export default function Sheets70(props: Props) {
     setBlockList(blocks.current);
     serial.current = '';
     latest.current.clearCache();
+    pendingRefresh.current=file.workbook.id;
     latest.current.load(file.workbook);
     setPanel('');
-    setTimeout(() => {
-      if (doc.current?.id === file.id)
-        for (const block of blocks.current.filter((b) => !b.detached)) void fetchBlock(block);
-    }, 300);
   }
   function scrubSource(source: string, status: number) {
     try {
@@ -340,7 +339,7 @@ export default function Sheets70(props: Props) {
     }
   }
   async function fetchBlock(block: Block) {
-    if (!token || !capabilities || !sourceAllowed(block.source, capabilities)) return;
+    if (!latest.current.ready || !token || !capabilities || !sourceAllowed(block.source, capabilities)) return;
     try {
       const ctrl = new AbortController();
       const result = await sources[block.source](
@@ -382,6 +381,12 @@ export default function Sheets70(props: Props) {
     }, 60000);
     return () => clearInterval(timer);
   }, [token, capabilities]);
+  useEffect(()=>{
+    if(!props.ready||!pendingRefresh.current)return;
+    try{if(latest.current.get().id!==pendingRefresh.current)return;}catch{return;}
+    pendingRefresh.current='';
+    for(const block of blocks.current.filter(value=>!value.detached))void fetchBlock(block);
+  },[props.ready]);
   function insert() {
     if (!data) return;
     if (!sourceAllowed(source, auth.current.capabilities)) {
