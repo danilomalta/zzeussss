@@ -10,7 +10,8 @@ export interface Block {
   updated: number;
   interval: number;
   detached?: boolean;
-  filters?: { q: string; from: string; to: string };
+  partial?: boolean;
+  filters?: { location_id?: string; q: string; from: string; to: string };
   columns?: string[];
 }
 export function namespace(session: {

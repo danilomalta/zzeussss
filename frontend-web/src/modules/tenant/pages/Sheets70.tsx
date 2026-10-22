@@ -1,3 +1,5 @@
+import {sheetStockLocations} from '../../../core/sheets70/stockSnapshot.mjs';
+import {sheetStockWords} from '../../../core/sheets70/stockWords';
 import { useEffect, useRef, useState } from 'react';
 import type { ICellData, IWorkbookData } from '@univerjs/presets';
 import { useSearchParams } from 'react-router-dom';
@@ -73,6 +75,8 @@ export default function Sheets70(props: Props) {
     pendingRefresh=useRef(''),
     mounted = useRef(true),
     controller = useRef<AbortController>();
+  const [stockLocations,setStockLocations]=useState<{id:string;name:string}[]>([]);
+  const stockWords=sheetStockWords(i18n.resolvedLanguage||i18n.language);
   const [panel, setPanel] = useState(parameters.has('source') ? 'data' : ''),
     [status, setStatus] = useState(''),
     [files, setFiles] = useState<Document[]>([]),
@@ -126,7 +130,7 @@ export default function Sheets70(props: Props) {
     window.addEventListener('titan-sheets70-command', track);
     return () => window.removeEventListener('titan-sheets70-command', track);
   }, []);
-  const label = (key: string) => (w as Record<string, string>)[key] || key;
+  const label = (key: string) => (stockWords as Record<string,string>)[key] || (w as Record<string, string>)[key] || key;
   const time = (at: number) =>
     new Intl.DateTimeFormat(i18n.resolvedLanguage || 'pt-BR', {
       dateStyle: 'short',
@@ -302,6 +306,18 @@ export default function Sheets70(props: Props) {
       setError('permission');
     }
   }
+  function sourceContext(selected:string,signal:AbortSignal){
+    if(!token||!session||!capabilities)throw Error('permission');
+    const origin=[session.tenant_id,session.store_id,session.identity_id,session.device_id];
+    const sameSession=()=>{const current=useLocalSession.getState();return mounted.current&&current.token===token&&origin.every((value,index)=>value===[current.session?.tenant_id,current.session?.store_id,current.session?.identity_id,current.session?.device_id][index]);};
+    return {token,session,capabilities,signal,sameSession,isCurrent:()=>sameSession()&&sourceAllowed(selected,auth.current.capabilities)};
+  }
+  useEffect(()=>{
+    setStockLocations([]);if(panel!=='data'||source!=='stock')return;
+    const ctrl=new AbortController();
+    try{void sheetStockLocations(sourceContext('stock',ctrl.signal)).then(value=>{if(!ctrl.signal.aborted)setStockLocations(value);}).catch(()=>{if(!ctrl.signal.aborted)setError('unavailable');});}catch{setError('permission');}
+    return()=>ctrl.abort();
+  },[panel,source,token,session,capabilities]);
   async function fetchData() {
     controller.current?.abort();
     const ctrl = new AbortController();
@@ -309,12 +325,15 @@ export default function Sheets70(props: Props) {
     setLoading(true);
     setError('');
     setData(undefined);
+    let attempt:ReturnType<typeof sourceContext>|undefined;
     try {
       if (!token || !capabilities || !sourceAllowed(source, capabilities))
         throw Error('permission');
-      const result = await sources[source]({ token, capabilities, signal: ctrl.signal }, filters);
+      attempt=sourceContext(source,ctrl.signal);
+      const result = await sources[source](attempt, filters);
       if (
         ctrl.signal.aborted ||
+        !attempt.sameSession() ||
         !mounted.current ||
         auth.current.token !== token ||
         contextRef.current !== scope ||
@@ -325,6 +344,7 @@ export default function Sheets70(props: Props) {
       setColumns(result.columns);
       props.cache(source, result);
     } catch (e) {
+      if(attempt&&!attempt.sameSession())return;
       if (e instanceof LocalAPIError && (e.status === 401 || e.status === 403))
         scrubSource(source, e.status);
       if (!ctrl.signal.aborted)
@@ -340,13 +360,16 @@ export default function Sheets70(props: Props) {
   }
   async function fetchBlock(block: Block) {
     if (!latest.current.ready || !token || !capabilities || !sourceAllowed(block.source, capabilities)) return;
+    let attempt:ReturnType<typeof sourceContext>|undefined;
     try {
       const ctrl = new AbortController();
+      attempt=sourceContext(block.source,ctrl.signal);
       const result = await sources[block.source](
-        { token, capabilities, signal: ctrl.signal },
+        attempt,
         block.filters || { q: '', from: '', to: '' }
       );
       if (
+        !attempt.sameSession() ||
         !mounted.current ||
         auth.current.token !== token ||
         !sourceAllowed(block.source, auth.current.capabilities)
@@ -361,12 +384,13 @@ export default function Sheets70(props: Props) {
       ];
       const checked = checkSpace(props.get(), block, matrix, block);
       ensureNoOverlap(checked, blocks.current);
-      const updated = props.write(matrix, { ...checked, updated: result.at }, block);
+      const updated = props.write(matrix, { ...checked, updated: result.at, partial: result.partial }, block);
       blocks.current = blocks.current.map((b) => (b.id === block.id ? updated : b));
       setBlockList([...blocks.current]);
       props.cache(block.source, result);
       activity('refresh');
     } catch (error) {
+      if(attempt&&!attempt.sameSession())return;
       if (error instanceof LocalAPIError && (error.status === 401 || error.status === 403))
         scrubSource(block.source, error.status);
       else setError('offline');
@@ -414,7 +438,7 @@ export default function Sheets70(props: Props) {
       if (target !== 'newSheet') ensureNoOverlap(checked, blocks.current);
       const result = props.write(
         matrix,
-        { ...checked, updated: data.at, filters: { ...filters }, columns: [...columns] },
+        { ...checked, updated: data.at, partial: data.partial, filters: { ...filters }, columns: [...columns] },
         editBlock,
         target === 'newSheet'
       );
@@ -589,8 +613,10 @@ export default function Sheets70(props: Props) {
         {blockList.map((b) => (
           <details key={b.id}>
             <summary>
-              ↗ {label(b.source)} · {time(b.updated)}
+              ↗ {label(b.source)} · {time(b.updated)}{b.source==='stock'&&b.filters?.location_id?' · '+b.filters.location_id:''}
             </summary>
+            {b.partial&&<p>{w.partial}</p>}
+            {b.source==='stock'&&<p>{stockWords.help}</p>}
             <button disabled={b.detached} onClick={() => void fetchBlock(b)}>
               {w.refresh}
             </button>
@@ -761,8 +787,8 @@ export default function Sheets70(props: Props) {
                 <select
                   value={source}
                   onChange={(e) => {
-                    setSource(e.target.value);
-                    setData(undefined);
+                    controller.current?.abort();setSource(e.target.value);
+                    setData(undefined);setLoading(false);
                   }}
                 >
                   {Object.keys(sources).map((s) => (
@@ -772,11 +798,12 @@ export default function Sheets70(props: Props) {
                   ))}
                 </select>
               </label>
+              {source==='stock'&&<><p>{stockWords.help}</p><label>{stockWords.location}<select value={filters.location_id||''} onChange={e=>{controller.current?.abort();setLoading(false);setData(undefined);setFilters({...filters,location_id:e.target.value});}}><option value="">{stockWords.choose}</option>{stockLocations.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label></>}
               <label>
                 {w.search}
                 <input
                   value={filters.q}
-                  onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+                  onChange={(e) => {controller.current?.abort();setLoading(false);setData(undefined);setFilters({ ...filters, q: e.target.value });}}
                 />
               </label>
               <label>
@@ -797,7 +824,7 @@ export default function Sheets70(props: Props) {
                   onChange={(e) => setFilters({ ...filters, to: e.target.value })}
                 />
               </label>
-              <button disabled={loading} onClick={() => void fetchData()}>
+              <button disabled={loading||source==='stock'&&!stockLocations.some(item=>item.id===filters.location_id)} onClick={() => void fetchData()}>
                 {w.preview}
               </button>
               {data && (

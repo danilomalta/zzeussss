@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 14 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 15 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -622,3 +622,30 @@ Prévia EXPLÍCITA isolada em127.0.0.1:4332, sem backend e sem dados comerciais,
 O laboratório inicialmente usou papel operator que o contrato não reconhece; rejeição das capacidades foi preservada e o papel de teste corrigido para employee, sem ampliar permissões do produto. A primeira composição do laboratório não reproduzia o contêiner de altura limitada da aplicação e escondia a grade; somente o HTML do laboratório foi ajustado. Timeout da captura de acessibilidade após digitar não foi considerado falha das células: screenshot posterior confirmou10/20/30. A biblioteca inicialmente mostrou vazio durante leitura assíncrona; resultado posterior confirmou o documento. Não se afirmou êxito com base nesses estados intermediários.
 
 Continuam pendentes medição no hardware alvo, matriz completa teclado/touch/leitor de tela/viewport, fontes reais e compartilhamento/colaboração da planilha; não houve homologação do backend ou do frontend inteiro. Próximas unidades devem conectar fontes reais existentes e concluir os fluxos parciais da matriz, sem converter arquivo local em persistência comercial.
+
+
+## Entrega de22/10/2026 — fonte física de estoque na planilha
+
+Base incremental `9280c05966d388a559ddd748f3faeb5bbce45a96`, checkpoint anterior publicado e hash remoto conferido. Preimagens novamente verificadas; nenhuma divergência. Fonte principal mantida em Downloads/zzeus-frontend-backend, branch feat/backend-checkout-authority. Sem backend, Electron, ZIP, dependência, banco ou alteração do117.
+
+A fonte Estoque70 deixava a rota real indisponível e apenas retornava demonstração quando habilitada por ambiente. Foi substituída por adaptador tipado para os contratos já existentes GET /local/v1/locations e GET /local/v1/management/stock/positions. Não existe fallback de demonstração nesta fonte. Autorização exige manage_stock e módulo inventory pelos mesmos critérios da área; não amplia operador, não consulta custos nem exige permissão contábil. Licença expirada permite a leitura histórica/autorizada conforme a regra existente; não autoriza mutação.
+
+Escolha explícita de local, inicialmente vazio; nunca escolhe o primeiro ou agrega locais silenciosamente. Colunas: ID/SKU/nome/unidade, ID do local, físico/reservado/livre em MILÉSIMOS inteiros (1000=1), instante de observação de cada página. Filtro textual aplicado ao recorte examinado, não busca global. Limite de500posições, páginas50; parcial conserva aviso mesmo quando busca retorna zero. Se contagem global mudar entre páginas ou houver produto duplicado entre páginas, pede nova consulta em vez de apresentar total enganoso. Não é snapshot global atômico/offline, custo, inventário aprovado ou disponibilidade de outro aparelho.
+
+Resultado parcial passa a constar também no bloco vinculado após inserir/atualizar. Resumo do bloco mostra o local; detalhes repetem o limite e a unidade. Rótulos/ajuda novos nos cinco idiomas. Cabeçalho do diálogo foi localizado como Dados do sistema em vez da chave data. Campos de busca/local e fonte invalidam/abortam prévia anterior; datas permanecem desabilitadas para estoque atual. Blocos antigos sem local não são convertidos por suposição: devem ser editados escolhendo um local.
+
+Adaptadores recebem sessão e callback de atualidade; estoque verifica quatro IDs, token, autorização, abort e corpo antes/depois de cada página. O chamador também protege erro tardio de consulta/atualização: depois de mudar sessão/empresa/loja/usuário/aparelho, a tentativa antiga não limpa o workbook nem invalida a nova sessão por um401/403antigo. Revogação na própria sessão continua usando a limpeza existente. Nenhuma fila/operação de resultado incerto do financeiro foi apagada ou reenviada; esta unidade é somente GET.
+
+### Arquivos e evidências
+
+Novos em frontend-web: src/core/sheets70/stockSnapshot.mjs, stockSnapshot.d.mts, stockWords.ts; tests/sheetStockSnapshot.test.mjs. Alterados: src/core/sheets70/stock.ts, contracts.ts, model.d.mts; src/modules/tenant/pages/Sheets70.tsx; este registro. Contrato/validação física de stockReports reaproveitados, não recriados. Nenhum aplicador antigo usado.
+
+30testes novos aprovados, incluindo local obrigatório, paginação51/500/501, busca parcial sem matches, inteiro exato, vazio confirmado, todas as quatro identidades, logout/corpo tardio/permissão/módulo, aborto, clone, 401/403/404/503, diretório inválido, duplicação entre páginas, contagem alterada e rejeição de custos em resposta física. Suíte final1405aprovados,0falhas,0ignorados, incluindo regressões116/117; TypeScript final aprovado; build Vite/React isolado final20,529s, sem envFile/configFile nem sobrescrever dist. `git diff --check` aprovado antes do checkpoint. O runtime da planilha continua grande, conforme medição da entrega anterior.
+
+Prévia EXPLÍCITA na composição real LocalSpreadsheet/Sheets70 com transporte somente em memória e GET obrigatório,127.0.0.1:4333. Usuário employee de teste com apenas manage_stock; demais fontes desabilitadas. Local inicialmente vazio bloqueou Prévia. Após escolher depósito,51posições consultadas; exemplo kg: físico1250,reservado500,livre750milésimos. Confirmação inseriu bloco; recarga redigiu dados persistidos e reconsultou a fonte, recuperando os valores, conforme regra70. Capturas planilha-estoque-previa-2026-10-22.png e planilha-estoque-restaurado-2026-10-22.png em outputs. Prévia não homologa serviço real. Não se percorreu toda matriz de idioma/tema/viewport/leitor de tela.
+
+Cenário de regressão adicional em ?profile=late: corpo403da consulta antiga troca para second-preview-user e segunda sessão descartável antes de concluir. Nova identidade permaneceu autenticada, workbook vazio/separado e sem reapresentar dados do operador anterior; console final sem erro. Captura planilha-sessao-tardia-2026-10-22.png. Um primeiro ensaio do transporte tinha referência sombreada de location; isso gerou falha na própria prévia, foi corrigido para window.location e o cenário repetido antes de anunciar resultado. Falha do seletor por getByLabel na automação foi resolvida pelo controle nativo observado, sem alterar o produto. Uma busca de caminho work executada no diretório do repositório retornou No such file or directory; corrigido o diretório do laboratório, sem efeito em fontes.
+
+Laboratórios de4332e4333encerrados após a verificação. Evidências, hashes e preimagens privados em work/sheet-stock-20261022; não incluir dependências/builds desses laboratórios em entregas. Houve aviso do helper Git de lock de credenciais read-only no push anterior, mas o processo concluiu e o hash9280foi confirmado remotamente; não se alterou configuração de credenciais.
+
+Pendências de integração: URL/build/schema/perfil/banco DESCARTÁVEL identificados pelo responsável, manage_stock e licença em estados distintos, locais autorizados/negados, volume500/501e mudanças concorrentes, revogação durante corpo, reabertura de blocos e limites do servidor. Não iniciar backend escolhendo banco, estação ou chaves. Fonte financeira e demais fontes70, compartilhamento, importação e aceites completos continuam parciais; não afirmar conclusão do frontend inteiro por esta consulta ou pelos1405testes. Prosseguir pelos contratos disponíveis e registrar dependências reais por fluxo.
