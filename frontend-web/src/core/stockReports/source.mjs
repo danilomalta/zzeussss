@@ -1,0 +1,18 @@
+import {LocalAPIError} from '../local/localClient.mjs';
+import {contextOf,contextKey} from '../context74/model.mjs';
+import {reviewedDetail} from '../reviewedInventory/model.mjs';
+import {reportID,stockPositions,inventoryVariance} from './model.mjs';
+const fail=()=>{throw Error('stockReportInvalid');};
+export function createStockReports({token,session,capabilities,isCurrent,fetcher=globalThis.fetch,directory}){
+ const scope=contextKey(contextOf(session,capabilities));if(typeof token!=='string'||!token||/[\r\n]/.test(token)||typeof isCurrent!=='function')fail();
+ function authorize(financial=false){let valid=false;try{valid=isCurrent()&&contextKey(contextOf(session,capabilities))===scope;}catch{}if(!valid)throw new LocalAPIError(401,'stockReport');if(!capabilities.permissions?.includes('manage_stock')||financial&&!capabilities.permissions.includes('view_accounting'))throw new LocalAPIError(403,'stockReport');}
+ async function request(path,financial,signal,csv=false){authorize(financial);const controller=new AbortController(),abort=()=>controller.abort();if(signal?.aborted)abort();signal?.addEventListener('abort',abort,{once:true});const timeout=setTimeout(abort,15000);try{controller.signal.throwIfAborted();const response=await fetcher('/local/v1/management/'+path,{method:'GET',credentials:'omit',cache:'no-store',headers:{Authorization:'Bearer '+token},signal:controller.signal});authorize(financial);controller.signal.throwIfAborted();const raw=await response.text();authorize(financial);controller.signal.throwIfAborted();if(raw.length>2000000)fail();if(!response.ok)throw new LocalAPIError(response.status,'stockReport');if(csv){if(!response.headers?.get('content-type')?.toLowerCase().startsWith('text/csv'))fail();return raw;}try{return JSON.parse(raw);}catch{fail();}}finally{clearTimeout(timeout);signal?.removeEventListener('abort',abort);}}
+ function params(location,product,offset){if(!reportID(location)||product!==''&&!reportID(product)||!Number.isSafeInteger(offset)||offset<0||offset>1000000)fail();return new URLSearchParams({location_id:location,...(product?{product_id:product}:{}),limit:'50',offset:String(offset)});}
+ return {scope,get canValue(){return capabilities.permissions?.includes('view_accounting')===true;},assertCurrent(financial=false){authorize(financial);},
+ async positions(location,product='',offset=0,valued=false,signal){if(typeof valued!=='boolean')fail();const query=params(location,product,offset);return stockPositions(await request('stock/'+(valued?'valuation':'positions')+'?'+query,valued,signal),location,product,offset,valued);},
+ async csv(location,product='',offset=0,valued=false,signal){if(typeof valued!=='boolean')fail();const query=params(location,product,offset),raw=await request('stock/'+(valued?'valuation':'positions')+'.csv?'+query,valued,signal,true),header='product_id,sku,name,unit,location_id,physical_milli,reserved_milli,free_milli,measured_at,basis'+(valued?',current_catalog_cost_cents,value_cents_numerator,value_cents_denominator,requires_cost_review':'');if(raw.replace(/^\uFEFF/,'').split(/\r?\n/,1)[0]!==header)fail();return raw;},
+ async variance(detail,signal){const snapshot=structuredClone(reviewedDetail(detail,detail?.inventory?.inventory_id));return inventoryVariance(await request('inventories/'+encodeURIComponent(snapshot.inventory.inventory_id)+'/variance',true,signal),snapshot);},
+ async products(query='',offset=0,signal){authorize();if(!directory)fail();const value=await directory.products(query,offset,signal);authorize();return value;},
+ async locations(signal){authorize();if(!directory)fail();const value=await directory.locations(signal);authorize();return value;}
+ };
+}
