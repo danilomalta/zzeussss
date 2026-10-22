@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {validDate106,readPaper106,checkedPaper106,paperText106,emptyPaper106} from '../src/core/local/paper106.mjs';
+import {parsePaper92,emptyClosing92,addPaper92} from '../src/core/local/closing92.mjs';
+const text='VALOR: 219,00\nCREDITO\nNSU: ABC123\n19/10/2026 15:32';
+const good={amount:'219.00',method:'credit',reference:'ABC123',at:'2026-10-19T15:32'};
+test('reads essential fields without claiming bank approval',()=>assert.deepEqual(readPaper106(text),good));
+test('new reading has no default payment or inherited reference',()=>{assert.deepEqual(emptyPaper106(),{amount:'',method:'',reference:'',at:''});assert.deepEqual(readPaper106('TEXTO ILEGIVEL'),emptyPaper106());});
+test('mixed methods, amounts and identifiers remain unresolved',()=>{const p=readPaper106(text+'\nDEBITO\nVALOR: 96,00\nNSU: XYZ999');assert.equal(p.amount,'');assert.equal(p.method,'');assert.equal(p.reference,'');});
+test('multiple dates or times are not silently selected',()=>{assert.equal(readPaper106(text+'\n20/10/2026').at,'');assert.equal(readPaper106(text+'\n15:33').at,'');});
+test('calendar validation rejects impossible dates and keeps leap days',()=>{for(const date of ['2026-02-29T12:00','2026-04-31T12:00','2026-13-01T00:00','2026-01-00T00:00','2026-01-01T24:00','2026-01-01T00:60','2026-01-01T00:00Z'])assert.equal(validDate106(date),false,date);assert.equal(validDate106('2028-02-29T23:59'),true);assert.equal(readPaper106(text.replace('19/10/2026','31/02/2026')).at,'');});
+test('explicit correction is required for missing fields, nonpositive amounts or injected reference',()=>{for(const change of [{amount:'0'},{amount:'-1'},{amount:'1.001'},{method:'cash'},{method:''},{reference:'ABC\nTOTAL 100'},{reference:'A'},{at:''}])assert.throws(()=>checkedPaper106({...good,...change}));});
+test('canonical review preserves exact cents including safe integer boundary',()=>{assert.equal(checkedPaper106({...good,amount:'90071992547409.91'}).amount,'90071992547409.91');assert.equal(readPaper106(text.replace('219,00','90071992547409,91')).amount,'90071992547409.91');assert.throws(()=>checkedPaper106({...good,amount:'90071992547409.92'}));assert.equal(checkedPaper106({...good,amount:'0,01'}).amount,'0.01');assert.equal(readPaper106(text.replace('ABC123','A'.repeat(41))).reference,'');});
+test('reviewed fields roundtrip through the existing closing parser',()=>{for(const method of ['debit','credit','pix'])assert.deepEqual(parsePaper92(paperText106({...good,method})),{...good,method});});
+test('duplicate protection from closing remains enforced after review',()=>{const d=emptyClosing92('scope','cash'),p={...good,id:'paper',amount:21900,at:'2026-10-19T15:32:00Z',provider:'Provider',terminal:'Terminal',reviewed:true,void:false};addPaper92(d,p);assert.throws(()=>addPaper92(d,{...p,id:'other'}),/duplicateReceipt/);assert.equal(d.papers.length,1);});
+test('empty or excessive source text rejected',()=>{for(const s of ['',null,' '.repeat(2),'X'.repeat(12001)])assert.throws(()=>readPaper106(s));});
+test('all five translation dictionaries have matching populated keys',()=>{const all=['pt-BR','en','es','fr','zh-CN'].map(l=>JSON.parse(readFileSync(new URL('../src/i18n/paper106/'+l+'.json',import.meta.url))));for(const d of all){assert.deepEqual(Object.keys(d).sort(),Object.keys(all[0]).sort());assert.equal(Object.keys(d).length,23);for(const v of Object.values(d))assert.ok(typeof v==='string'&&v.trim());}});

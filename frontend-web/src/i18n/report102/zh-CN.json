@@ -1,0 +1,13 @@
+{
+  "details": "查看结账明细",
+  "balanced": "现金无差额",
+  "shortage": "实点现金短缺",
+  "surplus": "实点现金盈余",
+  "localPrint": "打印本地核对",
+  "localExport": "下载本地核对 CSV",
+  "previous": "以前的结账记录",
+  "previousNote": "以前保存的记录，可能不代表服务器当前状态。",
+  "localTitle": "本机核对",
+  "localNote": "凭条和款袋用于核对，不改变官方结果，也不确认银行支付。",
+  "paymentDetails": "查看支付核对"
+}

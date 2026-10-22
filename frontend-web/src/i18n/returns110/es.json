@@ -1,0 +1,16 @@
+{
+ "reviewTitle110":"Compruebe antes de registrar",
+ "reviewHelp110":"Revise el producto, la cantidad, el importe y la solución solicitada.",
+ "reviewEffect110":"Se creará una solicitud para revisión. Ahora no se modificará ningún reembolso, crédito, existencia ni documento fiscal.",
+ "ack110":"Revisé los datos y entiendo que esta solicitud aún requiere análisis y ejecución autorizada.",
+ "back110":"Volver a los campos",
+ "confirm110":"Confirmar registro de la solicitud",
+ "saving110":"Comprobando y registrando…",
+ "changed110":"Los datos cambiaron. Revíselos antes de confirmar.",
+ "saveFailed110":"No se pudo guardar la solicitud. Los campos se conservaron; compruebe e inténtelo de nuevo.",
+ "queueTitle110":"Seguimiento de solicitudes",
+ "queueScope110":"Las cifras siguen los filtros de abajo e incluyen solo registros de este equipo.",
+ "pendingValue110":"Importe solicitado pendiente de revisión",
+ "pendingNote110":"El importe solicitado no es una pérdida realizada ni un reembolso efectuado. La aprobación local no ejecuta pagos ni movimientos de existencias.",
+ "prepare110":"Revisar antes de registrar"
+}

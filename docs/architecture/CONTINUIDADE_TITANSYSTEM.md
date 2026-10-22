@@ -1,0 +1,362 @@
+# Continuidade do TitanSystem
+
+Revisão 7 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
+
+## Base, localização e responsáveis
+
+- Interface oficial: `/home/danillo-malta/Downloads/zzeus-frontend-backend/frontend-web/`.
+- Branch frontend: `feat/backend-checkout-authority`; HEAD auditado `c5579808c62826174b43a2b7a45fbc2ceda1e47b`. Os arquivos locais não publicados também compõem a base; o HEAD sozinho não identifica a entrega.
+- Frontend116 presente; Frontend117 CORRETO de conferência por fornecedor aplicado. Confirmados `SupplierReport117.tsx`, `core/payables117`, cinco dicionários, teste e documento193. O usuário informou em21/10: compatibilidade aprovada, backup,136testes sem falhas, TypeScript/build aprovados em20,05s, sem banco/commit/merge/push.
+- Frontend passa a ser responsabilidade deste chat/Codex, com preservação do trabalho anterior. Backend continua com responsável separado.
+- Backend de referência, somente leitura: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `58a26bbbdf08903d62f6dd1f0542417171b460dd`; árvore limpa na conferência desta entrega. B02B13 está no código e contratos. Processo/versão/banco/estação em execução continuam não identificados.
+- `~/Downloads/zzeus-frontend` é uma árvore anterior. `Documents/Codex/.../work` contém cópias de laboratório, não a fonte principal.
+- `desktop/` é o invólucro Electron, separado das telas. Não foi alterado nesta continuidade.
+- Meus antigos `workflows117` são o **rascunho de documentos e recebimento**, diferente do117 aplicado. `production118` é outro rascunho não homologado. Não executar seus aplicadores, não copiar seus routers/menus e não usar sua numeração como base de produto.
+
+## Fontes e interpretação de evidências
+
+Fontes: `PROJECT_RULES.md`; documentos172–193 desta pasta; contratos e referências em `docs/api`; código/testes locais; relatório do proprietário `TitanSystem_Relatorio_Completo_Produto_Arquitetura_Continuidade_2026-10-21.pdf` (66páginas,24capítulos, especialmente16–18 e20–23).
+
+Atualizações posteriores ao PDF: auditoria confirmou preservação dos originais e B02B13 no código; usuário confirmou aplicação do117. Esses pontos não devem reaparecer como ausências. O relatório não prova o serviço atual nem homologa todos os módulos.
+
+- Código encontrado, teste isolado, aplicação por log, API respondendo e aceite comercial são evidências diferentes.
+- Mock somente em prévia explícita. Não introduzir dados fictícios nas rotas reais.
+- Dinheiro em centavos exatos; quantidade conforme unidade/contrato. Autoridade comercial, permissão, transação, auditoria e idempotência continuam no backend.
+- Não confundir `/local/v1` (SQLite; padrão8181), API online`:8080/api/v1` e Vite`:3000` (interface/proxy de desenvolvimento).
+- Não iniciar backend escolhendo banco, estação ou chaves. Não usar banco comercial para testes de interface.
+
+## Pendências consolidadas por fluxo
+
+A lista é um mapa de trabalho, não uma declaração de que todo contrato parcial resolve o fluxo completo. “No código” abaixo se refere ao backend separado auditado, não a um serviço em execução.
+
+| Fluxo | Rota | Implementação existente | Pendência frontend | Contrato backend | Dependência externa | Teste | Estado |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Acesso, cadastro e atividade | /local/login; /register; /local/settings | Login/contexto e cadastro112 existem. Conectar criação/recuperação/perfil real e seleção autorizada de loja onde os contratos suportarem; usar atividade central, sem repetir questionário em módulos. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | APIs locais de conta, staff e política existem; não presumir cadastro completo de empresa, licenciamento comercial e filiais. Demonstrar autorização/isolamento. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Sessão financeira | /local/payables; /local/orders | Correção116 preservada; extensão de origem vigente ao115; callbacks consideram token, sessão e capacidades atuais. | Aceite de integração real com perfis descartáveis. | Mesmos contratos, sem mudanças no backend. | Serviço local e perfil a identificar pelo responsável. | Regressões de troca de quatro campos de contexto, logout, corpo tardio, licença revogada e IDs originais; suíte total858 passou. | Implementado e validado em testes isolados; integração real pendente. |
+| Venda/PDV | /local/pos | Preservar foco, tela cheia, CPF separado do clube, cotação e revisão de preço, troco após concluir e carrinhos suspensos. Conectar contratos avançados com recuperação sem afrouxar cliente legado. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Cotação/venda local e planos checkout estão no código. Gateway95 inicia desconectado; a existência dos planos não prova PSP ou pagamento misto integrado. Demonstrar venda/reinício/recibo sem duplicação. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Pagamentos, descontos e fiscal | /local/pos | Seletores/drafts não são confirmação. Integrar somente meios e estados reais. Separar cancelamento de carrinho, venda, pagamento e nota. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Pix/TEF/adquirente e fiscal exigem provedor/ambiente e contratos completos. Não considerar papel como liquidação. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Fechamento e comprovantes | /local/cash | 97–108 existem: dinheiro físico, provas, revisão, OCR e relatório oficial. Integrar estados oficiais adicionais sem duplicar parcela por papel+integração; não guardar imagem por padrão. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Relatório oficial e contratos de proofs estão no código. Revisão de papel não é confirmação bancária. Falta demonstrar fluxo combinado com permissões e hardware reais. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Movimentos, livro, malote e cofre | /local/cash | 99/105/109 têm registros/revisões locais. Conectar a cadeia oficial e distinguir o registro local de recebimento remoto. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Há APIs de movimentos, bags, custódia e vaults. Não declarar esses contratos inexistentes. Revisar política do conferente/origem e demonstrar recuperação sem autocustódia/crédito duplicado. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Catálogo, estoque e perdas | /local/catalog; /local/stock; /local/losses | Novo estoque oficial por produto/local com físico/reservado/livre, histórico genérico, entrada/perda/transferência, CSV e cópia de página para planilha. Catálogo anterior preservado. | Tradução e integração das demais ações do catálogo/perdas; inventário com contagem/aprovação/frequência e custo das perdas continuam pendentes. | Availability, stock operations/history/receipt existentes. Núcleo de inventário não demonstra endpoint de ciclo completo de aprovação. | Homologação em serviço de teste; política de inventário da empresa. |23testes novos do estoque, inclusive preservação da entrada antiga; regressões completas858. | Unidade de movimentos implementada; fluxo amplo de estoque ainda parcial. |
+| Reposição e pedido local | /local/orders | 115 aplicado. Preservar mínimo/alvo, sugestão e aceite/recusa humana. Completar conexão entre o pedido local e o circuito interempresa quando houver contrato. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | API local existente não demonstra envio/aceite do fornecedor. Vínculo e condições comerciais não podem ser deduzidos da aprovação local. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Fornecedor, doca, expedição e recebimento | /local/orders | Recebimento oficial integrado aos detalhes do pedido: autorização humana local, aceitação parcial, recusa integral, estorno de entrada e histórico. | Confirmação externa, docas, carga, coleta e política de créditos permanecem parciais; não foram recriadas como sucesso local. | Contratos de receiving authorization/trace/history/operations e receipt/rejection/void usados. | Acordo com fornecedor, motorista e integrações externas. |26testes novos do recebimento; prévia descartável de autorização e entrada parcial; suíte858. | Unidade local implementada; circuito interempresa ainda parcial. |
+| Troca, devolução, coleta e reembolso | /local/pos | 100/110 são solicitações e revisão locais. Integrar execução oficial sem apresentar solicitação como reembolso; coleta/chegada são confirmações distintas. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Cancelamento de venda local existe parcialmente. Política do fornecedor, coleta, chegada e crédito/reposição/reembolso exigem contrato e aceite de ponta a ponta. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Documentos e financeiro | /local/payables; /local/payables/agenda |113–117 preservados. Criação documental, parcelas exatas e revisão independente agora integradas aos contratos. | Contas a receber, centros de custo, fluxo de caixa/DRE, OFX e outras fontes continuam a conferir e integrar; não classificados como API inexistente sem inspeção. | Payables e vínculos existentes usados. Demais contratos precisam ser identificados por fluxo. | Bancos/PSP e aceite contábil são separados. | Novos testes de documentos mais regressões113/114/116/117;858 na suíte completa. | Unidade de documentos implementada; módulo financeiro amplo ainda parcial. |
+| Contador e exportações | /local/payables/agenda | 117 já entrega CSV/XLSX/impressão/cópia para planilha do escopo consultado; não recriar. Falta acesso externo autorizado, carteira/checklist/entrega quando suportados. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Exportação local não é portal do contador. Compartilhamento revogável, trilha, limites maiores e visão empresarial/histórica exigem contratos próprios. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Receitas, produção e qualidade | /local/recipes; /local/operation | Consulta/capacidade, publicação imutável, ordens, reserva/liberação/consumo, etapas, resultado medido e declarações de perdas/lotes/qualidade integrados em /local/recipes. Planejamento86/90 preservado como rascunho. | Custos completos, atribuir outros responsáveis nos formulários, estado ativo/inativo da receita, histórico próprio de etapas na UI, bloqueio interno de navegação dos formulários e aceite real ainda pendentes. | Contratos reais existentes consumidos, incluindo recibos originais e trace; backend separado não alterado. | Serviço/perfis descartáveis ainda a identificar com responsável. |1028testes; TypeScript/build; circuitos visuais em memória e5idiomas. | Subfluxos aplicados; produção ampla ainda parcial, sem homologação real nem instalador novo. |
+| RH e equipe | /local/hr; /local/staff | Staff real e painel71 existem. Conectar fontes autorizadas de ponto, tarefas, metas, escalas, férias/documentos/folha e avaliações privadas. Não confundir RH com cadastro de acesso. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Não houve comprovação do ciclo completo de RH/portal móvel; APIs/fonte e permissão por dado devem ser coordenadas. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Planilhas | /local/sheets | Editor e presets preservados. Cinco idiomas carregados sob demanda, com proteção para mudança tardia de idioma/contexto. Cópias117 e estoque permanecem cópias explícitas. | Integrar fontes reais pendentes de estoque/financeiro, revisar blocos/versões/importação e homologar editor completo; não afirmar conclusão por reduzir chunk. | Fontes parciais existentes; contratos locais de estoque/financeiro disponíveis para integração posterior. | Medir abertura/memória no hardware alvo; colaboração/compartilhamento dependem de contrato. |5testes novos de idioma; regressões68/69/70 na suíte858; TypeScript/build passaram. | Otimização implementada e medida em build; planilha ampla ainda parcial. |
+| Gestão, comercial, documentos e integrações | /local/enterprise; /local/commercial; /local/documents | Áreas85/89 existem; diferenciar arquivo de trabalho de fonte oficial e conectar cada adaptador disponível. Não criar menu duplicado. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Há fontes parciais/indisponíveis. Cadastro comercial, CRM, integrações e relatórios completos precisam de contrato e aceite delimitados. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Entrega, mapa e frota | /local/delivery; /local/map; /local/fleet | Preservar geografia, clientes externos, janelas negociadas e separação de delivery/cozinha; conectar carga, confirmação e localização autorizada. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Não presumir telemetria/ETA ao vivo, app de motorista ou roteamento comercial completo pela presença do mapa. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Offline e móvel | /local/integrations/diagnostics | Preservar estados de conexão e limites; não prometer venda móvel independente do PC sem prova. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Direitos exclusivos, transferência durável, backup antigo, revogação e reconciliação precisam de protocolo/aceite. P2P, timestamp e reenvio idempotente sozinhos não resolvem saldo global. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
+| Desktop, segurança e desempenho | frontend-web; desktop fora desta tarefa | Telas permanecem em frontend-web. Empacotamento está fora da unidade atual. Medir abertura/operação/consulta/memória no mesmo hardware; preservar cinco idiomas, temas, teclado e touch. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Homologar instalação/reinício/atualização/restauração Windows/Linux sobre combinação conhecida; periféricos e APIs externas não testados nesta entrega. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Empacotamento fora da primeira entrega desta tarefa; desempenho frontend pendente |
+
+| Documentos a pagar — unidade aplicada | /local/payables → Documentos a pagar | Criar obrigação BRL, até120parcelas ordenadas, soma exata, histórico, aprovar/recusar por outro responsável, cancelar conforme autor/estado/saldo, recuperação por recibo e lock. | Homologação integrada; não inclui pagamento bancário nem fiscal. | GET/POST finance/payables, GET documento, POST approve/reject/cancel e GET operations/id; fornecedores existentes. | Serviço local e usuários de teste com permissões reais. |28testes novos; criação e aprovação pela interface em memória, cinco idiomas e estados de falha. | Implementado, aguardando integração real. |
+| Recebimento — unidade aplicada | /local/orders → Detalhes → Recebimento conferido | Autorizar, conferir entregue/aceita, recusar, estornar entrada, totais e histórico50porpágina. Identificadores originais e fila por quatro campos do contexto. | Homologação integrada e verificação visual de recusa/estorno; autorização não confirma fornecedor. | Endpoints purchase-orders/authorize-receiving, receipts, rejections, receipts/id/void, receiving-trace/history e purchase-receiving/operations/kind/id/receipt. | Serviço, licenças Orders/Inventory e operadores autorizados. |26testes novos; autorização e parcial5kg/4kg na prévia em memória. | Implementado, aguardando integração real. |
+| Estoque — unidade aplicada | /local/stock | Saldo físico/reservado/livre, histórico50porpágina, entrada/perda/transferência no mesmo escopo, recibo, recuperação de fila nova e entrada legada, CSV e cópia da página. | Homologação integrada; ações comerciais de inventário separado indisponíveis e explicadas. | Catalog search, locations, stock availability, operations, operations/history e operations/id/receipt. | Serviço local, licença Inventory e permissão manage_stock; consulta de catálogo conforme servidor. |23testes novos; consulta10kg e perda1kg com saldo9kg na prévia em memória. | Implementado, aguardando integração real. |
+| Idiomas da planilha — unidade aplicada | /local/sheets | Presets core/conditional-formatting/data-validation/filter/sort preservados; apenas idioma escolhido na abertura. | Teste visual do editor completo e medidas de runtime ainda não executados. | Sem alteração de API. | Biblioteca e hardware já usados pelo produto. |5testes de seleção, cancelamento e resposta tardia; build medido antes/depois. | Implementado e validado em testes/build; aceite visual pendente. |
+
+Expansões do capítulo19 (advocacia e novos segmentos, entre outras) continuam registradas no relatório; não são dependências silenciosas da próxima unidade.
+
+## Coordenação com o backend
+
+Nenhuma mudança de contrato, banco, migração, licença ou permissão é solicitada pela correção de sessão abaixo. Foram relidos `backend/internal/localapi/payable_cash.go`, `payable_readiness.go`, montagem do servidor e contratos `payable-cash.openapi.json`, `payable-readiness.openapi.json` e `payables-flow.openapi.json` na árvore do backend.
+
+Para o responsável: manter os recibos originais e o escopo de empresa/loja/aparelho/ator; informar versão e perfil efetivamente em execução antes de ensaio integrado. Futura unidade de documentos/recebimento/produção deve confirmar contrato, concorrência, recuperação e trabalho em curso com esse responsável, sem alterar sua árvore para demonstrar a UI.
+
+Nenhum chat foi identificado com segurança como o responsável pelo backend na lista de conversas disponível. Não foi enviada mensagem a conversa não identificada. Este registro mantém a situação e os pontos de coordenação; não representa resposta ou aprovação do responsável.
+
+## Unidade atual — proteção da sessão no financeiro116
+
+Problema reproduzido em transporte exclusivamente em memória: após trocar a sessão durante o GET do recibo, o cliente anterior ainda tentava1POST; esperado0. Nenhuma API real foi chamada para reproduzir.
+
+Correção delimitada:
+1. `frontend-web/src/core/payables116/source.mjs`: callback `isCurrent` opcional para compatibilidade; conferir sessão antes/depois de transporte e após decodificar corpos; comparar com o escopo original capturado, inclusive se os objetos forem alterados no mesmo lugar; bloquear envio e descarte de fonte antiga. Fila incerta continua preservada.
+2. `frontend-web/src/core/payables116/source.d.mts`: declarar o callback.
+3. `frontend-web/src/modules/financial/pages/LocalPayables113.tsx`: vincular o callback ao token e objeto de sessão atuais; uma falha da fonte antiga não encerra o login novo.
+4. `frontend-web/tests/finance116.test.mjs`: regressões de logout/troca de sessão durante lock, consulta, leitura de corpo e POST; troca de empresa/loja/usuário/aparelho, inclusive mutação no mesmo objeto; recuperação posterior com um único envio e os mesmos IDs.
+5. Este registro de continuidade.
+
+Não altera valores, regras de elegibilidade, IDs, recibos, contratos ou dicionários. Cinco idiomas e temas existentes permanecem. Não impede retroativamente requisição que já chegou ao servidor; nesse caso mantém incerteza e exige consulta pelo contexto original. Não confirma operação após troca de sessão nem apaga sua prova local.
+
+### Evidências desta unidade
+
+- Preparação em apenas4arquivos de fonte/teste, sem outra cópia do ERP; preimagens e backup privado no diretório de trabalho da tarefa.
+- Teste focado da preparação:46testes aprovados, incluindo9regressões novas. Transporte e storage em memória.
+- Aplicado no projeto correto em21/10/2026, após conferir HEAD, branch, os4hashes de preimagem e escrita efetiva nas4pastas autorizadas. Nenhum conflito de conteúdo encontrado.
+- Regressões aplicadas:157testes aprovados, zero falhas, zero ignorados: `node --test tests/finance116.test.mjs tests/suppliers117.test.mjs tests/agenda114.test.mjs tests/payables113.test.mjs`. São58testes do116, incluindo21regressões de sessão/contexto acrescentadas nesta unidade, mais as regressões113/114/117.
+- Cenários de empresa, loja, usuário e aparelho: a consulta antiga não envia POST após troca; nova origem não lê/apaga fila antiga; resultado incerto não dispara reenvio automático; retorno ao contexto original recupera pelo mesmo operation_id/payment_id/documento/parcela, com somente1POST. Também foram reproduzidas e corrigidas4falhas quando objetos de sessão/capacidades eram alterados no mesmo lugar.
+- TypeScript: `node node_modules/typescript/bin/tsc --noEmit --project tsconfig.json`, código de saída0, sem diagnósticos.
+- Build Vite5.4.21 da árvore aplicada: aprovado em19,93s. API `build`, mesmo plugin React do vite.config.ts, `configFile:false` e `envFile:false`; destino de verificação separado em `work/continuidade-117-financeiro/build-verificacao-UyaWtg`. O dist existente do projeto não foi substituído. Nenhuma dependência instalada; nenhum ZIP gerado.
+- Permanece aviso preexistente de chunks grandes, principalmente LocalSpreadsheet (~9,53MB minificado). Não foi anunciado ganho de desempenho.
+- Preservação:1040arquivos anteriores de src/testes/docs conferidos por SHA-256; somente os4arquivos previstos mudaram e este documento foi acrescentado; nenhum removido.117, agenda114 e demais arquivos preservados. `git diff --check` passou; as comparações diretas dos4arquivos não rastreados com suas preimagens não apontaram whitespace inválido. Backend separado permaneceu limpo.
+- Backup privado e evidências: `/home/danillo-malta/Documents/Codex/2026-10-20/github-plugin-github-openai-curated-remote-2/work/continuidade-117-financeiro/backup`; preimagens, hashes aplicados, logs e verificação de preservação no diretório pai. Não executar aplicadores antigos. Nenhum commit/merge/push/publicação.
+- Não executados: backend/SQLite real, banco comercial, adquirente, SEFAZ, hardware, Windows e ensaio físico entre aparelhos. Sem alteração de endpoint, não foi iniciado serviço para esta correção.
+
+### Como verificar e reverter
+
+Os testes116 junto a113/114/117, TypeScript e build fora do dist usado pelo proprietário foram executados conforme o bloco anterior. Em ambiente de teste, iniciar consulta/confirmar com resposta atrasada e encerrar/trocar sessão: a origem antiga não pode enviar novo POST, exibir resultado antigo nem encerrar a sessão nova. Uma operação enviada antes da troca continua pendente para consulta pelo contexto original, sem reenvio automático.
+
+Aplicação: conferir hash de TODOS os quatro arquivos contra a preimagem antes de qualquer substituição; preservar modo, copiar somente os quatro caminhos e este documento. Se um arquivo mudou, interromper e comparar. Reversão: comparar a versão aplicada; somente se ela ainda corresponder, restaurar as quatro preimagens do backup. Preservar mudanças posteriores e a fila financeira. Não usar reset/clean ou restauração geral.
+
+## Diagnóstico dos erros de acesso
+
+Na tentativa anterior, a concessão por caminho de arquivo levou o sandbox a tentar montar diretórios de controle abaixo de arquivos (por exemplo `finance116.test.mjs/.git`), causando `Not a directory` antes da execução. Outra ferramenta retornou `EROFS: read-only file system`. Não houve aplicação naquela tentativa; os hashes desta tarefa confirmaram as4preimagens intactas.
+
+Neste turno o caminho real foi confirmado por realpath e o trabalho passou a executar com cwd `/home/danillo-malta/Downloads/zzeus-frontend-backend`. A raiz geral do sandbox continua marcada ro; isso sozinho não determina a escrita nas pastas autorizadas. Nas4pastas, abertura sem truncar e gravação/fsync/releitura de arquivo temporário passaram. Só então houve aplicação com backup, conferência antes/depois e substituição localizada. Não foi feita alteração de permissões do projeto nem remontagem do disco Ubuntu.
+
+## Regra para a próxima atualização
+
+Atualizar este mesmo arquivo com data, base efetiva, arquivos exatos, contrato utilizado, testes realizados, limitações e aceite. Não criar outra lista concorrente de continuidade. Não repetir o117 aplicado nem executar aplicadores dos rascunhos. Sem commit, merge, push ou publicação automáticos.
+
+
+## Execução da primeira entrega — em andamento
+
+21/10/2026: base e escrita efetiva reconferidas. Plano: (1) documentos a pagar com parcelas e revisão independente, usando contrato existente; (2) recebimento/produção e demais ligações do circuito, conforme inspeção dos contratos; (3) fontes transversais, planilha e desempenho; (4) regressões completas, traduções, TypeScript, build e validação visual descartável. Não iniciar backend comercial.
+
+Aplicadas as unidades abaixo diretamente na árvore correta. Não há aplicador ou pacote novo. Os demais fluxos continuam parciais até evidência específica; a primeira entrega completa ainda NÃO está concluída.
+
+
+## Entrega aplicada em21/10/2026 — documentos, recebimento, estoque e idiomas de planilha
+
+### Aplicação e decisões
+
+- Somente frontend e este registro. Branch/HEAD preservados. As permissões do sandbox foram concedidas por diretórios e verificadas com arquivo temporário/fsync antes da escrita; os erros anteriores não foram considerados resolvidos apenas por autorização.
+- `core/payableDocuments`: adaptador tipado com contrato real de obrigação documental. Aprovar não paga; cancelamento com dinheiro aplicado é recusado; outro responsável revisa o documento. Valores em centavos exatos, inclusive limite de inteiro seguro, sem arredondar parcelas. IDs são gerados ao revisar e preservados ao confirmar/recuperar.
+- `core/receiving`: contratos reais de autorização, entrada aceita, recusa integral, estorno e histórico. Unidade e quantidades em milésimos exatos; totais grandes do histórico permanecem strings/BigInt. Divergência entre snapshots de trace/history pede atualização. Autorizar não dá entrada; recusar não dá entrada; estornar retira a quantidade aceita original, sem fingir reembolso.
+- `core/stockWorkspace`: estoque oficial por produto/local; cada movimento revisado carrega `expected_unit` e motivo. Nenhum ajuste automático por contagem. A entrada pendente legada usa o mesmo nome de lock e é preservada no armazenamento original, sempre tratada como incerta até consulta de recibo. Contexto legado ambíguo por delimitador dois-pontos bloqueia recuperação e preserva os bytes para análise, sem consulta ou reenvio. Não transforma a fila antiga em outra operação ou novos IDs.
+- `orders115`: resposta de origem antiga não continua em POST nem apaga fila. Conferência antes/depois do transporte e da leitura do corpo, quatro IDs do contexto, sessão/token/capacidades atuais e licença antes de cada POST. Pedidos cancelados não são mais rejeitados como DTO desconhecido nem rotulados como não enviados no CSV.
+-116/117, agenda114, seus valores/relatórios e núcleo da correção anterior não foram substituídos. Somente o contêiner116 recebeu composição com a nova área de documentos e guarda de capacidades atuais.
+- `LocalCatalog` continua com seu cadastro anterior. A rota stock carrega a nova unidade sob demanda; a implementação antiga foi preservada no arquivo e não é executada nessa rota. Não houve troca de router ou menu.
+- Planilha: removeram-se somente imports estáticos dos25pacotes de tradução, agora agrupados em5cargas por idioma. Editor, fórmulas e presets permanecem. Carga assíncrona antiga não monta editor após navegação nem seleciona um idioma ultrapassado.
+- Novos textos têm pt-BR/en/es/fr/zh-CN; estados reais, revisão antes do envio, labels/foco, temas existentes e controles com alvo de44px. Nenhuma demonstração é ativada nas rotas reais. Prévia apenas em `work/frontend-release/preview`, com faixa explícita e transporte em memória.
+
+### Verificações executadas e limites
+
+- `node --test tests/*.test.mjs`:858aprovados,0falhas,0ignorados. O npm test:local atual é uma lista menor; foi executada a suíte completa disponível por glob.
+- TypeScript: `node node_modules/typescript/bin/tsc --noEmit --project tsconfig.json`, exit0 e nenhum diagnóstico.
+- Build da árvore aplicada via API Vite, mesmo plugin React, `configFile:false`, `envFile:false`, em destino privado de verificação, sem sobrescrever dist: aprovado em22,064s na rodada final antes deste registro. Nenhuma dependência instalada.
+- `git diff --check` aprovado. Conferência SHA-256 da base1041arquivos: somente caminhos desta entrega mudaram, nenhum arquivo anterior removido.16arquivos protegidos de117/agenda114/núcleo e testes116 mantiveram seus hashes. Backend separado limpo.
+- Primeiro build medido antes dos idiomas sob demanda: LocalSpreadsheet9.981.842bytes,19,966s. Após: núcleo6.659.122bytes e português746.315bytes, total desses dois arquivos7.405.437bytes (cerca de25,8% menos que o chunk anterior). Inglês596.995, espanhol633.569, francês809.246, chinês539.140bytes. Continua grande; o aviso não foi ocultado. Build final22,064s não demonstra ganho no tempo de compilação.
+- Grafo de imports do build: menu e PDV não alcançam módulos Univer por dependência estática. Idiomas e nova unidade stock têm chunks sob demanda. Não foi medido tempo de abertura, memória, FPS ou hardware antigo.
+- Navegador, prévia descartável: criação documental315,00 com revisão/recibo; aprovação por outro usuário; textos nos5idiomas; claro/escuro; vazio/offline/sem permissão; autorização local; entrega5kg, aceita4kg, recusa parcial1kg e restante6kg; saldo de estoque10kg, perda1kg e saldo9kg, todos somente em memória.
+- Viewports solicitados390/768/1280: larguras efetivas375/753/1265 com `scrollWidth===clientWidth`, fontes de14px no estoque e rolagem interna das tabelas. Os tamanhos efetivos descontam a barra vertical. Não declarar que foi percorrida cada tela histórica em cada tamanho/idioma.
+- Problemas de automação encontrados: abas descartáveis perderam vínculo em tentativas iniciais, preenchimento pelo clipboard perdeu foco e o processo de prévia terminou com143. A prévia foi reiniciada e novas abas/controlos acessíveis permitiram os ensaios descritos. Não são erros constatados do backend comercial.
+- Não executados: API/SQLite real, fluxo completo por navegador do estorno/recusa integral/transferência, exportação real para planilha no shell completo, editor Univer completo após a mudança, zoom50–100%, auditoria completa de teclado/leitor de tela, concorrência entre aparelhos físicos, PSP/bancos/fiscal/hardware/Windows. Testes em memória não homologam essas integrações.
+- Nenhum commit, merge, push, publicação, ZIP, instalador, backend ou banco comercial. Aplicadores dos rascunhos não foram executados.
+
+### Como verificar estas unidades
+
+Usar apenas serviço e perfis descartáveis explicitamente definidos pelo responsável. O serviço em execução ainda não foi identificado; não iniciar uma base escolhida automaticamente. As mudanças estão nas fontes locais; AppImages/DEBs antigos não foram atualizados.
+
+1. Na interface atualizada, `/local/payables`: abrir Documentos a pagar, carregar fornecedor ativo, preencher emissão/referência/descrição e parcelas. Valor315,00 pode ser dividido100,00+96,00+119,00. Uma soma incorreta ou data fora de ordem não permite revisão. Confirmar somente após conferir a prévia.
+2. Outro operador autorizado consulta o documento e aprova/recusa com motivo. O criador não recebe essas ações. Cancelar segue autor/estado/saldo; consultar o histórico. A agenda114 e a Visão por fornecedor117 continuam nas rotas existentes.
+3. `/local/orders`: abrir Detalhes; na área Recebimento conferido, autorizar localmente, conferir entregue/aceita/local/motivo. Receber5kg e aceitar4kg, para pedido10kg, deve apresentar1kg recusado e6kg restante. Testar recusa integral e estorno somente em base descartável.
+4. `/local/stock`: buscar produto, escolher local e consultar. Conferir físico=reservado+livre. Revisar entrada/perda/transferência e consultar recibo/histórico. CSV exporta somente a página. Copiar para planilha é cópia explícita, permitida conforme perfil, sem vínculo automático.
+5. Durante consulta de recibo com resposta atrasada, trocar empresa/loja/usuário/aparelho ou encerrar sessão. A origem antiga não deve iniciar POST. Operação enviada antes da mudança permanece incerta; retornar ao contexto original e Consultar resultado, sem reenvio automático.
+6. `/local/sheets`: abrir em cada idioma e alternar idioma durante a carga. Nenhuma carga antiga deve remontar editor fora da rota. Verificar fórmulas, estrutura, filtros, validação e formatação no hardware alvo antes de homologar a otimização.
+
+### Ponto exato de continuidade
+
+A primeira entrega ampla permanece em andamento. Não há preparação pendente de aplicar: as unidades acima estão na árvore principal e passaram nos checks descritos. Atualização22/10: a consulta oficial de receitas e capacidade em `/local/recipes` foi aplicada conforme a seção seguinte; publicação e execução produtiva ainda não foram integradas. Reaproveitar perfil central e preservar planejamento86/90 como rascunho identificado. Ler os contratos de versões, capacidade, ordens, materiais, etapas, resultados, lotes/qualidade/perdas e recibos, sem confundir ausência de integração frontend com falta de API.
+
+Foi consultado o rascunho isolado `production118`: a página contém textos em português e depende de `workflows117`, que não é o117 oficial. Não atende à integração atual nem aos5idiomas; nenhum arquivo dele foi aplicado. Revisão de reaproveitamento deve ser localizada e testada, não cópia de router/menu/applicador.
+
+Também permanecem frontend a concluir: ligação avançada PDV/planos/provas e meios eletrônicos honestamente bloqueados, cadeia oficial de fechamento/malote/cofre, demais ações de catálogo/perdas/inventário, fontes de planilha, contas a receber/contabilidade, perfil/contexto/configurações, RH e comercial/documentos/logística conforme contratos. A matriz distingue a unidade entregue do fluxo amplo. Não afirmar que essas pendências são todas do backend.
+
+Responsável do backend ainda não identificado com segurança em outro chat; nenhuma mensagem enviada. Contratos consumidos não foram alterados. Confirmar serviço, versão, licença e perfis para ensaio conjunto antes de qualquer integração real.
+
+### Caminhos exatos desta entrega
+
+
+Arquivos anteriores alterados:
+
+- `frontend-web/src/core/orders115/model.d.mts`
+- `frontend-web/src/core/orders115/source.d.mts`
+- `frontend-web/src/core/orders115/model.mjs`
+- `frontend-web/src/core/orders115/source.mjs`
+- `frontend-web/src/core/local/purchaseClient.mjs`
+- `frontend-web/src/modules/financial/pages/Finance116.tsx`
+- `frontend-web/src/modules/financial/pages/LocalPayables113.tsx`
+- `frontend-web/src/modules/tenant/pages/LocalSpreadsheet.tsx`
+- `frontend-web/src/modules/tenant/pages/sheetRuntime70.ts`
+- `frontend-web/src/modules/catalog/pages/LocalCatalog.tsx`
+- `frontend-web/src/modules/catalog/pages/LocalOrders.tsx`
+- `frontend-web/src/modules/catalog/pages/Orders115.tsx`
+- `frontend-web/tests/orders115.test.mjs`
+- `docs/architecture/CONTINUIDADE_TITANSYSTEM.md`
+
+Arquivos novos:
+
+- `frontend-web/src/core/stockWorkspace/model.d.mts`
+- `frontend-web/src/core/stockWorkspace/words.ts`
+- `frontend-web/src/core/stockWorkspace/source.d.mts`
+- `frontend-web/src/core/stockWorkspace/model.mjs`
+- `frontend-web/src/core/stockWorkspace/source.mjs`
+- `frontend-web/src/core/payableDocuments/model.d.mts`
+- `frontend-web/src/core/payableDocuments/words.ts`
+- `frontend-web/src/core/payableDocuments/source.d.mts`
+- `frontend-web/src/core/payableDocuments/model.mjs`
+- `frontend-web/src/core/payableDocuments/source.mjs`
+- `frontend-web/src/core/receiving/model.d.mts`
+- `frontend-web/src/core/receiving/words.ts`
+- `frontend-web/src/core/receiving/source.d.mts`
+- `frontend-web/src/core/receiving/model.mjs`
+- `frontend-web/src/core/receiving/source.mjs`
+- `frontend-web/src/core/sheets70/language.d.mts`
+- `frontend-web/src/core/sheets70/language.mjs`
+- `frontend-web/src/modules/financial/pages/PayableDocuments.tsx`
+- `frontend-web/src/modules/financial/pages/payableDocuments.css`
+- `frontend-web/src/modules/tenant/pages/sheetLanguage70.ts`
+- `frontend-web/src/modules/tenant/pages/sheetLocales70/enUS.ts`
+- `frontend-web/src/modules/tenant/pages/sheetLocales70/esES.ts`
+- `frontend-web/src/modules/tenant/pages/sheetLocales70/ptBR.ts`
+- `frontend-web/src/modules/tenant/pages/sheetLocales70/frFR.ts`
+- `frontend-web/src/modules/tenant/pages/sheetLocales70/zhCN.ts`
+- `frontend-web/src/modules/catalog/pages/Receiving.tsx`
+- `frontend-web/src/modules/catalog/pages/LocalStock.tsx`
+- `frontend-web/src/modules/catalog/pages/StockWorkspace.tsx`
+- `frontend-web/src/modules/catalog/pages/receiving.css`
+- `frontend-web/tests/stockWorkspace.test.mjs`
+- `frontend-web/tests/payableDocuments.test.mjs`
+- `frontend-web/tests/receiving.test.mjs`
+- `frontend-web/tests/sheetLanguage.test.mjs`
+
+Evidências e backups privados: `work/frontend-release/` nesta tarefa Documents/Codex. Preimagens de arquivos existentes em `backup/`, continuidade anterior em `CONTINUIDADE-antes.md`, hashes iniciais `base-hashes.json`, logs de testes/TypeScript/build e relatórios de chunks. Para reverter, comparar hashes finais antes de restaurar somente preimagens correspondentes; não remover novos arquivos que tenham recebido trabalho posterior, não limpar fila pendente e não usar reset/clean. Não restaurar a árvore inteira.
+
+Conferência final adicional:858testes, inclusive contexto legado ambíguo; TypeScript exit0; último build22,064s. Verificados whitespace de todos os47caminhos da entrega e links novos para rotas existentes, sem nova rota de backend. As verificações de módulos pesados se referem a imports estáticos do build, não a tempo de runtime.
+
+
+## Entrega de22/10/2026 — consulta de receitas oficiais e capacidade
+
+### Escopo aplicado e localização
+
+Na árvore principal, branch `feat/backend-checkout-authority`, HEAD `c5579808c62826174b43a2b7a45fbc2ceda1e47b`, sem alteração de branch/commit. `/local/recipes` recebe um painel de consulta oficial acima do planejamento86 existente. Nenhuma rota/menu novo; rascunhos locais e seu armazenamento permanecem. O painel tem filtro exato por recipe_id, páginas de50 (sem inventar total não fornecido), detalhe da versão imutável e composição, escolha de local e capacidade calculada pelo serviço.
+
+Contratos lidos no backend separado: `docs/api/production-recipes.openapi.json` e `production-capacity.openapi.json`, conferidos com os handlers e implementação. Usados somente GET `/local/v1/production/recipe-versions`, `/production/recipe-versions/{version_id}`, `/production/capacity` e `/locations`. Nenhum POST, publicação, reserva, consumo, fila, recibo financeiro ou banco alterado por esta unidade.
+
+Validação tipada de versões, identidade, revisão, unidades e quantidades seguras; capacidade corresponde à versão/local solicitados, saída=lotes×rendimento, menor capacidade dos insumos e limitantes. Aritmética intermediária BigInt e exibição decimal sem converter quantidades para float. A implementação atual do backend recusa divergência histórica de unidade; o adaptador não inventa conversão de densidade/embalagem. Mostrar momento da consulta e aviso de alternativas independentes, sem soma ou promessa de reserva.
+
+Autorização conferida antes/depois de transporte e depois da leitura do corpo: contexto original de empresa/loja/usuário/aparelho, expiração, token/sessão/capacidades vigentes. Resposta antiga não aparece após troca de contexto; cancelamento e geração de consulta descartam resultados ultrapassados no painel. Esta unidade não toca operações incertas de outros módulos. O adaptador permite leitura histórica autorizada sem exigir licença ativa; a guarda preexistente da página86 ainda exige licença ativa e perfil pertinente. Não foi ampliada para esta entrega.
+
+### Arquivos exatos
+
+Novos:
+- `frontend-web/src/core/productionRead/source.mjs`
+- `frontend-web/src/core/productionRead/source.d.mts`
+- `frontend-web/src/core/productionRead/words.ts`
+- `frontend-web/src/modules/tenant/pages/sectors86/OfficialRecipes.tsx`
+- `frontend-web/src/modules/tenant/pages/sectors86/officialRecipes.css`
+- `frontend-web/tests/productionRead.test.mjs`
+
+Anteriores alterados:
+- `frontend-web/src/modules/tenant/pages/sectors86/Recipes86.tsx`: imports, composição com painel oficial e título explícito de planejamento local — rascunho. Não substitui a implementação anterior.
+- Este registro único.
+
+### Verificações reais
+
+- Preparação:42testes passaram. Aplicação somente após escrita efetiva via arquivo temporário/fsync/releitura nas4pastas concedidas e comparação das preimagens; nenhum conflito.
+- `node --test tests/productionRead.test.mjs tests/finance116.test.mjs tests/suppliers117.test.mjs tests/agenda114.test.mjs tests/payables113.test.mjs`:199aprovados,0falhas.
+- `node --test tests/*.test.mjs`:900aprovados,0falhas,0ignorados. Os42novos cobrem contrato, valores exatos, capacidade zero, insumo limitante, divergências, páginas, contexto mutado nos4campos, logout durante transporte/corpo, permissão revogada, aborto e HTTP401/403/404/409/500/503.
+- TypeScript: `node node_modules/typescript/bin/tsc --noEmit --project tsconfig.json`, exit0, sem diagnósticos.
+- Build via API Vite/plugin React existentes, `configFile:false`, `envFile:false`, em diretório de trabalho separado: aprovado em19,629s. Dist usado pelo proprietário preservado. Aviso de chunks grandes permanece; não foi medido ganho de runtime nesta unidade.
+- Prévia explícita com dados em memória e faixa de demonstração: consultar versão, composição, local; resultado3lotes/6unidades; farinha limitante,3,5kg disponíveis,1kg por lote. Cinco idiomas percorridos, temas claro/escuro, estados vazio/offline/negado. Navegação do seletor por teclado verificada. Tabelas com rolagem interna em janela estreita. Não declarar auditoria completa de acessibilidade ou múltiplos viewports medidos.
+- Erro inicial apenas na configuração da prévia: `SyntaxError: The requested module '/.vite/deps/zustand.js?v=f0a439c0' does not provide an export named 'create'`. Removidos aliases extras do servidor de laboratório; renderização e ensaios passaram depois. A tentativa de seletor Playwright retornou `Playwright selector deadline exceeded`; seleção por controle acessível/teclado funcionou. Não alteradas dependências do produto.
+- Preservação por SHA-256 dos1074arquivos anteriores de src/testes/docs: apenas Recipes86 e este registro alterados; nenhum removido.116/117 e demais arquivos anteriores preservados. Backend separado permaneceu limpo. `git diff --check` e whitespace dos novos caminhos verificados.
+- Não executados: serviço/SQLite real, banco comercial, perfil real, integração completa do shell, produção/consumo real, Windows/Linux empacotado, zoom ou auditoria de leitor de tela. Nenhum backend iniciado, instalação, commit, merge, push ou ZIP.
+
+### Verificação e continuidade
+
+Em serviço descartável explicitamente identificado pelo responsável, abrir `/local/recipes`, consultar receita por identificador, conferir versão e composição, escolher local e consultar capacidade. Confrontar com reservas oficiais; zero estoque deve produzir zero capacidade. Troca de local limpa resultado anterior. Logout/troca de contexto durante resposta atrasada deve descartar a resposta. Conferir também os rascunhos e agenda117 preservados.
+
+Produção permanece PARCIAL. Próxima unidade: publicação versionada com revisão explícita, idempotência/recuperação por recibo e planejamento/aprovação de ordens oficiais; depois etapas, materiais, resultado, perdas, lotes/qualidade. Ler todos os contratos correspondentes antes de implementar. Não iniciar backend escolhendo banco/estação/licença. Responsável do backend ainda não identificado para coordenação; contratos não foram modificados.
+
+Preimagens, hashes e logs privados em `work/production-read-20261022/` nesta tarefa Documents/Codex, sem pacote novo. Reversão localizada: comparar hashes aplicados; somente restaurar preimagens correspondentes de Recipes86/registro se não receberam alterações posteriores. Novos arquivos só podem ser retirados após verificar ausência de referências e trabalho posterior. Sem reset/clean/restauração geral.
+
+
+## Entrega de22/10/2026 — publicação de receitas e planejamento oficial
+
+Aplicada na mesma branch/HEAD, sem conflitos, com conferência de preimagens e escrita efetiva/fsync. Novos: `frontend-web/src/core/productionRead/commands.mjs`, `commands.d.mts`, `commandWords.ts`; `frontend-web/src/modules/tenant/pages/sectors86/ProductionCommands.tsx`; `frontend-web/tests/productionCommands.test.mjs`. Alterados localmente: `core/productionRead/words.ts` (distinguir consulta de envio), `sectors86/OfficialRecipes.tsx` (composição), `officialRecipes.css` e este registro. Rascunhos86,117 e demais fontes anteriores preservados.
+
+- Publicação imutável com seleção de produtos do catálogo, unidades oficiais, rendimento e insumos em milésimos exatos; nova receita ou nova versão com revisão esperada. Não usa JSON livre nem converte rascunho automaticamente.
+- Ordens sobre versão congelada, lotes inteiros, local e operador atual responsável. Cadastro/atribuição de outro responsável ainda não compõe este formulário. Aprovação e cancelamento exigem motivo e revisão, sem apresentar aprovação como reserva/consumo.
+- Lista de ordens, detalhes e histórico paginados. Resultado incerto mantém tentativa e IDs; consulta original sem reenvio; reenvio apenas explícito, com payload idêntico. Fila por empresa/loja/usuário/aparelho, storage verificado e Web Locks. Fila corrompida não é apagada. Recibos originais validados independentemente de estados posteriores. Leitura histórica não depende de licença ativa no adaptador; guarda86 existente permanece.
+- Formulários não enviados ficam em memória e têm aviso beforeunload. Navegação interna da página86 ainda não incorpora esse estado ao seu bloqueador; não confundir com persistência da fila de operação já confirmada para envio, que é durável.
+- Contratos: receitas, ordens e recibos de operação do backend separado, sem alteração. Catálogo exige sua permissão própria; erro de consulta não inventa produto ou autoriza escrita.
+-42testes novos; suíte completa `node --test tests/*.test.mjs`:942aprovados,0falhas,0ignorados. TypeScript exit0. Build isolado/envFile:false aprovado em19,157s; dist existente preservado. `git diff --check` e whitespace dos novos caminhos passaram. Hashes de1080arquivos base: apenas3fontes acima e este registro alterados, nenhum removido. Sem instalação/commit/merge/push/ZIP/backend/banco comercial.
+- Navegador em memória: publicar receita com rendimento2unidades e1kg de farinha; planejar3lotes, saída6unidades; aprovar, revisão2 e histórico; perder resposta do cancelamento, bloquear descarte e confirmar por consulta ao recibo, revisão3, sem reenvio. Cinco dicionários definidos e TypeScript conferidos; os novos formulários ainda não foram percorridos visualmente em todos os idiomas/temas/tamanhos. Não foi ensaiado serviço real, banco comercial, concorrência física, Windows ou instalador.
+- Evidências/preimagens/hashes/logs privados em `work/production-write-20261022/` desta tarefa. Próxima unidade em andamento: reserva/liberação/consumo, etapas e resultado, preservando esta fila e a distinção de efeitos. Produção ampla ainda parcial; lotes, perdas e qualidade não entregues nesta unidade.
+
+
+## Entrega de22/10/2026 — reserva, consumo, etapas e resultado
+
+### Escopo e decisões
+
+Mesma árvore principal, branch/HEAD preservados. Unidade aplicada sem conflito após hashes de preimagem e prova de escrita efetiva. Extensão da MESMA fila `titan-production-commands:v1`, mantendo compatibilidade de comandos pendentes anteriores. Não há aplicador/ZIP, migração ou mudança de backend/Electron.
+
+- `/local/recipes` → ordem → detalhes/histórico → Execução da produção: consulta P11 de um snapshot com quantidades planejadas, reservadas e consumidas distintas. Valores históricos não são saldo disponível atual.
+- Reserva atômica de todos os insumos da ordem aprovada; liberar não movimenta estoque; consumir solicita uma única baixa das quantidades congeladas. O contrato atual consome as quantidades da ordem: esta tela não ajusta consumo real arbitrário nem calcula custo completo.
+- Etapas opcionais configuradas antes de reserva ativa/consumida, sequência imutável até20etapas, responsáveis atuais atribuídos neste formulário ao operador da sessão. Iniciar/concluir exige consumo, ordem aprovada, identidade responsável e etapas anteriores concluídas. Responsáveis de planos existentes são respeitados; não se amplia permissão para executar etapa alheia.
+- Resultado após consumo e etapas configuradas completas, quantidade boa medida entrezero e o plano. Produto em unidades exige inteiro. Zero conclui sem entrada positiva; diferença de rendimento não causa nova baixa de estoque. Nova reserva/consumo e cancelamento após consumo conhecido são bloqueados na interface; backend continua autoridade final.
+- Todas as ações passam por revisão humana e recibo original. Session/contexto/permissões/licença/locks/storage continuam verificados. Nenhum resultado incerto é apagado ou reenviado por troca de sessão. Nenhum comando é disparado por carregamento de tela.
+- Cinco idiomas; Intl e BigInt na exibição exata; labels, foco e controles44px herdados. Campos de execução também têm aviso beforeunload. O bloqueador de navegação INTERNA da página86 ainda não incorpora os formulários novos; formulários não enviados podem se perder nessa navegação. A fila confirmada para envio permanece durável.
+
+### Arquivos
+
+Novos: `frontend-web/src/core/productionRead/execution.mjs`, `execution.d.mts`, `executionWords.ts`; `frontend-web/src/modules/tenant/pages/sectors86/ProductionExecution.tsx`; `frontend-web/tests/productionExecution.test.mjs`.
+
+Anteriores alterados nesta unidade: `frontend-web/src/core/productionRead/commands.mjs`, `commands.d.mts`; `frontend-web/src/modules/tenant/pages/sectors86/ProductionCommands.tsx`; este registro único. Antes de reutilizar, comparar os hashes finais; não substituir arquivos com trabalho posterior.
+
+Contratos lidos e usados: production-materials, production-results, production-stages, production-trace e operation-receipts no backend separado, conferidos com Go. Novos endpoints: POST material-reservations e state, stage-plans, stages/state, results; GET orders/{id}/trace. Recibos `reserve`, `materials`, `stage_plan`, `stage_state`, `result`. Não altera contratos.
+
+### Evidências e limites
+
+-38testes novos, preparação aprovada. Suíte completa aplicada: `node --test tests/*.test.mjs`,980aprovados,0falhas,0ignorados. TypeScript aprovado, sem diagnósticos. Build isolado final aprovado em19,283s com envFile:false, sem sobrescrever dist. Aviso de chunk grande da planilha permanece.
+- Verificações: valores e insumos do snapshot, reserva/consumo, IDs e recibos, bloqueio de sessão para cada tipo de comando, perdas de resposta sem repetir consumo, etapas contíguas e sequenciais, resultado vinculado a consumo e movimento, zero produção sem movimento, unidade e limites de inteiro.
+- Navegador/memória: ordem aprovada3lotes, plano6unidades,3kg de farinha e0,030g de sal; configurar Preparação e forno; reservar (consumidozero), consumir (reservadozero), iniciar/concluir etapa, medir5unidades, confirmar resultado/revisão3 e diferença1unidade. Painel e resultado percorridos em pt-BR/en/es/fr/zh-CN; claro e escuro. Não foi percorrida toda combinação formulário×idioma×tema×tamanho.
+- Revisão visual detectou cancelamento ainda oferecido após consumo e número do resultado sem locale/unidade no resumo. Ajustados: bloqueio por consumo conhecido e resumo medido com Intl/unidade. TypeScript/build posteriores passaram.
+- `git diff --check`, whitespace e preservação por SHA-256: apenas os caminhos previstos; nenhum arquivo anterior removido.117, financeiro116 e backend preservados. Evidências privadas em `work/production-execution-20261022/`, além da unidade anterior em `work/production-write-20261022/`.
+- Não executados: serviço/SQLite real, banco comercial, ensaio físico entre aparelhos, Windows/instalador, acessibilidade completa ou consumo produtivo real. Liberação e saída zero cobertas em testes, não no circuito visual descrito. Não iniciar banco/estação/licença escolhidos automaticamente.
+
+Produção continua PARCIAL. Perdas declaradas/estorno, lotes/validade/qualidade, custos, seleção de outros responsáveis e aceite real ainda precisam fechar. Próxima unidade: consultar contratos desses itens e integrar revisão/recibo sem duplicar baixa física ou tratar qualidade declarada como inspeção automática. Demais pendências da primeira entrega permanecem na matriz.
+
+
+## Entrega de22/10/2026 — perdas declaradas, lotes e parecer humano
+
+### Aplicação e efeitos
+
+Aplicada na árvore principal sem conflito após preimagens e prova de escrita/fsync. Mantém branch/HEAD,117 e todas as alterações anteriores fora do escopo. Usa a mesma fila/locks/validação de contexto e recibos originais. Não há aplicador/ZIP, instalação ou modificação de backend/Electron.
+
+- Declaração de perda sobre a diferença do resultado, com limite global ainda não classificado. Anular devolve apenas a parcela à classificação pendente, preservando motivos/atores/histórico. Não baixa/recompõe estoque ou reabre a ordem.
+- Identificação de lote a partir da saída boa já registrada, código único, quantidade exata e datas explicitamente declaradas; validade vazia é desconhecida. Anular libera apenas a capacidade histórica de identificar essa produção, preservando o código e a história. Não cria estoque, saldo por lote, FEFO, recall ou disponibilidade comercial.
+- Parecer humano explícito para o lote completo, critério/motivo/ator e revisão própria, distinta da revisão do lote. Não avaliado é revision0/latestnull, sem parecer fictício. Parecer antigo continua visível após anulação do lote, com estado atual anulado e novos pareceres bloqueados. Não é inspeção automática, certificação ou liberação para venda.
+- Consultas paginadas de50 mostram totais globais fornecidos pelo serviço, mesmo em página vazia; não somam apenas a página como total. Detalhes/históricos de declaração e parecer; unidades históricas e quantidades exatas com Intl/BigInt. Formulários têm cinco dicionários e aviso beforeunload. Continua pendente o bloqueador de navegação interna descrito nas unidades anteriores.
+
+### Arquivos exatos desta unidade
+
+Novos: `frontend-web/src/core/productionRead/aftermath.mjs`, `aftermath.d.mts`, `aftermathWords.ts`; `frontend-web/src/modules/tenant/pages/sectors86/ProductionAftermath.tsx`; `frontend-web/tests/productionAftermath.test.mjs`.
+
+Alterados localmente: `frontend-web/src/core/productionRead/commands.mjs`, `commands.d.mts`; `frontend-web/src/modules/tenant/pages/sectors86/ProductionCommands.tsx`, `ProductionExecution.tsx`; este registro único.
+
+Contratos de production-losses, production-lots, production-quality e operation-receipts, conferidos também em handlers/modelos Go. POST losses/void/lots/void/quality-reviews; GET summaries por resultado, declaração/histórico, qualidade/histórico. Recibos loss/loss_void/lot/lot_void/quality. Nenhum contrato alterado.
+
+### Verificações e correções
+
+-48testes novos passaram na preparação. Suíte completa aplicada: `node --test tests/*.test.mjs`:1028aprovados,0falhas,0ignorados, incluindo todas as regressões anteriores116/117. Cobertura de datas reais/leap-year, limites globais, unidades, identidade, recibos e sessão para cada tipo, anulação com histórico e recuperação sem novo parecer/efeito físico.
+- TypeScript inicialmente falhou com `TS2550: Property 'at' does not exist on type 'ProductionDeclarationEvent[]'`. Corrigido apenas o acesso ao último evento por indexação ES2020. TypeScript final exit0, sem mudar tsconfig ou dependências.
+- Revisão visual encontrou recibo confirmado com total anterior ainda na tela, pois uma renderização rápida preservava o componente e suas dependências de consulta não mudavam. Corrigido propagando revisão da operação para renovar totais/detalhes/parecer. Repetição visual confirmou criação/anulação e totais atualizados; não foi reenviado o comando para resolver cache.
+- Build final isolado/envFile:false aprovado em20,268s, preservando o dist existente. Aviso de chunk grande permanece. `git diff --check`, whitespace e hashes dos caminhos previstos passaram. Backend separado segue limpo.
+- Navegador/memória: resultado5unidades, diferença1; classificar1unidade e consultar histórico; identificar2unidades em DEMO-LOTE-22, fabricação22/10/2026 e validade desconhecida, deixando3sem lote; declarar parecer humano revision1; anular lote e confirmar5sem identificação, histórico e parecer preservados, novas avaliações bloqueadas; anular perda e retornar1à classificação pendente sem baixa/estorno físico. Painéis/pareceres nos5idiomas e claro/escuro. Não foi percorrida toda combinação de formulário/idioma/tamanho nem auditoria completa de acessibilidade.
+- Automação do date input não preencheu a data nas primeiras tentativas; valor DOM vazio e revisão rejeitada corretamente. Seleção dos segmentos visíveis corrigiu a data para2026-10-22 antes da confirmação. Avisos createRoot nas prévias vieram de HMR do laboratório, não de serviço real. Não atribuir esses resultados a integração SQLite.
+- Não executados: backend/SQLite real, banco comercial, outro dispositivo físico, instalador/Windows, PSP/fiscal/hardware. Nenhum serviço comercial iniciado, credencial lida, commit/merge/push/publicação/ZIP.
+
+Evidências/preimagens/hashes em `work/production-aftermath-20261022/`; unidades anteriores nos diretórios production-write e production-execution desta tarefa. Reversão somente localizada após comparar hashes finais e referências; preservar alterações posteriores e filas pendentes. Não restaurar a árvore inteira.
+
+### Continuidade após estas três unidades
+
+A primeira entrega inteira ainda NÃO está concluída. Produção tem agora o circuito de consulta → publicação → plano → aprovação → reserva → consumo → etapas opcionais → resultado → declarações/qualidade. Isso é integração de frontend aos contratos existentes, com validação isolada; serviço e aceite comercial continuam não confirmados.
+
+Pendências concretas desta área: seleção autorizada de outros responsáveis, custos completos/consumo real variável conforme contrato, estado ativo/inativo e edição de receita, histórico próprio das etapas na UI, proteção de navegação interna para os novos formulários e ensaio real com perfil/banco descartável explicitamente definido pelo responsável do backend. Fontes86/90 e seus rascunhos continuam separados; nenhum rascunho118 aplicado.
+
+As demais áreas da primeira entrega permanecem na matriz. Não converter pendência de frontend em suposta ausência de API. Não ampliar permissões para teste. Não iniciar backend comercial ou pacote desktop sobre combinação desconhecida. Próxima entrega deve continuar neste mesmo registro e comparar hashes antes de editar; não precisa repetir auditoria geral.

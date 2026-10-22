@@ -1,0 +1,22 @@
+.official-recipes{min-width:0;margin-block:1rem;padding:1rem;overflow-wrap:anywhere;color:inherit;background:inherit}
+.official-recipes form,.official-recipes nav{display:flex;align-items:end;gap:.75rem;flex-wrap:wrap;margin-block:1rem}
+.official-recipes label{display:flex;flex-direction:column;gap:.4rem;max-width:100%;margin-block:.75rem}
+.official-recipes input,.official-recipes select{font:inherit;color:inherit;background:var(--brand-surface,Canvas);border:1px solid currentColor;border-radius:.4rem;padding:.5rem;min-height:44px;min-width:0;max-width:100%}
+.official-recipes button{min-height:44px;white-space:normal}
+.official-recipes :focus-visible{outline:3px solid currentColor;outline-offset:3px}
+.official-recipes-table{overflow:auto;max-width:100%;max-height:28rem;margin-block:.75rem}
+.official-recipes table{border-collapse:collapse;min-width:28rem;width:100%;font-size:.9375rem}
+.official-recipes th,.official-recipes td{text-align:start;border-bottom:1px solid currentColor;padding:.65rem;vertical-align:top}
+.official-recipes small{display:block}
+.official-recipes-warning{border-inline-start:4px solid currentColor;padding:.75rem}
+@media(max-width:480px){.official-recipes{padding:.65rem}.official-recipes form{align-items:stretch;flex-direction:column}.official-recipes button{max-width:100%}}
+
+.official-production{border-block-start:2px solid currentColor;margin-block-start:1.5rem;padding-block-start:1rem;min-width:0}
+.production-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-block:.75rem}
+.production-product-list,.production-orders{padding:0;list-style:none;display:grid;gap:.75rem}
+.production-product-list li,.production-orders li{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;border:1px solid currentColor;padding:.75rem}
+.production-orders li span{overflow-wrap:anywhere}
+.official-production fieldset{min-width:0;margin-block:.75rem;border:1px solid currentColor}
+.production-review{color:CanvasText;background:Canvas;border:2px solid currentColor;max-width:min(44rem,90vw);max-height:85vh;overflow:auto;overflow-wrap:anywhere}
+.production-review::backdrop{background:rgb(0 0 0 / .6)}
+.production-review button{min-height:44px}

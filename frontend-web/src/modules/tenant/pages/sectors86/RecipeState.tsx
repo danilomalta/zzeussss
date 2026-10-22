@@ -1,0 +1,15 @@
+import {useEffect,useState} from 'react';
+import type {ProductionCommands,ProductionCommand} from '../../../../core/productionRead/commands.mjs';
+import type {RecipeState as State} from '../../../../core/productionRead/recipeState.mjs';
+import {recipeStateWords} from '../../../../core/productionRead/recipeStateWords';
+import {productionCommandWords} from '../../../../core/productionRead/commandWords';
+import {useProductionDraft} from '../../../../core/productionRead/FormGuard';
+export default function RecipeState({source,recipeID,name,revision,locale,disabled,onState,onReview}:{source:ProductionCommands;recipeID:string;name:string;revision:number;locale:string;disabled:boolean;onState:(value:State|null)=>void;onReview:(command:ProductionCommand,summary:string[],confirmed?:()=>void)=>void}){
+ const w=recipeStateWords(locale),c=productionCommandWords(locale),[state,setState]=useState<State|null>(null),[reason,setReason]=useState(''),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
+ useProductionDraft(!!reason);
+ useEffect(()=>{let live=true;const controller=new AbortController();setState(null);onState(null);setError('');source.recipeState(recipeID,controller.signal).then(v=>{if(live){setState(v);onState(v);}}).catch(()=>{if(live)setError('unavailable');});return()=>{live=false;controller.abort();};},[source,recipeID,revision,refresh,onState]);
+ useEffect(()=>{const handler=(e:BeforeUnloadEvent)=>{if(reason){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',handler);return()=>window.removeEventListener('beforeunload',handler);},[reason]);
+ const review=()=>{try{if(!state)throw Error();setError('');onReview(source.prepare('recipe_state',{operation_id:crypto.randomUUID(),recipe_id:recipeID,expected_revision:state.revision,status:state.status==='active'?'inactive':'active',reason:reason.trim()}),[w.help],()=>setReason(v=>v===reason?'':v));}catch{setError('invalid');}};
+ return <section className="official-production" aria-label={w.title}><h3>{w.title}</h3><p>{name} · {recipeID}</p><p>{w.help}</p><button className="brand-secondary" disabled={disabled} onClick={()=>setRefresh(v=>v+1)}>{c.refresh}</button>{error&&<p role="alert">{c[error as 'invalid'|'unavailable']}</p>}{state?<><p>{w[state.status]} · {c.revision}: {state.revision}</p><label>{c.reason}<input maxLength={255} value={reason} disabled={disabled} onChange={e=>setReason(e.target.value)}/></label><button className="brand-primary" disabled={disabled} onClick={review}>{state.status==='active'?w.deactivate:w.activate}</button></>:<p role="status">{w.unknown}</p>}</section>;
+}
+export function RecipeStateReview({command,locale}:{command:ProductionCommand;locale:string}){const w=recipeStateWords(locale),c=productionCommandWords(locale),b=command.body;if(command.kind!=='recipe_state'||!('recipe_id' in b)||!('status' in b)||!('reason' in b))return null;return <><p>{w.title} · {b.recipe_id}</p><p>{w[b.status as 'active'|'inactive']} · {c.revision}: {b.expected_revision}</p><p>{c.reason}: {b.reason}</p><p>{w.help}</p></>;}

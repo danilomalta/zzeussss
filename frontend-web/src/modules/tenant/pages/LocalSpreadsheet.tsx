@@ -22,6 +22,8 @@ import {
 } from '../../../core/local/sheetFiles68.mjs';
 import { applyStructure69, previewMatrix69 } from '../../../core/local/sheetActions69.mjs';
 import { mountSheetEditor } from './sheetRuntime70';
+import {loadSheetLanguage} from './sheetLanguage70';
+import {currentSheetLanguage} from '../../../core/sheets70/language.mjs';
 import pt from '../../../i18n/sheets/pt-BR.json';
 import en from '../../../i18n/sheets/en.json';
 import es from '../../../i18n/sheets/es.json';
@@ -41,6 +43,9 @@ export default function LocalSpreadsheet() {
   const { capabilities } = useLocalAccess();
   const session = useLocalSession((s) => s.session),
     token = useLocalSession((s) => s.token);
+  const languageRef=useRef(i18n.resolvedLanguage||i18n.language),themeRef=useRef(theme);
+  languageRef.current=i18n.resolvedLanguage||i18n.language;themeRef.current=theme;
+  const [editorLoading,setEditorLoading]=useState(false);
   const caps70 = useRef(capabilities);
   caps70.current = capabilities;
   const permitted = allowedAreas(capabilities).includes('sheets');
@@ -111,17 +116,21 @@ export default function LocalSpreadsheet() {
       setMessage('');
     }
     if (!permitted || !host.current) return;
+    let active=true;setEditorLoading(true);
     let listener: { dispose: () => void } | undefined;
     let instance: Runtime | null = null;
     const container = document.createElement('div');
     container.style.cssText = 'width:100%;height:100%';
     host.current.append(container);
-    const frame = requestAnimationFrame(() => {
+    const frame = requestAnimationFrame(() => { void initialize(); });
+    async function initialize(){
       try {
+        const pack=await currentSheetLanguage(()=>languageRef.current,()=>active,loadSheetLanguage);
+        if(!pack)return;
         instance = mountSheetEditor(
           container,
-          i18n.resolvedLanguage || i18n.language,
-          theme === 'dark'
+          languageRef.current,
+          themeRef.current === 'dark',pack
         );
         runtime.current = instance;
         const incoming76=takeReport76(contextKey(contextOf(session,caps70.current)),new URLSearchParams(window.location.search).get('report')||'');
@@ -143,10 +152,11 @@ export default function LocalSpreadsheet() {
           }
         });
       } catch {
-        setError(words.error);
-      }
-    });
+        if(active)setError(words.error);
+      }finally{if(active)setEditorLoading(false);}
+    }
     return () => {
+      active=false;
       cancelAnimationFrame(frame);
       listener?.dispose();
       container.remove();
@@ -166,19 +176,11 @@ export default function LocalSpreadsheet() {
     runtime.current?.univerAPI.toggleDarkMode(theme === 'dark');
   }, [theme]);
   useEffect(() => {
-    runtime.current?.univerAPI.setLocale(
-      (
-        {
-          pt: 'ptBR',
-          'pt-BR': 'ptBR',
-          en: 'enUS',
-          es: 'esES',
-          fr: 'frFR',
-          zh: 'zhCN',
-          'zh-CN': 'zhCN',
-        } as Record<string, string>
-      )[i18n.resolvedLanguage || i18n.language] || 'ptBR'
-    );
+    let active=true;const instance=runtime.current;
+    if(instance)void currentSheetLanguage(()=>languageRef.current,()=>active&&runtime.current===instance,loadSheetLanguage).then(pack=>{
+      if(pack&&active&&runtime.current===instance){instance.univerAPI.loadLocales(pack.locale,pack.messages);instance.univerAPI.setLocale(pack.locale);}
+    }).catch(()=>{if(active&&runtime.current===instance)setError(words.error);});
+    return()=>{active=false;};
   }, [i18n.resolvedLanguage, i18n.language]);
   function live() {
     const workbook = runtime.current?.univerAPI.getActiveWorkbook();
@@ -444,7 +446,7 @@ export default function LocalSpreadsheet() {
           />
         </label>
       </header>
-      {busy && <span role="status">{words.working}</span>}
+      {(busy||editorLoading) && <span role="status">{words.working}</span>}
       <Sheets70
         name={name}
         get={live}

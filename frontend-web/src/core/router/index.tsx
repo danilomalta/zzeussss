@@ -38,6 +38,8 @@ const LocalPointOfSale = React.lazy(() => import('../../modules/pos/pages/LocalP
 const Login = React.lazy(() => import('../../modules/auth/pages/Login'));
 const PointOfSale = React.lazy(() => import('../../modules/pos/pages/PointOfSale'));
 const Checkout = React.lazy(() => import('../../modules/financial/pages/Checkout'));
+const LocalPayables113 = React.lazy(() => import('../../modules/financial/pages/LocalPayables113'));
+const LocalPayablesAgenda114 = React.lazy(() => import('../../modules/financial/pages/LocalPayablesAgenda114'));
 const SupplyChain = React.lazy(() => import('../../modules/catalog/pages/SupplyChain'));
 const AdminDashboard = React.lazy(() => import('../../modules/tenant/pages/AdminDashboard'));
 
@@ -68,6 +70,8 @@ export const router = createBrowserRouter([
     { path: 'operation', element: <SuspenseWrapper><LocalOperation90 /></SuspenseWrapper> },
     { path: 'integrations/diagnostics', element: <SuspenseWrapper><LocalIntegrations74 /></SuspenseWrapper> },
     { path: 'enterprise', element: <SuspenseWrapper><LocalEnterprise89 /></SuspenseWrapper> },
+    { path: 'payables', element: <SuspenseWrapper><LocalPayables113 /></SuspenseWrapper> },
+    { path: 'payables/agenda', element: <SuspenseWrapper><LocalPayablesAgenda114 /></SuspenseWrapper> },
     { path: 'delivery', element: <SuspenseWrapper><LocalSectors86 initialArea="delivery" /></SuspenseWrapper> },
     { path: 'recipes', element: <SuspenseWrapper><LocalSectors86 initialArea="recipes" /></SuspenseWrapper> },
     { path: 'sectors', element: <SuspenseWrapper><LocalSectors86 initialArea="sectors" /></SuspenseWrapper> },

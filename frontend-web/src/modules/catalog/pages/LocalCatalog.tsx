@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import {lazy,Suspense,useEffect,useRef,useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {stockWords} from '../../../core/stockWorkspace/words';
 import { createCatalogSearch } from '../../../core/local/catalogSearch.mjs';
 import type { CatalogSearchProduct } from '../../../core/local/catalogSearch.mjs';
 import './catalogManagement.css';
@@ -12,7 +14,9 @@ import { localClient, localErrorMessage, useLocalSession } from '../../../core/l
 const searchCatalog = createCatalogSearch();
 const units = [['unit','Unidade'],['kg','Quilograma'],['g','Grama'],['liter','Litro'],['ml','Mililitro'],['meter','Metro']];
 
-export default function LocalCatalog() {
+const LocalStock=lazy(()=>import('./LocalStock'));
+export default function LocalCatalog(){const location=useLocation(),{i18n}=useTranslation();return location.pathname==='/local/stock'?<Suspense fallback={<p role="status">{stockWords(i18n.resolvedLanguage||i18n.language).loading}</p>}><LocalStock/></Suspense>:<CatalogContent/>;}
+function CatalogContent() {
  const token = useLocalSession(s => s.token);
  const session = useLocalSession(s => s.session);
  const invalidate = useLocalSession(s => s.invalidate);
