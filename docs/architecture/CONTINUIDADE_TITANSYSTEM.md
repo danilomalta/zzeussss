@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 8 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 9 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -404,3 +404,46 @@ Ensaiar: isolamento entre empresas/lojas/usuários/aparelhos; logout/contexto du
 ### Próximo ponto de continuidade
 
 Não declarar o frontend inteiro concluído: a matriz da primeira entrega permanece válida. Navegação interna, estado de receita, histórico de etapas e seleção de responsáveis acima deixam de ser pendências de implementação dessas telas; aceite real permanece pendente. Custos/consumo real variável/gestão e inventário devem ser comparados com os NOVOS contratos encontrados na referência do backend, sem aplicá-los nem supor serviço ativo. Continuar unidades independentes dos demais fluxos, atualizar este mesmo registro e salvar checkpoints revisados conforme autorização explícita do proprietário. Não misturar rascunhos workflows117/production118 com o117oficial aplicado.
+
+
+## Entrega de22/10/2026 — planejamento simultâneo e estimativas de fabricação
+
+Base incremental `a41a8cf75279b4d7fdcc2e212bbc86e910b0f6c6`, mesma árvore/branch. Esse checkpoint e o anterior `9a51088` foram conferidos no GitHub; a main não recebeu merge. Autorização explícita do proprietário para salvar o progresso no GitHub substitui a proibição anterior de commit/push automáticos, sem autorizar reset/clean/merge/force-push ou alteração do backend. Push do registro anterior concluiu e hash remoto foi conferido apesar do aviso `fatal: unable to get credential storage lock in 1000 ms: Read-only file system` do cache de credenciais. Não houve leitura/exibição de credenciais nem tentativa de mudar sua configuração.
+
+### Unidade funcional
+
+`/local/recipes` recebe planejamento de até20versões imutáveis, quantidades inteiras de bateladas e local explícito. Soma cada insumo compartilhado antes de confrontar o mesmo snapshot físico/reservado/livre; não soma capacidades independentes nem credita saídas intermediárias da hipótese como insumo disponível. Mostra falta/saldo e saídas separadas por unidade. Não cria ordem, reserva, compromisso ou evento de estoque. Troca de hipóteses invalida o resultado anterior, sem cálculo automático.
+
+Materiais da receita e da ordem congelada usam consulta autorizada separada. Quantidades, unidades, saída e custo atual por item são conferidos contra o snapshot original. Zero no catálogo exige revisão; mão de obra/despesas desconhecidas permanecem null. A consulta da ordem usa quantidades PLANEJADAS e custo ATUAL; não é custo real da saída boa registrada depois.
+
+Cenário de fabricação combina materiais atuais e hipóteses explícitas para a execução inteira: minutos, pessoas, custo/hora, despesas e preço por unidade comercial. Não multiplica mão de obra/despesas novamente pelas bateladas. Omitido é desconhecido; zero explícito é zero informado. Contribuição apenas com mão de obra E despesas fornecidas; preço zero não produz percentual. Não anuncia custo histórico, custo completo, DRE ou lucro e não preenche tributos/frete/encargos por suposição.
+
+Numerador/denominador exatos com BigInt; conferência de soma, custo unitário, arredondamento half-up só no agregado e truncamento dos pontos-base em direção a zero. Exibição reduz frações e só apresenta decimal quando exato com até6casas; não arredonda uma dízima como se fosse exata. Dinheiro de entrada aceita no máximo duas casas sem conversão por float.
+
+Produção sem view_accounting pode consultar a combinação de insumos, mas não solicita custos. Consultas financeiras exigem manage_production e view_accounting. POSTs de simulação são leituras sem efeitos conforme contrato e Go; não usam licença de escrita, fila durável, recibo de mutação ou Web Locks como se fossem ordens. A função de transporte distingue explicitamente essas duas rotas de cálculo; os POSTs de mutação anteriores continuam com a mesma autorização de escrita. Sessão/contexto/permissão revalidados antes/depois da resposta e leitura do corpo. Dados do pedido são clonados antes de aguardar a resposta; dados atrasados de outra hipótese/sessão não são exibidos.
+
+### Contratos e arquivos
+
+Referência exclusivamente lida: `zzeus-frontend-backend-b02a/docs/api/inventory-costs.openapi.json` e `management-production.openapi.json`, com os fontes Go de material_cost, cost_scenario e simultaneous. O suplemento é código local não homologado em serviço; não se aplicou ZIP/backend nem se iniciou processo/banco.
+
+Rotas integradas: GET `/local/v1/production/recipe-versions/{id}/material-cost?batches=N`, GET `/local/v1/production/orders/{id}/material-cost`, POST `/local/v1/management/production/recipe-versions/{id}/cost-scenario` e POST `/local/v1/management/production/simultaneous-plan`.
+
+Novos arquivos: `frontend-web/src/core/productionRead/planning.mjs`, `planning.d.mts`, `planningWords.ts`; `frontend-web/src/modules/tenant/pages/sectors86/ProductionPlanning.tsx`; `frontend-web/tests/productionPlanning.test.mjs`.
+
+Anteriores alterados: `core/productionRead/commands.mjs`, `commands.d.mts`, `FormGuard.tsx`, `formGuard.mjs`, `formGuard.d.mts`; `sectors86/ProductionCommands.tsx`, `OfficialRecipes.tsx`, `ProductionExecution.tsx`, `ProductionAftermath.tsx`; `tests/productionFormGuard.test.mjs` e este registro. Caminhos core/sectors acima estão sob o mesmo frontend-web/src. Sem dependências novas, backend, Electron, banco comercial ou pacote desktop.
+
+A revisão visual encontrou confirmação excessiva ao consultar a segunda receita, embora a combinação permanecesse montada. O registro de formulários agora distingue campos que a troca de receita realmente substitui: cesta de combinação, ordem e execução continuam protegidas ao sair da rota, sem interromper a seleção de outra receita. Hipóteses/motivo da receita substituída continuam exigindo confirmação quando sujas. Fechar/remover formulários segue proteção; fila pendente nunca é apagada. Também corrigidos o botão Remover receita e o cabeçalho Quantidade na execução, pois a tabela apresenta totais da execução, não uma única batelada.
+
+### Verificação e continuidade
+
+58testes novos de planejamento/custos e1regressão de seleção/navegação. Suíte completa final:1161aprovados,0falhas,0ignorados. TypeScript aprovado. Build Vite/React isolado, configFile:false/envFile:false, em22.494s; dist do proprietário preservado. `git diff --check` e whitespace conferidos. Aviso de chunk grande continua; sem medição em PC antigo.
+
+Navegador/memória explícita: Bread2bateladas e Cake1 compartilham2,5kg de farinha; físico3kg, reservado1kg, livre2kg → falta0,5kg. Reduzir Bread para1retira resultado anterior; nova consulta cabe em2kg livres. Selecionar outra receita conserva a cesta e não exige aviso indevido após a correção; campos de hipótese substituídos continuam protegidos.
+
+Custos: receita de2unidades com1kg de farinha a300centavos e0,010g de sal a100centavos por g →301centavos,150,5por unidade. Preço20,00sem mão de obra/despesas mostra receita hipotética, contribuição desconhecida. Com60minutos,2pessoas a10,00/h e1,00de despesas →2401centavos conhecidos; receita4000; contribuição1599;3997pontos-base. Cinco idiomas percorridos, claro/escuro, quantidades/local/hipóteses e ausência diferente de zero. Não se percorreu toda combinação formulário×idioma×tema×viewport nem leitor de tela completo.
+
+A prévia de desenvolvimento foi recarregada durante mudanças de módulo; resultados descartáveis foram refeitos após a última revisão. A primeira abertura do navegador apresentou demora extraordinária da ferramenta; isso não foi usado como medida de desempenho do frontend ou backend. Uma preparação voltou a usar caminho relativo errado para base-hashes e falhou antes da escrita; refeita com caminho absoluto e preimagens verificadas. Evidências/logs/preimagens/hashes privados em `work/production-planning-20261022/` nesta tarefa; imagem da prévia em outputs. Não copiar esses builds para o projeto nem para pacotes.
+
+Ensaios integrados pendentes: suplemento correto em serviço e esquema identificado; sessão sem/ com accounting, licença expirada para leituras históricas, contexto trocado durante cálculo, versão/unidade divergente, limites e overflow, custos zero/ausentes, estoque reservado concorrente, hipóteses desconhecidas/zero, saída intermediária não creditada e margem negativa. Usar somente ambiente descartável fornecido pelo responsável, conforme revisão8. API em código não é serviço em execução.
+
+O frontend inteiro ainda não está concluído. A estimativa de fabricação e combinação simultânea deixam de ser lacunas de implementação desta tela, mas custo histórico industrial/consumo real variável não foram inventados. Próxima unidade independente: fluxo oficial de inventário revisado (abertura, contagem, envio, outro revisor, reabertura/rejeição/cancelamento, histórico e CSV), preservando ajuste legado e zero distinto de não contado. Demais fluxos da matriz permanecem pendentes e devem ser integrados um a um, sem bloquear trabalho independente pela ausência de ambiente integrado.

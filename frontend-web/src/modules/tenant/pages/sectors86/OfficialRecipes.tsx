@@ -1,4 +1,4 @@
-import {useProductionDraft} from '../../../../core/productionRead/FormGuard';
+import {useProductionSelectionGuard} from '../../../../core/productionRead/FormGuard';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useLocalAccess} from '../../../../core/local/LocalAccess';
@@ -19,7 +19,7 @@ export default function OfficialRecipes(){
 }
 export function Recipes({source,commands,locale}:{source:ProductionRead;commands?:CommandSource;locale:string}){
  const w=productionWords(locale),[filter,setFilter]=useState(''),[query,setQuery]=useState(''),[offset,setOffset]=useState(0),[refresh,setRefresh]=useState(0),[rows,setRows]=useState<RecipeVersion[]|null>(null),[selected,setSelected]=useState<RecipeVersion|null>(null),[locations,setLocations]=useState<{id:string;name:string}[]>([]),[location,setLocation]=useState(''),[result,setResult]=useState<CapacityResult|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
- const protect=useProductionDraft(false);
+ const protect=useProductionSelectionGuard();
  const generation=useRef(0),active=useRef<AbortController|null>(null);
  const stop=()=>{generation.current++;active.current?.abort();active.current=null;};
  useEffect(()=>{stop();const c=new AbortController();active.current=c;const g=generation.current;setRows(null);setSelected(null);setResult(null);setError('');setBusy(true);source.versions(query,offset,c.signal).then(items=>{if(g===generation.current&&!c.signal.aborted)setRows(items);}).catch(e=>{if(g===generation.current&&!c.signal.aborted)setError(errorKey(e));}).finally(()=>{if(g===generation.current&&!c.signal.aborted)setBusy(false);});return stop;},[source,query,offset,refresh]);

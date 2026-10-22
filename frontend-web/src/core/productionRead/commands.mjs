@@ -1,3 +1,4 @@
+import {materialCostEstimate,productionCostScenario,costScenarioInput,simultaneousInput,productionSimultaneous} from './planning.mjs';
 import {productionResponsibles} from './responsibles.mjs';
 import {productionStageHistory} from './stageHistory.mjs';
 import {recipeStateInput,productionRecipeState,recipeStateResult} from './recipeState.mjs';
@@ -58,8 +59,9 @@ export function createProductionCommands({token,session,capabilities,isCurrent,s
  function authorizeStaff(){authorize();if(!canListResponsibles())throw new LocalAPIError(403,'production');}
  function authorize(write=false){let current=false;try{current=isCurrent()&&contextKey(contextOf(session,capabilities))===scope;}catch{}if(!current)throw new LocalAPIError(401,'production');if(!capabilities.permissions?.includes('manage_production')||(write&&!writable()))throw new LocalAPIError(403,'production');}
  authorize();
- async function request(path,method='GET',body,signal){
-  authorize(method==='POST');const c=new AbortController(),abort=()=>c.abort();if(signal?.aborted)abort();signal?.addEventListener('abort',abort,{once:true});const timer=setTimeout(abort,15000);
+ function authorizeCosts(){authorize();if(!capabilities.permissions?.includes('view_accounting'))throw new LocalAPIError(403,'production');}
+ async function request(path,method='GET',body,signal,readCalculation=false){
+  authorize(method==='POST'&&!readCalculation);const c=new AbortController(),abort=()=>c.abort();if(signal?.aborted)abort();signal?.addEventListener('abort',abort,{once:true});const timer=setTimeout(abort,15000);
   try{c.signal.throwIfAborted();const r=await fetcher('/local/v1/'+path,{method,credentials:'omit',cache:'no-store',signal:c.signal,headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});authorize();c.signal.throwIfAborted();if(!r.ok)throw new LocalAPIError(r.status,'production');const raw=await r.text();authorize();c.signal.throwIfAborted();if(raw.length>2000000)fail();try{return JSON.parse(raw);}catch{fail();}}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
  }
  function command(c){if(!exact(c,['version','scope','kind','body','uncertain'])||c.version!==1||c.scope!==scope||typeof c.uncertain!=='boolean')fail();return {...c,body:productionInput(c.kind,c.body)};}
@@ -78,10 +80,14 @@ export function createProductionCommands({token,session,capabilities,isCurrent,s
   try{const path={recipe_state:'production/recipe-state',recipe:'production/recipe-versions',order:'production/orders',state:'production/orders/state',...executionPaths,...aftermathPaths}[c.kind],result=await request(path,'POST',c.body);productionReceipt({kind:c.kind,input:c.body,result},c.kind,c.body,false);}catch(e){if(!prior&&e instanceof LocalAPIError&&[400,403,404,409,413,422].includes(e.status)){authorize();save({...c,uncertain:false});}throw e;}
   r=await receipt(c);clear(c);return {state:'confirmed',receipt:r};
  }
- return {scope,actor,get canListResponsibles(){return !!canListResponsibles();},canLock:!!locks?.request,get canWrite(){return !!writable();},pending,
+ return {scope,actor,get canViewCosts(){return capabilities.permissions?.includes('view_accounting')===true;},get canListResponsibles(){return !!canListResponsibles();},canLock:!!locks?.request,get canWrite(){return !!writable();},pending,
   prepare(kind,body){authorize(true);return command({version:1,scope,kind,body:productionInput(kind,body),uncertain:false});},
   async submit(c){authorize(true);const frozen=command(structuredClone(c));if(frozen.uncertain)fail();return locked(async()=>{authorize(true);if(pending())throw Error('productionPending');save(frozen);return resolve(true,false);});},
   async recover(send=false,discard=false){return locked(()=>resolve(send,discard));},
+  async materialCost(version,batches,signal){authorizeCosts();const v=recipeVersion(structuredClone(version));if(!int(batches,1))fail();const result=await request('production/recipe-versions/'+encodeURIComponent(v.version_id)+'/material-cost?batches='+batches,'GET',undefined,signal);authorizeCosts();return materialCostEstimate(result,v,batches);},
+  async orderMaterialCost(order,signal){authorizeCosts();const o=productionOrder(structuredClone(order)),result=await request('production/orders/'+encodeURIComponent(o.id)+'/material-cost','GET',undefined,signal);authorizeCosts();return materialCostEstimate(result,o.recipe,o.planned_batches,o.id);},
+  async costScenario(version,input,signal){authorizeCosts();const v=recipeVersion(structuredClone(version)),b=costScenarioInput(input),result=await request('management/production/recipe-versions/'+encodeURIComponent(v.version_id)+'/cost-scenario','POST',b,signal,true);authorizeCosts();return productionCostScenario(result,v,b);},
+  async simultaneous(locationID,items,signal){const frozen=structuredClone(items),body=simultaneousInput(locationID,frozen),result=await request('management/production/simultaneous-plan','POST',body,signal,true);return productionSimultaneous(result,locationID,frozen);},
   async responsibles(signal){authorizeStaff();const v=await request('staff','GET',undefined,signal);authorizeStaff();return productionResponsibles(v);},
   async recipeState(recipeID,signal){if(!id(recipeID))fail();return productionRecipeState(await request('production/recipes/'+encodeURIComponent(recipeID)+'/state','GET',undefined,signal),recipeID);},
   async products(query='',offset=0,signal){if(typeof query!=='string'||utf8(query)>240||!int(offset,0,2147483647))fail();const v=await request('catalog/search?'+new URLSearchParams({q:query,offset:String(offset)}),'GET',undefined,signal);if(!v||!Array.isArray(v.items)||v.limit!==50||v.offset!==offset||!int(v.total)||v.items.length!==Math.min(50,Math.max(0,v.total-offset))||!v.items.every(p=>p&&id(p.id)&&typeof p.name==='string'&&p.name.trim()&&typeof p.sku==='string'&&units.includes(p.unit))||new Set(v.items.map(p=>p.id)).size!==v.items.length)fail();return {items:v.items.map(p=>({id:p.id,name:p.name,sku:p.sku,unit:p.unit})),total:v.total};},
