@@ -16,6 +16,7 @@ import {LocalAccessProvider} from '../local/LocalAccess';
 const LocalComparison = React.lazy(() => import('../../modules/catalog/pages/LocalComparison'));
 const LocalOrders = React.lazy(() => import("../../modules/catalog/pages/LocalOrders"));
 const LocalDistributionMap = React.lazy(() => import('../../modules/tenant/pages/LocalDistributionMap'));
+const LocalSalesAnalysis = React.lazy(() => import('../../modules/tenant/pages/LocalSalesAnalysis'));
 const LocalOwnerDashboard = React.lazy(() => import('../../modules/tenant/pages/LocalOwnerDashboard'));
 const LocalHumanResources = React.lazy(() => import('../../modules/tenant/pages/LocalHumanResources'));
 const LocalSpreadsheet = React.lazy(() => import('../../modules/tenant/pages/LocalSpreadsheet'));
@@ -63,6 +64,7 @@ export const router = createBrowserRouter([
     { path: 'losses', element: <SuspenseWrapper><LocalLossPrevention76 /></SuspenseWrapper> },
     { path: 'integrations', element: <SuspenseWrapper><LocalEnterprise89 initialArea="connections" /></SuspenseWrapper> },
     { path: 'workbench', element: <SuspenseWrapper><LocalWorkbench73 /></SuspenseWrapper> },
+    { path: 'reports', element: <SuspenseWrapper><LocalSalesAnalysis /></SuspenseWrapper> },
     { path: 'overview', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'owner', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'map', element: <SuspenseWrapper><LocalDistributionMap /></SuspenseWrapper> },

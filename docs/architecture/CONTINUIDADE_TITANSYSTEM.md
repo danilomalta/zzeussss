@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 11 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 12 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -490,7 +490,7 @@ O frontend inteiro continua parcial conforme matriz: este ciclo deixa de ser lac
 
 Base `49d870e0ae8725cea7018a9a4b0feebe0ac6dafc`, publicada e hash remoto conferido na mesma branch. Sem merge/main/reset/clean, dependências, pacote, backend, Electron ou banco. Preimagens e escrita efetiva verificadas novamente; sem conflito. Fontes/preimagens/logs/hashes privados em `work/stock-reports-20261022/`; capturas de dados descartáveis em outputs.
 
-`/local/stock` passa a selecionar três painéis: movimentos genéricos anteriores, inventário revisado e posição/valoração. Botões com estado pressionado e rótulos nos cinco idiomas. Trocar de painel conserva os componentes/campos montados; não há envio ou descarte implícito. O inventário116/117 não foi substituído; a navegação de rota mantém a proteção de campos e filas. A consulta física anterior e sua fila continuam independentes.
+`/local/stock` passa a selecionar três painéis: movimentos genéricos anteriores, inventário revisado e posição/valoração. Botões com estado pressionado e rótulos nos cinco idiomas. Trocar de painel conserva os componentes/campos montados; não há envio ou descarte implícito. Os fluxos financeiro116/117 não foram substituídos; a navegação de rota mantém a proteção de campos e filas. A consulta física anterior e sua fila continuam independentes.
 
 ### Consultas e limites
 
@@ -519,3 +519,40 @@ Composição REAL LocalStock/LocalAccess/estado de sessão/cliente, envolvida em
 Limites: não percorremos todas as combinações tela×idioma×tema×viewport, leitor de tela ou múltiplos aparelhos. Pendente homologação com suplemento/build/schema corretos, banco descartável autorizado, catálogo/custos/local/reservas, permissões reais com/sem accounting e licenças expiradas; conferir snapshot transacional, valores nulos/zero, custo modificado, revisões concorrentes, CSV e revogação durante resposta. Nunca usar banco comercial ou escolher URL/estação/chaves por suposição.
 
 Custo atual por página e estimativa de diferenças deixam de ser lacunas de interface. Custo histórico/contábil de perdas, periodicidade da empresa e demais fluxos da matriz continuam pendentes. Próximas unidades independentes devem usar contratos existentes (por exemplo, análise comercial real de produtos vendidos e sugestão de reposição), mantendo aprovação humana e sem reimplementar o117de conferência por fornecedor.
+
+
+## Entrega de22/10/2026 — análise oficial de vendas por produto
+
+Base `3d36870aad46d4b7acbe6d20e9fbfacc5f156ebf`, hash local/remoto conferidos e árvore limpa. Preimagens das três fontes existentes e deste registro conferidas antes da escrita. Acesso efetivo a core/router e tenant/pages verificado com arquivo temporário/fsync/leitura/remoção. Sem conflito, instalação, pacote, alteração de backend/Electron/banco ou substituição do117. Evidências privadas em `work/sales-analysis-20261022/`.
+
+### Unidade entregue
+
+Nova rota sob demanda `/local/reports`, intitulada Vendas confirmadas por produto, com link próprio no grupo Gestão. Disponível SOMENTE com a permissão existente view_accounting; dono não recebe exceção. Contador autorizado pode consultar sem licença de escrita, em conformidade com a consulta histórica do backend; isso não habilita PDV, caixa, estoque ou qualquer operação. O cartão genérico planejado de relatórios não é duplicado para quem pode abrir esta unidade. O painel legado do dono permanece parcial e separado; esta entrega não o anuncia como concluído.
+
+Períodos no fuso do aparelho, início incluído/fim excluído. Padrão de sete dias completos e comparação anterior adjacente de mesma duração; usuário pode escolher comparação própria. Cada intervalo limitado a366dias, anos2000–2200 e datas válidas; lacunas de horário local inválido recusadas, com conversão explícita para instantes RFC3339. Contrato e comparação de fronteiras preservam nanossegundos com BigInt, sem arredondar milissegundos. Períodos sobrepostos têm aviso: mesma venda pode estar nos dois, não somar totais. Durações diferentes só comparam totais, sem percentual.
+
+Fonte EXATA: itens de vendas com status committed da mesma empresa/loja. Não comprova pagamento, liquidação, lucro, DRE, nem receita líquida de devoluções registradas em fluxo separado. Nome/SKU/unidade são metadados do cadastro ATUAL conforme Go, não snapshot histórico inventado; mudança de unidade precisa de conferência. Baixa venda isolada não vira alerta de prejuízo.
+
+Totais globais dos dois períodos, diferença exata em centavos, produtos distintos e linhas-fonte examinadas; tabela paginada50com quantidade milésima/unidade, valores atual/anterior/diferença, percentual/bases e ABC. Fonte anterior zero é Sem base/Atividade nova, não0%ou infinito. Percentual truncado em pontos-base pelo servidor e conferido com BigInt; fora do intervalo exato permanece desconhecido. ABC usa total atual da loja, ordenação por valor decrescente e ID UTF-8 no empate, limites80/95do acumulado ANTERIOR à linha. Não é margem/lucro/giro/ranking de outra empresa. Critério global e categorias são validados onde os dados da página permitem, sem inventar acumulado de páginas anteriores.
+
+Limite de100.000linhas-fonte é tratado como erro que exige período menor, sem vender resultado parcial como completo. Inconsistência da fonte tem mensagem específica. Ausência de API permanece indisponível, nunca mock na rota real. Só GET, sem fila/lock/recibo de mutação ou sucesso comercial. Sessão/empresa/loja/usuário/aparelho e permissão conferidos antes/depois da resposta/corpo. Pedidos clonados antes da espera; trocar filtros invalida o retrato e impede download antigo. CSV reconsulta a página com os mesmos dois períodos; contém somente a página e pode refletir alterações posteriores, conforme aviso.
+
+### Caminhos e referência
+
+Novos: `frontend-web/src/core/salesAnalysis/model.mjs`, `model.d.mts`, `source.mjs`, `source.d.mts`, `words.ts`; `frontend-web/src/modules/tenant/pages/LocalSalesAnalysis.tsx`; `frontend-web/tests/salesAnalysis.test.mjs`.
+
+Alterados: `frontend-web/src/core/router/index.tsx` (rota lazy), `frontend-web/src/core/local/accessModel.mjs` (área reports/read permission), `frontend-web/src/modules/tenant/pages/LocalMainMenu.tsx` (link existente autorizado, sem duplicar cartão planejado) e este registro.
+
+Referência somente lida: `zzeus-frontend-backend-b02a/docs/api/management-production.openapi.json`, `backend/internal/localapi/management_reports.go`, `backend/internal/localdb/management/{model,sales,export}.go`. GET `/local/v1/management/sales/products` e `.csv`, com from/to/compare_from/compare_to/limit/offset. Nenhum desses arquivos foi aplicado ou executado por este chat. A referência local continua sem serviço/banco homologado. Buscas iniciais de nomes supostos de páginas/router não existentes foram corrigidas com rg --files e leitura dos caminhos reais, antes de qualquer escrita.
+
+### Verificações
+
+50testes novos aprovados. Suíte completa1315aprovados,0falhas,0ignorados; TypeScript completo aprovado; build Vite/React isolado em24.169s, sem carregar arquivo de ambiente/configuração, preservando dist anterior. `git diff --check` aprovado. Chunk grande da planilha continua pendente; não se mediu PC antigo.
+
+Prévia EXPLÍCITA em memória: totais1100e600centavos, diferença500,3produtos,5linhas-fonte; Arroz+100%, atividade nova sem percentual, Sal-100%; ABC A/B/sem valor atual. Mudança de períodos remove resultado anterior. Período desigual retira todos os percentuais; sobreposição mostra aviso e mantém comparações independentes. Erro422de limite mostra mensagem de reduzir período, sem vazio/sucesso fictício. CSV preparado para download; cinco idiomas e claro/escuro percorridos. Captura com dados descartáveis em outputs. Sem POST permitido no transporte da prévia.
+
+A ferramenta de preenchimento direto dos campos datetime-local não alterou seus valores; inspeção DOM confirmou vazio. Preenchimento pelos segmentos nativos foi conferido antes de consultar (01–02/10 para duração desigual,14–21/10 para sobreposição); não se anunciou cobertura pela tentativa de fill sem efeito. Isso é limite da automação, não integração contra servidor. Não se percorreu todo formulário×idioma×tema×viewport/leitor de tela. O menu/guardas foram conferidos por código, TypeScript/build e regressões de permissão; a prévia da análise não equivale a teste completo da navegação autenticada do produto.
+
+Homologação pendente com build/schema/banco descartável autorizados: sessões reais view_accounting com/sem dono, licença expirada, fuso/horário de verão, fronteiras exclusivas com nanossegundos, janelas sobrepostas/desiguais, produtos gratuitos/anteriores/zerados, empate ABC entre páginas, volume100.000/100.001, metadados/unidades alterados, cancelamento e devolução em fluxos distintos, CSV e revogação durante resposta. Não usar este relatório como liquidação ou DRE; coordenar contrato futuro para receita líquida de devoluções se exigido. Não iniciar serviço nem escolher banco/estação/chaves por conta própria.
+
+A consulta comercial de produtos deixa de ser lacuna de implementação. Painel executivo amplo, caixa/fechamento/pagamentos/fiscal, demais ciclos de compras/fornecedor/logística/financeiro/RH e integrações continuam conforme matriz. O frontend inteiro ainda não está concluído nem homologado. Continuar unidades independentes usando contratos atuais e preservar ideias de expansão fora do fechamento inicial.
