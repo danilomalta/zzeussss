@@ -1,15 +1,15 @@
 # Continuidade do TitanSystem
 
-Revisão 24 — 23/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 25 — 23/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
 
 - Interface oficial: `/home/danillo-malta/Downloads/zzeus-frontend-backend/frontend-web/`.
-- Branch frontend: `feat/backend-checkout-authority`; HEAD auditado `c5579808c62826174b43a2b7a45fbc2ceda1e47b`. Os arquivos locais não publicados também compõem a base; o HEAD sozinho não identifica a entrega.
+- Branch frontend: `feat/backend-checkout-authority`; base desta revisão `adaca8e73883566835361cd3da5715e353e99e81`, limpa antes da alteração. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
 - Frontend116 presente; Frontend117 CORRETO de conferência por fornecedor aplicado. Confirmados `SupplierReport117.tsx`, `core/payables117`, cinco dicionários, teste e documento193. O usuário informou em21/10: compatibilidade aprovada, backup,136testes sem falhas, TypeScript/build aprovados em20,05s, sem banco/commit/merge/push.
 - Frontend passa a ser responsabilidade deste chat/Codex, com preservação do trabalho anterior. Backend continua com responsável separado.
-- Backend de referência, somente leitura: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `58a26bbbdf08903d62f6dd1f0542417171b460dd`; árvore limpa na auditoria inicial; a referência recebeu alterações externas posteriores, não aplicadas por este chat. B02B13 está no código e contratos. Processo/versão/banco/estação em execução continuam não identificados.
+- Backend de referência, somente leitura nesta unidade de frontend: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `857febb588b522fdac45d3773e1b772094b19816`, schema de código60. Histórico de B02B13 e adaptação autorizada de Frota registrados abaixo. Serviço/versão/banco/estação em execução continuam não identificados.
 - `~/Downloads/zzeus-frontend` é uma árvore anterior. `Documents/Codex/.../work` contém cópias de laboratório, não a fonte principal.
 - `desktop/` é o invólucro Electron, separado das telas. Não foi alterado nesta continuidade.
 - Meus antigos `workflows117` são o **rascunho de documentos e recebimento**, diferente do117 aplicado. `production118` é outro rascunho não homologado. Não executar seus aplicadores, não copiar seus routers/menus e não usar sua numeração como base de produto.
@@ -32,6 +32,7 @@ A lista é um mapa de trabalho, não uma declaração de que todo contrato parci
 
 | Fluxo | Rota | Implementação existente | Pendência frontend | Contrato backend | Dependência externa | Teste | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| Frota e manutenção | /local/fleet | Rascunhos business85 preservados; painel oficial GET de14recursos, detalhes/históricos, disponibilidade, preventivas, custos, avisos e resumo técnico. | Escritas oficiais, checklist/horas/ACK, viagens e cadastro operacional ainda precisam de integração; nenhum rascunho é enviado automaticamente. | Fleet/Workshop do backend857febb, schema60. | Serviço e banco descartáveis autorizados não fornecidos. | 67regressões novas; suíte1729, TS/build aprovados nesta revisão. | Consulta implementada; fluxo operacional oficial parcial; não homologado integrado. |
 | Acesso, cadastro e atividade | /local/login; /register; /local/settings | Login/contexto e cadastro112 existem. Conectar criação/recuperação/perfil real e seleção autorizada de loja onde os contratos suportarem; usar atividade central, sem repetir questionário em módulos. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | APIs locais de conta, staff e política existem; não presumir cadastro completo de empresa, licenciamento comercial e filiais. Demonstrar autorização/isolamento. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
 | Sessão financeira | /local/payables; /local/orders | Correção116 preservada; extensão de origem vigente ao115; callbacks consideram token, sessão e capacidades atuais. | Aceite de integração real com perfis descartáveis. | Mesmos contratos, sem mudanças no backend. | Serviço local e perfil a identificar pelo responsável. | Regressões de troca de quatro campos de contexto, logout, corpo tardio, licença revogada e IDs originais; suíte total858 passou. | Implementado e validado em testes isolados; integração real pendente. |
 | Venda/PDV | /local/pos | Preservar foco, tela cheia, CPF separado do clube, cotação e revisão de preço, troco após concluir e carrinhos suspensos. Conectar contratos avançados com recuperação sem afrouxar cliente legado. | Revisar integração e concluir ações indicadas; não equivale a API ausente. | Cotação/venda local e planos checkout estão no código. Gateway95 inicia desconectado; a existência dos planos não prova PSP ou pagamento misto integrado. Demonstrar venda/reinício/recibo sem duplicação. | Serviço e perfil reais não confirmados; hardware/provedores conforme fluxo. | 157 regressões 113/114/116/117 na unidade anterior; demais verificações desta etapa pendentes. | Parcial; frontend a concluir |
@@ -928,3 +929,45 @@ Primeira suíte encontrou1falha porque o filtro source-only do aplicador origina
 Frota/Conferência Técnica agora estão nos FONTES e no binário validado: isso supera o impedimento registrado na revisão23. Ainda não há serviço comercial/disponível autorizado comprovado, banco/estação/chaves escolhidos ou teste entre aparelhos. As abas do frontend continuam business85/IndexedDB e NÃO passam automaticamente a consumir a API. Não importar aprovação local como autorização do servidor. Checklist obrigatório/inspeção válida, revisão gerencial de horas, recuperação de operação e ACK têm os limites do contrato; não são folha, push ou som remoto.
 
 Próxima integração deve criar adaptadores tipados para os contratos Fleet/Workshop e usar um ambiente NOVO descartável explicitamente autorizado. Separar fonte/binário/serviço/tela. Continuar a ordem de fechamento do frontend e preservar116/117/docas/recebimentos. Esta entrega resolve a aplicação compatível do backend recebido; não anuncia todo o ERP ou desktop homologado.
+
+
+## Entrega de23/10/2026 — consultas oficiais de Frota e Conferência Técnica
+
+### Escopo aplicado e origem
+
+Continuidade do frontend autorizada pelo proprietário. Alvo confirmado `/home/danillo-malta/Downloads/zzeus-frontend-backend`, branchfeat/backend-checkout-authority, baseadaca8e limpa. Regras lidas; nenhum AGENTS.md aplicável encontrado. Backend/Electron não alterados nesta unidade. Não interpreta o pedido de concluir tudo como autorização para inventar integrações, escolher banco ou anunciar aceite integral.
+
+O painel **Registros oficiais de frota e manutenção** foi inserido antes dos rascunhos em `/local/fleet`, com abertura explícita. Os rascunhos IndexedDB de Pedidos/Mecânica/Equipamentos/Custos foram preservados e passam a ter título explícito de rascunhos locais. O adaptador oficial é exclusivamente GET: não migra dados, não envia aprovação local, não cria chamado, não executa manutenção e não marca aviso como lido.
+
+Contratos lidos da referência real backend857febb: `docs/api/fleet-maintenance.openapi.json`, SHA256 `b708bcf570f048fca5c6de4c5b20c71c910d4d50924a46af8c8caddf08e1d6d7`; `fleet-workshop.openapi.json`, SHA256 `402120af9d4bc456c0abb0f4d275bd371358ac37bc6abc70b0c4808eb65b1ef6`. Snapshots somente dos schemas de leitura e dependências, sem código/backend/instaladores. Autenticação e semântica também conferidas em localapi/fleet*.go e localdb/fleet/{types,read,report,notices,workshop_reads}.go.
+
+Arquivos exatos (além deste registro):
+- `frontend-web/src/core/fleetOfficial/{fleet-maintenance.schemas.mjs,fleet-workshop.schemas.mjs,model.mjs,model.d.mts,source.mjs,source.d.mts,words.mjs,words.d.mts}`.
+- `frontend-web/src/modules/tenant/pages/fleetOfficial/{FleetOfficial.tsx,fleetOfficial.css}`.
+- Ponto de montagem delimitado em `frontend-web/src/modules/tenant/pages/business85/Fleet85.tsx`.
+- `frontend-web/tests/fleetOfficial.test.mjs`.
+
+### Comportamento e proteções
+
+Consulta paginada de50registros dos14recursos (bens, pedidos, viagens, planos, prestadores, orçamentos, despesas, receitas, impactos, perfis, modelos, exigências, inspeções e horas). Filtros enviados ao servidor; total do filtro separado da página. Não soma recortes como total. Detalhes/histórico consultados por ID/revisão; recibo histórico mostra operação/ator/aparelho/motivo. Disponibilidade derivada, vencimentos preventivos com indicação de data/medidor, custos em período explícito UTC de até366dias, avisos com cursor durável e resumo técnico de um pedido. Avisos são consulta manual, sem alegação de push/som/ACK.
+
+Guarda token/sessão e quatro identificadores antes/depois de fetch e leitura do corpo; expiração e permissões revalidadas. Canais de leitura independentes; somente a última consulta de cada canal pode publicar, mesmo se o transporte ignorar abort. Dispose/timeout/sinal externo impedem publicação tardia. Respostas passam por validação de schema, tipo específico de recurso, ID, revisão, data, paginação, duplicidades, filtro retornado e limites. Erros401/403/404/409/422/5xx continuam erros; sem resultado de demonstração na rota real.
+
+Financeiro exige view_accounting além de view_orders; recursos financeiros ocultos no perfil restrito. Servidor continua responsável pela autorização. Histórico no adaptador não depende de renovação da licença; o ponto de montagem conserva a guarda preexistente de business85, que pode exigir logística ativa para abrir a área. Não expandiu permissões nem licença para exibir módulos.
+
+Centavos e totais exatos usam strings/BigInt, sem conversão de grandes valores para Number. Contribuição parcial, depreciação e impacto estimado têm rótulos distintos; zero no denominador é explicitamente indisponibilidade de custo unitário, não custo zero. Custo não confirma pagamento/lucro líquido; horas não são folha. Inspeção pendente não é liberação. Cinco dicionários, claro/escuro, controles de44px, tabelas com rolagem interna e foco visível. Campos menos usuais mantêm seus códigos sob título explícito de campos do contrato; não significa revisão completa da ergonomia de todos os módulos.
+
+### Evidências reais
+
+-67testes novos, com transporte/fixtures isolados. Suíte completa `node --test tests/*.test.mjs`:1729aprovados,0falhas/ignorados, incluindo financeiro116/fornecedor117. TypeScript `node_modules/.bin/tsc --noEmit`:exit0. Build final isolado Vite/React com configFile:false/envFile:false:exit0,20.900877465s; não substituiu dist nem leu .env. Aviso preexistente de chunk grande da planilha permanece (~6.09MB de JS minificado para sheetRuntime70), além dos avisos de chunks/Tailwind da verificação isolada. Nenhuma instalação ou ZIP.
+- Prévia explícita descartável em4345, sem proxy/backend/banco, identidades sintéticas e transporte que só aceita GET. Percorridos lista/detalhe/histórico de bem e pedido, disponibilidade bloqueada, custo9007199254740993centavos exibido90.071.992.547.409,93BRL, checklist obrigatório não atendido,3600segundos declarados/0confirmados, erro503visível sem manter tabela antiga e perfil sem view_accounting com as5categorias financeiras ocultas. Títulos/controles nos5idiomas e claro/escuro conferidos. Não é ensaio de toda combinação de ação, perfil, tela, teclado, acessibilidade ou tamanho de aparelho.
+- A prévia encontrou colisão entre tradução do botão abrir e estadoopen; nomes separados e regressão acrescentada. Primeiro teste de idioma falhou por exigir tamanho artificial de frase chinesa; corrigido esse critério inadequado, sem alterar conteúdo nem relaxar a regra comercial. Depois repetidas suíte inteira, TypeScript e build finais.
+- Prova visual em `outputs/frota-oficial-conferencia-tecnica-2026-10-23.png` desta tarefa. Preparação, preimagens/hashes, backup, contratos, logs e prévia em `work/fleet-official-20261023/`. Alteração localizada, sem cópia geral do projeto, backend, bancos, segredos, node_modules, caches ou distribuições no commit. Reversão por diff/preimagens, preservando alterações posteriores; não executar o aplicador preparado novamente sobre arquivos evoluídos.
+
+### Pendências reais e sequência
+
+ESTA ENTREGA NÃO CONCLUI TODO O FRONTEND. Frota agora consulta o serviço oficial, mas criar/editar bens, abrir e tramitar chamados, orçamentos/aprovações, viagens/retornos, despesas/perfis, checklist/inspeções, apontamento/revisão de horas e ACK ainda precisam de telas/comandos oficiais com fila durável, IDs originais, revisão esperada, recuperação por recibo e histórico e permissões adequadas. Os rascunhos continuam úteis somente como rascunhos. Não apresentar sua aprovação como aprovação no backend.
+
+Continuar pelas unidades funcionais de escrita e pelas frentes já priorizadas de logística/recebimento (tratativas/indicadores), faturamento/receber e PDV/fechamento. As demais17frentes continuam conforme matriz e entregas específicas; não transformar telas existentes em promessa de operação homologada. Não há porcentagem fundamentada de conclusão integral.
+
+Validação integrada requer NOVO ambiente descartável autorizado com versão/binário de backend correspondente, schema60aplicado nesse banco de teste, tenant/loja/aparelhos/usuários descartáveis aprovados, perfis com e sem view_orders/view_accounting, licença logística e dependências assinadas válidas e endereço/perfil de serviço explicitamente fornecidos. Exercitar autorização/isolamento, paginação, histórico, bloqueios/inspeção vigente, erros/limites e recuperação/reinício; sem dados comerciais. Nenhum desses parâmetros foi escolhido automaticamente. Ainda não demonstra serviço atualizado, integração real, banco persistido no produto ou pacote desktop Windows/Linux homologado.
