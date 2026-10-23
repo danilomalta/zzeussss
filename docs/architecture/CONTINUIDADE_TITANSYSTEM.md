@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 22 — 23/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 23 — 23/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -881,3 +881,22 @@ Limites legados permanecem explícitos: workspace por empresa/loja/usuário/apar
 Backend branchfeat/backend-b02a-compat/HEAD58a26bbbdf08903d62f6dd1f0542417171b460dd e todas suas alterações locais preservados; nenhum arquivo de backend foi escrito, Go test/migração/banco/serviço não executados nesta integração. O proprietário respondeu para concluir o frontend. Contratos de manutenção técnica recebidos ficam disponíveis no pacote para revisão futura; este frontend AINDA NÃO os chama. Integração/ambiente descartável seguem pendentes de base/versão/perfil autorizados. Não anunciar ambas as partes operacionais.
 
 Salvamento na branch de frontend existente segue autorização humana anterior para GitHub; sem merge, force-push ou mudanças na main. Reversão localizada por hashes/diff preservando alterações posteriores. Esta entrega adiciona a frente recebida, não conclui todas as17frentes do ERP nem substitui a ordem de logística→faturamento/receber→PDV/fechamento.
+
+
+## Conferência de23/10/2026 — novo consolidado de backend recusado sem escrita
+
+Recebido `TitanSystem_Backend_Consolidado_Frota_20261023.zip`, SHA256 `e2b166608071a6abb3b1719931376902e37753a1638d941ddab1bd292eb23ac6`. Extraído com caminhos/duplicidades/links conferidos em `work/fleet-consolidated-20261023-kde19g05/` desta tarefa; CRC aprovado e433arquivos conferidos por SHA256SUMS. Aplicador e sequência lidos antes de executar. Não executar recuperação de fontes para tentar adaptar a árvore a esta entrega.
+
+Alvo conferido `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a`, branchfeat/backend-b02a-compat, HEAD58a26bbbdf08903d62f6dd1f0542417171b460dd e alterações locais preservadas. `aplicar.py --diagnostico ALVO` saiu1com erro exato:
+
+> Pare: Fonte de pacote anterior mudou ou falta: backend/internal/localdb/localdb_test.go. Nenhum arquivo sera forcado
+
+O diagnóstico não autorizou prosseguir. Não executados --check/testes Go/vet/race/build/aplicação normal, porque a conferência dos fontes já recusou a base antes da candidata. Nenhum serviço, banco, migração, restauração, instalador ou executável iniciado. O Go encontrado no PATH é `/usr/local/go/bin/go`, versão go1.24.3 linux/amd64; o pacote pede Go1.25. Não instalou/baixou toolchain; isso é requisito adicional a resolver depois da compatibilidade dos fontes.
+
+A cadeia contém10entregas e há8registros presentes. Entretanto, a referência também tem `ciclo-compras-20261022-1` (0057_purchase_supply_cycle.sql) e `coletas-devolucoes-20261022-1` (0058_supplier_returns.sql), que NÃO constam nessa cadeia. Os37arquivos finais combinados dessas duas entregas conferiram com seus marcadores, sem divergência. Portanto, não tratar as diferenças como corrupção ou trabalho descartável.
+
+Em relação ao último estado dos8pacotes da cadeia, divergem7arquivos: localdb_test.go, migrate_safety_test.go, journal_migration_test.go, backup/backup.go, backup/compatibility_test.go e docs/api/{route-inventory.json,routes.openapi.json}. O teste atual exige58migrações. O plano09-fleet só aceita47ou56, após receiving_cases, e pretende criar48ou57_fleet_maintenance.sql; o10-workshop cria49ou58_fleet_workshop.sql. A referência tem58SQLs e números57/58legitimamente ocupados pelas entregas posteriores. Não forçar hashes, fabricar marcadores, retirar SQL, renumerar manualmente ou reconstruir predecessor de testdata.
+
+Próximo requisito ao responsável pelo backend: consolidado/atualização compatível com a base REAL de58migrações, incluindo Ciclo de Compras e Coletas/Devoluções e preservando todas as alterações locais/contratos/rotas. O plano deve conferir preimagens e tratar novas migrações de forma incremental pelo responsável, com candidata/testes antes da escrita. Depois disso confirmar toolchain compatível e repetir diagnóstico/CHECK. Esse diagnóstico não exige restaurar o projeto inteiro.
+
+Status Git do backend após a inspeção permaneceu idêntico ao registrado antes dela. Frontend/Electron não alterados por este pacote; abas de manutenção continuam locais conforme revisão22, sem integração oficial ou notificação remota. O salvamento deste registro na branch de frontend não significa aplicação do backend, compilação de novo binário ou serviço atualizado em execução.
