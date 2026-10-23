@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 21 — 23/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 22 — 23/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -841,3 +841,43 @@ Preparação/backup/hashes/contratos/logs em `work/receiving-overview-20261023/`
 Ambiente integrado ainda pendente: commit/versão compatível com ambos os contratos, URL/perfil explícitos, banco NOVO descartável, identidades fictícias/permissões mínimas e autorização do responsável. Validar autorização→entrada parcial/recusa/estorno→overview, remanescente/estados/grupos, filtro de criação versus datas de entrega, limites200/2000/1000, mudanças concorrentes entre páginas e cancelado com agenda ativa. Conferir recibos sem reenviar operação de resultado incerto. Não iniciar serviço/aplicar ZIP de backend ou escolher banco/estação/chaves nesta tarefa.
 
 Prévia de recebimentos4343 encerrada com Ctrl+C/exit130 ao finalizar. Prévias próprias de catálogo4341 e docas4342 também encerradas com exit130; a sessão da planilha4340 já retornou concluída com exit0. Não encerrou servidor de origem desconhecida.
+
+
+## Entrega de23/10/2026 — integração do pacote de frontend Frota/Manutenção
+
+Pedido do proprietário: adicionar os dois ZIPs recebidos; após CHECK do complemento de backend recusar a base, orientou seguir com frontend, revisar, corrigir problemas e testar. Base principal3013a4f0ed04fbbc5cb3164c3fc9de58e8ae639c, branchfeat/backend-checkout-authority, árvore inicialmente limpa. Arquivos/payloads e preimagens comparados antes de escrever; caminho real/acesso efetivo conferidos. Não foi criada interface no Electron.
+
+### Origem, compatibilidade e preservação
+
+- Frontend recebido: `TitanSystem_Frontend_Frota_Manutencao_20261023.zip`, SHA256 `9815847718085a297ab4daa66dbc69d6453e1ea5e944a17773b19e31e9ccb5c5`. Complemento backend recebido: `TitanSystem_Backend_Conferencia_Tecnica_Manutencao_20261023.zip`, SHA256 `da5f221c25ce81baf255feaa3823b8063eea39679e5ccb9f80743566a29feef4`. Ambos CRC e SHA256SUMS internos aprovados, caminhos/duplicidades/links conferidos; extração somente em diretório próprio de trabalho. Evidências incluídas no ZIP são relatos de sua origem; resultados abaixo foram executados nesta integração.
+- Manifesto frontend com12arquivos, base2ed977b. Tipos/Fleet85 coincidiram com hashes anteriores; novos caminhos ausentes. `git apply --check` falhou em `frontend-web/src/modules/catalog/pages/LocalOrders.tsx:1` e `docs/architecture/CONTINUIDADE_TITANSYSTEM.md:757`. O payload antigo REMOVERIA DockAgenda/ReceivingOverview/diálogo atual. Patch não forçado: só imports/link de manutenção incorporados em LocalOrders atual, preservando116/117, docas, recebimentos, bloqueio de navegação e filas. Registro antigo do pacote não foi copiado por cima deste documento.
+- Backup/preimagens/hashes e fontes recebidas em `work/fleet-packages-20261023-uflxpvk3/` desta tarefa. Arquivos exatos: `frontend-web/src/core/business85/types.ts`; novos `src/core/fleetMaintenance/{model.mjs,model.d.mts,words.ts}`; `src/modules/tenant/pages/business85/Fleet85.tsx`; novos `src/modules/tenant/pages/fleetMaintenance/{FleetMaintenance.tsx,fleetMaintenance.css}`; `src/modules/catalog/pages/LocalOrders.tsx`; testesfleetMaintenance/fleetMaintenanceWords; `docs/architecture/FRONTEND_FROTA_MANUTENCAO_20261023.md` e este registro.11fontes/testes/documento de módulo + atualização deste registro. Não incluir ZIPs, dependências, caches, build ou laboratório no Git.
+
+### Funções efetivamente adicionadas
+
+Quatro abas internas na área existente `/local/fleet`: Pedidos, Mecânica, Equipamentos e Custos por bem; link autorizado em /local/orders. Reutiliza arquivo local IndexedDBbusiness85, campo maintenance opcional; arquivos antigos permanecem compatíveis. Sem novo endpoint, envio a outro aparelho, push ou som remoto. O botão de áudio só testa o aparelho atual e não foi ouvido/validado fisicamente.
+
+Pedidos têm bem, problema/local/prioridade, impedimento de uso e referências manuais. Avaliação assume responsável; gerente/dono autoriza reparo/liberação; reparo/espera/conferência e cancelamento/reabertura mantêm revisões/ator/histórico locais. Isso não é inspeção técnica do backend, assinatura qualificada ou prova inviolável. Bloqueio participa do despacho LOCAL; liberar um chamado não apaga outro impedimento. Não cancela viagem em andamento.
+
+Equipamentos incluem máquina/empilhadeira/outros com identificação/local/horímetro. Custos e parâmetros gerenciais, depreciação linear/resultado parcial/impacto estimado e CSV exigem permissão financeira; escrita gerencial exige gerente/dono. Não há pagamento, consumo de peça, folha ou integração fiscal/contábil. Parâmetros ausentes permanecem ausentes. Campo/salvamento de rascunho não prova persistência no backend.
+
+Correções encontradas nesta revisão: (1) total de custos fora do limite inteiro exato poderia lançar erro durante renderização; agora a linha mostra aviso em5idiomas, sem arredondar/zerar ou apagar registros, e exportação continua recusando cálculo inválido; (2) cabeçalho misto de próxima revisão usava horas também para veículo; agora tabela informa km no veículo e h no equipamento, com cabeçalho neutro nos5idiomas. Formulário de equipamento permanece em horas. Fonte recebida preservada para comparação.
+
+Limites legados permanecem explícitos: workspace por empresa/loja/usuário/aparelho, sem compartilhamento interidentidades; sem transação/coautoria confiável entre abas. Revisão esperada é local. Não usar esta fila para anunciar monitor do mecânico compartilhado, nem aplicar automaticamente regras de checklist do backend ainda ausente. Não ampliou papel/permissão.
+
+### Resultados executados
+
+-43testes do pacote aprovados. Suíte completa final após correções:1662aprovados,0falhas,0ignorados, incluindo116/117/docas/recebimentos. TypeScript exit0. Build Vite/React existentes isolado em21.584s, configFile:false/envFile:false, dist do usuário preservado; aviso de chunk grande da planilha permanece.
+-27verificações SSR com componente real e fixtures descartáveis:20composições (4abas×5idiomas),5erros de limite numérico sem queda da aba,1perfil financeiro negado e1tabela com km/h separados. SSR não substitui cliques/persistência/serviço real.
+- Ensaio interativo com LocalBusiness85 real, origem própria127.0.0.1:4344, identidades fictícias/IndexedDB separado, sem proxy/backend. Abriu pedido bloqueante; avaliou→autorizou→iniciou reparo→encaminhou à conferência→liberou, preservando6eventos. Reabriu página/prévia e recuperou Liberado+6eventos. Não foi reinício completo do sistema operacional/app desktop.
+- Registrou custo fictício10,01 com resumo/histórico10,01; cadastrou máquina100h/revisão120h e conferiu tabela junto do veículo1000km. Percorreu cabeçalhos de equipamento nos5idiomas e temas claro/escuro. Perfil fictício employee sem view_accounting viu aviso de permissão, sem tabela/campos de custo; Mecânica estava vazia nesse outro usuário, sem copiar a fila do gerente. Não testou quatro trocas de contexto individualmente na interface, atendimento real entre aparelhos, todos os atalhos/leitores de tela, CSV baixado ou som físico.
+- Ensaio estreito configurou390×844; DOM retornou clientWidth375/scrollWidth375. Captura do bridge saiu reduzida e não é aceite completo de smartphone/touch. Viewport restaurado. Capturas nos outputs desta tarefa: `frota-manutencao-fluxo-local-2026-10-23.png`, `frota-equipamentos-unidades-2026-10-23.png` e captura limitada mobile. Nenhuma contém dados comerciais.
+- Preparação SSR via Vite encontrou `listen EPERM ...24678` e `ReferenceError: module is not defined` em react/jsx-dev-runtime. Resolvido no laboratório por bundle SSR CommonJS com esbuild JÁ instalado;27casos executados, sem dependências ou alteração de runtime do produto. Browser getByLabel não encontrou controle, DOM confirmou rótulo e getByRole operou corretamente. Processo da primeira prévia encerrou e recarga retornou ERR_CONNECTION_REFUSED; após reiniciar prévia própria, reabertura confirmou persistência. Não contornou alerta de certificado nem iniciou serviço comercial.
+
+### Backend recebido: não aplicado
+
+`aplicar.py --check /home/danillo-malta/Downloads/zzeus-frontend-backend-b02a` saiu1com `Pare: Aplique primeiro Frota e Manutencao de23/10/2026`. Ausentes `backend/internal/localdb/fleet/`, `backend/internal/localapi/fleet.go` e `docs/architecture/BACKEND_FROTA_MANUTENCAO_APLICADO.json`. A referência tem58migrações, incluindo0057_purchase_supply_cycle.sql e0058_supplier_returns.sql; o complemento espera predecessor48ou57e adiciona49ou58. Não renumerar SQL, fabricar marcador ou reconstruir predecessor a partir de testdata. É necessária entrega compatível do responsável com a base atual, seguida de CHECK antes de qualquer aplicação.
+
+Backend branchfeat/backend-b02a-compat/HEAD58a26bbbdf08903d62f6dd1f0542417171b460dd e todas suas alterações locais preservados; nenhum arquivo de backend foi escrito, Go test/migração/banco/serviço não executados nesta integração. O proprietário respondeu para concluir o frontend. Contratos de manutenção técnica recebidos ficam disponíveis no pacote para revisão futura; este frontend AINDA NÃO os chama. Integração/ambiente descartável seguem pendentes de base/versão/perfil autorizados. Não anunciar ambas as partes operacionais.
+
+Salvamento na branch de frontend existente segue autorização humana anterior para GitHub; sem merge, force-push ou mudanças na main. Reversão localizada por hashes/diff preservando alterações posteriores. Esta entrega adiciona a frente recebida, não conclui todas as17frentes do ERP nem substitui a ordem de logística→faturamento/receber→PDV/fechamento.
