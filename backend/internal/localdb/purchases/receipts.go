@@ -147,9 +147,6 @@ func receiptTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (Re
 	return out, nil
 }
 func RecordReceiving(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ReceiptInput) (ReceiptResult, error) {
-	if !validReceipt(in) {
-		return ReceiptResult{}, ErrInvalid
-	}
 	if db == nil {
 		return ReceiptResult{}, errors.New("banco indisponivel")
 	}
@@ -158,6 +155,20 @@ func RecordReceiving(ctx context.Context, db *sql.DB, license *entitlementstore.
 		return ReceiptResult{}, err
 	}
 	defer tx.Rollback()
+	out, err := RecordReceivingTx(ctx, tx, license, a, d, in)
+	if err != nil {
+		return ReceiptResult{}, err
+	}
+	return out, tx.Commit()
+}
+
+// RecordReceivingTx uses the caller's transaction and never commits it.
+// Authorization, duplicate detection, stock, audit and outbox remain atomic.
+func RecordReceivingTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ReceiptInput) (ReceiptResult, error) {
+	if tx == nil || license == nil || !validReceipt(in) {
+		return ReceiptResult{}, ErrInvalid
+	}
+	var err error
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageReplenishment, modules.Orders); err != nil {
 		return ReceiptResult{}, err
 	}
@@ -178,7 +189,7 @@ func RecordReceiving(ctx context.Context, db *sql.DB, license *entitlementstore.
 		if prior.ReceiptInput != in || prior.ActorID != a.IdentityID || prior.DeviceID != d.DeviceID {
 			return ReceiptResult{}, ErrConflict
 		}
-		return ReceiptResult{prior, true}, tx.Commit()
+		return ReceiptResult{prior, true}, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return ReceiptResult{}, err
@@ -293,5 +304,5 @@ func RecordReceiving(ctx context.Context, db *sql.DB, license *entitlementstore.
 		}
 	}
 	out := Receipt{in, receiptID, d.DeviceID, a.IdentityID, product, stockID, movementID, now, nil}
-	return ReceiptResult{out, false}, tx.Commit()
+	return ReceiptResult{out, false}, nil
 }

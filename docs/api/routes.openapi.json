@@ -15250,6 +15250,1810 @@
       "get": {
         "$ref": "./cash-movement-receipt.openapi.json#/paths/~1local~1v1~1cash~1movements~1operations~1{id}/get"
       }
+    },
+    "/local/v1/stock/inventories": {
+      "post": {
+        "operationId": "reviewed_inventory_open",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/reviewed_inventory.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      },
+      "get": {
+        "operationId": "reviewed_inventory_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/reviewed_inventory.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/stock/inventories/{id}": {
+      "get": {
+        "operationId": "reviewed_inventory_detail",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/reviewed_inventory.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/stock/inventories/{id}/counts": {
+      "post": {
+        "operationId": "reviewed_inventory_count",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/reviewed_inventory.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/stock/inventories/{id}/state": {
+      "post": {
+        "operationId": "reviewed_inventory_state",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/reviewed_inventory.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/stock/inventories/{id}/history": {
+      "get": {
+        "operationId": "reviewed_inventory_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/reviewed_inventory.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/stock/inventories/{id}/report.csv": {
+      "get": {
+        "operationId": "reviewed_inventory_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/reviewed_inventory.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/stock/inventory-operations/{id}": {
+      "get": {
+        "operationId": "reviewed_inventory_receipt",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/reviewed_inventory.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/system/info": {
+      "get": {
+        "operationId": "local_system_info",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/reviewed_inventory.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/production/recipe-versions/{id}/material-cost": {
+      "get": {
+        "operationId": "recipe_material_cost",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/material_cost.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/production/orders/{id}/material-cost": {
+      "get": {
+        "operationId": "order_material_cost",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato detalhado em inventory-costs.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/material_cost.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato detalhado",
+          "url": "./inventory-costs.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/sales/products": {
+      "get": {
+        "operationId": "management_sales_products",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em management-production.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/management_reports.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./management-production.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/stock/positions": {
+      "get": {
+        "operationId": "management_stock_positions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em management-production.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/management_reports.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./management-production.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/stock/valuation": {
+      "get": {
+        "operationId": "management_stock_valuation",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em management-production.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/management_reports.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./management-production.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/sales/products.csv": {
+      "get": {
+        "operationId": "management_sales_products_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em management-production.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/management_reports.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./management-production.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/stock/positions.csv": {
+      "get": {
+        "operationId": "management_stock_positions_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em management-production.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/management_reports.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./management-production.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/stock/valuation.csv": {
+      "get": {
+        "operationId": "management_stock_valuation_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em management-production.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/management_reports.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./management-production.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/inventories/{id}/variance": {
+      "get": {
+        "operationId": "management_inventory_variance",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato em management-production.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/management_reports.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./management-production.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/production/simultaneous-plan": {
+      "post": {
+        "operationId": "management_simultaneous_plan",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em management-production.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/management_reports.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./management-production.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/production/recipe-versions/{id}/cost-scenario": {
+      "post": {
+        "operationId": "management_cost_scenario",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato em management-production.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/management_reports.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./management-production.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/replenishment/preview": {
+      "post": {
+        "operationId": "management_restock_preview",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em management-production.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/management_reports.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./management-production.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/docks": {
+      "get": {
+        "operationId": "dock_agenda_docks",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "dock_agenda_save_dock",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/docks/{id}/history": {
+      "get": {
+        "operationId": "dock_agenda_dock_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/appointments": {
+      "get": {
+        "operationId": "dock_agenda_appointments",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "dock_agenda_reserve",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/appointments.csv": {
+      "get": {
+        "operationId": "dock_agenda_appointments_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/appointments/{id}": {
+      "get": {
+        "operationId": "dock_agenda_detail",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/appointments/{id}/actions": {
+      "post": {
+        "operationId": "dock_agenda_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/appointments/{id}/history": {
+      "get": {
+        "operationId": "dock_agenda_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/operations/{id}": {
+      "get": {
+        "operationId": "dock_agenda_receipt",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/occupancy": {
+      "get": {
+        "operationId": "dock_agenda_occupancy",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-agenda.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_agenda.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-agenda.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/insights/availability": {
+      "get": {
+        "operationId": "dock_insights_availability",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-insights.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_insights.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-insights.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/insights/suppliers/performance": {
+      "get": {
+        "operationId": "dock_insights_performance",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-insights.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_insights.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-insights.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/insights/pending": {
+      "get": {
+        "operationId": "dock_insights_pending",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-insights.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_insights.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-insights.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/insights/suppliers/performance.csv": {
+      "get": {
+        "operationId": "dock_insights_performance_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-insights.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_insights.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-insights.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/insights/pending.csv": {
+      "get": {
+        "operationId": "dock_insights_pending_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-insights.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_insights.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-insights.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/insights/utilization": {
+      "get": {
+        "operationId": "dock_utilization",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-utilization.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_utilization.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-utilization.openapi.json"
+        }
+      }
+    },
+    "/local/v1/logistics/insights/utilization.csv": {
+      "get": {
+        "operationId": "dock_utilization_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em dock-utilization.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/dock_utilization.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./dock-utilization.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-orders/{id}/receiving-overview": {
+      "get": {
+        "operationId": "purchase_receiving_overview",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em receiving-overview.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/receiving_overview.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./receiving-overview.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-orders/{id}/receiving-overview.csv": {
+      "get": {
+        "operationId": "purchase_receiving_overview_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em receiving-overview.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/receiving_overview.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./receiving-overview.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/purchases/receiving-board": {
+      "get": {
+        "operationId": "purchase_receiving_board",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em receiving-board.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/receiving_board.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./receiving-board.openapi.json"
+        }
+      }
+    },
+    "/local/v1/management/purchases/receiving-board.csv": {
+      "get": {
+        "operationId": "purchase_receiving_board_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em receiving-board.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/receiving_board.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./receiving-board.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-orders/{id}/receiving-cases": {
+      "post": {
+        "operationId": "receiving_case_open",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em receiving-cases.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/receiving_cases.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./receiving-cases.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-receiving-cases": {
+      "get": {
+        "operationId": "receiving_case_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em receiving-cases.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/receiving_cases.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./receiving-cases.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-receiving-cases/{id}": {
+      "get": {
+        "operationId": "receiving_case_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em receiving-cases.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/receiving_cases.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./receiving-cases.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-receiving-cases/{id}/actions": {
+      "post": {
+        "operationId": "receiving_case_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em receiving-cases.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/receiving_cases.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./receiving-cases.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-receiving-cases/{id}/history": {
+      "get": {
+        "operationId": "receiving_case_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em receiving-cases.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/receiving_cases.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./receiving-cases.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-receiving-case-operations/{id}": {
+      "get": {
+        "operationId": "receiving_case_operation",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em receiving-cases.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/receiving_cases.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./receiving-cases.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-orders/{id}/supplier-decisions": {
+      "post": {
+        "summary": "Record human evidence of external supplier decision",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json"
+      }
+    },
+    "/local/v1/purchase-orders/{id}/supply-cycle": {
+      "get": {
+        "summary": "Read bounded physical cycle snapshot",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json"
+      }
+    },
+    "/local/v1/purchase-orders/{id}/deliveries": {
+      "post": {
+        "summary": "Plan named partial delivery from recorded commitment",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json"
+      }
+    },
+    "/local/v1/purchase-deliveries/{id}": {
+      "get": {
+        "summary": "Read named delivery",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json"
+      }
+    },
+    "/local/v1/purchase-deliveries/{id}/history": {
+      "get": {
+        "summary": "Read paginated physical delivery history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json"
+      }
+    },
+    "/local/v1/purchase-deliveries/{id}/actions": {
+      "post": {
+        "summary": "Record manual load, arrival or cancellation",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json"
+      }
+    },
+    "/local/v1/purchase-deliveries/{id}/receive": {
+      "post": {
+        "summary": "Atomically receive checked quantities into stock",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json"
+      }
+    },
+    "/local/v1/purchase-deliveries/{id}/payable": {
+      "post": {
+        "summary": "Atomically create pending obligation and immutable receiving origin",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json"
+      }
+    },
+    "/local/v1/purchase-cycle-operations/{id}": {
+      "get": {
+        "summary": "Recover original operation for its actor and device",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json"
+      }
+    },
+    "/local/v1/finance/receiving-origins/{id}": {
+      "get": {
+        "summary": "Read protected financial origin and review flag",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json"
+      }
+    },
+    "/local/v1/purchase-receiving-cases/{id}/returns": {
+      "post": {
+        "operationId": "returns_post__local_v1_purchase_receiving_cases__id__returns",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See supplier-returns.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/supplier_returns.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./supplier-returns.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns": {
+      "get": {
+        "operationId": "returns_get__local_v1_purchase_supplier_returns",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See supplier-returns.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/supplier_returns.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./supplier-returns.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns/{id}": {
+      "get": {
+        "operationId": "returns_get__local_v1_purchase_supplier_returns__id_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See supplier-returns.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/supplier_returns.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./supplier-returns.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns/{id}/history": {
+      "get": {
+        "operationId": "returns_get__local_v1_purchase_supplier_returns__id__history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See supplier-returns.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/supplier_returns.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./supplier-returns.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns/{id}/actions": {
+      "post": {
+        "operationId": "returns_post__local_v1_purchase_supplier_returns__id__actions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See supplier-returns.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/supplier_returns.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./supplier-returns.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns/{id}/dispatch": {
+      "post": {
+        "operationId": "returns_post__local_v1_purchase_supplier_returns__id__dispatch",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See supplier-returns.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/supplier_returns.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./supplier-returns.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns/{id}/recover": {
+      "post": {
+        "operationId": "returns_post__local_v1_purchase_supplier_returns__id__recover",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See supplier-returns.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/supplier_returns.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./supplier-returns.openapi.json"
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-return-operations/{id}": {
+      "get": {
+        "operationId": "returns_get__local_v1_purchase_supplier_return_operations__id_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See supplier-returns.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/supplier_returns.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./supplier-returns.openapi.json"
+        }
+      }
+    },
+    "/local/v1/finance/receiving-return-review/{id}": {
+      "get": {
+        "operationId": "returns_get__local_v1_finance_receiving_return_review__id_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See supplier-returns.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/supplier_returns.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./supplier-returns.openapi.json"
+        }
+      }
     }
   },
   "components": {

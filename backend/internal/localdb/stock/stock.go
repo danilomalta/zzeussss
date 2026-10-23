@@ -67,6 +67,28 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		return Result{}, err
 	}
 	defer tx.Rollback()
+	out, err := recordTx(ctx, tx, actor, device, in, authorize)
+	if err != nil {
+		return Result{}, err
+	}
+	return out, tx.Commit()
+}
+
+func recordTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, in Input, authorize stockAuthorization) (Result, error) {
+	if tx == nil {
+		return Result{}, ErrInvalidOperation
+	}
+	in.OperationID = strings.TrimSpace(in.OperationID)
+	in.ProductID = strings.TrimSpace(in.ProductID)
+	in.Reason = strings.TrimSpace(in.Reason)
+	if len(in.OperationID) > 128 || len(in.ProductID) > 128 || len(in.FromLocationID) > 128 || len(in.ToLocationID) > 128 {
+		return Result{}, ErrInvalidOperation
+	}
+	if in.OperationID == "" || in.ProductID == "" || in.QuantityMilli <= 0 ||
+		in.Reason == "" || len(in.Reason) > 255 || !validLocations(in) || (in.ExpectedUnit != "" && (!validAvailabilityUnit(in.ExpectedUnit) || in.QuantityMilli > MaxAvailabilityQuantity)) {
+		return Result{}, ErrInvalidOperation
+	}
+	var err error
 	if err := authorize(ctx, tx, actor, device); err != nil {
 		return Result{}, err
 	}
@@ -98,9 +120,6 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 			existing.from.String != in.FromLocationID || existing.to.String != in.ToLocationID ||
 			existing.quantity != in.QuantityMilli || existing.reason != in.Reason {
 			return Result{}, ErrOperationConflict
-		}
-		if err := tx.Commit(); err != nil {
-			return Result{}, err
 		}
 		return Result{OperationID: in.OperationID, Repeated: true}, nil
 	}
@@ -176,9 +195,6 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		in.OperationID, in.ProductID, string(payload), now)
 	if err != nil {
 		return Result{}, fmt.Errorf("registrar outbox: %w", err)
-	}
-	if err := tx.Commit(); err != nil {
-		return Result{}, err
 	}
 	return Result{OperationID: in.OperationID}, nil
 }

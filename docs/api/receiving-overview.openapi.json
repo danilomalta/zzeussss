@@ -1,0 +1,532 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan local — purchase receiving overview",
+    "version": "2026-10-22.1"
+  },
+  "paths": {
+    "/local/v1/purchase-orders/{id}/receiving-overview": {
+      "get": {
+        "operationId": "purchase_receiving_overview",
+        "description": "Read-only single transaction in current tenant/store, current ViewOrders+ManageStock and approved device. Combines existing one-product order receiving trace, validates receipts/stock evidence/voids and full rejection evidence before appointment pagination. Max1000 combined receipt + rejection + void + appointment source rows per order, including cancelled/history, otherwise422 no partial totals. Quantity in thousandths, never mixed units; full rejection/void aggregate exact decimal strings. Voids remove effective accepted quantity, never represent refund, collection or physical return. Full rejections do not reduce outstanding quantity. Local authorization not external supplier confirmation. Supplier confirmation always not_proven_by_local_records; payment evaluation always not_evaluated. Appointment link is by order_id only, not a delivery-reference/vehicle match. Completed dock plus remainder is a REVIEW flag, not proof of fault. Cancellation does not mutate agenda or trigger reorder. Summary covers all evidence independent of current appointment page. No contract renewal for authorized historical reading, no writes, side effects or financial evaluation.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Receiving overview; totals and review flags independent of appointment pagination",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivingOverview"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown/duplicate/invalid query, GET body or ID"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device denied"
+          },
+          "404": {
+            "description": "Order not found in current scope"
+          },
+          "409": {
+            "description": "Contradictory receipt, rejection, stock, void or agenda evidence"
+          },
+          "422": {
+            "description": "More than1000 source evidence records for this order; no partial totals"
+          },
+          "500": {
+            "description": "Read failure"
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-orders/{id}/receiving-overview.csv": {
+      "get": {
+        "operationId": "purchase_receiving_overview_csv",
+        "description": "Read-only single transaction in current tenant/store, current ViewOrders+ManageStock and approved device. Combines existing one-product order receiving trace, validates receipts/stock evidence/voids and full rejection evidence before appointment pagination. Max1000 combined receipt + rejection + void + appointment source rows per order, including cancelled/history, otherwise422 no partial totals. Quantity in thousandths, never mixed units; full rejection/void aggregate exact decimal strings. Voids remove effective accepted quantity, never represent refund, collection or physical return. Full rejections do not reduce outstanding quantity. Local authorization not external supplier confirmation. Supplier confirmation always not_proven_by_local_records; payment evaluation always not_evaluated. Appointment link is by order_id only, not a delivery-reference/vehicle match. Completed dock plus remainder is a REVIEW flag, not proof of fault. Cancellation does not mutate agenda or trigger reorder. Summary covers all evidence independent of current appointment page. No contract renewal for authorized historical reading, no writes, side effects or financial evaluation.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One summary record, then appointment records of current page; header+summary even when page empty; textual CSV formula cells escaped",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown/duplicate/invalid query, GET body or ID"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device denied"
+          },
+          "404": {
+            "description": "Order not found in current scope"
+          },
+          "409": {
+            "description": "Contradictory receipt, rejection, stock, void or agenda evidence"
+          },
+          "422": {
+            "description": "More than1000 source evidence records for this order; no partial totals"
+          },
+          "500": {
+            "description": "Read failure"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "AgendaCounts": {
+        "additionalProperties": false,
+        "properties": {
+          "arrived": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "cancelled": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "completed": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "no_show": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "reserved": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "unloading": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "reserved",
+          "arrived",
+          "unloading",
+          "completed",
+          "cancelled",
+          "no_show"
+        ],
+        "type": "object"
+      },
+      "Appointment": {
+        "additionalProperties": false,
+        "properties": {
+          "appointment_id": {
+            "type": "string"
+          },
+          "arrived_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "completed_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "dock_id": {
+            "type": "string"
+          },
+          "ends_at": {
+            "type": "string"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "starts_at": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "stock_received": {
+            "type": "boolean"
+          },
+          "supplier_confirmed": {
+            "type": "boolean"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "unloading_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appointment_id",
+          "dock_id",
+          "order_id",
+          "supplier_id",
+          "starts_at",
+          "ends_at",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "arrived_at",
+          "unloading_at",
+          "completed_at",
+          "supplier_confirmed",
+          "stock_received"
+        ],
+        "type": "object"
+      },
+      "ReceivingAuthorization": {
+        "additionalProperties": false,
+        "properties": {
+          "actor_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "device_id",
+          "actor_id",
+          "reference",
+          "reason",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "ReceivingOverview": {
+        "additionalProperties": false,
+        "properties": {
+          "agenda_counts": {
+            "$ref": "#/components/schemas/AgendaCounts"
+          },
+          "appointments": {
+            "items": {
+              "$ref": "#/components/schemas/Appointment"
+            },
+            "type": "array"
+          },
+          "authorization": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReceivingAuthorization"
+              }
+            ],
+            "nullable": true
+          },
+          "commercial_status": {
+            "type": "string"
+          },
+          "effective_accepted_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "effective_delivered_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "full_rejection_count": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "fully_rejected_milli_exact": {
+            "type": "string"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "partial_rejected_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "payment_evaluation": {
+            "type": "string",
+            "enum": [
+              "not_evaluated"
+            ]
+          },
+          "planned_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "receipt_count": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "receiving_status": {
+            "type": "string"
+          },
+          "remaining_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "review_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "source_records": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "supplier_confirmation": {
+            "type": "string",
+            "enum": [
+              "not_proven_by_local_records"
+            ]
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "total_appointments": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "voided_accepted_milli_exact": {
+            "type": "string"
+          },
+          "voided_receipt_count": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "order_id",
+          "supplier_id",
+          "measured_at",
+          "commercial_status",
+          "receiving_status",
+          "authorization",
+          "product_id",
+          "unit",
+          "planned_milli",
+          "effective_delivered_milli",
+          "effective_accepted_milli",
+          "partial_rejected_milli",
+          "remaining_milli",
+          "fully_rejected_milli_exact",
+          "voided_accepted_milli_exact",
+          "receipt_count",
+          "voided_receipt_count",
+          "full_rejection_count",
+          "agenda_counts",
+          "total_appointments",
+          "source_records",
+          "limit",
+          "offset",
+          "appointments",
+          "review_flags",
+          "supplier_confirmation",
+          "payment_evaluation"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

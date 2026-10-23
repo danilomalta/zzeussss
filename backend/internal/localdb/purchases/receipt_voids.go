@@ -131,6 +131,9 @@ func VoidReceipt(ctx context.Context, db *sql.DB, license *entitlementstore.Stor
 	if v != nil {
 		return ReceiptVoidResult{}, ErrConflict
 	}
+	if err = ReturnsPermitVoidTx(ctx, tx, a, r.ID); err != nil {
+		return ReceiptVoidResult{}, err
+	}
 	var unit string
 	if err = tx.QueryRowContext(ctx, `SELECT unit FROM products WHERE tenant_id=? AND id=?`, a.TenantID, r.ProductID).Scan(&unit); err != nil {
 		return ReceiptVoidResult{}, err

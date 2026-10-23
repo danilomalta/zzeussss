@@ -124,6 +124,8 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 	s.mountPayables(protected)
 	s.mountPayableCash(protected)
 	s.mountPayableReadiness(protected)
+	s.mountSupplyCycle(protected)
+	s.mountSupplierReturns(protected)
 	s.mountCashMovementReceipt(protected)
 	s.mountProductionMaterials(protected)
 	s.mountProductionResults(protected)

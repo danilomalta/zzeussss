@@ -40,6 +40,13 @@ func replay(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.Device
 	return r, true, nil
 }
 func finish(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, p Payable, e Event, h string) (Result, error) {
+	r, err := finishTx(ctx, tx, a, d, p, e, h)
+	if err != nil {
+		return Result{}, err
+	}
+	return r, tx.Commit()
+}
+func finishTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, p Payable, e Event, h string) (Result, error) {
 	p.History = append(p.History, e)
 	if err := valid(p); err != nil {
 		return Result{}, err
@@ -55,10 +62,10 @@ func finish(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.Device
 	if err = checked(ctx, tx, `INSERT INTO supplier_payable_events VALUES(?,?,?,?,?,1,?,?)`, a.TenantID, a.StoreID, d.DeviceID, e.OperationID, "supplier.payable."+e.Action, string(b), e.CreatedAt); err != nil {
 		return Result{}, err
 	}
-	return r, tx.Commit()
+	return r, nil
 }
 func Create(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in CreateInput) (Result, error) {
-	if db == nil || contracts == nil || !key(in.OperationID) || !key(in.PayableID) || !text(in.SupplierID, 128) || !key(in.DocumentReference) || !text(in.Description, 500) || in.Currency != "BRL" || !schedule(in.Installments, in.TotalCents, in.IssuedOn) {
+	if db == nil {
 		return Result{}, ErrInvalid
 	}
 	tx, err := db.BeginTx(ctx, nil)
@@ -66,6 +73,19 @@ func Create(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, 
 		return Result{}, err
 	}
 	defer tx.Rollback()
+	out, err := CreateTx(ctx, tx, contracts, a, d, in)
+	if err != nil {
+		return Result{}, err
+	}
+	return out, tx.Commit()
+}
+
+// CreateTx participates in an enclosing business transaction, without commit.
+func CreateTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in CreateInput) (Result, error) {
+	if tx == nil || contracts == nil || !key(in.OperationID) || !key(in.PayableID) || !text(in.SupplierID, 128) || !key(in.DocumentReference) || !text(in.Description, 500) || in.Currency != "BRL" || !schedule(in.Installments, in.TotalCents, in.IssuedOn) {
+		return Result{}, ErrInvalid
+	}
+	var err error
 	if err = contracts.RequireTx(ctx, tx, a, d, identity.ManageCash, modules.Finance); err != nil {
 		return Result{}, err
 	}
@@ -94,7 +114,7 @@ func Create(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, 
 			return Result{}, err
 		}
 	}
-	return finish(ctx, tx, a, d, p, Event{in.OperationID, a.IdentityID, "create", "", "pending", p.Description, now}, h)
+	return finishTx(ctx, tx, a, d, p, Event{in.OperationID, a.IdentityID, "create", "", "pending", p.Description, now}, h)
 }
 func Transition(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id, action string, in ActionInput) (Result, error) {
 	if db == nil || contracts == nil || !key(id) || !key(in.OperationID) || !text(in.Reason, 500) || (action != "approve" && action != "reject" && action != "cancel") {
@@ -125,6 +145,11 @@ func Transition(ctx context.Context, db *sql.DB, contracts *entitlementstore.Sto
 	}
 	if action == "cancel" && cash.AppliedCents > 0 {
 		return Result{}, ErrConflict
+	}
+	if action == "approve" {
+		if err = CheckReceivingOriginTx(ctx, tx, a, d, p.ID); err != nil {
+			return Result{}, err
+		}
 	}
 	before := p.State
 	after := ""

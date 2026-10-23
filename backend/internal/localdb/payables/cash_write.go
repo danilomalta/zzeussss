@@ -77,6 +77,9 @@ func PayCash(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store,
 	if e != nil {
 		return CashResult{}, e
 	}
+	if e = CheckReceivingOriginTx(ctx, tx, a, d, p.ID); e != nil {
+		return CashResult{}, e
+	}
 	if p.State != "approved" {
 		return CashResult{}, ErrConflict
 	}

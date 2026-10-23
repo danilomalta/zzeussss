@@ -12,6 +12,7 @@ import (
 )
 
 func (s *Server) mountStock(router fiber.Router) {
+	s.mountReviewedInventory(router)
 	router.Get("/stock/balance", s.stockBalance)
 	router.Get("/stock/operations/history", s.stockOperationHistory)
 	router.Get("/stock/operations/:id/receipt", s.stockOperationReceipt)
