@@ -7,7 +7,7 @@ import {catalogCents,catalogMoneyInput,catalogEqual,catalogUnits,type CatalogCom
 import {catalogWords} from '../../../core/catalogManagement/words.mjs';
 import './productManagement.css';
 type Selected={id:string;name:string};
-type Props={selected:Selected|null;locale:string;onClose:()=>void;onChanged:()=>void;onDirty:(value:boolean)=>void;onBusy:(value:boolean)=>void};
+type Props={externalDirty?:boolean;selected:Selected|null;locale:string;onClose:()=>void;onChanged:()=>void;onDirty:(value:boolean)=>void;onBusy:(value:boolean)=>void};
 export default function CatalogManagement(props:Props){
  const token=useLocalSession(s=>s.token),session=useLocalSession(s=>s.session),{capabilities}=useLocalAccess(),current=useRef(capabilities);current.current=capabilities;
  const source=useMemo(()=>{try{return token&&session&&capabilities?createCatalogManagement({token,session,capabilities,storage:window.localStorage,locks:navigator.locks,isCurrent:()=>{const state=useLocalSession.getState();return state.token===token&&state.session===session&&current.current===capabilities;}}):null;}catch{return null;}},[token,session,capabilities,JSON.stringify([session,capabilities])]);
@@ -17,14 +17,14 @@ export function CatalogManager({source,...props}:Props&{source:CatalogManagement
  const {selected,locale}=props,w=catalogWords(locale),callbacks=useRef(props);callbacks.current=props;
  const [queue,setQueue]=useState<CatalogCommand|null>(null),[queueError,setQueueError]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0),[review,setReview]=useState<CatalogCommand|null>(null),[last,setLast]=useState<{command:CatalogCommand;receipt:CatalogReceipt}|null>(null),[editorDirty,setEditorDirty]=useState(false);
  const dialog=useRef<HTMLDialogElement>(null),opener=useRef<HTMLElement|null>(null),latch=useRef(false),live=useRef(true),confirmations=useRef(new Map<string,()=>void>());
- const dirty=editorDirty||!!review||busy;
+ const dirty=editorDirty||!!review||busy,navigationDirty=dirty||!!props.externalDirty;
  const readQueue=()=>{try{setQueue(source.canManage?source.pending():null);setQueueError(false);}catch{setQueueError(true);}};
  useEffect(()=>{live.current=true;readQueue();return()=>{live.current=false;callbacks.current.onDirty(false);callbacks.current.onBusy(false);};},[source]);
  useEffect(()=>{callbacks.current.onDirty(dirty);},[dirty]);
  useEffect(()=>{setReview(null);setEditorDirty(false);setError('');},[selected?.id]);
- const blocker=useBlocker(({currentLocation,nextLocation})=>dirty&&(currentLocation.pathname+currentLocation.search+currentLocation.hash!==nextLocation.pathname+nextLocation.search+nextLocation.hash));
+ const blocker=useBlocker(({currentLocation,nextLocation})=>navigationDirty&&(currentLocation.pathname+currentLocation.search+currentLocation.hash!==nextLocation.pathname+nextLocation.search+nextLocation.hash));
 
- useEffect(()=>{if(!dirty)return;const warn=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
+ useEffect(()=>{if(!navigationDirty)return;const warn=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[navigationDirty]);
  useEffect(()=>{if(!review)return;opener.current=document.activeElement as HTMLElement;dialog.current?.showModal();return()=>{dialog.current?.close();opener.current?.focus();};},[review]);
  async function run(fn:()=>Promise<CatalogOutcome|null>){if(latch.current)return;latch.current=true;setBusy(true);callbacks.current.onBusy(true);setError('');setMessage('');try{const result=await fn();source.assertCurrent();if(!live.current)return;if(result?.state==='confirmed'){setLast({command:result.command,receipt:result.receipt});setMessage('confirmed');const done=confirmations.current.get(result.command.body.operation_id);confirmations.current.delete(result.command.body.operation_id);done?.();setReview(null);setRefresh(v=>v+1);callbacks.current.onChanged();}else if(result)setMessage(result.state);}catch(e){if(live.current)setError(errorKey(e));}finally{latch.current=false;if(live.current){setBusy(false);callbacks.current.onBusy(false);readQueue();}}}
  const onReview=(command:CatalogCommand,confirmed:()=>void)=>{confirmations.current.set(command.body.operation_id,confirmed);setError('');setReview(command);};
