@@ -17054,6 +17054,1818 @@
           "url": "./supplier-returns.openapi.json"
         }
       }
+    },
+    "/local/v1/fleet/assets": {
+      "get": {
+        "operationId": "fleet_asset_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "fleet_asset_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}": {
+      "get": {
+        "operationId": "fleet_asset_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/history": {
+      "get": {
+        "operationId": "fleet_asset_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/actions": {
+      "post": {
+        "operationId": "fleet_asset_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/requests": {
+      "get": {
+        "operationId": "fleet_request_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "fleet_request_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/requests/{id}": {
+      "get": {
+        "operationId": "fleet_request_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/requests/{id}/history": {
+      "get": {
+        "operationId": "fleet_request_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/requests/{id}/actions": {
+      "post": {
+        "operationId": "fleet_request_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/trips": {
+      "get": {
+        "operationId": "fleet_trip_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "fleet_trip_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/trips/{id}": {
+      "get": {
+        "operationId": "fleet_trip_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/trips/{id}/history": {
+      "get": {
+        "operationId": "fleet_trip_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/trips/{id}/actions": {
+      "post": {
+        "operationId": "fleet_trip_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/plans": {
+      "get": {
+        "operationId": "fleet_plan_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "fleet_plan_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/plans/{id}": {
+      "get": {
+        "operationId": "fleet_plan_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/plans/{id}/history": {
+      "get": {
+        "operationId": "fleet_plan_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/plans/{id}/actions": {
+      "post": {
+        "operationId": "fleet_plan_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/providers": {
+      "get": {
+        "operationId": "fleet_provider_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "fleet_provider_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/providers/{id}": {
+      "get": {
+        "operationId": "fleet_provider_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/providers/{id}/history": {
+      "get": {
+        "operationId": "fleet_provider_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/providers/{id}/actions": {
+      "post": {
+        "operationId": "fleet_provider_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/quotes": {
+      "get": {
+        "operationId": "fleet_quote_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "fleet_quote_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/quotes/{id}": {
+      "get": {
+        "operationId": "fleet_quote_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/quotes/{id}/history": {
+      "get": {
+        "operationId": "fleet_quote_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/quotes/{id}/actions": {
+      "post": {
+        "operationId": "fleet_quote_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/expenses": {
+      "get": {
+        "operationId": "fleet_expense_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "fleet_expense_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/expenses/{id}": {
+      "get": {
+        "operationId": "fleet_expense_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/expenses/{id}/history": {
+      "get": {
+        "operationId": "fleet_expense_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/expenses/{id}/actions": {
+      "post": {
+        "operationId": "fleet_expense_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/income": {
+      "get": {
+        "operationId": "fleet_income_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "fleet_income_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/income/{id}": {
+      "get": {
+        "operationId": "fleet_income_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/income/{id}/history": {
+      "get": {
+        "operationId": "fleet_income_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/income/{id}/actions": {
+      "post": {
+        "operationId": "fleet_income_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/impacts": {
+      "get": {
+        "operationId": "fleet_impact_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "fleet_impact_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/impacts/{id}": {
+      "get": {
+        "operationId": "fleet_impact_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/impacts/{id}/history": {
+      "get": {
+        "operationId": "fleet_impact_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/impacts/{id}/actions": {
+      "post": {
+        "operationId": "fleet_impact_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/profiles": {
+      "get": {
+        "operationId": "fleet_profile_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "fleet_profile_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/profiles/{id}": {
+      "get": {
+        "operationId": "fleet_profile_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/profiles/{id}/history": {
+      "get": {
+        "operationId": "fleet_profile_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/profiles/{id}/actions": {
+      "post": {
+        "operationId": "fleet_profile_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/operations/{id}": {
+      "get": {
+        "operationId": "fleet_operation",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/availability": {
+      "get": {
+        "operationId": "fleet_availability",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/preventive": {
+      "get": {
+        "operationId": "fleet_preventive",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/costs": {
+      "get": {
+        "operationId": "fleet_costs",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/costs.csv": {
+      "get": {
+        "operationId": "fleet_costs_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/notices": {
+      "get": {
+        "operationId": "fleet_notices",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/notices/{id}/ack": {
+      "post": {
+        "operationId": "fleet_notice_ack",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-maintenance.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-maintenance.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/templates": {
+      "get": {
+        "operationId": "workshop_template_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "workshop_template_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/templates/{id}": {
+      "get": {
+        "operationId": "workshop_template_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/templates/{id}/history": {
+      "get": {
+        "operationId": "workshop_template_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/templates/{id}/actions": {
+      "post": {
+        "operationId": "workshop_template_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/requirements": {
+      "get": {
+        "operationId": "workshop_binding_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "workshop_binding_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/requirements/{id}": {
+      "get": {
+        "operationId": "workshop_binding_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/requirements/{id}/history": {
+      "get": {
+        "operationId": "workshop_binding_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/requirements/{id}/actions": {
+      "post": {
+        "operationId": "workshop_binding_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/inspections": {
+      "get": {
+        "operationId": "workshop_inspection_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "workshop_inspection_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/inspections/{id}": {
+      "get": {
+        "operationId": "workshop_inspection_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/inspections/{id}/history": {
+      "get": {
+        "operationId": "workshop_inspection_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/inspections/{id}/actions": {
+      "post": {
+        "operationId": "workshop_inspection_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/labor": {
+      "get": {
+        "operationId": "workshop_labor_list",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      },
+      "post": {
+        "operationId": "workshop_labor_create",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/labor/{id}": {
+      "get": {
+        "operationId": "workshop_labor_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/labor/{id}/history": {
+      "get": {
+        "operationId": "workshop_labor_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/labor/{id}/actions": {
+      "post": {
+        "operationId": "workshop_labor_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/operations/{id}": {
+      "get": {
+        "operationId": "workshop_operation",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/requests/{id}/workshop": {
+      "get": {
+        "operationId": "workshop_summary",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
+    },
+    "/local/v1/fleet/requests/{id}/workshop.csv": {
+      "get": {
+        "operationId": "workshop_summary_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Contrato em fleet-workshop.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/fleet_workshop.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Contrato completo",
+          "url": "./fleet-workshop.openapi.json"
+        }
+      }
     }
   },
   "components": {

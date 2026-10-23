@@ -10,6 +10,7 @@ import (
 )
 
 func (s *Server) mountReceivingCases(r fiber.Router) {
+	s.mountFleet(r)
 	g := r.Group("", func(c *fiber.Ctx) error { c.Set("Cache-Control", "no-store"); return c.Next() })
 	g.Post("/purchase-orders/:id/receiving-cases", s.receivingCaseOpen)
 	g.Get("/purchase-receiving-cases", s.receivingCaseList)

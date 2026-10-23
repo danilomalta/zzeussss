@@ -662,6 +662,566 @@
     {
       "api": "local",
       "method": "GET",
+      "path": "/local/v1/fleet/assets",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/assets",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/assets/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id/availability",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id/costs",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id/costs.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id/preventive",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/expenses",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/expenses",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/expenses/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/expenses/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/expenses/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/impacts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/impacts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/impacts/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/impacts/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/impacts/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/income",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/income",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/income/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/income/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/income/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/notices",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/notices/:id/ack",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/plans",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/plans",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/plans/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/plans/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/plans/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/profiles",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/profiles",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/profiles/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/profiles/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/profiles/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/providers",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/providers",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/providers/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/providers/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/providers/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/quotes",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/quotes",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/quotes/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/quotes/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/quotes/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/requests",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/requests",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/requests/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/requests/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/requests/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/requests/:id/workshop",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/requests/:id/workshop.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/trips",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/trips",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/trips/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/trips/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/trips/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/inspections",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/inspections",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/inspections/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/inspections/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/inspections/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/labor",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/labor",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/labor/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/labor/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/labor/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/requirements",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/requirements",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/requirements/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/requirements/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/requirements/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/templates",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/templates",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/templates/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/templates/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/templates/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
       "path": "/local/v1/health",
       "authentication": "public",
       "source": "backend/internal/localapi/server.go"
