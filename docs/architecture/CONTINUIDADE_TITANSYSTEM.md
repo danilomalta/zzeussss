@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 23 — 23/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 24 — 23/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -900,3 +900,31 @@ Em relação ao último estado dos8pacotes da cadeia, divergem7arquivos: localdb
 Próximo requisito ao responsável pelo backend: consolidado/atualização compatível com a base REAL de58migrações, incluindo Ciclo de Compras e Coletas/Devoluções e preservando todas as alterações locais/contratos/rotas. O plano deve conferir preimagens e tratar novas migrações de forma incremental pelo responsável, com candidata/testes antes da escrita. Depois disso confirmar toolchain compatível e repetir diagnóstico/CHECK. Esse diagnóstico não exige restaurar o projeto inteiro.
 
 Status Git do backend após a inspeção permaneceu idêntico ao registrado antes dela. Frontend/Electron não alterados por este pacote; abas de manutenção continuam locais conforme revisão22, sem integração oficial ou notificação remota. O salvamento deste registro na branch de frontend não significa aplicação do backend, compilação de novo binário ou serviço atualizado em execução.
+
+
+## Entrega de23/10/2026 — incompatibilidade de Frota resolvida na base58
+
+O proprietário autorizou expressamente fazer as mudanças necessárias e entregar no GitHub. A recusa anterior do consolidado não foi contornada por restaurar fontes, reescrever hashes históricos ou fabricar predecessor. Foi preparada/testada uma adaptação real sobre a base58 existente, preservando as duas entregas posteriores Ciclo de Compras e Coletas/Devoluções.
+
+### Estado aplicado
+
+Backend correto `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a`, branchfeat/backend-b02a-compat. Base original58a26bbb mais122fontes/documentos locais foram preservados em commit SEPARADO `29871fbba6866aa5e34d518a532404b214a6b69f`; esses trabalhos preexistiam e não são atribuídos à adaptação. Nova integração em `857febb588b522fdac45d3773e1b772094b19816`. Não houve checkout de main, reset/clean, merge, force-push, ZIP novo, instalação de dependências, banco comercial ou serviço iniciado.
+
+- SQL1–58mantidas byte a byte; novas `0059_fleet_maintenance.sql` e `0060_fleet_workshop.sql`, com o conteúdo SQL original dos pacotes09/10. Não renomeou uma migração já instalada. Schema de código agora60; isso não afirma migração de banco operacional.
+-33arquivos planejados mais registro `docs/architecture/BACKEND_FROTA_BASE58_APLICADO.json`: fontes/testes/contratos/guia dos dois módulos, duas atualizações guardadas em ledger/mutate, montagem Fleet/Workshop no ponto de Tratativas, erro422,80rotas novas e mapa/OpenAPI; testes de schema/interrupção e compatibilidade de backup ampliados até60.397rotas anteriores e contratos de compras/devoluções preservados. Guia específico `docs/architecture/BACKEND_FROTA_BASE58_20261023.md` explica origem, compatibilidade e limites.
+- Regressão própria58→60em SQLite temporário com FK ativas: preserva os checksums1–58, definições das8tabelas de compras/devoluções, recibo e evento anteriores, gatilho de imutabilidade; repete migração e confirma as4tabelas centrais Fleet/Workshop e60versões. Testes originais de atualização e restauração também preservados; backup inclui58e59na matriz de origens.
+- Candidata isolada e todas as fontes-base foram comparadas antes de aplicar; arquivo temporário exclusivo com fsync/leitura confirmou acesso efetivo. Backup privado em `work/fleet-base58-20261023/backup-source/` desta tarefa, com preimagens e manifesto; gravações relidas e fontes não pertencentes à alteração conferidas. Registro de aplicação descreve esta adaptação; não faz o consolidado antigo reconhecer versões futuras.
+
+### Verificações reais
+
+Toolchain existente em cache: Go1.25.8. A constatação anterior de Go1.24.3no PATH continua correta, mas não impedia usar essa versão já instalada. GOTOOLCHAIN=local/GOPROXY=off/GOSUMDB=off, cache próprio e ambiente sem credenciais. Nenhum download/instalação. `go test -json ./...`: exit0, 2559casos/subtestes aprovados,0falhas e3ignorados condicionais; 51pacotes aprovados. Dois skips requerem PostgreSQL de teste explicitamente configurado; o outro é helper de processo-filho, exercido pelo teste pai. Não anunciar cobertura online PostgreSQL integrada.
+
+`go vet ./...`:exit0. `go test -race ./internal/localdb/fleet ./internal/localapi -run 'Workshop|Fleet'`:47casos aprovados,0falhas/ignorados. Regressão58→60também executada separadamente:1passou. Binário titan-local compilado em artefato isolado, sem execução/instalação; `-buildvcs=false` evita obter VCS da cópia candidata, e o registro guarda hash do binário e fontes/base conhecidos. Não equivale a serviço em execução.
+
+Primeira suíte encontrou1falha porque o filtro source-only do aplicador original omitia `docs/api/examples/payables-flow.csv`. Incluído na candidata SOMENTE o exemplo já versionado, conferido contra a base; não foi alterado o teste ou seu resultado esperado. Caso financeiro repetido passou, depois suíte inteira final passou. Erro inicial de build ao obter VCS da candidata resolvido pela flag de artefato isolado. Logs/primeiro resultado/plano/candidata preservados em `work/fleet-base58-20261023/`. Frontend funcional não mudou; não foi repetida sua suíte1662por alteração exclusiva de backend/documentação.
+
+### Limites e próxima continuidade
+
+Frota/Conferência Técnica agora estão nos FONTES e no binário validado: isso supera o impedimento registrado na revisão23. Ainda não há serviço comercial/disponível autorizado comprovado, banco/estação/chaves escolhidos ou teste entre aparelhos. As abas do frontend continuam business85/IndexedDB e NÃO passam automaticamente a consumir a API. Não importar aprovação local como autorização do servidor. Checklist obrigatório/inspeção válida, revisão gerencial de horas, recuperação de operação e ACK têm os limites do contrato; não são folha, push ou som remoto.
+
+Próxima integração deve criar adaptadores tipados para os contratos Fleet/Workshop e usar um ambiente NOVO descartável explicitamente autorizado. Separar fonte/binário/serviço/tela. Continuar a ordem de fechamento do frontend e preservar116/117/docas/recebimentos. Esta entrega resolve a aplicação compatível do backend recebido; não anuncia todo o ERP ou desktop homologado.
