@@ -10,14 +10,14 @@ export function fleetID(v){return typeof v==='string'&&v.length>0&&v.trim()===v&
 // Date.parse validates the instant, while the calendar comparison rejects normalized dates.
 export function fleetStamp(v){if(typeof v!=='string'||!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,9})?Z$/.test(v)||!Number.isFinite(Date.parse(v)))return false;return new Date(v).toISOString().slice(0,19)===v.slice(0,19);}
 function matches(s,v,depth=0){
- if(depth>25)return false;
+ if(!s||depth>25)return false;
  if(v===null)return s.nullable===true;
  if(s.$ref)return matches(schemas[s.$ref.split('/').pop()],v,depth+1);
  if(s.allOf&&!s.allOf.every(x=>matches(x,v,depth+1)))return false;
  if(s.oneOf&&s.oneOf.filter(x=>matches(x,v,depth+1)).length!==1)return false;
  if(s.enum&&!s.enum.includes(v))return false;
  switch(s.type){
- case 'object':return object(v)&&s.required.every(k=>Object.hasOwn(v,k))&&Object.keys(v).every(k=>Object.hasOwn(s.properties,k)&&matches(s.properties[k],v[k],depth+1));
+ case 'object':return object(v)&&(s.required||[]).every(k=>Object.hasOwn(v,k))&&Object.keys(v).every(k=>Object.hasOwn(s.properties,k)&&matches(s.properties[k],v[k],depth+1));
  case 'array':return Array.isArray(v)&&v.length<=5000&&v.every(x=>matches(s.items,x,depth+1));
  case 'string':return typeof v==='string'&&v.length<=32768&&(!s.minLength||v.length>=s.minLength)&&(!s.maxLength||v.length<=s.maxLength);
  case 'integer':return Number.isSafeInteger(v)&&(s.minimum===undefined||v>=s.minimum)&&(s.maximum===undefined||v<=s.maximum);
@@ -46,7 +46,7 @@ export function fleetPage(name,v,offset=0){
 export function fleetHistory(name,id,v,offset=0){
  resource(name);fleetSchema(name.startsWith('workshop/')?'WorkshopHistory':'History',v);
  if(!fleetID(id)||v.offset!==offset||v.limit!==50||!natural(v.total)||v.items.length!==Math.min(50,Math.max(0,v.total-offset)))fleetFail();
- for(const event of v.items){const r=name.startsWith('workshop/')?event.result:event.result.record;fleetRecord(name,r);if(r.id!==id)fleetFail();if(!name.startsWith('workshop/')&&(!fleetID(event.actor_id)||!fleetID(event.device_id)||!fleetID(event.result.operation_id)))fleetFail();}
+ const seen=new Set();for(let index=0;index<v.items.length;index++){const event=v.items[index],r=name.startsWith('workshop/')?event.result:event.result.record;fleetRecord(name,r);if(r.id!==id||r.revision!==offset+index+1||seen.has(event.result.operation_id))fleetFail();seen.add(event.result.operation_id);if(!name.startsWith('workshop/')&&(!fleetID(event.actor_id)||!fleetID(event.device_id)||!fleetID(event.result.operation_id)))fleetFail();}
  return v;
 }
 export function fleetPeriod(input){

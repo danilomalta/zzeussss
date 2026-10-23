@@ -35,6 +35,7 @@ export function createFleetCommands({token,session,capabilities,isCurrent,storag
  function pending(){authorize();try{const raw=storage.getItem(key);if(raw===null)return null;if(raw.length>60000)throw Error();return fleetCommand(JSON.parse(raw),scope);}catch{throw Error('fleetStorage');}}
  function save(c){authorize(false,c);try{const raw=JSON.stringify(fleetCommand(c,scope));storage.setItem(key,raw);if(storage.getItem(key)!==raw)throw Error();}catch{throw Error('fleetStorage');}}
  function clear(c){authorize(false,c);if(!fleetEqual(pending(),c))throw Error('fleetStorage');try{storage.removeItem(key);if(storage.getItem(key)!==null)throw Error();}catch{throw Error('fleetStorage');}}
+ function peer(){authorize();try{if(storage.getItem('titan-workshop-commands:v1:'+scope)!==null)throw Error('fleetPending');}catch(e){if(e?.message==='fleetPending')throw e;throw Error('fleetStorage');}}
  async function locked(fn){if(!locks?.request)throw Error('fleetLocks');return locks.request(key,{ifAvailable:true},async lock=>{authorize();if(!lock)throw Error('fleetLocked');return fn();});}
  async function request(path,c,post=false){authorize(post,c);const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),15000);try{
   const response=await fetcher('/local/v1/fleet/'+path,{method:post?'POST':'GET',credentials:'omit',cache:'no-store',headers:{Authorization:'Bearer '+token,...(post?{'Content-Type':'application/json'}:{})},...(post?{body:JSON.stringify(c.body)}:{}),signal:ctrl.signal});authorize(false,c);ctrl.signal.throwIfAborted();const raw=await response.text();authorize(false,c);ctrl.signal.throwIfAborted();if(raw.length>2000000)fleetFail();if(!response.ok)throw new LocalAPIError(response.status,'fleet');try{return JSON.parse(raw);}catch{fleetFail();}
@@ -49,13 +50,13 @@ export function createFleetCommands({token,session,capabilities,isCurrent,storag
   if(out){clear(c);return {state:'confirmed',receipt:out,command:c};}
   if(discard){if(c.uncertain)throw Error('fleetUncertain');clear(c);return {state:'discarded',command:c};}
   if(!send)return {state:'missing',command:c};
-  await preflight(c);authorize(true,c);c={...c,uncertain:true};save(c);authorize(true,c);
+  peer();await preflight(c);authorize(true,c);peer();c={...c,uncertain:true};save(c);authorize(true,c);
   result(await request(c.resource+(c.body.action==='create'?'':'/'+encodeURIComponent(c.body.id)+'/actions'),c,true),c);
   const confirmed=await receipt(c);if(!confirmed)throw Error('fleetUncertain');clear(c);return {state:'confirmed',receipt:confirmed,command:c};
  }
- return {scope,pending,assertCurrent(){authorize();},dispose(){disposed=true;reads.dispose();},get canWrite(){try{authorize(true);return !!locks?.request;}catch{return false;}},
+ return {scope,pending,assertCurrent(){authorize();},dispose(){disposed=true;reads.dispose();},get canWrite(){try{authorize(true);peer();return !!locks?.request;}catch{return false;}},
   prepare(resource,before,body){const c=fleetCommand(structuredClone({version:1,scope,resource,before,body,uncertain:false}),scope);authorize(true,c);return c;},
-  async submit(value){const c=fleetCommand(structuredClone(value),scope);authorize(true,c);if(c.uncertain)fleetFail();return locked(async()=>{authorize(true,c);if(pending())throw Error('fleetPending');save(c);return resolve(true,false);});},
+  async submit(value){const c=fleetCommand(structuredClone(value),scope);authorize(true,c);if(c.uncertain)fleetFail();return locked(async()=>{authorize(true,c);peer();if(pending())throw Error('fleetPending');save(c);return resolve(true,false);});},
   async recover(send=false,discard=false){if(typeof send!=='boolean'||typeof discard!=='boolean'||send&&discard)fleetFail();return locked(()=>resolve(send,discard));}
  };
 }
