@@ -129,5 +129,6 @@
   "wholeSheet": "Whole sheet",
   "row": "Row",
   "column": "Column",
-  "discard": "Saving failed. Discard changes in this screen and open the saved version?"
+  "discard": "Saving failed. Discard changes in this screen and open the saved version?",
+  "linkedUnverified": "Some linked blocks have not been verified in this session. Blank cells and formula zeros do not prove a zero balance; previous values may be outdated. Check sources and warnings before using totals."
 }

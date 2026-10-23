@@ -1,3 +1,4 @@
+import {createBlockRefreshGate,blockRefreshSnapshot,type BlockRefreshTicket} from '../../../core/sheets70/blockRefresh.mjs';
 import {sheetFinanceWords} from '../../../core/sheets70/financeWords.mjs';
 import {sheetStockLocations} from '../../../core/sheets70/stockSnapshot.mjs';
 import {sheetStockWords} from '../../../core/sheets70/stockWords';
@@ -76,6 +77,8 @@ export default function Sheets70(props: Props) {
     pendingRefresh=useRef(''),
     mounted = useRef(true),
     controller = useRef<AbortController>();
+  const refreshGate=useRef(createBlockRefreshGate());
+  const [verifiedBlocks,setVerifiedBlocks]=useState<Record<string,string>>({});
   const [blockErrors,setBlockErrors]=useState<Record<string,string>>({});
   const [stockLocations,setStockLocations]=useState<{id:string;name:string}[]>([]);
   const financeWords=sheetFinanceWords(i18n.resolvedLanguage||i18n.language);
@@ -123,11 +126,14 @@ export default function Sheets70(props: Props) {
       focusReturn.current?.focus();
     };
   }, [panel]);
+  useEffect(()=>{refreshGate.current.invalidate();setVerifiedBlocks({});},[token,scope]);
   const contextRef = useRef(scope);
   contextRef.current = scope;
   useEffect(() => {
     const track = (event: Event) => {
-      blocks.current = trackStructure(blocks.current, (event as CustomEvent).detail);
+      const next=trackStructure(blocks.current, (event as CustomEvent).detail);
+      for(const before of blocks.current){const after=next.find(b=>b.id===before.id);if(!after||blockRefreshSnapshot(after)!==blockRefreshSnapshot(before))refreshGate.current.invalidate(before.id);}
+      blocks.current = next;
       setBlockList([...blocks.current]);
     };
     window.addEventListener('titan-sheets70-command', track);
@@ -150,6 +156,7 @@ export default function Sheets70(props: Props) {
       const live = latest.current.get();
       if (doc.current && doc.current.workbook.id !== live.id) {
         doc.current = null;
+        refreshGate.current.invalidate();setVerifiedBlocks({});
         blocks.current = [];
         setBlockList([]);setBlockErrors({});
         serial.current = '';
@@ -208,6 +215,7 @@ export default function Sheets70(props: Props) {
   useEffect(() => {
     mounted.current = true;
     doc.current = null;
+    refreshGate.current.invalidate();setVerifiedBlocks({});
     blocks.current = [];
     serial.current = '';
     pendingRefresh.current='';
@@ -221,6 +229,7 @@ export default function Sheets70(props: Props) {
           if (!mounted.current || doc.current) return;
           const file = saved[0];
           doc.current = file;
+          refreshGate.current.invalidate();setVerifiedBlocks({});
           blocks.current = file.blocks || [];
           setBlockList(blocks.current);
           pendingRefresh.current=file.workbook.id;
@@ -231,6 +240,7 @@ export default function Sheets70(props: Props) {
     const timer = setInterval(() => void persist(), 2000);
     return () => {
       mounted.current = false;
+      refreshGate.current.invalidate();
       clearTimeout(bootstrap);
       clearInterval(timer);
       controller.current?.abort();
@@ -259,6 +269,7 @@ export default function Sheets70(props: Props) {
     if (!revoke.length) return;
     try {
       const safe = cleanSnapshot(latest.current.get(), revoke);
+      refreshGate.current.invalidate();setVerifiedBlocks({});
       latest.current.clearCache();
       latest.current.load(safe);
       setError('permission');
@@ -286,6 +297,7 @@ export default function Sheets70(props: Props) {
     if (!(await persist()) && !window.confirm(w.discard)) return;
     controller.current?.abort();
     doc.current = file;
+    refreshGate.current.invalidate();setVerifiedBlocks({});
     blocks.current = file.blocks || [];
     setBlockList(blocks.current);
     serial.current = '';
@@ -365,49 +377,33 @@ export default function Sheets70(props: Props) {
     }
   }
   async function fetchBlock(block: Block) {
-    if (!latest.current.ready || !token || !capabilities || !sourceAllowed(block.source, capabilities)) return;
-    let attempt:ReturnType<typeof sourceContext>|undefined;
-    let workbookID='';
-    const sameDocument=()=>{try{return latest.current.ready&&latest.current.get().id===workbookID&&blocks.current.some(value=>value.id===block.id);}catch{return false;}};
+    if (!latest.current.ready || !token || !capabilities || block.detached || !sourceAllowed(block.source, capabilities)) return;
+    let attempt:ReturnType<typeof sourceContext>|undefined,ticket:BlockRefreshTicket|undefined;
+    const current=()=>{try{return !!ticket&&ticket.current(latest.current.get().id,blocks.current.find(value=>value.id===block.id))&&latest.current.ready&&mounted.current&&auth.current.token===token&&auth.current.scope===scope&&sourceAllowed(block.source,auth.current.capabilities)&&(!attempt||attempt.sameSession());}catch{return false;}};
     try {
-      workbookID=latest.current.get().id;
-      const ctrl = new AbortController();
-      attempt=sourceContext(block.source,ctrl.signal);
-      const result = await sources[block.source](
-        attempt,
-        block.filters || { q: '', from: '', to: '' }
-      );
-      if (
-        !attempt.sameSession() ||
-        !sameDocument() ||
-        !mounted.current ||
-        auth.current.token !== token ||
-        !sourceAllowed(block.source, auth.current.capabilities)
-      )
-        return;
-      const selectedColumns = block.columns || result.columns,
-        indexes = selectedColumns.map((c) => result.columns.indexOf(c));
-      if (indexes.includes(-1)) throw Error('permission');
-      const matrix = [
-        selectedColumns.map(label),
-        ...result.rows.map((row) => indexes.map((i) => row[i])),
-      ];
-      const checked = checkSpace(props.get(), block, matrix, block);
-      ensureNoOverlap(checked, blocks.current);
-      const updated = props.write(matrix, { ...checked, updated: result.at, partial: result.partial }, block);
-      blocks.current = blocks.current.map((b) => (b.id === block.id ? updated : b));
+      ticket=refreshGate.current.begin(latest.current.get().id,block);
+      setVerifiedBlocks(previous=>{const next={...previous};delete next[block.id];return next;});
+      attempt=sourceContext(ticket.block.source,ticket.signal);
+      const result=await sources[ticket.block.source](attempt,ticket.block.filters||{q:'',from:'',to:''});
+      if(!current())return;
+      const original=ticket.block,selectedColumns=original.columns||result.columns,indexes=selectedColumns.map(c=>result.columns.indexOf(c));
+      if(indexes.includes(-1))throw Error('permission');
+      const matrix=[selectedColumns.map(label),...result.rows.map(row=>indexes.map(i=>row[i]))];
+      const checked=checkSpace(latest.current.get(),original,matrix,original);
+      ensureNoOverlap(checked,blocks.current);
+      const updated=latest.current.write(matrix,{...checked,updated:result.at,partial:result.partial},original);
+      blocks.current=blocks.current.map(b=>b.id===original.id?updated:b);
       setBlockList([...blocks.current]);
-      props.cache(block.source, result);
+      latest.current.cache(original.source,result);
       activity('refresh');
-      setBlockErrors(previous=>{const next={...previous};delete next[block.id];return next;});
-    } catch (error) {
-      if(attempt&&!attempt.sameSession()||!sameDocument())return;
+      setVerifiedBlocks(previous=>({...previous,[original.id]:blockRefreshSnapshot(updated)}));
+      setBlockErrors(previous=>{const next={...previous};delete next[original.id];return next;});
+    }catch(error){
+      if(!current())return;
       const message=error instanceof LocalAPIError&&[401,403].includes(error.status)?'permission':error instanceof Error&&['financeSheetRange','financeSheetLimit','financeSheetRows'].includes(error.message)?error.message:'offline';
       setBlockErrors(previous=>({...previous,[block.id]:message}));
-      if (error instanceof LocalAPIError && (error.status === 401 || error.status === 403))
-        scrubSource(block.source, error.status);
-
-    }
+      if(error instanceof LocalAPIError&&[401,403].includes(error.status))scrubSource(block.source,error.status);
+    }finally{ticket?.finish();}
   }
 
   useEffect(() => {
@@ -449,6 +445,7 @@ export default function Sheets70(props: Props) {
           ? { ...base, height: matrix.length, width: matrix[0].length }
           : checkSpace(props.get(), base, matrix, editBlock);
       if (target !== 'newSheet') ensureNoOverlap(checked, blocks.current);
+      if(editBlock)refreshGate.current.invalidate(editBlock.id);
       const result = props.write(
         matrix,
         { ...checked, updated: data.at, partial: data.partial, filters: { ...filters }, columns: [...columns] },
@@ -459,6 +456,8 @@ export default function Sheets70(props: Props) {
         ? blocks.current.map((b) => (b.id === result.id ? result : b))
         : [...blocks.current, result];
       setBlockList([...blocks.current]);
+      setVerifiedBlocks(previous=>({...previous,[result.id]:blockRefreshSnapshot(result)}));
+      setBlockErrors(previous=>{const next={...previous};delete next[result.id];return next;});
       activity('link');
       setPanel('');
       setEditBlock(undefined);
@@ -470,6 +469,7 @@ export default function Sheets70(props: Props) {
     if (!(await persist())) return;
     const book = templateBook(props.get(), kind, label);
     doc.current = null;
+    refreshGate.current.invalidate();setVerifiedBlocks({});
     blocks.current = [];
     setBlockList([]);setBlockErrors({});
     serial.current = '';
@@ -583,6 +583,7 @@ export default function Sheets70(props: Props) {
                 void persist().then((ok) => {
                   if (!ok) return;
                   doc.current = null;
+                  refreshGate.current.invalidate();setVerifiedBlocks({});
                   blocks.current = [];
                   setBlockList([]);setBlockErrors({});
                   serial.current = '';
@@ -622,6 +623,7 @@ export default function Sheets70(props: Props) {
             : label(status || 'local')}
         </span>
       </div>
+      {blockList.some(b=>!b.detached&&verifiedBlocks[b.id]!==blockRefreshSnapshot(b))&&<p role="alert" className="brand-message sheet70-linked-warning">{w.linkedUnverified}</p>}
       <div className="sheet70-links">
         {blockList.map((b) => (
           <details key={b.id}>
@@ -642,6 +644,7 @@ export default function Sheets70(props: Props) {
                 max="1440"
                 value={b.interval}
                 onChange={(e) => {
+                  refreshGate.current.invalidate(b.id);
                   b.interval = Math.max(0, Math.min(1440, Number(e.target.value)));
                   setBlockList([...blocks.current]);
                 }}
@@ -649,6 +652,7 @@ export default function Sheets70(props: Props) {
             </label>
             <button
               onClick={() => {
+                refreshGate.current.invalidate(b.id);
                 b.detached = true;
                 setBlockList([...blocks.current]);
                 activity('unlink');
@@ -658,6 +662,7 @@ export default function Sheets70(props: Props) {
             </button>
             <button
               onClick={() => {
+                refreshGate.current.invalidate(b.id);
                 setSource(b.source);
                 setFilters(b.filters || { q: '', from: '', to: '' });
                 setEditBlock(b);

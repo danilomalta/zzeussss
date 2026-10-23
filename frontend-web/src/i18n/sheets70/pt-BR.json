@@ -129,5 +129,6 @@
   "wholeSheet": "Aba inteira",
   "row": "Linha",
   "column": "Coluna",
-  "discard": "Não foi possível salvar. Descartar as alterações desta tela e abrir a versão salva?"
+  "discard": "Não foi possível salvar. Descartar as alterações desta tela e abrir a versão salva?",
+  "linkedUnverified": "Há blocos vinculados sem atualização validada nesta sessão. Valores vazios e zeros de fórmulas não comprovam saldo zero; valores anteriores podem estar desatualizados. Confira a fonte e os avisos antes de usar os totais."
 }

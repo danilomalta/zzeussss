@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 17 — 22/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 18 — 23/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -716,3 +716,30 @@ Novos arquivos: `frontend-web/src/core/catalogManagement/{model.mjs,model.d.mts,
 Backend deve fornecer commit/versão dos quatro contratos, URL/perfil explícitos, banco NOVO descartável, identidades fictícias e permissões/licenças mínimas, sem banco comercial. Ensaiar revisão concorrente entre lojas, edição direta legada com mesma revisão, unidade com histórico/receita/ordem, reativação, histórico com mais50eventos e outra loja, autorização de custo, reinício após perda de resposta, recibo incompatível, sessão revogada e armazenamento/locks indisponíveis. Não iniciar serviço automaticamente.
 
 Esta unidade não conclui todo o ERP. As pendências por fluxo da matriz continuam abertas onde indicado; manutenção de catálogo não substitui pagamentos/fiscal, circuito interempresa, RH, offline/móvel ou homologação desktop. Próxima continuidade deve revisar textos/criação antigos do catálogo e integrações de outros fluxos com contrato, sem duplicar117 nem as unidades de produção já aplicadas. Evidências, hashes e logs privados em `work/catalog-management-20261022/` desta tarefa; reversão só localizada comparando alterações posteriores, sem restauração geral.
+
+
+## Entrega de23/10/2026 — concorrência nas atualizações de blocos da planilha
+
+Prioridade recebida do proprietário após revisão externa dos commits d19715d/9acda30: impedir consulta anterior de sobrescrever resultado mais novo do mesmo bloco e proteger filtros/posição. Base atual publicada `716a9e171b8a38aee07f207a5d52cfbbe0f78ddd`. A continuação de tradução/criação do catálogo está preservada em arquivos separados e não faz parte deste checkpoint de planilha. Não sobrescrever nem atribuir esses arquivos à correção.
+
+### Alteração delimitada
+
+Novos `frontend-web/src/core/sheets70/blockRefresh.mjs`, `blockRefresh.d.mts` e `frontend-web/tests/sheetBlockRefresh.test.mjs`; integração em `frontend-web/src/modules/tenant/pages/Sheets70.tsx`; um aviso novo nos cinco JSONs de `frontend-web/src/i18n/sheets70/`. Backend/Electron e contratos não alterados. Limites de500 do estoque/financeiro preservados.
+
+Cada consulta de bloco possui identidade própria e cópia dos filtros/colunas/posição originais. Iniciar outra consulta do MESMO bloco aborta a anterior e a torna inválida mesmo se o transporte ignorar aborto. Somente o ticket atual pode escrever células, cache, atividade, confirmação de atualização ou erro. Uma falha antiga, inclusive403, não pode apagar a fonte nem invalidar sessão depois de resultado mais novo. Blocos diferentes mantêm consultas independentes.
+
+Antes de aplicar, compara workbook, existência/vínculo do bloco e snapshot completo (fonte, filtros, colunas, folha, posição e dimensões), além das guardas de sessão/permissão existentes. Alterações estruturais, edição da origem, intervalo ou desvínculo invalidam a consulta pendente correspondente. Trocar/criar/reabrir documento, contexto/token ou desmontar invalida tickets, inclusive ao reutilizar mesmo ID do workbook. Os callbacks de editor/cache são os vigentes. Não há POST nem retentativa automática nesta correção de leitura.
+
+Aviso visível fora do diálogo/detalhes, em cinco idiomas: blocos ainda não validados nesta sessão podem ter células vazias, zeros de fórmulas ou valores anteriores. Isso NÃO prova saldo zero nem atualidade do total. Nova consulta retira sua marca de validação; somente sucesso vigente a repõe. Falha mantém aviso e o erro específico do bloco. Reabrir ou trocar contexto/token perde a marca, sem desativar fórmulas ou transformar falha em zero comercial confirmado. Os avisos de recorte parcial continuam separados.
+
+### Evidências e limites
+
+-18regressões com Promises controladas: segunda resposta primeiro, primeira resposta chegando durante/apos a segunda, falha antiga403, última falha sem restauração por sucesso velho, independência entre blocos, filtros/local/colunas/posição/folha/dimensões/fonte/desvínculo, remoção, workbook diferente/mesmo ID reaberto, retorno da posição original após invalidação, aborto ignorado, finalização velha sem apagar ticket novo e snapshot independente da ordem das chaves.18aprovadas,0falhas.
+- Suíte inteira na árvore corrente:1509testes aprovados,0falhas,0ignorados, incluindo116/117; TypeScript exit0; build isolado Vite/React aprovado em21,210s. Essas verificações também enxergaram os arquivos de catálogo em andamento, que não serão incluídos no commit desta correção. Não houve CI remoto confirmado, serviço real ou banco integrado.
+- A hipótese foi convertida em regressão determinística do mecanismo utilizado pela tela; ainda não há reprodução visual concluída do circuito de duas consultas da planilha. Prévia própria explícita sem backend preparada com respostas controladas; navegador carregou editor/diálogo, porém edição de datas não liberou a ação na automação. Não declarar esse ensaio concluído. Confirmação nativa pendente do ensaio anterior já limitava ações do navegador.
+- Preparação: pesquisa inicial usou glob inexistente (`No such file or directory`), corrigida por rg --files. Quatro casos iniciais de teste repetiam uma mutação idempotente na segunda consulta e por isso esperavam incorretamente invalidá-la; corrigidos para fixtures novas, cobrindo mudança real em ambos os caminhos. TypeScript inicialmente detectou três imports/variáveis não usados na preparação paralela do catálogo; corrigidos sem incluir catálogo neste checkpoint. Prévia teve resolução de i18next/react-i18next corrigida por aliases para dependências existentes, sem instalar. Porta4336 ocupada ao reiniciar (`Error: Port 4336 is already in use`); não encerrou processo desconhecido, usou4337 somente para prévia própria.
+- Hashes/preimagens/logs e laboratório em `work/sheets-concurrency-20261023/` desta tarefa. Reversão somente localizada, comparando trabalho posterior. Sem ZIP, instalação ou alteração de dados comerciais.
+
+### Pendências de aceite
+
+Concluir circuito visual com atualizações manuais/automáticas intercaladas, filtros/posição/desvínculo durante leitura, falha403antiga e reabertura com fonte indisponível. Depois, ambiente integrado exige versão correta do backend, URL/perfil explícitos, banco novo descartável, identidades/lojas/permissões fictícias e autorização do proprietário. A ausência desse ambiente não suspende as demais unidades independentes de frontend. Não afirmar frontend completo nem CI verde com base apenas nestes testes.
