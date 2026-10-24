@@ -14,6 +14,7 @@ import (
 var fleetResources = []struct{ plural, kind string }{{"assets", "asset"}, {"requests", "request"}, {"trips", "trip"}, {"plans", "plan"}, {"providers", "provider"}, {"quotes", "quote"}, {"expenses", "expense"}, {"income", "income"}, {"impacts", "impact"}, {"profiles", "profile"}}
 
 func (s *Server) mountFleet(r fiber.Router) {
+	s.mountMaintenance(r)
 	s.mountFleetWorkshop(r)
 	g := r.Group("/fleet", func(c *fiber.Ctx) error { c.Set("Cache-Control", "no-store"); return c.Next() })
 	g.Get("/operations/:id", s.fleetOperation)

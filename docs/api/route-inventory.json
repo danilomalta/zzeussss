@@ -1383,6 +1383,167 @@
     {
       "api": "local",
       "method": "GET",
+      "path": "/local/v1/maintenance/assets",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/assets",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/assets/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/assets/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/assets/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/candidates",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/classifications",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/classifications",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/classifications/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/classifications/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/classifications/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/queue",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/specialties",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/specialties",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/specialties/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/specialties/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/specialties/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/technicians",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/technicians",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/technicians/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/technicians/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/technicians/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
       "path": "/local/v1/management/inventories/:id/variance",
       "authentication": "session",
       "source": "backend/internal/localapi/management_reports.go"

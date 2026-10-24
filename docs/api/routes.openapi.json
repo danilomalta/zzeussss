@@ -19062,6 +19062,780 @@
           "url": "./suspended-carts.openapi.json"
         }
       }
+    },
+    "/local/v1/maintenance/specialties": {
+      "get": {
+        "operationId": "maintenance_GET_specialties",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      },
+      "post": {
+        "operationId": "maintenance_POST_specialties",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/specialties/{id}": {
+      "get": {
+        "operationId": "maintenance_GET_specialties_id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/specialties/{id}/history": {
+      "get": {
+        "operationId": "maintenance_GET_specialties_id_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/specialties/{id}/actions": {
+      "post": {
+        "operationId": "maintenance_POST_specialties_id_actions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/technicians": {
+      "get": {
+        "operationId": "maintenance_GET_technicians",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      },
+      "post": {
+        "operationId": "maintenance_POST_technicians",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/technicians/{id}": {
+      "get": {
+        "operationId": "maintenance_GET_technicians_id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/technicians/{id}/history": {
+      "get": {
+        "operationId": "maintenance_GET_technicians_id_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/technicians/{id}/actions": {
+      "post": {
+        "operationId": "maintenance_POST_technicians_id_actions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/assets": {
+      "get": {
+        "operationId": "maintenance_GET_assets",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      },
+      "post": {
+        "operationId": "maintenance_POST_assets",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/assets/{id}": {
+      "get": {
+        "operationId": "maintenance_GET_assets_id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/assets/{id}/history": {
+      "get": {
+        "operationId": "maintenance_GET_assets_id_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/assets/{id}/actions": {
+      "post": {
+        "operationId": "maintenance_POST_assets_id_actions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/classifications": {
+      "get": {
+        "operationId": "maintenance_GET_classifications",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      },
+      "post": {
+        "operationId": "maintenance_POST_classifications",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/classifications/{id}": {
+      "get": {
+        "operationId": "maintenance_GET_classifications_id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/classifications/{id}/history": {
+      "get": {
+        "operationId": "maintenance_GET_classifications_id_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/classifications/{id}/actions": {
+      "post": {
+        "operationId": "maintenance_POST_classifications_id_actions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/operations/{id}": {
+      "get": {
+        "operationId": "maintenance_GET_operations_id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/queue": {
+      "get": {
+        "operationId": "maintenance_GET_queue",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
+    },
+    "/local/v1/maintenance/candidates": {
+      "get": {
+        "operationId": "maintenance_GET_candidates",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "See internal-maintenance.openapi.json. Registry metadata does not assign or authorize work.",
+        "responses": {
+          "200": {
+            "description": "Committed record, receipt or scoped query"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current permission or contract denied"
+          },
+          "404": {
+            "description": "Not found in authorized scope"
+          },
+          "409": {
+            "description": "Revision or integrity conflict"
+          },
+          "422": {
+            "description": "Explicit source limit exceeded"
+          }
+        }
+      }
     }
   },
   "components": {
