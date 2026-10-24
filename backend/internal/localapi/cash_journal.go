@@ -2,6 +2,7 @@ package localapi
 
 import (
 	"errors"
+	"net/url"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -41,8 +42,12 @@ func (s *Server) closedCashJournal(c *fiber.Ctx) error {
 	if !valid {
 		return c.SendStatus(400)
 	}
+	id, err := journalIDParam(c)
+	if err != nil {
+		return c.SendStatus(400)
+	}
 	session := c.Locals("session").(localauth.Session)
-	v, err := cashjournal.Read(c.UserContext(), s.DB, session.Actor, session.Device, c.Params("id"), limit, offset)
+	v, err := cashjournal.Read(c.UserContext(), s.DB, session.Actor, session.Device, id, limit, offset)
 	if err != nil {
 		return cashJournalError(c, err)
 	}
@@ -69,3 +74,6 @@ func cashJournalError(c *fiber.Ctx, err error) error {
 		return c.SendStatus(500)
 	}
 }
+
+// Decode exactly once: Fiber keeps the original escaped path by default.
+func journalIDParam(c *fiber.Ctx) (string, error) { return url.PathUnescape(c.Params("id")) }

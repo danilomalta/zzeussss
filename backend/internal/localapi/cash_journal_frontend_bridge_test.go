@@ -28,6 +28,10 @@ func TestCashJournalFrontendBridge(t *testing.T) {
 		t.Fatalf("synthetic reversal: %d %s", code, body)
 	}
 	cashRequest(t, f.httpContractFixture, "close", cashCloseBody, 200)
+	cashRequest(t, f.httpContractFixture, "open", `{"session_id":"turn-Á QA","opening_cents":0}`, 201)
+	cashRequest(t, f.httpContractFixture, "close", `{"session_id":"turn-Á QA","operation_id":"close-unicode","declared_cents":0}`, 200)
+	cashRequest(t, f.httpContractFixture, "open", `{"session_id":"turn-%literal","opening_cents":0}`, 201)
+	cashRequest(t, f.httpContractFixture, "close", `{"session_id":"turn-%literal","operation_id":"close-literal","declared_cents":0}`, 200)
 	listener, e := net.Listen("tcp", "127.0.0.1:0")
 	if e != nil {
 		t.Fatal(e)

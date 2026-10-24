@@ -12,8 +12,12 @@ func (s *Server) exportCashJournal(c *fiber.Ctx) error {
 	if c.Context().QueryArgs().Len() != 0 || len(c.Body()) != 0 {
 		return c.SendStatus(400)
 	}
+	id, err := journalIDParam(c)
+	if err != nil {
+		return c.SendStatus(400)
+	}
 	session := c.Locals("session").(localauth.Session)
-	data, err := cashjournal.ExportCSV(c.UserContext(), s.DB, session.Actor, session.Device, c.Params("id"))
+	data, err := cashjournal.ExportCSV(c.UserContext(), s.DB, session.Actor, session.Device, id)
 	if err != nil {
 		return cashJournalError(c, err)
 	}
