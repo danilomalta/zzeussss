@@ -1,3 +1,4 @@
+import {internalMaintenanceWords} from '../../../core/internalMaintenance/words.mjs';
 import {salesWords} from '../../../core/salesAnalysis/words';
 import {menu90} from '../../../core/operation90/menu';
 import {menu89} from '../../../core/enterprise89/menu';
@@ -88,6 +89,7 @@ export default function LocalMainMenu({settings=false}:{settings?:boolean}){
     for(const a86 of ['delivery'] as const){if(can86(capabilities,a86))existing.push({id:a86,path:'/local/'+a86,icon:'⇄',label:menuWords86(i18n.resolvedLanguage||i18n.language)[a86],group:'operation',planned:false});}
     menu89(existing,planned,capabilities,profile86,i18n.resolvedLanguage||i18n.language);
     menu90(existing,planned,capabilities,i18n.resolvedLanguage||i18n.language);
+    if(capabilities?.permissions.includes('view_orders'))existing.push({id:'maintenance',path:'/local/maintenance',icon:'⚙',label:internalMaintenanceWords(i18n.resolvedLanguage||i18n.language).title,group:'operation',planned:false});
     const cards=[...existing,...planned,...(group==='administration'?[{id:'settings',path:'/local/settings',icon:'⚙',label:words.settings,group,planned:false}]:[])].filter(item=>item.group===group&&item.label.toLocaleLowerCase().includes(query.toLocaleLowerCase())).sort((a,b)=>Number(b.id==='pos')-Number(a.id==='pos'));
     if(!cards.length)return null;
     return <section key={group} className="menu72-section"><h2>{w[group]}</h2><nav className="titan-menu-grid" aria-label={w[group]}>{cards.map(item=>item.planned?<article className="brand-panel titan-menu-card menu72-planned" key={item.id} aria-disabled="true" title={w.unavailable}><span className="titan-menu-icon" aria-hidden="true"><MenuIcon75 id={item.id}/></span><strong>{item.label}</strong><MenuStatus75 item={item}/></article>:<Link className={'brand-panel titan-menu-card'+(item.id==='pos'?' menu75-pos':'')} key={item.id} to={item.path}><span className="titan-menu-icon" aria-hidden="true"><MenuIcon75 id={item.id}/></span><strong>{item.label}</strong>{item.id==='pos'&&<small>{v75.posDescription}</small>}<MenuStatus75 item={item}/></Link>)}</nav></section>;

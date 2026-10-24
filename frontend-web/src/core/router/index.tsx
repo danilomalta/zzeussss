@@ -13,6 +13,7 @@ consumo de memória RAM (importante para hardwares limitados do PDV varejista).
 
 // Carregamento assíncrono e sob demanda de cada página/módulo
 import {LocalAccessProvider} from '../local/LocalAccess';
+const LocalMaintenance = React.lazy(() => import('../../modules/maintenance/pages/LocalMaintenance'));
 const LocalComparison = React.lazy(() => import('../../modules/catalog/pages/LocalComparison'));
 const LocalOrders = React.lazy(() => import("../../modules/catalog/pages/LocalOrders"));
 const LocalDistributionMap = React.lazy(() => import('../../modules/tenant/pages/LocalDistributionMap'));
@@ -78,6 +79,7 @@ export const router = createBrowserRouter([
     { path: 'recipes', element: <SuspenseWrapper><LocalSectors86 initialArea="recipes" /></SuspenseWrapper> },
     { path: 'sectors', element: <SuspenseWrapper><LocalSectors86 initialArea="sectors" /></SuspenseWrapper> },
     { path: 'food/previous', element: <SuspenseWrapper><LocalBusiness85 initialArea="food" /></SuspenseWrapper> },
+    { path: 'maintenance', element: <SuspenseWrapper><LocalMaintenance /></SuspenseWrapper> },
     { path: 'fleet', element: <SuspenseWrapper><LocalBusiness85 initialArea="fleet" /></SuspenseWrapper> },
     { path: 'food', element: <SuspenseWrapper><LocalSectors86 initialArea="food" /></SuspenseWrapper> },
     { path: 'documents', element: <SuspenseWrapper><LocalBusiness85 initialArea="documents" /></SuspenseWrapper> },
