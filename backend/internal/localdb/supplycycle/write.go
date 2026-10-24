@@ -267,7 +267,7 @@ func CreatePayable(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a
 	if v.State != "received" || v.Revision != in.ExpectedRevision {
 		return Result{}, purchases.ErrConflict
 	}
-	receipt, e := purchases.ReceiptEvidenceTx(ctx, tx, a, d, v.ReceiptID)
+	receipt, e := purchases.ReceiptForPayableTx(ctx, tx, a, d, v.ReceiptID)
 	if e != nil {
 		return Result{}, e
 	}
