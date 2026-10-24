@@ -104,7 +104,7 @@ func deliveryTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (D
 	if json.Unmarshal([]byte(saved), &r) != nil || !reflect.DeepEqual(r.Delivery, &v) {
 		return v, purchases.ErrConflict
 	}
-	return v, nil
+	return rejectedDeliveryTx(ctx, tx, a, v, body)
 }
 func allocatedTx(ctx context.Context, tx *sql.Tx, a identity.Scope, order string) (int64, error) {
 	rows, e := tx.QueryContext(ctx, `SELECT id FROM purchase_deliveries WHERE tenant_id=? AND store_id=? AND order_id=? ORDER BY id LIMIT ?`, a.TenantID, a.StoreID, order, MaxDeliveries+1)
@@ -134,7 +134,7 @@ func allocatedTx(ctx context.Context, tx *sql.Tx, a identity.Scope, order string
 		if e != nil {
 			return 0, e
 		}
-		if v.State != "cancelled" {
+		if v.State != "cancelled" && v.State != "rejected" {
 			qty := v.PlannedMilli
 			if v.State == "received" {
 				var accepted int64

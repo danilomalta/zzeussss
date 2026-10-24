@@ -88,6 +88,21 @@ type ReceiveInput struct {
 	AcceptedMilli    int64  `json:"accepted_milli"`
 	Reason           string `json:"reason"`
 }
+type FullRejectionInput struct {
+	OperationID         string `json:"operation_id"`
+	ExpectedRevision    int64  `json:"expected_revision"`
+	DeliveredMilli      int64  `json:"delivered_milli"`
+	ExistingRejectionID string `json:"existing_rejection_id"`
+	EvidenceReference   string `json:"evidence_reference"`
+	ObservedAt          string `json:"observed_at"`
+	Reason              string `json:"reason"`
+}
+type FullRejectionEvidence struct {
+	FullRejectionInput
+	RecordedBy       string `json:"recorded_by"`
+	RecordedDeviceID string `json:"recorded_device_id"`
+	RecordedAt       string `json:"recorded_at"`
+}
 type FinanceInput struct {
 	OperationID       string                 `json:"operation_id"`
 	ExpectedRevision  int64                  `json:"expected_revision"`
@@ -114,14 +129,16 @@ type Origin struct {
 	FiscalAuthorizationVerified bool   `json:"fiscal_authorization_verified"`
 }
 type Result struct {
-	Action      *ActionInput       `json:"action_evidence,omitempty"`
-	OperationID string             `json:"operation_id"`
-	Repeated    bool               `json:"repeated"`
-	Decision    *Decision          `json:"decision,omitempty"`
-	Delivery    *Delivery          `json:"delivery,omitempty"`
-	Receipt     *purchases.Receipt `json:"receipt,omitempty"`
-	Payable     *payables.Payable  `json:"payable,omitempty"`
-	Origin      *Origin            `json:"origin,omitempty"`
+	Rejection         *purchases.DeliveryRejection `json:"rejection,omitempty"`
+	RejectionEvidence *FullRejectionEvidence       `json:"rejection_evidence,omitempty"`
+	Action            *ActionInput                 `json:"action_evidence,omitempty"`
+	OperationID       string                       `json:"operation_id"`
+	Repeated          bool                         `json:"repeated"`
+	Decision          *Decision                    `json:"decision,omitempty"`
+	Delivery          *Delivery                    `json:"delivery,omitempty"`
+	Receipt           *purchases.Receipt           `json:"receipt,omitempty"`
+	Payable           *payables.Payable            `json:"payable,omitempty"`
+	Origin            *Origin                      `json:"origin,omitempty"`
 }
 type Cycle struct {
 	OrderID                string     `json:"order_id"`

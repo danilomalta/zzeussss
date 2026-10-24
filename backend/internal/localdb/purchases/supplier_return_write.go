@@ -111,6 +111,13 @@ func returnPairedTx(ctx context.Context, tx *sql.Tx, a identity.Scope, v Supplie
 	if v.CollectionMode != "next_delivery" || v.PairedDeliveryID == "" {
 		return ErrConflict
 	}
+	var closed int
+	if e := tx.QueryRowContext(ctx, `SELECT count(*) FROM purchase_delivery_full_rejections WHERE tenant_id=? AND store_id=? AND delivery_id=?`, a.TenantID, a.StoreID, v.PairedDeliveryID).Scan(&closed); e != nil {
+		return e
+	}
+	if closed != 0 {
+		return ErrConflict
+	}
 	var supplier, state string
 	var receipt sql.NullString
 	e := tx.QueryRowContext(ctx, `SELECT d.supplier_id,d.state,d.receipt_id FROM purchase_deliveries d JOIN purchase_cycle_operations o ON o.tenant_id=d.tenant_id AND o.store_id=d.store_id AND o.entity_id=d.id AND o.kind='delivery' AND o.revision=d.revision AND json_extract(o.result_json,'$.delivery')=d.payload_json WHERE d.tenant_id=? AND d.store_id=? AND d.id=?`, a.TenantID, a.StoreID, v.PairedDeliveryID).Scan(&supplier, &state, &receipt)

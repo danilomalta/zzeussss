@@ -77,9 +77,6 @@ func rejectionTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (
 	return out, nil
 }
 func RejectDelivery(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in RejectionInput) (RejectionResult, error) {
-	if !validSearchID(in.OperationID) || !validSearchID(in.OrderID) || !validSearchID(in.DeliveryReference) || !validReceivingReason(in.Reason) || in.DeliveredMilli < 1 || in.DeliveredMilli > MaxQuantity || (in.Unit != "unit" && in.Unit != "kg" && in.Unit != "g" && in.Unit != "liter" && in.Unit != "ml" && in.Unit != "meter") {
-		return RejectionResult{}, ErrInvalid
-	}
 	if db == nil {
 		return RejectionResult{}, errors.New("banco indisponivel")
 	}
@@ -88,6 +85,36 @@ func RejectDelivery(ctx context.Context, db *sql.DB, license *entitlementstore.S
 		return RejectionResult{}, err
 	}
 	defer tx.Rollback()
+	out, err := RejectDeliveryTx(ctx, tx, license, a, d, in)
+	if err != nil {
+		return RejectionResult{}, err
+	}
+	return out, tx.Commit()
+}
+
+// CheckedRejectionTx checks original receiving authorization, request and audit
+// evidence. The caller must authorize the current context in its transaction.
+func CheckedRejectionTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (DeliveryRejection, error) {
+	if tx == nil || !validSearchID(id) {
+		return DeliveryRejection{}, ErrInvalid
+	}
+	out, err := rejectionTx(ctx, tx, a, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = ErrNotFound
+	}
+	return out, err
+}
+
+// RejectDeliveryTx records a refusal in the caller-owned transaction. The caller
+// must commit only after its own linked records have also been persisted.
+func RejectDeliveryTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in RejectionInput) (RejectionResult, error) {
+	if !validSearchID(in.OperationID) || !validSearchID(in.OrderID) || !validSearchID(in.DeliveryReference) || !validReceivingReason(in.Reason) || in.DeliveredMilli < 1 || in.DeliveredMilli > MaxQuantity || (in.Unit != "unit" && in.Unit != "kg" && in.Unit != "g" && in.Unit != "liter" && in.Unit != "ml" && in.Unit != "meter") {
+		return RejectionResult{}, ErrInvalid
+	}
+	if tx == nil || license == nil {
+		return RejectionResult{}, ErrInvalid
+	}
+	var err error
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageReplenishment, modules.Orders); err != nil {
 		return RejectionResult{}, err
 	}
@@ -107,7 +134,7 @@ func RejectDelivery(ctx context.Context, db *sql.DB, license *entitlementstore.S
 		if prior.RejectionInput != in || prior.ActorID != a.IdentityID || prior.DeviceID != d.DeviceID {
 			return RejectionResult{}, ErrConflict
 		}
-		return RejectionResult{prior, true}, tx.Commit()
+		return RejectionResult{prior, true}, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return RejectionResult{}, err
@@ -176,5 +203,5 @@ func RejectDelivery(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	if err = one(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,'purchase.delivery.rejected',1,?,?)`, event, a.TenantID, a.StoreID, d.DeviceID, in.OperationID, in.OrderID, string(body), now); err != nil {
 		return RejectionResult{}, err
 	}
-	return RejectionResult{DeliveryRejection{in, id, d.DeviceID, a.IdentityID, product, now}, false}, tx.Commit()
+	return RejectionResult{DeliveryRejection{in, id, d.DeviceID, a.IdentityID, product, now}, false}, nil
 }

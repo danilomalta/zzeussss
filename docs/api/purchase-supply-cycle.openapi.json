@@ -749,6 +749,83 @@
           "view_accounting"
         ]
       }
+    },
+    "/local/v1/purchase-deliveries/{id}/reject": {
+      "post": {
+        "summary": "Atomically record full refusal or explicitly bind an existing checked refusal; no stock or financial effect",
+        "operationId": "supply_post__local_v1_purchase_deliveries_id_reject",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Result or original exact replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or unknown fields, malformed body/query"
+          },
+          "401": {
+            "description": "Missing, foreign or revoked session"
+          },
+          "403": {
+            "description": "Effective permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not present in permitted context or not original actor"
+          },
+          "409": {
+            "description": "Revision/state/quantity/idempotency/source conflict"
+          },
+          "413": {
+            "description": "Body exceeds 32768 bytes"
+          },
+          "422": {
+            "description": "Source exceeds 1000 records"
+          },
+          "503": {
+            "description": "Backend or contracts unavailable"
+          }
+        },
+        "x-context": "tenant/store/user/device derived from authenticated local session",
+        "x-external-confirmation": false,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FullRejectionInput"
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "manage_replenishment",
+          "view_orders",
+          "manage_stock"
+        ],
+        "description": "Only arrived delivery, exact revision. Empty existing_rejection_id creates a refusal atomically; an explicit ID binds original matching evidence without duplicating it. Rejected releases commitment but does not cancel order, schedule replacement, settle money or authorize fiscal documents. Original IDs/actor/device govern recovery. Historical arrived SQL row is frozen and terminal state is overlaid from an immutable additive ledger."
+      }
     }
   },
   "components": {
@@ -1752,7 +1829,8 @@
               "loaded",
               "arrived",
               "received",
-              "cancelled"
+              "cancelled",
+              "rejected"
             ]
           },
           "revision": {
@@ -2017,6 +2095,12 @@
           },
           "origin": {
             "$ref": "#/components/schemas/Origin"
+          },
+          "rejection": {
+            "$ref": "#/components/schemas/DeliveryRejection"
+          },
+          "rejection_evidence": {
+            "$ref": "#/components/schemas/FullRejectionEvidence"
           }
         }
       },
@@ -2214,6 +2298,169 @@
           },
           "has_more": {
             "type": "boolean"
+          }
+        }
+      },
+      "FullRejectionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "delivered_milli",
+          "existing_rejection_id",
+          "evidence_reference",
+          "observed_at",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "delivered_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "existing_rejection_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        }
+      },
+      "FullRejectionEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "delivered_milli",
+          "existing_rejection_id",
+          "evidence_reference",
+          "observed_at",
+          "reason",
+          "recorded_by",
+          "recorded_device_id",
+          "recorded_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "delivered_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "existing_rejection_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "recorded_by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recorded_device_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recorded_at": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "DeliveryRejection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "order_id",
+          "delivery_reference",
+          "unit",
+          "reason",
+          "id",
+          "device_id",
+          "actor_id",
+          "product_id",
+          "created_at",
+          "delivered_milli"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "delivery_reference": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "delivered_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
           }
         }
       }

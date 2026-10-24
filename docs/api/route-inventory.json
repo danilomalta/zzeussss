@@ -2054,6 +2054,13 @@
     },
     {
       "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-deliveries/:id/reject",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
       "method": "GET",
       "path": "/local/v1/purchase-order-search",
       "authentication": "session",

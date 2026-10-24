@@ -19836,6 +19836,35 @@
           }
         }
       }
+    },
+    "/local/v1/purchase-deliveries/{id}/reject": {
+      "post": {
+        "summary": "Atomically receive checked quantities into stock",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "See purchase-supply-cycle.openapi.json for complete contract"
+          }
+        },
+        "x-contract": "purchase-supply-cycle.openapi.json",
+        "operationId": "local_POST__local_v1_purchase_deliveries_id_reject"
+      }
     }
   },
   "components": {

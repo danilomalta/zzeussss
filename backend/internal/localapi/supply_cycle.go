@@ -19,6 +19,7 @@ func (s *Server) mountSupplyCycle(r fiber.Router) {
 	g.Get("/purchase-deliveries/:id/history", s.cycleHistory)
 	g.Post("/purchase-deliveries/:id/actions", s.cycleAction)
 	g.Post("/purchase-deliveries/:id/receive", s.cycleReceive)
+	g.Post("/purchase-deliveries/:id/reject", s.cycleReject)
 	g.Post("/purchase-deliveries/:id/payable", s.cycleFinance)
 	g.Get("/purchase-cycle-operations/:id", s.cycleOperation)
 	g.Get("/finance/receiving-origins/:id", s.cycleOrigin)
@@ -116,6 +117,22 @@ func (s *Server) cycleReceive(c *fiber.Ctx) error {
 	}
 	ss := c.Locals("session").(localauth.Session)
 	r, e := supplycycle.Receive(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, id, in)
+	return cycleReply(c, r, e)
+}
+func (s *Server) cycleReject(c *fiber.Ctx) error {
+	if s.contracts == nil {
+		return c.SendStatus(503)
+	}
+	var in supplycycle.FullRejectionInput
+	if e := cycleDecode(c, &in, "operation_id", "expected_revision", "delivered_milli", "existing_rejection_id", "evidence_reference", "observed_at", "reason"); e != nil {
+		return e
+	}
+	id, e := cycleID(c)
+	if e != nil {
+		return c.SendStatus(400)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	r, e := supplycycle.Reject(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, id, in)
 	return cycleReply(c, r, e)
 }
 func (s *Server) cycleFinance(c *fiber.Ctx) error {
