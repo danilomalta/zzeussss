@@ -1,0 +1,12 @@
+import type {PurchaseOrder} from '../local/purchaseClient.mjs';
+import type {Cycle,Decision,Delivery,Result} from './contracts';
+import type {OrderContext,DecisionCommand} from './source.mjs';
+export function cycleID(v:unknown):boolean;
+export function orderContext(v:PurchaseOrder):OrderContext;
+export function cycleDecision(v:unknown,order:string):Decision;
+export function cycleDelivery(v:unknown,order?:OrderContext):Delivery;
+export function cyclePage(v:unknown,order:OrderContext,offset?:number):Cycle;
+export function cycleSummary(v:Cycle):DecisionCommand['cycle'];
+export function decisionCommand(v:unknown,scope:string):DecisionCommand;
+export function decisionResult(v:unknown,c:DecisionCommand,actor:string):Result;
+export function decisionFresh(c:DecisionCommand,now?:number):DecisionCommand;
