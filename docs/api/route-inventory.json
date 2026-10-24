@@ -1481,6 +1481,69 @@
     {
       "api": "local",
       "method": "GET",
+      "path": "/local/v1/pos/cart-operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/pos/carts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/pos/carts/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts/:id/reconcile",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
       "path": "/local/v1/production/capacity",
       "authentication": "session",
       "source": "backend/internal/localapi/production_capacity.go"

@@ -18866,6 +18866,202 @@
           "url": "./fleet-workshop.openapi.json"
         }
       }
+    },
+    "/local/v1/pos/carts": {
+      "post": {
+        "operationId": "carts_post__local_v1_pos_carts",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See suspended-carts.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/suspended_carts.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./suspended-carts.openapi.json"
+        }
+      },
+      "get": {
+        "operationId": "carts_get__local_v1_pos_carts",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See suspended-carts.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/suspended_carts.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./suspended-carts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/pos/carts/{id}": {
+      "get": {
+        "operationId": "carts_get__local_v1_pos_carts__id_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See suspended-carts.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/suspended_carts.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./suspended-carts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/pos/carts/{id}/actions": {
+      "post": {
+        "operationId": "carts_post__local_v1_pos_carts__id__actions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See suspended-carts.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/suspended_carts.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./suspended-carts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/pos/carts/{id}/history": {
+      "get": {
+        "operationId": "carts_get__local_v1_pos_carts__id__history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See suspended-carts.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/suspended_carts.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./suspended-carts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/pos/cart-operations/{id}": {
+      "get": {
+        "operationId": "carts_get__local_v1_pos_cart_operations__id_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See suspended-carts.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/suspended_carts.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./suspended-carts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/pos/carts/{id}/reconcile": {
+      "get": {
+        "operationId": "expanded_get__local_v1_pos_carts__id__reconcile",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See suspended-carts.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/suspended_carts.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./suspended-carts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/pos/carts/report": {
+      "get": {
+        "operationId": "expanded_get__local_v1_pos_carts_report",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See suspended-carts.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/suspended_carts.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./suspended-carts.openapi.json"
+        }
+      }
+    },
+    "/local/v1/pos/carts/report.csv": {
+      "get": {
+        "operationId": "expanded_get__local_v1_pos_carts_report_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "See suspended-carts.openapi.json"
+          }
+        },
+        "x-payload-contract": "documented",
+        "x-source": "backend/internal/localapi/suspended_carts.go",
+        "x-state": "implemented",
+        "externalDocs": {
+          "description": "Detailed contract",
+          "url": "./suspended-carts.openapi.json"
+        }
+      }
     }
   },
   "components": {

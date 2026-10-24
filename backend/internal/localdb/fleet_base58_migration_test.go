@@ -94,7 +94,7 @@ func TestFleetBase58UpgradePreservesSupplyCycleAndReturnSchema(t *testing.T) {
 		t.Fatal("historical receipt lost immutable constraint")
 	}
 	var count int
-	if err = db.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != 60 {
+	if err = db.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != len(entries) {
 		t.Fatal(count, err)
 	}
 	for _, name := range []string{"fleet_records", "fleet_operations", "fleet_workshop_records", "fleet_workshop_operations"} {
