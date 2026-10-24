@@ -1400,3 +1400,40 @@ Falhas de preparação foram corrigidas antes dos resultados: primeira ponte exe
 ### Próxima continuidade
 
 Esta revisão fecha os fluxos de recusa integral e a integração de diretório/fila de manutenção descritos; NÃO significa ERP/frontend/backend inteiros concluídos. Confirmar versões do serviço efetivo e ambiente integrado descartável permanece necessário antes de uso operacional. Não foram implantados binários, renovados contratos reais, usados PostgreSQL comercial, processados pagamentos externos/fiscal, criados apps móveis ou configurado push. Faturamento/contas a receber e PDV/fechamento continuam próximos no roteiro, comparando código/contratos antes de criar algo. Preservar117de fornecedores e os rascunhos não homologados sem misturá-los. Registrar evidências reais e atualizar somente este arquivo.
+
+
+## Livro oficial de caixa e exportação íntegra — 24/10/2026, revisão37
+
+### Base e escopo entregue
+
+Frontend principal na branch feat/backend-checkout-authority, base1c681fccd86a0c67c381f651b02de18040a76943. Backend separado feat/backend-b02a-compat: ponte publicada28c4d6c3ea36810508a1e223f49b8d4339bcfe10 e correção publicada beaebbe6d85af07bd17bb5b02b11753df4f9ef96; hash remoto conferido. Preservados116/117, rascunhos locais e a manutenção consolidada. Sem main, reset/clean, migração, alteração de schema63, instalação, serviço comercial, Electron ou ZIP.
+
+Novo núcleo core/cashJournal (contracts.ts, model.mjs/model.d.mts, source.mjs/source.d.mts, words.mjs/words.d.mts), componente pos/pages/OfficialCashJournal.tsx e CSS próprio. LocalPointOfSale oferece consulta na página de caixa e preenche o identificador original depois do fechamento confirmado. operations84/Journal84 acrescenta o painel oficial e distingue explicitamente os lançamentos locais de preparação. Não substitui nem promove rascunhos existentes a registros oficiais. Novos testes cashJournal.test.mjs e cashJournal.bridge.mjs.
+
+Contratos existentes reutilizados: docs/api/cash-journal.openapi.json SHA256 f2cbdeb658b5496c79a6745afe895dd1823762440c473e63a06917feb2268412 e cash-journal-export.openapi.json SHA256 6fbc01c64f8afaaa0a71886b24ffc020acd9440eb603044f2a71adc28821aa8b. O texto histórico de ausência de frontend nesses contratos antecede esta integração; esta revisão registra a atualização. GET journal e journal.csv apenas para caixa fechado, operador original e empresa/loja/aparelho autorizados, permissão Sell; histórico não exige licença de PDV ainda ativa. Não ampliar a permissão do contador. O contrato consultado não oferece índice geral dos caixas do próprio operador: consulta por ID e preenchimento a partir do fechamento, sem inventar uma listagem completa.
+
+Resumo oficial é do caixa inteiro, independente da página de50 lançamentos; sinal source_complete descreve cobertura do caixa local, não carregamento de todas as páginas. A interface mostra total/paginação, dinheiro esperado/declarado/diferença, débitos/créditos de controle e não classificados. Origem, autor e operação originais permanecem visíveis; legado desconhecido não recebe autor atual fabricado. Caixa não é livro global da empresa, liquidação bancária, DRE ou escrituração fiscal.
+
+Validação estrita de DTO, origem, sinais, duas pernas balanceadas, inteiros seguros e reconciliação BigInt; formatação preserva centavos negativos e valores grandes. Consulta e exportação invalidam respostas antigas por contexto, sessão, cancelamento e geração, inclusive mudança de caixa durante a leitura do corpo. GET sem corpo, no-store, credenciais somente pelo token explícito. Falha remove a apresentação anterior; não exibir saldo antigo como nova consulta nem gerar zero oficial. Cinco idiomas pt-BR/en/es/fr/zh-CN, temas, foco, controles touch e rolagem interna preservados.
+
+CSV vem inteiro de um único snapshot do backend, nunca concatenação de páginas. Limites do contrato:10.000 lançamentos/16MiB, BOM UTF-8, ponto e vírgula, CRLF e22colunas. Frontend confere cabeçalhos HTTP, codificação, estrutura, contagem, células seguras e reconciliação antes do download, conservando os bytes recebidos. Valores exportados são CENTAVOS inteiros; identificadores/datas devem ser importados como texto. Conteúdo que não pode circular com segurança é recusado, sem transformar dado em fórmula ou prefixar silenciosamente outro valor. Não foi homologado abrir/salvar/reabrir em Excel ou LibreOffice.
+
+### Falha real identificada e corrigida no backend
+
+A ponte HTTP com identificador turn-Á QA reproduziu404: Fiber entregava o parâmetro ainda codificado e o handler consultava o banco com esse valor. Correção localizada em internal/localapi/cash_journal.go e cash_journal_export.go: url.PathUnescape exatamente uma vez no ID das duas consultas,400 para escape inválido. Sem alteração de escopo/autorização/persistência. Regressão também passa com turn-%literal, impedindo dupla decodificação. Preimagens em work/cash-journal-ui-20261024 nesta tarefa.
+
+TestCashJournalFrontendBridge executa Node/cliente frontend real contra Fiber HTTP loopback efêmero e SQLite temporário, sessão/licença/dados sintéticos. Venda3198, suprimento500, sangria300, cancelamento da venda e fundo1000 resultam em saldo1200 e controles8196; consulta além do fim mantém resumo, exportação contém5lançamentos e resumo. Os IDs Unicode e com percentual literal passam em JSON e CSV. Nenhum serviço ou banco comercial foi iniciado. Fixture termina o servidor e descarta a base temporária.
+
+### Evidências executadas
+
+66testes específicos aprovados; suíte global frontend2.230aprovados,0falhas/cancelados/ignorados. TypeScript final tsc --noEmit exit0; primeiro typecheck encontrou incompatibilidade BlobPart/Uint8Array, corrigida com cópia tipada antes de repetir a verificação. Build final isolado configFile:false/envFile:false exit0 em21.343667302s, work/catalog-management-20261022/build-check-ReQ0FD. Avisos preexistentes de Tailwind e chunks grandes permanecem; não declarar otimização de planilha.
+
+Regressões Go do livro/exportação e ponte HTTP:32eventos de teste aprovados,0falhas, pacote localapi aprovado em9.829s. cmd/titan-local e cmd/api compilaram exit0, binários em work/cash-journal-ui-20261024/build, NÃO executados. Não repetir como atual o resultado da suíte Go inteira da revisão34: agora foi a rodada específica. PostgreSQL e integrações externas permanecem pendentes de ambiente descartável autorizado.
+
+Prévia4354 executou o componente real em StrictMode com dados explicitamente sintéticos e transporte de prévia isolado, sem proxy para backend. Verificados tabela/resumo, erro409 removendo o resultado antigo, exportação, cinco idiomas e temas. Prova outputs/livro-caixa-oficial-previa-2026-10-24.png. Download sintético em /home/danillo-malta/Downloads/titan-caixa-lancamentos.csv:1152bytes, BOM,5lançamentos+resumo, saldo1200/declarado1100, SHA256 4a36c99c7231f36981966a7515178a1723f0ba07193904f56a5a0a443f337ff8. Não contém dados comerciais. Essa prévia não é prova de persistência; a ponte Go independente é a evidência integrada. Logs/preimagens/lista exata em work/cash-journal-ui-20261024 da tarefa.
+
+A consulta remota feita sem rede autorizada falhou “Could not resolve host: github.com”; a conferência posterior com acesso de rede autorizado confirmou o hash beaebbe no GitHub. Não atribuir essa falha ao aplicativo.
+
+### Continuidade e limites
+
+Esta unidade conclui consulta e exportação do livro oficial de um caixa fechado no contrato disponível. Malote/cadeia de custódia, homologação completa do fechamento/PDV, faturamento/recebíveis, demais fluxos da matriz, periféricos, fiscal/pagamentos externos, desempenho e empacotamento Windows/Linux não se tornam concluídos por esta entrega. Não declarar ERP inteiro pronto nem porcentagem sem critérios medidos. Próxima unidade deve comparar contrato e código, preservar as recuperações e continuar neste registro único. Não renovar/selecionar licença, banco, estação ou perfil reais para demonstrar o produto.

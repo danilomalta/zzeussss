@@ -1,3 +1,4 @@
+import OfficialCashJournal from './OfficialCashJournal';
 import {ClosingSourceContext92} from '../../../core/local/closingSource92';
 import Checkout96 from './Checkout96';import {useDraft96} from '../../../core/local/useDraft96';import {words96} from '../../../core/local/words96';import type {Receipt96} from '../../../core/local/checkout96.mjs';
 import {read95} from '../../../core/local/store95';
@@ -81,7 +82,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const [historyRevision, setHistoryRevision] = useState(0);
   const [turnBusy, setTurnBusy] = useState(false);
   const turnLatch = useRef(false);
-  const [closedReport, setClosedReport] = useState<{expected_cents:number;difference_cents:number;declared_cents:number}|null>(null);
+  const [closedReport, setClosedReport] = useState<{session_id:string;expected_cents:number;difference_cents:number;declared_cents:number}|null>(null);
   const invalidate = useLocalSession((state) => state.invalidate);
   const setup = useMemo(() => {
     try { return { operations: createPOSOperations(localClient, window.localStorage, session, browserLock),tenders:tenderStore91(window.localStorage,session), error: '' }; }
@@ -194,7 +195,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       const result = outcome.result;
       const difference = result.difference_cents;
       const archived95:Summary95={scope:checkoutScope91(session),mode:gateway95.mode,cash:result.session_id,expected:result.expected_cents,counted:result.expected_cents+difference,difference,at:new Date().toISOString()};setSummary95(archived95);void archive95(archived95).catch(()=>setError(completeWords95.storageError));
-      setClosedReport({expected_cents:result.expected_cents,difference_cents:difference,declared_cents:result.expected_cents+difference});
+      setClosedReport({session_id:result.session_id,expected_cents:result.expected_cents,difference_cents:difference,declared_cents:result.expected_cents+difference});
       setClosing(false);
       setMessage(`Caixa fechado. Valor esperado: ${formatLocalCents(result.expected_cents)}. Diferença declarada: ${difference < 0 ? '−' : '+'}${formatLocalCents(Math.abs(difference))}.`);
     }
@@ -307,6 +308,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       {cashPage&&cash&&<button className="brand-secondary" onClick={()=>{setDomain95('pairing');setWork94('complete');}}>{completeWords95.viewPairing}</button>}
       {cashPage&&cash&&work94==='complete'&&<button className="brand-secondary" onClick={()=>selectWork94('sale')}>{checkoutWords91.backPayment}</button>}
       {cashPage&&cash&&work94==='complete'&&<Desk95 scope={checkoutScope91(session)} token={token} cash={cash.session_id} reference={reference94} total={total} parts={[]} actor={actor94} initial="pairing" onDirty={setWorkDirty94}/>}
+      {cashPage&&<OfficialCashJournal initialCashID={closedReport?.session_id}/> }
       {cashPage && closedReport && <section className="brand-panel pos-closing-report" role="status"><h2>{t("posUi.closeResult")}</h2><div className="pos-payment-status"><div><span>{t("posUi.declaredCash")}</span><strong>{formatLocalCents(closedReport.declared_cents)}</strong></div><div><span>{t("posUi.expectedCash")}</span><strong>{formatLocalCents(closedReport.expected_cents)}</strong></div><div><span>{closedReport.difference_cents===0?t('posUi.balanced'):closedReport.difference_cents<0?t('posUi.shortage'):t('posUi.surplus')}</span><strong>{formatLocalCents(Math.abs(closedReport.difference_cents))}</strong></div></div></section>}
       {!cashPage&&cash&&<p role="status">{savedDraft96.error?fullWords96[savedDraft96.error]||fullWords96.storageError:savedDraft96.saving?fullWords96.savingDraft96:savedDraft96.ready?fullWords96.savedDraft96:fullWords96.restoringDraft96}</p>}
       {!cashPage&&savedDraft96.review&&<section className="brand-panel"><h2>{fullWords96.reviewRestored96}</h2><p>{fullWords96.pricesChanged96}</p><ul>{savedDraft96.review.items.map(i=><li key={i.product.id}>{i.product.name} · {formatLocalCents(i.product.price_cents)}</li>)}</ul><button className="brand-primary" onClick={savedDraft96.accept}>{fullWords96.acceptRestored96}</button></section>}
