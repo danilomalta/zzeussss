@@ -1,0 +1,15 @@
+import type {ReceivingCase,CaseDetail,CasePage,CaseFilters,CaseHistory,CaseCommand,CaseResult} from './source.mjs';
+import type {LocalCapabilities} from '../local/localClient.mjs';
+export const caseKinds:string[],caseOutcomes:string[],caseStatuses:string[];
+export function caseFail():never;
+export function caseID(v:unknown):boolean;
+export function caseDue(v:string):string;
+export function caseShape(name:string,v:unknown):unknown;
+export function caseRecord(v:unknown):ReceivingCase;
+export function caseDetail(v:unknown,id?:string):CaseDetail;
+export function caseFilters(v?:CaseFilters):Required<CaseFilters>;
+export function casePage(v:unknown,f?:CaseFilters,offset?:number):CasePage;
+export function caseHistory(v:unknown,id:string,offset?:number):CaseHistory;
+export function caseActions(v:ReceivingCase,cap:LocalCapabilities):string[];
+export function caseCommand(v:unknown,scope:string):CaseCommand;
+export function caseResult(v:unknown,c:CaseCommand,actor:string):CaseResult;

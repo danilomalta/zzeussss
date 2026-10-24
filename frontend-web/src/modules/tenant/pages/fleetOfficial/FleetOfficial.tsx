@@ -1,3 +1,4 @@
+import {retainDisposable} from '../../../../core/local/retainDisposable.mjs';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useLocalSession} from '../../../../core/local/useLocalSession';
 import {useLocalAccess} from '../../../../core/local/LocalAccess';
@@ -18,8 +19,8 @@ export default function FleetOfficial({locale}:{locale:string}){
  const source=useMemo(()=>{try{return token&&session&&capabilities?createFleetRead({token,session,capabilities,isCurrent:()=>{const c=useLocalSession.getState();return c.token===token&&c.session===session&&cap.current===capabilities;}}):null;}catch{return null;}},[token,session,capabilities]);
  const writer=useMemo(()=>{try{return token&&session&&capabilities?createFleetCommands({token,session,capabilities,isCurrent:()=>{const c=useLocalSession.getState();return c.token===token&&c.session===session&&cap.current===capabilities;},storage:window.localStorage,locks:navigator.locks}):null;}catch{return null;}},[token,session,capabilities]);
  const workshop=useMemo(()=>{try{return token&&session&&capabilities?createWorkshopCommands({token,session,capabilities,isCurrent:()=>{const c=useLocalSession.getState();return c.token===token&&c.session===session&&cap.current===capabilities;},storage:window.localStorage,locks:navigator.locks}):null;}catch{return null;}},[token,session,capabilities]);
- useEffect(()=>()=>workshop?.dispose(),[workshop]);
- useEffect(()=>()=>source?.dispose(),[source]);useEffect(()=>()=>writer?.dispose(),[writer]);
+ useEffect(()=>retainDisposable(workshop),[workshop]);
+ useEffect(()=>retainDisposable(source),[source]);useEffect(()=>retainDisposable(writer),[writer]);
  return <section className="fleet-official brand-panel"><h2>{w.title}</h2><p>{w.readOnly}</p><button className="brand-secondary" aria-expanded={open} onClick={()=>setOpen(v=>!v)}>{w[open?'panelClose':'panelOpen']}</button>{open&&(source?<FleetReadView key={source.scope+token+JSON.stringify(capabilities)} source={source} writer={writer} workshop={workshop} capabilities={capabilities!} locale={locale} financial={!!capabilities?.permissions.includes('view_accounting')}/>:<p role="alert">{w.permission}</p>)}</section>;
 }
 function useQuery<T>(signature:string,read:(signal:AbortSignal)=>Promise<T>,source:FleetRead){
