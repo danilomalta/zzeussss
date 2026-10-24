@@ -1,3 +1,4 @@
+import {retainDisposable} from '../../../core/local/retainDisposable.mjs';
 import { useEffect, useMemo, useRef, useState, type DependencyList } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocalSession } from '../../../core/local/useLocalSession';
@@ -11,6 +12,7 @@ import type { PurchaseOrder } from '../../../core/local/purchaseClient.mjs';
 import './receivingOverview.css';
 type Props = {
     order: PurchaseOrder | null;
+    refreshVersion?: number;
 };
 export default function ReceivingOverview(props: Props) {
     const token = useLocalSession(s => s.token), session = useLocalSession(s => s.session), { capabilities } = useLocalAccess(), { i18n } = useTranslation(), locale = i18n.resolvedLanguage || i18n.language, w = overviewWords(locale), latest = useRef(capabilities);
@@ -49,14 +51,14 @@ function useRead<T>(read: (signal: AbortSignal) => Promise<T>, signature: string
 }
 const inputTime = (value: Date) => { const n = (v: number) => String(v).padStart(2, '0'); return `${value.getFullYear()}-${n(value.getMonth() + 1)}-${n(value.getDate())}T${n(value.getHours())}:${n(value.getMinutes())}:00`; };
 const start = () => { const date = new Date(); date.setHours(0, 0, 0, 0); return inputTime(date); };
-function ReceivingViews({ order, source, locale }: Props & {
+export function ReceivingViews({ order, source, locale, refreshVersion=0 }: Props & {
     source: ReceivingOverviewSource;
     locale: string;
 }) {
     const w = overviewWords(locale), [draft, setDraft] = useState({ from: start(), to: inputTime(new Date(Date.now() + 86400000)), supplier_id: '', product_id: '', state: 'pending' as NonNullable<ReceivingFilters['state']> }), [filters, setFilters] = useState<Required<ReceivingFilters>>(), [offset, setOffset] = useState(0), [overviewOffset, setOverviewOffset] = useState(0), [selected, setSelected] = useState(order?.id || ''), [refresh, setRefresh] = useState(0), [error, setError] = useState('');
-    useEffect(() => () => source.dispose(), [source]);
+    useEffect(() => retainDisposable(source), [source]);
     useEffect(() => { setSelected(order?.id || ''); setOverviewOffset(0); }, [order?.id]);
-    const boardKey = JSON.stringify([filters, offset, refresh]), detailKey = JSON.stringify([selected, overviewOffset, refresh]), board = useRead(s => filters ? source.board(filters, offset, s) : Promise.resolve(undefined), boardKey, [source, boardKey]), detail = useRead(s => selected ? source.overview(selected, overviewOffset, s) : Promise.resolve(undefined), detailKey, [source, detailKey]);
+    const boardKey = JSON.stringify([filters, offset, refresh, refreshVersion]), detailKey = JSON.stringify([selected, overviewOffset, refresh, refreshVersion]), board = useRead(s => filters ? source.board(filters, offset, s) : Promise.resolve(undefined), boardKey, [source, boardKey]), detail = useRead(s => selected ? source.overview(selected, overviewOffset, s) : Promise.resolve(undefined), detailKey, [source, detailKey]);
     const date = (v: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'medium' }).format(new Date(v)), quantity = (v: number | string) => receivingQuantity(v, locale);
     function query() {
         try {
