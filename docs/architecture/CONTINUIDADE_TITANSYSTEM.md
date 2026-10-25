@@ -1,12 +1,12 @@
 # Continuidade do TitanSystem
 
-Revisão 40 — 24/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 41 — 24/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
 
 - Interface oficial: `/home/danillo-malta/Downloads/zzeus-frontend-backend/frontend-web/`.
-- Branch frontend: `feat/backend-checkout-authority`; base desta revisão `465742f32e72160bb2b4c94f2583d71139e5ff07`, limpa antes da alteração. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
+- Branch frontend: `feat/backend-checkout-authority`; base desta revisão `c1f6c57f83270fdc21b2ed3b5efceb6854720d45`, limpa antes da alteração. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
 - Frontend116 presente; Frontend117 CORRETO de conferência por fornecedor aplicado. Confirmados `SupplierReport117.tsx`, `core/payables117`, cinco dicionários, teste e documento193. O usuário informou em21/10: compatibilidade aprovada, backup,136testes sem falhas, TypeScript/build aprovados em20,05s, sem banco/commit/merge/push.
 - Frontend passa a ser responsabilidade deste chat/Codex, com preservação do trabalho anterior. Em24/10 o proprietário autorizou explicitamente este chat a desenvolver também o backend; a restrição anterior de somente leitura foi superada. Preservar a autoria e as entregas do outro chat.
 - Backend desta frente, autorizado para desenvolvimento em24/10: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `beaebbe6d85af07bd17bb5b02b11753df4f9ef96`, schema63 na fonte versionada; manutenção/schema62 e recusa integral/schema63 consolidadas. Pacote de devoluções/schema64 ainda NÃO aplicado: aplicador recusou dependências posteriores, preservadas (ver revisão38). Histórico de B02B13 e adaptação autorizada de Frota registrados abaixo. Serviço/versão/banco/estação em execução continuam não identificados.
@@ -1536,3 +1536,30 @@ Verificações finais:2339testes frontend aprovados,0falhas/cancelados/ignorados
 Continuidade: carrinhos de backend foram lidos em sale/cart_* e suspended-carts.openapi.json. São escopo de usuário/aparelho, não reservam estoque ao suspender, conferem preço/estoque/caixa ao assumir/finalizar e exigem IDs/revisão estáveis. Rascunhos Till94/111 e recuperação atual de venda não podem ser adotados, apagados ou finalizados automaticamente. Próxima unidade deve integrar com revisão e impedir duas finalizações por caminhos distintos. Demais pendências da matriz e conectores externos permanecem; não declarar ERP completo nem encerrar o trabalho por esta correção.
 
 Observação de publicação40: o primeiro git diff --cached --check detectou3linhas vazias com espaços nos componentes legados. Removidos somente esses espaços, repetida a conferência antes do commit; nenhuma mudança comercial ou de transporte.
+
+
+## Cotação antiga, sessão atual e incerteza durável do PDV — 24/10/2026, revisão41
+
+Base frontend c1f6c57f83270fdc21b2ed3b5efceb6854720d45 publicada/hash remoto conferido, mesma pasta/branch. Backend beaebbe/schema63 preservado e sem alterações. Revisão de pré-requisitos dos carrinhos encontrou uma lacuna no caminho de venda em dinheiro existente; corrigida ANTES de conectar outra finalização. Não reimplementar116/117, não aplicar backend64 nem gerar pacote.
+
+### Reprodução e correção
+
+Reprodução sintética executada em work/pos-session-guard-20261024/baseline.mjs: createLocalClient+confirmCashQuote+createPOSOperations reais, transporte somente em memória. A fixture encerrou a sessão enquanto respondia a cotação; o código anterior ainda executou1POST de venda depois disso (baseline.json). Não foi venda comercial nem serviço real. O efeito é possibilidade efetivamente reproduzida no caminho antigo, não simples hipótese.
+
+Novo scopedPOSClient.mjs/.d.mts vincula métodos usados pelo PDV ao token, referência da sessão e4IDs, validade temporal e capacidades atuais. Verifica antes/depois de resposta E erro, inclusive leitura do corpo aguardada pelo cliente base. Mudança de empresa/loja/usuário/aparelho, logout, renovação ou revogação impede usar cotação antiga para confirmar. Escrita/cotação exige Sell e módulos Core/Inventory/POS ativos; histórico não exige licença atual. LocalPointOfSale usa esse cliente para cotação, fila de operações e consultas próprias; cliente global permanece disponível para autenticação e outros módulos, sem alegar proteção automática de chamadas fora desse vínculo.
+
+Novo posViewIdentity.mjs/.d.mts dá uma identidade de interface em memória por objeto de sessão/token, usando WeakMap/contador, sem pôr tokens em chaves React ou persistir credenciais. Login renovado remonta o espaço de venda para separar callbacks/latches antigos. Resposta401 antiga só pode invalidar a sessão se token E objeto ainda forem os mesmos; não derruba login posterior. IDs comerciais não são gerados por esse contador.
+
+posOperations mantém chave titansystem-pos-v1, formato/version1 e todos os IDs/corpos pendentes anteriores. Incerteza passa a ser persistida E relida ANTES de POST de venda/abertura/fechamento. Falha/silêncio de storage impede transmissão. Antes de remover verifica a mesma pendência e a sessão atual; outra pendência não é apagada. Retomada consulta comprovante original e não cria nova venda/ID. Qualquer retry legado é tratado como potencialmente já enviado, mesmo que o marcador antigo seja false: não inferir ausência de envio após reinício de uma versão que só marcava incerteza depois do POST.
+
+localClient marca serverRefusal=true somente em HTTP não2xx REAL. Apenas primeira recusa definitiva do próprio POST pode permitir o descarte explícito já existente. Erro local de sessão/permissão, falha de parse/transporte, consulta de comprovante posterior ou recusa após incerteza anterior não autorizam apagar. A primeira rodada específica flagrou uma regressão da preparação: POST aceito seguido de403 na consulta estava sendo classificado como recusa do POST; corrigido com identificação da etapa e repetida a regressão legada SEM alterar seu teste. As28regressões antigas de POS/cotação passaram junto dos novos casos.
+
+### Arquivos e verificação
+
+Alterados core/local/{localClient.mjs,posOperations.mjs,posOperations.d.mts} e modules/pos/pages/LocalPointOfSale.tsx. Novos scopedPOSClient/posViewIdentity com declarações, tests/scopedPOSClient.test.mjs/.bridge.mjs/.backend.mjs e tests/fixtures/scoped_pos_frontend_test.go. Este registro atualizado. Preimagens dos4fontes anteriores, hashes, reprodução e logs em work/pos-session-guard-20261024 nesta tarefa. Nenhuma migração/descarte do armazenamento, senha, token ou alteração de banco real.
+
+25novos testes mais28legados pertinentes:53casos aprovados; suíte completa2364aprovados,0falhas/cancelados/ignorados. Inclui4IDs durante cotação, logout/renovação/expiração durante JSON, perda de permissão/licença, espera de lock, retorno tardio pós-POST, diferenciação de recusa real/local/consulta, retomada version1 antiga, recibo original após novo login, storage/lock/pendência concorrente e identidade de interface sem token exposto. TypeScript final exit0. Build final configFile:false/envFile:false exit0 em20.472605453s, saída isolada work/catalog-management-20261022/build-check-gmA1VB. Snapshot SHA256 de1117fontes/testes conferido sem mudança durante essa validação. git diff --check passou. Avisos conhecidos de Tailwind/chunks grandes permanecem.
+
+Ponte real via node frontend-web/tests/scopedPOSClient.backend.mjs /home/danillo-malta/Downloads/zzeus-frontend-backend-b02a /home/danillo-malta/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.8.linux-amd64/bin/go: aprovada0.441s. Fixture Go no FRONTEND compilada com overlay temporário, Fiber loopback efêmero/SQLite/licença/sessão sintéticas; nenhuma escrita na worktree de backend. Cotação cuja sessão foi alterada gerou0POSTs comerciais. Novo cliente fez venda3198com perda APÓS resposta real do servidor; preservou input/uncertain e novo cliente recuperou recibo pos-guard-sale/pos-guard-op, com1únicoPOST de venda. Go conferiu1venda persistida com os IDs/total originais. Não é teste de adquirente, fiscal, equipamento ou serviço comercial implantado; não repetir como resultado da suíte Go inteira.
+
+Continuidade: carrinhos persistidos continuam a próxima integração funcional independente, agora com o pré-requisito de sessão do caminho antigo fechado. Fechamento integral misto, eletrônico/fiscal, contabilidade/recebíveis e demais frentes permanecem nos aceites registrados. Esta correção não autoriza banco comercial nem conclui o produto inteiro. Manter trabalho incremental sem paradas artificiais entre unidades; não anunciar porcentagens globais sem critérios medidos.

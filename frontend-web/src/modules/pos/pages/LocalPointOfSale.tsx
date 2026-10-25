@@ -18,6 +18,8 @@ import { confirmCashQuote } from '../../../core/local/quotedCart.mjs';
 import { addCartProduct, replaceCartQuantity, restoreCartItem, selectCatalogProduct } from '../../../core/local/cartEditing.mjs';
 import type { CartItem } from '../../../core/local/posModel.mjs';
 import { createPOSOperations } from '../../../core/local/posOperations.mjs';
+import {createScopedPOSClient} from '../../../core/local/scopedPOSClient.mjs';
+import {posViewIdentity} from '../../../core/local/posViewIdentity.mjs';
 import type { OperationOutcome, PendingOperation } from '../../../core/local/posOperations.mjs';
 import CashClosing92 from './CashClosing92';
 import Till94,{TillNav94} from './Till94';
@@ -62,7 +64,7 @@ export default function LocalPointOfSale({ mode = 'sale' }: { mode?: 'sale' | 'c
   const token = useLocalSession((state) => state.token);
   const session = useLocalSession((state) => state.session);
   if (!token || !session) return null;
-  return <ClosingSourceContext92.Provider value={advancedSource}><CashCustodyGuard><POSWorkspace key={checkoutScope91(session)} token={token} session={session} mode={mode} /></CashCustodyGuard></ClosingSourceContext92.Provider>;
+  return <ClosingSourceContext92.Provider value={advancedSource}><CashCustodyGuard><POSWorkspace key={posViewIdentity(session,token)} token={token} session={session} mode={mode} /></CashCustodyGuard></ClosingSourceContext92.Provider>;
 }
 
 function POSWorkspace({ token, session, mode }: { token: string; session: LocalSession; mode: 'sale' | 'cash' }) {
@@ -78,9 +80,11 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const [customerOpen93,setCustomerOpen93]=useState(false);
   const customerAsked93=useRef(false);
   const {capabilities}=useLocalAccess();
+  const posCapabilities=useRef(capabilities);posCapabilities.current=capabilities;
+  const posClient=useMemo(()=>createScopedPOSClient(localClient,{token,session,getCurrent:()=>({...useLocalSession.getState(),capabilities:posCapabilities.current})}),[token,session]);
   const [operatorName,setOperatorName]=useState('');
   useEffect(()=>{if(!capabilities?.permissions?.includes('manage_staff'))return;let alive=true;
-    void localClient.staff(token).then(rows=>{if(alive)setOperatorName(rows.find(row=>row.identity_id===session.identity_id)?.name||'');}).catch(()=>{});
+    void posClient.staff(token).then(rows=>{if(alive)setOperatorName(rows.find(row=>row.identity_id===session.identity_id)?.name||'');}).catch(()=>{});
     return()=>{alive=false;};},[capabilities?.permissions,session.identity_id,token]);
   const [historyRevision, setHistoryRevision] = useState(0);
   const [turnBusy, setTurnBusy] = useState(false);
@@ -88,9 +92,9 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const [closedReport, setClosedReport] = useState<{session_id:string;expected_cents:number;difference_cents:number;declared_cents:number}|null>(null);
   const invalidate = useLocalSession((state) => state.invalidate);
   const setup = useMemo(() => {
-    try { return { operations: createPOSOperations(localClient, window.localStorage, session, browserLock),tenders:tenderStore91(window.localStorage,session), error: '' }; }
+    try { return { operations: createPOSOperations(posClient, window.localStorage, session, browserLock),tenders:tenderStore91(window.localStorage,session), error: '' }; }
     catch (error) { return { operations: null,tenders:null, error: failureText(error) }; }
-  }, [session]);
+  }, [session,posClient]);
   const operations = setup.operations;
   const [cash, setCash] = useState<CashSession | null>(null);
   const till94=useTill94(checkoutScope91(session),cash?.session_id||'');
@@ -156,7 +160,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   useEffect(() => {
     let live = true;
     setLoading(true); setKnownCash(false);
-    Promise.all([localClient.currentCash(token), localClient.locations(token), localClient.products(token, offset)])
+    Promise.all([posClient.currentCash(token), posClient.locations(token), posClient.products(token, offset)])
       .then(([current, places, rows]) => {
         if (!live) return;
         setCash(current); setKnownCash(true); setLocations(places.filter((place) => place.kind === 'shelf')); setProducts(rows);
@@ -164,7 +168,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       }).catch((failure) => {
         if (!live) return;
         setError(failureText(failure));
-        if (failure instanceof LocalAPIError && failure.status === 401) invalidate();
+        if (failure instanceof LocalAPIError && failure.status === 401 && useLocalSession.getState().token===token && useLocalSession.getState().session===session) invalidate();
       }).finally(() => { if (live) { setLoading(false); syncPending(); } });
     return () => { live = false; };
   }, [token, offset, reload, invalidate, syncPending]);
@@ -179,7 +183,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
     if (turnLatch.current) return;
     turnLatch.current = true; setTurnBusy(true);
     try {
-      const current = await localClient.currentCash(token);
+      const current = await posClient.currentCash(token);
       if (active.current) { setCash(current); setKnownCash(true); if(notify){setError('');setMessage(current ? t('posUi.shiftOpen') : t('posUi.shiftClosed'));} }
     } catch (failure) {
       if (active.current) { setKnownCash(false); setError(`Confira o turno antes de continuar. ${failureText(failure)}`); }
@@ -217,7 +221,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
     } catch (failure) {
       if (active.current) {
         setError(failureText(failure));
-        if (failure instanceof LocalAPIError && failure.status === 401) invalidate();
+        if (failure instanceof LocalAPIError && failure.status === 401 && useLocalSession.getState().token===token && useLocalSession.getState().session===session) invalidate();
       }
     } finally {
       actionBusy.current = false;
@@ -275,7 +279,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       if(tender<amount||!tenders)return;
       const cashSessionID=cash.session_id;
       const saleReference=draftID94.current;
-      void run(()=>confirmCashQuote(localClient,token,cart,cashSessionID,tender,setCart,async confirmedCart=>{
+      void run(()=>confirmCashQuote(posClient,token,cart,cashSessionID,tender,setCart,async confirmedCart=>{
         const input=makeSale(confirmedCart,cashSessionID,()=>saleReference);
         tenders.save(input,tender);
         return operations.start(token,'sale',input);

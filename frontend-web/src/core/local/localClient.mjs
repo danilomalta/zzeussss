@@ -36,7 +36,8 @@ export function createLocalClient(fetcher = globalThis.fetch) {
           404: 'Registro não encontrado para esta sessão.',
           409: 'Operação em conflito: confira estoque, turno de caixa e valores.',
           503: 'Serviço local indisponível. Confira a configuração das chaves de licença.' };
-        throw new LocalAPIError(response.status, messages[response.status] || 'A API local não concluiu a operação.');
+        const error=new LocalAPIError(response.status, messages[response.status] || 'A API local não concluiu a operação.');
+        error.serverRefusal=true;throw error;
       }
       if (response.status === 204) return undefined;
       try { return await response.json(); }
