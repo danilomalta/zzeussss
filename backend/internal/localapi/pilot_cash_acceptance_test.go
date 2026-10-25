@@ -112,7 +112,7 @@ func pilotStart(t *testing.T, db string, f *stockHTTPFixture) *pilotService {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s := &pilotService{cmd: exec.Command(executable, "-test.run=^TestPilotCashProcess$", "-test.timeout=15m")}
+	s := &pilotService{cmd: exec.Command(executable, "-test.run=^TestPilotCashProcess$", "-test.timeout=45m")}
 	// Do not inherit commercial DB URLs or deployment keys from the operator.
 	for _, name := range []string{"PATH", "HOME", "TMPDIR", "SYSTEMROOT"} {
 		if value, ok := os.LookupEnv(name); ok {
@@ -235,7 +235,7 @@ func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.Proxy = nil
 	defer transport.CloseIdleConnections()
-	p := &pilotHTTP{t: t, service: pilotStart(t, dbPath, f), client: &http.Client{Transport: transport, Timeout: 10 * time.Second}, token: f.token}
+	p := &pilotHTTP{t: t, service: pilotStart(t, dbPath, f), client: &http.Client{Transport: pilotAcceptanceTransport(t, transport), Timeout: 30 * time.Second}, token: f.token}
 	defer func() { p.service.stop(t) }()
 	// The initial 5 units and R$10 drawer float are explicit fixture inputs.
 	p.call("POST", "/local/v1/stock/operations", stock.Input{OperationID: "pilot-opening-stock", Kind: "entry", ProductID: f.product, ToLocationID: f.shelf, QuantityMilli: 5000, Reason: "Saldo inicial descartavel do piloto"}, 201, nil)

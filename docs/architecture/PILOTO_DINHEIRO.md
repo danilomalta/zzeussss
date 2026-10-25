@@ -102,3 +102,16 @@ titan-backup b6f10460c61154da2d30bd1f7bb1de86bd1cfea20017be043bff0912a5ca82d2
 ```
 
 O aceite técnico deste recorte está concluído em ambiente descartável. A próxima ação é homologação com o operador e configuração explícita da instalação piloto, mantendo este conjunto de versões como referência. Não anunciar o backend inteiro ou a instalação comercial como concluídos com base neste único circuito.
+
+
+## Complemento de25/10: transporte nativo e operações originadas nas telas
+
+O teste principal aceita três parâmetros opcionais, que devem ser fornecidos juntos: `-pilot-electron` (binário Electron existente), `-pilot-native-script` (arquivo `desktop/tests/pilot-api-client.cjs` do frontend) e `-pilot-desktop-stage` (diretório compilado apontado por `desktop/.build/current.json`). Use-os depois de `-args` no comando Go. Não apontar para um serviço comercial: a API e os bancos continuam sendo criados pelo próprio teste.
+
+Com esses parâmetros, todas as101requisições passam pelo transporte de produção `titan://app`, com sandbox/contextIsolation ligados e nodeIntegration desligado. A API real mantém suas transações e SQLite; o adaptador é somente um transporte de teste, não uma simulação de resposta. Quatro execuções do aplicativo acompanham os quatro processos API. Versão final aprovada em2,125s; com `-race`,14,914s. A suíte backend completa também passou:1229principais/2636incluindo subtestes, zero falhas; oito auxiliares/opcionais ignorados na execução padrão.
+
+A fixture opcional `TestPilotCashScreenFlow -args -pilot-screen-dir=CAMINHO_PRIVADO` inicia um banco sem negócios e publica um descritor sintético privado. Não publica token ou chave. As operações devem vir das telas; o driver somente autentica/consulta e faz a validação de persistência após os marcadores explícitos `DONE` e `FINISH`. Diretório deve ser0700; não reutilizar diretório com marcadores antigos. A opção `-pilot-screen-resume` aceita somente o snapshot descartável privado `preserved-screen.sqlite`0600 do mesmo ensaio, preservando os negócios; não é um importador de banco do cliente.
+
+Neste ensaio as telas efetivamente criaram venda, reposição, pedido, viagem, recebimento, obrigação, aprovação independente, retirada e vínculo financeiro (saldo documental zero). Foi encontrada e integrada a retirada oficial que faltava ao PDV; solicitações locais anteriores não eram dinheiro oficial. O fechamento foi contado/revisado emR$21,48, mas a confirmação nativa bloqueou o navegador antes do POST. O primeiro ensaio expirou e está registrado como falha; snapshot consistente descartável foi preservado. A confirmação foi preparada em diálogo interno acessível e compilada, porém o encerramento visual e a comparação/restauração dos mesmos negócios ainda aguardam a liberação do navegador. Não anunciar esse ensaio visual como aprovado.
+
+O estado global atualizado está somente em `docs/architecture/CONTINUIDADE_TITANSYSTEM.md` do frontend, revisão46. Esta seção atualiza os limites da seção anterior: houve integração frontend mínima necessária ao piloto; não houve alteração Go de produção, nova migração, aplicação do ZIP64, dependência instalada ou uso de banco comercial.
