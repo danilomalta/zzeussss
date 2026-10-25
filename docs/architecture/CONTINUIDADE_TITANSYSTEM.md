@@ -1646,3 +1646,5 @@ PENDENTE: endereços/serviços/perfil/banco descartável aprovados, compatibilid
 Referências técnicas consultadas: https://www.electronjs.org/docs/latest/api/protocol/ ; https://www.electronjs.org/docs/latest/api/session/ ; https://www.electronjs.org/docs/latest/tutorial/security/ . O runtime efetivamente testado foi o44.9.2existente, não uma versão deduzida da documentação atual.
 
 Prévia4359 e sua aba encerradas após validação; nenhum processo/aba preexistente do usuário foi encerrado. O atalho foi validado sem executá-lo no perfil real.
+
+Atalho adicional registrado no menu de aplicativos do usuário: /home/danillo-malta/.local/share/applications/titansystem-erp-atual.desktop, nome “TitanSystem ERP”,644,desktop-file-validate exit0. Arquivo novo, sem substituir registros anteriores; usa o mesmo runtime/estágio validado. Não foi executado no perfil real nem instala dependências. Pode ser removido individualmente para desfazer apenas esse registro.
