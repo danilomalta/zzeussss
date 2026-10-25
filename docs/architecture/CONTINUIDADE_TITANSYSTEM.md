@@ -1,15 +1,15 @@
 # Continuidade do TitanSystem
 
-Revisão 44 — 25/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 45 — 25/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
 
 - Interface oficial: `/home/danillo-malta/Downloads/zzeus-frontend-backend/frontend-web/`.
-- Branch frontend: `feat/backend-checkout-authority`; base desta revisão `7f259018cb2c3e44fc4b27b00e6beb5062829c2b`, limpa antes da alteração. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
+- Branch frontend: `feat/backend-checkout-authority`; base documental desta revisão `21ba19714b4f0d1d6f242530e44bbeb58364cb71`, com os oito arquivos locais do relatório de carrinhos preservados e pausados. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
 - Frontend116 presente; Frontend117 CORRETO de conferência por fornecedor aplicado. Confirmados `SupplierReport117.tsx`, `core/payables117`, cinco dicionários, teste e documento193. O usuário informou em21/10: compatibilidade aprovada, backup,136testes sem falhas, TypeScript/build aprovados em20,05s, sem banco/commit/merge/push.
 - Frontend passa a ser responsabilidade deste chat/Codex, com preservação do trabalho anterior. Em24/10 o proprietário autorizou explicitamente este chat a desenvolver também o backend; a restrição anterior de somente leitura foi superada. Preservar a autoria e as entregas do outro chat.
-- Backend desta frente, autorizado para desenvolvimento em24/10: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `beaebbe6d85af07bd17bb5b02b11753df4f9ef96`, schema63 na fonte versionada; manutenção/schema62 e recusa integral/schema63 consolidadas. Pacote de devoluções/schema64 ainda NÃO aplicado: aplicador recusou dependências posteriores, preservadas (ver revisão38). Histórico de B02B13 e adaptação autorizada de Frota registrados abaixo. Serviço/versão/banco/estação em execução continuam não identificados.
+- Backend desta frente, autorizado para desenvolvimento em24/10: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `cf87809688a339fed0fcc99b748df08924a93db6`, schema63 na fonte versionada; manutenção/schema62 e recusa integral/schema63 consolidadas. Pacote de devoluções/schema64 ainda NÃO aplicado: aplicador recusou dependências posteriores, preservadas (ver revisão38). Histórico de B02B13 e adaptação autorizada de Frota registrados abaixo. Serviço/banco/estação comerciais continuam não identificados. A revisão45 validou processos próprios, API Go real e banco SQLite exclusivamente descartável, incluindo reinícios e restauração.
 - `~/Downloads/zzeus-frontend` é uma árvore anterior. `Documents/Codex/.../work` contém cópias de laboratório, não a fonte principal.
 - `desktop/` executa as telas compiladas de `frontend-web/`. Até a revisão43 não foi alterado nesta continuidade; revisão44 organiza entrada, build, origem, configuração e transporte desktop. Não contém outra implementação do ERP. `website/` fica reservado ao site público futuro.
 - Meus antigos `workflows117` são o **rascunho de documentos e recebimento**, diferente do117 aplicado. `production118` é outro rascunho não homologado. Não executar seus aplicadores, não copiar seus routers/menus e não usar sua numeração como base de produto.
@@ -1648,3 +1648,41 @@ Referências técnicas consultadas: https://www.electronjs.org/docs/latest/api/p
 Prévia4359 e sua aba encerradas após validação; nenhum processo/aba preexistente do usuário foi encerrado. O atalho foi validado sem executá-lo no perfil real.
 
 Atalho adicional registrado no menu de aplicativos do usuário: /home/danillo-malta/.local/share/applications/titansystem-erp-atual.desktop, nome “TitanSystem ERP”,644,desktop-file-validate exit0. Arquivo novo, sem substituir registros anteriores; usa o mesmo runtime/estágio validado. Não foi executado no perfil real nem instala dependências. Pode ser removido individualmente para desfazer apenas esse registro.
+
+## Revisão45 — piloto backend/API em dinheiro, 25/10/2026
+
+O proprietário pausou as novas funções do frontend e delimitou um circuito útil para um cliente piloto: venda no PDV → caixa → estoque → reposição → pedido ao fornecedor → recebimento → financeiro, somente dinheiro. Critérios: tela consumindo API real, persistência ao reiniciar, backup/restauração e teste automatizado do circuito inteiro. Esta revisão encerra o aceite técnico desse recorte em base descartável, não a implantação comercial nem todo o ERP.
+
+### Base e arquivos entregues
+
+- Backend `~/Downloads/zzeus-frontend-backend-b02a`, branch `feat/backend-b02a-compat`, base `beaebbe6d85af07bd17bb5b02b11753df4f9ef96`, limpa no início. Commit de entrega `cf87809688a339fed0fcc99b748df08924a93db6`.
+- Novo `backend/internal/localapi/pilot_cash_acceptance_test.go`: teste de aceitação que executa handlers e transações reais por TCP/HTTP, com subprocessos independentes.
+- Novo `docs/architecture/PILOTO_DINHEIRO.md`: recorte, rotas, comandos de teste e backup, resultados e requisitos da instalação piloto. Documento específico de operação; o registro global de continuidade continua sendo somente este arquivo.
+- Nenhum fonte Go de produção, migração, frontend ou Electron alterado: os contratos existentes cobrem este recorte. O trabalho acrescentou prova integrada, sem recriar as funções.
+- Backend permanece no schema63; ZIP separado de devoluções/schema64 continua sem aplicação.
+
+### Resultado reproduzível
+
+1. Estoque inicial5unidades; venda2aR$15,99: totalR$31,98, recebidoR$40,00, trocoR$8,02. Uma venda/uma parcela; caixa registra valor líquido.
+2. API encerrada abruptamente após a venda. Outro processo no mesmo SQLite recupera o recibo original sem novo POST. Estoque3unidades.
+3. Política mínimo4/alvo5 sugere2; aprovação humana, fornecedor externo e pedido preservam as decisões. Confirmação do fornecedor registrada manualmente, sem envio eletrônico ou falsa autenticação entre empresas.
+4. Viagem identificada, carga/chegada e recebimento conferido de2unidades; uma entrada, estoque5.
+5. ObrigaçãoR$20,50 vinculada ao recebimento; criador não pode aprovar, outro gerente aprova. Retirada em espécie vinculada sem segunda movimentação. Saldo documentalR$0,00.
+6. Fechamento oficial:1000+3198−2050=2148centavos, diferença zero. Novo reinício mantém16registros/rastreios/recibos, incluindo política/sugestão/aprovação e fornecedor.
+7. Backup cifrado consistente com API ativa, integridade verificada, chave errada recusada. Restaura em caminho novo; recusa sobrescrever destino. Quarto processo abre a restauração, sessão antiga recebe401 e novo login recupera os mesmos IDs/valores. Repetições explícitas não duplicam venda, estoque ou pagamento.
+
+### Verificações observadas
+
+- Teste final:101requisições HTTP reais, quatro processos, aprovado em0,834s, sem skip. Detector de corridas na versão final: aprovado em13,555s. Não usa `app.Test` nem mocks nas operações do circuito; só provisionamento e licença são fixtures sintéticas.
+- Suíte completa backend:1229testes principais aprovados;2636casos contando subtestes; zero falhas.51pacotes com testes aprovados;18sem testes. Sete testes ignorados:duas integrações PostgreSQL sem banco autorizado, três pontes opcionais, dois auxiliares de subprocessos. O auxiliar do piloto foi executado pelo teste principal.
+- A suíte completa precedeu a inclusão de cinco consultas extras na comparação do teste novo; essa versão final ampliada foi reexecutada isoladamente e com detector de corridas. Nenhum fonte de produção mudou entre as execuções.
+- Build real dos binários `titan-local` e `titan-backup`: aprovado, Go1.25.8 já disponível, sem instalar dependências. Binários Linux isolados no laboratório, aproximadamente31MiB no total, sem distribuir Electron/node_modules.
+- Navegador com frontend compilado existente e proxy exclusivo para a API restaurada: login/contexto, histórico/comprovanteR$31,98, pedido/recebimento2unidades, financeiroR$20,50 aplicado/saldozero. Fonte real, sem respostas simuladas. Capturas locais identificam o piloto descartável. Não foi automação de cliques do circuito inteiro; a automação cobre HTTP e persistência. A leitura visual da tela de caixa não foi concluída após encerramento143 do proxy (`net::ERR_CONNECTION_REFUSED`); seu fechamento foi comprovado por HTTP/SQL.
+- Frontend pausado:8/8hashes idênticos aos da revisão44. Não se executou aplicador, instalação, ZIP, alteração de banco comercial ou configuração pessoal do Electron. Nenhum TypeScript/build frontend reexecutado nesta unidade porque não houve alteração desses fontes.
+- Laboratório/evidências: `Documents/Codex/2026-10-20/github-plugin-github-openai-curated-remote-2/work/pilot-cash-20261025/`. Logs não publicam tokens/senhas. Capturas em `outputs/piloto-api-venda-restaurada-2026-10-25.png`, `piloto-api-recebimento-restaurada-2026-10-25.png` e `piloto-api-financeiro-restaurado-2026-10-25.png`.
+
+### Encerramento e próxima base
+
+Aceite técnico local em dinheiro concluído. Próxima ação: identificar a instalação de homologação do cliente piloto e a combinação exata de versões, configurar empresa/loja/aparelho/usuários/licença/serviço e custódia da chave de backup, e homologar com o operador. Não iniciar instalação comercial ou escolher banco/chaves por conta própria. Aguardar a nova base do proprietário antes de outra unidade funcional.
+
+Backup atual tem limite de snapshot128MiB; arquivo da estação e chave de cifragem precisam de guarda separada. Internet/TLS comercial, Windows, hardware, fiscal e operação offline multiaparelho não foram homologados por este teste. Demais módulos continuam no estado registrado anteriormente; não anunciar o backend inteiro como concluído.
