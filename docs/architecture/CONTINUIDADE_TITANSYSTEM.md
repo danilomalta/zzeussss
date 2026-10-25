@@ -1,12 +1,12 @@
 # Continuidade do TitanSystem
 
-Revisão 39 — 24/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 40 — 24/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
 
 - Interface oficial: `/home/danillo-malta/Downloads/zzeus-frontend-backend/frontend-web/`.
-- Branch frontend: `feat/backend-checkout-authority`; base desta revisão `01ffb090c787eca4373cd63cb69f9553c302be58`, limpa antes da alteração. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
+- Branch frontend: `feat/backend-checkout-authority`; base desta revisão `465742f32e72160bb2b4c94f2583d71139e5ff07`, limpa antes da alteração. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
 - Frontend116 presente; Frontend117 CORRETO de conferência por fornecedor aplicado. Confirmados `SupplierReport117.tsx`, `core/payables117`, cinco dicionários, teste e documento193. O usuário informou em21/10: compatibilidade aprovada, backup,136testes sem falhas, TypeScript/build aprovados em20,05s, sem banco/commit/merge/push.
 - Frontend passa a ser responsabilidade deste chat/Codex, com preservação do trabalho anterior. Em24/10 o proprietário autorizou explicitamente este chat a desenvolver também o backend; a restrição anterior de somente leitura foi superada. Preservar a autoria e as entregas do outro chat.
 - Backend desta frente, autorizado para desenvolvimento em24/10: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `beaebbe6d85af07bd17bb5b02b11753df4f9ef96`, schema63 na fonte versionada; manutenção/schema62 e recusa integral/schema63 consolidadas. Pacote de devoluções/schema64 ainda NÃO aplicado: aplicador recusou dependências posteriores, preservadas (ver revisão38). Histórico de B02B13 e adaptação autorizada de Frota registrados abaixo. Serviço/versão/banco/estação em execução continuam não identificados.
@@ -1517,3 +1517,22 @@ Prévia4356 explícita, componente real/StrictMode com transporte sintético em 
 ### Continuidade sem encerrar o restante
 
 Concluídos os fluxos de cofres/conferência descritos no contrato local; dependências de banco/provedor/piloto real continuam explícitas. Próxima frente independente: carrinhos persistidos já contratados em suspended-carts.openapi.json, comparando ao rascunho Till94/111 e protegendo finalização/recuperação para não duplicar venda. Pagamentos eletrônicos reais, fiscal, faturamento/recebíveis amplos, demais áreas e desktop/hardware não se tornam concluídos por este incremento. Não iniciar ou aplicar o pacote backend64 enquanto o aplicador não reconhecer a base financeira corrigida. Continuar no mesmo registro único, sem porcentagem global inventada nem novo ZIP.
+
+
+## Proteção única de saída em todo PDV — 24/10/2026, revisão40
+
+Base465742f32e72160bb2b4c94f2583d71139e5ff07 publicada/hash remoto conferido, mesma pasta/branch frontend. A revisão39 unificou malotes/cofres, mas a inspeção para carrinhos encontrou useBlocker também em CashClosing92, Desk95 e Till94, que podem coexistir. A proteção foi ampliada ANTES de acrescentar carrinhos, sem afrouxar filas ou mudar endpoints. Backend continua beaebbe limpo; nenhuma aplicação de64 ou commit/backend.
+
+Arquivos alterados: LocalPointOfSale.tsx, CashClosing92.tsx, Desk95.tsx, Till94.tsx e CashCustodyGuard.tsx em modules/pos/pages; este registro. O provedor fica agora ao redor de TODO POSWorkspace dentro do provedor da fonte de fechamento, removendo o provedor aninhado exclusivo de malotes/cofres. Os três componentes legados registram sua condição no mesmo provedor em vez de criar bloqueadores concorrentes; seus usos efetivos foram encontrados apenas no LocalPointOfSale. Mantidos onDirty, modelos, IndexedDB, filas, transporte, autorização e fechamento. Operação pendente e ocupação de caixa/venda também participam da proteção; Desk95 inclui estado pendente além de formulário/telefone alterado. Sair explicitamente não apaga nem reenvia operação. Limpeza de câmera continua pelo cleanup existente de CashClosing92, sem iniciar câmera nos testes.
+
+O aviso compartilhado passou a dialog nativo com showModal, rótulo acessível, foco inicial no botão Permanecer, contenção de foco pelo navegador e Escape que cancela navegação. Não fica escondido no fim de uma página rolada. O registro do painel removido apaga somente sua própria condição; outros formulários continuam protegidos.
+
+Prévia4357 explícita usou CashClosing92/Count107 REAIS ao lado dos componentes reais de malote/cofre, fonte de vendas sintética vazia/complete, IndexedDB somente da origem de laboratório, sem backend/proxy/câmera/fechamento de caixa. Adicionar cédula de200 tornou a contagem não salva e bloqueou navegação apesar dos outros painéis limpos. Rascunho de malote permaneceu protegido após desmontar o fechamento. Com ambos alterados, exatamente1diálogo. Escape preservou o valor do formulário e não navegou. Botão Sair foi testado e levou ao destino de teste. Uma tentativa de clicar denominação enquanto o fechamento estava oculto expirou; inventário visual completo identificou o painel desmontado, que foi exibido antes da repetição correta. Não apresentar a tentativa expirada como aprovação.
+
+A edição do harness durante HMR provocou aviso createRoot duplicado na prévia antiga. Foi encerrada e repetido teste em aba limpa:1diálogo, :modal=true, focoPermanecer,0erros de console. Prova outputs/pdv-protecao-saida-modal-final-2026-10-24.png; primeira captura anterior ao ensaio limpo permanece separada. Nenhuma alteração global do ReactRouter ou de seu modo de segurança.
+
+Verificações finais:2339testes frontend aprovados,0falhas/cancelados/ignorados; TypeScript exit0; build isolado configFile:false/envFile:false exit0 em20.844351857s, work/catalog-management-20261022/build-check-QQDEg7, sem mudar dist. Avisos de chunks grandes/Tailwind preexistentes permanecem. git diff --check passou. Não houve nova suíte Go: mudança somente de navegação, sem serviço/banco comercial. Preimagens dos5fontes, hashes, scripts e logs em work/pos-navigation-guard-20261024 desta tarefa.
+
+Continuidade: carrinhos de backend foram lidos em sale/cart_* e suspended-carts.openapi.json. São escopo de usuário/aparelho, não reservam estoque ao suspender, conferem preço/estoque/caixa ao assumir/finalizar e exigem IDs/revisão estáveis. Rascunhos Till94/111 e recuperação atual de venda não podem ser adotados, apagados ou finalizados automaticamente. Próxima unidade deve integrar com revisão e impedir duas finalizações por caminhos distintos. Demais pendências da matriz e conectores externos permanecem; não declarar ERP completo nem encerrar o trabalho por esta correção.
+
+Observação de publicação40: o primeiro git diff --cached --check detectou3linhas vazias com espaços nos componentes legados. Removidos somente esses espaços, repetida a conferência antes do commit; nenhuma mudança comercial ou de transporte.

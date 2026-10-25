@@ -1,7 +1,7 @@
 import OfficialCashJournal from './OfficialCashJournal';
 import OfficialCashBags from './OfficialCashBags';
 import OfficialCashVaults from './OfficialCashVaults';
-import CashCustodyGuard from './CashCustodyGuard';
+import CashCustodyGuard,{useCustodyGuard} from './CashCustodyGuard';
 import {ClosingSourceContext92} from '../../../core/local/closingSource92';
 import Checkout96 from './Checkout96';import {useDraft96} from '../../../core/local/useDraft96';import {words96} from '../../../core/local/words96';import type {Receipt96} from '../../../core/local/checkout96.mjs';
 import {read95} from '../../../core/local/store95';
@@ -62,7 +62,7 @@ export default function LocalPointOfSale({ mode = 'sale' }: { mode?: 'sale' | 'c
   const token = useLocalSession((state) => state.token);
   const session = useLocalSession((state) => state.session);
   if (!token || !session) return null;
-  return <ClosingSourceContext92.Provider value={advancedSource}><POSWorkspace key={checkoutScope91(session)} token={token} session={session} mode={mode} /></ClosingSourceContext92.Provider>;
+  return <ClosingSourceContext92.Provider value={advancedSource}><CashCustodyGuard><POSWorkspace key={checkoutScope91(session)} token={token} session={session} mode={mode} /></CashCustodyGuard></ClosingSourceContext92.Provider>;
 }
 
 function POSWorkspace({ token, session, mode }: { token: string; session: LocalSession; mode: 'sale' | 'cash' }) {
@@ -141,6 +141,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const [error, setError] = useState(setup.error);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
+  useCustodyGuard(!!pending||busy||turnBusy);
   useEffect(()=>{if(!loading&&cash&&!paying&&!closing)scanRef.current?.focus();},[loading,cash,paying,closing]);
   const active = useRef(true);
   const actionBusy = useRef(false);
@@ -311,7 +312,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       {cashPage&&cash&&<button className="brand-secondary" onClick={()=>{setDomain95('pairing');setWork94('complete');}}>{completeWords95.viewPairing}</button>}
       {cashPage&&cash&&work94==='complete'&&<button className="brand-secondary" onClick={()=>selectWork94('sale')}>{checkoutWords91.backPayment}</button>}
       {cashPage&&cash&&work94==='complete'&&<Desk95 scope={checkoutScope91(session)} token={token} cash={cash.session_id} reference={reference94} total={total} parts={[]} actor={actor94} initial="pairing" onDirty={setWorkDirty94}/>}
-      {cashPage&&<CashCustodyGuard><OfficialCashBags/><OfficialCashVaults/></CashCustodyGuard>}
+      {cashPage&&<><OfficialCashBags/><OfficialCashVaults/></>}
       {cashPage&&<OfficialCashJournal initialCashID={closedReport?.session_id}/> }
       {cashPage && closedReport && <section className="brand-panel pos-closing-report" role="status"><h2>{t("posUi.closeResult")}</h2><div className="pos-payment-status"><div><span>{t("posUi.declaredCash")}</span><strong>{formatLocalCents(closedReport.declared_cents)}</strong></div><div><span>{t("posUi.expectedCash")}</span><strong>{formatLocalCents(closedReport.expected_cents)}</strong></div><div><span>{closedReport.difference_cents===0?t('posUi.balanced'):closedReport.difference_cents<0?t('posUi.shortage'):t('posUi.surplus')}</span><strong>{formatLocalCents(Math.abs(closedReport.difference_cents))}</strong></div></div></section>}
       {!cashPage&&cash&&<p role="status">{savedDraft96.error?fullWords96[savedDraft96.error]||fullWords96.storageError:savedDraft96.saving?fullWords96.savingDraft96:savedDraft96.ready?fullWords96.savedDraft96:fullWords96.restoringDraft96}</p>}
