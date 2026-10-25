@@ -1,12 +1,12 @@
 # Continuidade do TitanSystem
 
-Revisão 46 — 25/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 47 — 25/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
 
 - Interface oficial: `/home/danillo-malta/Downloads/zzeus-frontend-backend/frontend-web/`.
-- Branch frontend: `feat/backend-checkout-authority`; base documental desta revisão `08579017197c708c2d9c77ecc8f5357d62f593de`, com os oito arquivos locais do relatório de carrinhos preservados e pausados. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
+- Branch frontend: `feat/backend-checkout-authority`; base documental desta revisão `62df646d8130717631f0dc52694cca6f3d1c0627`, com os oito arquivos locais do relatório de carrinhos preservados e pausados. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
 - Frontend116 presente; Frontend117 CORRETO de conferência por fornecedor aplicado. Confirmados `SupplierReport117.tsx`, `core/payables117`, cinco dicionários, teste e documento193. O usuário informou em21/10: compatibilidade aprovada, backup,136testes sem falhas, TypeScript/build aprovados em20,05s, sem banco/commit/merge/push.
 - Frontend passa a ser responsabilidade deste chat/Codex, com preservação do trabalho anterior. Em24/10 o proprietário autorizou explicitamente este chat a desenvolver também o backend; a restrição anterior de somente leitura foi superada. Preservar a autoria e as entregas do outro chat.
 - Backend desta frente, autorizado para desenvolvimento em24/10: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `cf87809688a339fed0fcc99b748df08924a93db6`, schema63 na fonte versionada; manutenção/schema62 e recusa integral/schema63 consolidadas. Pacote de devoluções/schema64 ainda NÃO aplicado: aplicador recusou dependências posteriores, preservadas (ver revisão38). Histórico de B02B13 e adaptação autorizada de Frota registrados abaixo. Serviço/banco/estação comerciais continuam não identificados. A revisão45 validou processos próprios, API Go real e banco SQLite exclusivamente descartável, incluindo reinícios e restauração.
@@ -1688,9 +1688,9 @@ Aceite técnico local em dinheiro concluído. Próxima ação: identificar a ins
 Backup atual tem limite de snapshot128MiB; arquivo da estação e chave de cifragem precisam de guarda separada. Internet/TLS comercial, Windows, hardware, fiscal e operação offline multiaparelho não foram homologados por este teste. Demais módulos continuam no estado registrado anteriormente; não anunciar o backend inteiro como concluído.
 
 
-## Revisão46 — complemento do piloto em dinheiro; aceite visual ainda aberto
+## Revisão46 — complemento do piloto em dinheiro; aceite visual então aberto (resolvido na revisão47)
 
-A revisão45 encerrou cedo o aceite: comprovou o circuito por API e consultas de telas, mas não a operação inteira originada nas telas. Esta revisão corrige esse registro. Não anunciar a entrega completa enquanto o encerramento visual e a restauração dos mesmos registros do ensaio de telas não forem concluídos.
+A revisão45 encerrou cedo o aceite: comprovou o circuito por API e consultas de telas, mas não a operação inteira originada nas telas. Esta revisão corrige esse registro. Naquele momento, a entrega não podia ser anunciada como completa; a revisão47 registra a conclusão posterior do encerramento visual e da restauração desses mesmos registros.
 
 ### Alterações restritas ao piloto
 
@@ -1714,8 +1714,38 @@ As telas criaram a venda de2unidades/R$31,98, fundoR$10,00, reposição mínimo4
 
 A contagem física deR$21,48 foi salva e revisada. Ao solicitar encerramento, a confirmação nativa bloqueou o navegador interno: `Input.dispatchMouseEvent`/`Emulation.setFocusEmulationEnabled` excederam o tempo e a consulta de diálogo retornou `undefined`. Não se observou POST de encerramento no log. O primeiro ensaio expirou após1800,53s e está registrado como FAIL, não PASS. Antes da expiração foi preservado snapshot consistente somente do banco descartável, em diretório privado. A retomada usa os mesmos negócios; não cria outra venda/pedido/pagamento. A nova confirmação interna compila, mas o navegador antigo ainda precisa ser liberado para verificá-la.
 
-Pendência para encerrar esta unidade: cancelar/fechar a confirmação antiga da aba do piloto na porta4361; retomar as telas na versão final, confirmar o encerramento e verificar saldo2148/diferença0. Só então sinalizar `DONE` à fixture, conferir reinício/restauração e reler o resultado pela tela antes de `FINISH`. Não marcar esses passos como executados antecipadamente. O teste automatizado completo independente já passou; não substitui essa pendência visual assumida nesta revisão.
+Pendência então registrada, resolvida na revisão47: cancelar/fechar a confirmação antiga da aba do piloto na porta4361; retomar as telas na versão final, confirmar o encerramento e verificar saldo2148/diferença0. Só então sinalizar `DONE` à fixture, conferir reinício/restauração e reler o resultado pela tela antes de `FINISH`. Não marcar esses passos como executados antecipadamente. O teste automatizado completo independente já passou; não substitui essa pendência visual assumida nesta revisão.
 
 Evidências locais: `Documents/Codex/2026-10-20/github-plugin-github-openai-curated-remote-2/work/pilot-complete-20261025/evidence/` (`native-final.log`, `native-race.log`, `backend-full.jsonl`, `frontend-full-effective.tap`, `focused-final.tap`, `desktop-tests.log`, `build-final.log`, `browser-http.jsonl`, `screen-flow.log`, `screen-resume.log`). Snapshot/descritor sintéticos em `screens/` privado; não publicar. Captura da venda em `outputs/piloto-completo-venda-2026-10-25.png`.
 
 Novas funções do frontend permanecem pausadas. Schema63 preservado; ZIP64 não aplicado. Não iniciar instalação comercial nem escolher banco, estação, chaves ou serviço do cliente. Aguardar a nova base somente depois de concluir e comunicar o aceite final desta unidade.
+
+
+## Revisão47 — piloto em dinheiro concluído com aceite das telas e restauração
+
+25/10/2026, conclusão observada às04:09 no Ubuntu. Escopo fechado: uma empresa/loja/aparelho, PDV → caixa → estoque → reposição aprovada → pedido a fornecedor externo → recebimento identificado → obrigação aprovada por outro responsável → pagamento em dinheiro e fechamento oficial. Não representa a conclusão de todos os módulos do ERP.
+
+### Liberação e resultado final
+
+O proprietário informou ter fechado as abas4361 do navegador interno do Codex. A nova aba66 respondeu normalmente. Foi retomada a MESMA base descartável preservada: venda `0b57c82e-82fc-401c-b84b-ba1b67c9a7e5`, pedido `aff41294-2f79-4d21-b2aa-7ac1d2db890c`, viagem `3600f64c-640f-4b9b-972e-11dccb8e85cc` e obrigação `c1541c9a-761e-46d3-bc2d-3f3bdd811dcb`. Não se refez venda, retirada, pedido, recebimento ou pagamento.
+
+A contagem local anterior reapareceu confirmada emR$21,48. A revisão final mostrou uma venda/R$31,98 e nenhuma pendência eletrônica. A nova confirmação interna acessível foi apresentada com valor e limites; somente seu botão explícito enviou o encerramento real. Resposta da tela: **caixa fechado, esperadoR$21,48, diferençaR$0,00**. Livro oficial consultado: esperado/contado2148, diferença0, três lançamentos e nenhuma classificação ausente. É livro operacional, sem promessa de contabilidade fiscal.
+
+O marcador `DONE` foi criado apenas DEPOIS dessa confirmação. A fixture verificou quantidades/somas por SQL e sete recursos originais por HTTP; reiniciou a API no mesmo banco; criou, verificou e restaurou backup criptografado em outro caminho; abriu nova API e recusou a sessão antiga com401. Novo login recuperou os mesmos recursos, IDs e valores, sem POST de negócio do driver.
+
+Na tela conectada ao BANCO RESTAURADO foram confirmados: histórico e recibo original da venda de2×R$15,99/R$31,98, dinheiro confirmado e caixa fechado; estoque físico5,000/reservado0,000/livre5,000 no local original; obrigação aprovadaR$20,50, aplicado líquidoR$20,50, saldoR$0,00 e comprovante `PAGAMENTO-PILOTO-001` preservado. Um novo login do gerente `pilot-reviewer` confirmou o cartão financeiro no menu e a consulta real do documento/saldozero, sem nova permissão. Só então foi criado `FINISH`.
+
+**Resultado efetivo:** `TestPilotCashScreenFlow` PASS em1647,621s na retomada, incluindo espera humana. Log `screen-resume.log`: `PASS: original UI-originated sale/order/receipt/payment/closure preserved across restart and encrypted backup restoration; no workflow POST from acceptance driver`. A tentativa inicial expirada permanece registrada como FAIL; não foi apagada nem contada como sucesso. A retomada não reconstruiu os negócios: renovou apenas a licença sintética do ensaio, como descrito na revisão46.
+
+### Critérios encerrados e entrega
+
+- Telas chamam API Go real: operações de todo o circuito observadas por cliques, POST/recibos oficiais, sem mock; nenhum banco comercial utilizado.
+- Reinício não perde o circuito: comprovado tanto com os registros das telas quanto no teste automatizado independente.
+- Backup/restauração: snapshot consistente criptografado, verificado e restaurado; comparação de IDs/valores e releitura pelas telas aprovadas. Chave errada e sobrescrita são recusadas no teste automatizado.
+- Teste automatizado inteiro:101requisições pelo transporte de produção Electron, quatro execuções do app/API, aprovado normal e com detector de corridas; não é automação de cliques Electron. O ensaio visual complementar utiliza os mesmos assets React compilados e proxy loopback para a API real.
+- Validações da revisão46 mantidas:2462casos na suíte frontend completa e seis adicionais aprovados depois; regressão final84/84,16da nova fonte;35/35desktop;1229principais/2636com subtestes backend, zero falhas; TypeScript/build final21,82s. Nenhum código de produção mudou depois dessas verificações: esta revisão só atualiza documentos.
+- Entregas já publicadas e hashes remotos conferidos: frontend `62df646d8130717631f0dc52694cca6f3d1c0627`; backend `f0a126b2cb6fd12433c9bed48568a7373cc59e56`. As atualizações documentais desta revisão vêm depois desses commits nas MESMAS branches, sem merge/main/force-push. Oito arquivos pausados continuam preservados e fora dos commits. Nenhum pacote ZIP novo, instalação, banco comercial ou migração.
+
+Capturas reais: `outputs/piloto-caixa-encerrado-2026-10-25.jpg` (livro oficial com esperado/contadoR$21,48 e diferença zero) e `outputs/piloto-financeiro-restaurado-final-2026-10-25.jpg`. Logs completos no laboratório da revisão46. Os descritores e snapshots sintéticos privados não são publicados.
+
+**Encerramento:** esta unidade piloto em dinheiro está concluída no ambiente descartável validado. Não iniciar outra função. O proprietário pode fornecer a nova base. Para implantação em cliente, a próxima etapa deve identificar instalação, versões, empresa/loja/aparelho, perfis/licença, serviço e guarda das chaves de backup explicitamente; não escolher dados ou credenciais pelo usuário. Fornecedor externo tem confirmação manual registrada; o teste não enviou pedido comercial para terceiro. Windows, Internet comercial, fiscal, cartões/Pix e offline multiaparelho permanecem fora deste recorte. O limite atual de snapshot128MiB continua documentado.
