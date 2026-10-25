@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 47 — 25/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 48 — 25/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -1749,3 +1749,17 @@ Na tela conectada ao BANCO RESTAURADO foram confirmados: histórico e recibo ori
 Capturas reais: `outputs/piloto-caixa-encerrado-2026-10-25.jpg` (livro oficial com esperado/contadoR$21,48 e diferença zero) e `outputs/piloto-financeiro-restaurado-final-2026-10-25.jpg`. Logs completos no laboratório da revisão46. Os descritores e snapshots sintéticos privados não são publicados.
 
 **Encerramento:** esta unidade piloto em dinheiro está concluída no ambiente descartável validado. Não iniciar outra função. O proprietário pode fornecer a nova base. Para implantação em cliente, a próxima etapa deve identificar instalação, versões, empresa/loja/aparelho, perfis/licença, serviço e guarda das chaves de backup explicitamente; não escolher dados ou credenciais pelo usuário. Fornecedor externo tem confirmação manual registrada; o teste não enviou pedido comercial para terceiro. Windows, Internet comercial, fiscal, cartões/Pix e offline multiaparelho permanecem fora deste recorte. O limite atual de snapshot128MiB continua documentado.
+
+
+## Revisão48 — provas publicadas e correção do alcance do aceite
+
+O proprietário solicitou os logs e confrontou a declaração de conclusão com o relatório datado de21/10. A prova posterior existe, mas a resposta “terminei o que pediu” foi ampla demais sem informar seus limites. Revisões45–47 comprovam um circuito LOCAL em dinheiro, fornecedor externo com confirmação MANUAL registrada pelo operador e recebimento INTEGRAL sem divergência. Não comprovam envio/aceite autenticado entre empresas nem recebimento parcial com divergência nesse mesmo circuito. A automação percorre as APIs reais/transporte Electron; os cliques do ensaio visual foram assistidos, não um E2E de UI autônomo em CI.
+
+Publicados no backend, branch `feat/backend-b02a-compat`, em `docs/architecture/evidence/pilot-cash-20261025/`: `native-final.log`, `native-race.log`, `screen-flow.log` (primeira tentativa FAIL), `screen-resume.log` (retomada PASS), `README.md` com assertivas de reinício/restauração e limites, `ci-scope.json` e `SHA256SUMS`. Logs originais copiados sem reescrita; nenhum banco, token, senha, chave ou dado comercial incluído. Fontes dos testes e reprodução estão no guia específico.
+
+A API GitHub Actions retornou `total_count:0` nas duas branches entregues. O workflow atual dispara push somente em main/develop e PR destinado a elas. Não há log CI verde para apresentar. Os logs publicados são execuções locais durante desenvolvimento antes dos commits, não comprovação de runner remoto executando o SHA atual. O README da branch padrão não descreve automaticamente o estado dessas branches; usar os links diretos de evidências/fontes para análise.
+
+Aceite ampliado solicitado agora: confirmação autenticada do fornecedor, recebimento parcial com divergência, continuidade após reinício e restauração nesse cenário, além de log CI publicado. **Esse aceite ampliado NÃO está concluído com as provas atuais.** Não esconder isso por trás do PASS do circuito integral/manual. Esta revisão organiza e publica evidências; não altera código, não configura/dispara CI, não gera pacote e não inicia outra função. Os oito arquivos pausados permanecem intactos. Não há matriz medida que sustente porcentagem global de25–30%ou50%; não repetir estimativas sem requisitos e critérios contados.
+
+
+Esclarecimento da revisão48 após nova consulta e autorização explícita do proprietário: o repositório tem32execuções Actions; o run32 da main (024dd3f50d2280c9c1ae6e2ba3f829053bbe84c7) foi aprovado: https://github.com/danilomalta/zzeussss/actions/runs/39305932267. “Zero execuções” continua correto somente para feat/backend-b02a-compat e feat/backend-checkout-authority. Não significa inexistência de CI no repositório. As URLs REST exatas e os escopos estão em ci-scope.json da evidência backend. O run da main anterior não comprova o piloto novo nas branches. Publicação autorizada SOMENTE de evidências e documentos nessas branches; sem alteração de código/workflow, branch nova ou merge.
