@@ -1,0 +1,14 @@
+import type {Bag} from '../cashBags/source.mjs';
+export interface Vault {id:string;name:string;state:'active'|'archived';balance_cents:number;created_by:string;created_at:string;updated_at:string;creation_operation_id:string;last_operation_id:string}
+export interface VaultEntry {id:string;vault_id:string;operation_id:string;kind:string;delta_cents:number;actor_id:string;reason:string;created_at:string;bag_id:string|null;cash_session_id:string|null;cash_movement_id:string|null}
+export interface VaultCount {id:string;vault_id:string;creator_id:string;counter_id:string;reason:string;state:'counting'|'submitted'|'accepted'|'rejected'|'cancelled';expected_cents:number|null;counted_cents:number|null;difference_cents:number|null;vault_operation_id:string;reviewer_id:string|null;created_at:string;updated_at:string;last_operation_id:string;history:{operation_id:string;actor_id:string;action:string;from_state:string;to_state:string;reason:string;created_at:string}[]}
+export interface Page<T> {items:T[];total_count:number;limit:number;offset:number;has_more:boolean}
+export interface Statement extends Page<VaultEntry>{vault:Vault}
+export interface VaultReport {scope:string;generated_at:string;total_balance_cents:number;vault_count:number;active_vault_count:number;archived_vault_count:number;counting_count:number;awaiting_review_count:number;divergent_latest_count:number;items:{vault:Vault;latest_count:VaultCount|null}[]}
+export type Resource='vault'|'count';
+export type Action='create'|'deposit'|'transfer'|'supply'|'archive'|'submit'|'accept'|'reject'|'cancel';
+export type Before=Vault|VaultCount|{source:Vault;destination:Vault|null;bag:Bag|null}|null;
+export interface Command {version:1;scope:string;resource:Resource;action:Action;id:string;body:Record<string,string|number>;before:Before;uncertain:boolean}
+export interface Resolution {state:string;result?:{vaults?:Vault[];count?:VaultCount;operation_id:string}}
+export interface CashVaults {scope:string;key:string;actor:string;readonly canWrite:boolean;assertCurrent():void;subscribe(fn:()=>void):()=>void;dispose():void;pending():Command|null;prepare(resource:Resource,action:Action,id:string,body:Record<string,string|number>,before?:Before):Command;submit(c:Command):Promise<Resolution|null>;recover(send?:boolean,discard?:boolean):Promise<Resolution|null>;readBag(id:string):Promise<Bag>;readVault(id:string):Promise<Vault>;readCount(id:string):Promise<VaultCount>;list(resource:'vaults',offset?:number):Promise<Page<Vault>>;list(resource:'counts',offset?:number):Promise<Page<VaultCount>>;list(resource:'bags',offset?:number):Promise<Page<Bag>>;statement(id:string,offset?:number):Promise<Statement>;report():Promise<VaultReport>;exportCSV():Promise<{data:Uint8Array;name:string}>}
+export function createCashVaults(options:{token:string;session:unknown;capabilities:unknown;isCurrent:()=>boolean;storage:Storage;locks:LockManager;fetcher?:typeof fetch}):CashVaults;
