@@ -1,3 +1,8 @@
+import OfficialCarts from './OfficialCarts';
+import {createOfficialCarts,type CartResolution} from '../../../core/officialCarts/source.mjs';
+import {draftItems,matchesDraftOrigin} from '../../../core/officialCarts/model.mjs';
+import {cartWords} from '../../../core/officialCarts/words.mjs';
+import {retainDisposable} from '../../../core/local/retainDisposable.mjs';
 import OfficialCashJournal from './OfficialCashJournal';
 import OfficialCashBags from './OfficialCashBags';
 import OfficialCashVaults from './OfficialCashVaults';
@@ -82,6 +87,12 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const {capabilities}=useLocalAccess();
   const posCapabilities=useRef(capabilities);posCapabilities.current=capabilities;
   const posClient=useMemo(()=>createScopedPOSClient(localClient,{token,session,getCurrent:()=>({...useLocalSession.getState(),capabilities:posCapabilities.current})}),[token,session]);
+  const officialCartAPI=useMemo(()=>{try{return capabilities?createOfficialCarts({token,session,capabilities,isCurrent:()=>{const s=useLocalSession.getState();return s.token===token&&s.session===session&&posCapabilities.current===capabilities;},storage:window.localStorage,locks:navigator.locks,saleReader:posClient}):null;}catch{return null;}},[token,session,capabilities,posClient]);
+  useEffect(()=>retainDisposable(officialCartAPI),[officialCartAPI]);
+  const [,setOfficialCartRevision]=useState(0),[officialCartExposure,setOfficialCartExposure]=useState(false);
+  useEffect(()=>{const sync=()=>setOfficialCartRevision(v=>v+1),off=officialCartAPI?.subscribe(sync);window.addEventListener('storage',sync);return()=>{off?.();window.removeEventListener('storage',sync);};},[officialCartAPI]);
+  let officialCartBlocked=false;
+  try{officialCartBlocked=window.localStorage.getItem('titan-pos-carts:v1:'+JSON.stringify([session.tenant_id,session.store_id,session.identity_id,session.device_id]))!==null;}catch{officialCartBlocked=true;}
   const [operatorName,setOperatorName]=useState('');
   useEffect(()=>{if(!capabilities?.permissions?.includes('manage_staff'))return;let alive=true;
     void posClient.staff(token).then(rows=>{if(alive)setOperatorName(rows.find(row=>row.identity_id===session.identity_id)?.name||'');}).catch(()=>{});
@@ -234,7 +245,8 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const savedDraft96=useDraft96({scope:checkoutScope91(session),mode:gateway95.mode,cash:cash?.session_id||'',token,cart,reference:draftID94.current,locations,enabled:!loading&&knownCash&&!cashPage,onRestore:(items,reference)=>{draftID94.current=reference;setCart(items);}});
   useEffect(()=>{let alive=true;setGatewayGate95(true);setGatewayError95(false);void read95(checkoutScope91(session),gateway95.mode).then(rows=>{if(alive)setGatewayGate95(rows.some(r=>r.source.startsWith(draftID94.current+':')&&['payments','credit','discount'].includes(r.domain)&&['pending','unknown','approved'].includes(r.state)));}).catch(()=>{if(alive)setGatewayError95(true);});return()=>{alive=false;};},[session,gateway95.mode,reference94,work94]);
   const discountBlocking94=till94.ready&&till94.data.requests.some(r=>r.kind==='discount'&&r.reference===reference94&&['requested','approved'].includes(r.state));
-  const locked = busy || turnBusy || loading || !!pending || !operations || !knownCash || !!calculationError;
+  const baseLocked = busy || turnBusy || loading || !!pending || !operations || !knownCash || !!calculationError;
+  const locked = baseLocked || officialCartBlocked || officialCartExposure;
   const [quickIDs,setQuickIDs]=useState<string[]>([]);
   const quickKey=`titan-pos-quick:${session.tenant_id}:${session.store_id}:${session.identity_id}`;
   useEffect(()=>{try{const value:unknown=JSON.parse(localStorage.getItem(quickKey)||'[]');setQuickIDs(Array.isArray(value)?value.filter((id:unknown):id is string=>typeof id==='string').slice(0,8):[]);}catch{setQuickIDs([]);}},[quickKey]);
@@ -288,6 +300,11 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   }
   function unifiedConfirmed96(result:Receipt96,change:{total:number;received:number;change:number}|null){setCompletion91({receipt:result,names:Object.fromEntries(cart.map(i=>[i.product.id,{name:i.product.name,unit:i.product.unit}])),change});setReceipt(result);setCart([]);setRemoved(null);setLastProduct('');setPaying(false);setReceived('');setHistoryRevision(n=>n+1);setExposure96(false);}
 
+  function officialCartConfirmed(out:CartResolution){
+    const c=out.command,r=out.result;if(!c||!r)return;
+    if(matchesDraftOrigin(c,draftID94.current,draftItems(cart))){setCart([]);setReceived('');setParts94([]);setRemoved(null);setLastProduct('');}
+    if(r.sale){const sale=r.sale;setReceipt(sale);setCompletion91({receipt:sale,names:Object.fromEntries(products.map(p=>[p.id,{name:p.name,unit:p.unit}])),change:sale.status==='committed'?{total:r.cart.total_cents,received:r.cart.received_cents,change:r.cart.change_cents}:null});setHistoryRevision(v=>v+1);setReload(v=>v+1);}
+  }
   return <div className={`brand-page brand-app-page pos-page ${cashPage?"pos-cash-page":""} ${!cash&&knownCash&&!cashPage?"pos-turn-closed":""}`}>
 
     <main className="brand-app-content pos-content">
@@ -317,6 +334,8 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       {cashPage&&cash&&work94==='complete'&&<button className="brand-secondary" onClick={()=>selectWork94('sale')}>{checkoutWords91.backPayment}</button>}
       {cashPage&&cash&&work94==='complete'&&<Desk95 scope={checkoutScope91(session)} token={token} cash={cash.session_id} reference={reference94} total={total} parts={[]} actor={actor94} initial="pairing" onDirty={setWorkDirty94}/>}
       {cashPage&&<><OfficialCashBags/><OfficialCashVaults/></>}
+      {officialCartAPI?<OfficialCarts key={officialCartAPI.scope+JSON.stringify(capabilities)} api={officialCartAPI} locale={i18n.resolvedLanguage||i18n.language} draft={{reference:draftID94.current,items:draftItems(cart)}} cash={cash?.session_id||''} recoveryOnly={cashPage} blocked={baseLocked||paying||exposure96||gatewayGate95||gatewayError95||discountBlocking94||!!parts94.length||!savedDraft96.ready||customerOpen93||club91} names={Object.fromEntries(products.map(p=>[p.id,p.name]))} onOpen={()=>setFocused(false)} onExposure={setOfficialCartExposure} onConfirmed={officialCartConfirmed}/>:officialCartBlocked&&<p role="alert">{cartWords(i18n.language).permission}</p>}
+
       {cashPage&&<OfficialCashJournal initialCashID={closedReport?.session_id}/> }
       {cashPage && closedReport && <section className="brand-panel pos-closing-report" role="status"><h2>{t("posUi.closeResult")}</h2><div className="pos-payment-status"><div><span>{t("posUi.declaredCash")}</span><strong>{formatLocalCents(closedReport.declared_cents)}</strong></div><div><span>{t("posUi.expectedCash")}</span><strong>{formatLocalCents(closedReport.expected_cents)}</strong></div><div><span>{closedReport.difference_cents===0?t('posUi.balanced'):closedReport.difference_cents<0?t('posUi.shortage'):t('posUi.surplus')}</span><strong>{formatLocalCents(Math.abs(closedReport.difference_cents))}</strong></div></div></section>}
       {!cashPage&&cash&&<p role="status">{savedDraft96.error?fullWords96[savedDraft96.error]||fullWords96.storageError:savedDraft96.saving?fullWords96.savingDraft96:savedDraft96.ready?fullWords96.savedDraft96:fullWords96.restoringDraft96}</p>}

@@ -16,6 +16,11 @@ export function createPOSOperations(client, storage, scope, lock) {
   const fields = ['tenant_id', 'store_id', 'device_id', 'identity_id'];
   if (!scope || !fields.every((key) => isID(scope[key]))) throw new Error('Contexto local inválido.');
   const key = `titansystem-pos-v1:${JSON.stringify(fields.map((field) => scope[field]))}`;
+  const cartKey='titan-pos-carts:v1:'+JSON.stringify([scope.tenant_id,scope.store_id,scope.identity_id,scope.device_id]);
+  function noCartPending(){
+    try{if(storage.getItem(cartKey)!==null)throw Error();}
+    catch{throw new Error('Há uma tentativa de carrinho oficial ou armazenamento indisponível. Consulte o recibo original antes de enviar outra operação.');}
+  }
   let busy = false;
   let lastRejection = null;
   function pending() {
@@ -60,7 +65,7 @@ export function createPOSOperations(client, storage, scope, lock) {
     current(token);lastRejection=null;
     const wasUncertain=value.uncertain||retry;let submitted=false,pendingPost=false;
     function beforePost(){
-      current(token);
+      current(token);noCartPending();
       if(JSON.stringify(pending())!==JSON.stringify(value))throw new Error('A pendência mudou antes do envio. Preserve a operação.');
       value.uncertain=true;save(value,token);submitted=true;pendingPost=true;
     }
@@ -88,6 +93,7 @@ export function createPOSOperations(client, storage, scope, lock) {
     start(token, kind, input) {
       return exclusive(async () => {
         current(token);
+        noCartPending();
         if (pending()) throw new Error('Resolva a operação pendente antes de iniciar outra.');
         const value = { version: 1, kind, input: JSON.parse(JSON.stringify(input)), uncertain: false };
         if (!validPending(value)) throw new Error('Operação inválida.');
