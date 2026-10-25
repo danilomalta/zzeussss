@@ -1,10 +1,5 @@
-# `src/` (Desktop)
+# Processo desktop
 
-Código do Electron (processo principal e, quando aplicável, preload).
+Esta pasta contém somente infraestrutura do Electron: conexão, transporte e entrega dos arquivos compilados. As telas de PDV, financeiro, estoque, frota e demais módulos continuam em `../../frontend-web/src/`.
 
-## O que deve ser programado aqui
-
-- Inicialização da janela e ciclo de vida do app.
-- Integrações nativas (impressão, periféricos) quando necessário.
-- Camada de segurança entre renderer e APIs nativas.
-
+Não criar outro ERP aqui. O backend Go continua sendo serviço separado e autorizado, local ou hospedado conforme os contratos de implantação. Ele não roda dentro de uma página HTML.
