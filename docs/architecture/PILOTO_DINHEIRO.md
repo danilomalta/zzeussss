@@ -126,3 +126,10 @@ Depois desse encerramento, a fixture conferiu SQL e sete recursos originais via 
 `TestPilotCashScreenFlow`: **PASS**,1647,621s na retomada, incluindo espera humana. A primeira execução expirada permanece como falha registrada; a retomada usou snapshot consistente somente da fixture descartável e renovou apenas a licença sintética. Esse ensaio é complementar ao teste automatizado completo101requisições via Electron real, aprovado também com `-race`.
 
 O aceite técnico deste recorte em dinheiro está concluído. Não equivale à implantação comercial ou conclusão de todo o ERP. Próxima etapa depende da nova base do proprietário e da identificação explícita da instalação piloto; não selecionar banco, estação ou chaves comerciais automaticamente. Registro global atualizado: revisão47 de `docs/architecture/CONTINUIDADE_TITANSYSTEM.md` no frontend. Evidência local: `work/pilot-complete-20261025/evidence/screen-resume.log`, capturas de caixa encerrado e financeiro restaurado em `outputs/`; nenhum snapshot, segredo ou dado comercial publicado.
+
+
+## Evidências publicadas e delimitação do aceite
+
+Os [logs originais e registro de restauração](evidence/pilot-cash-20261025/README.md) agora acompanham as fontes nesta branch, incluindo a primeira tentativa visual que expirou e a retomada aprovada. São execuções LOCAIS, anteriores aos commits de entrega; não são logs CI. A consulta GitHub Actions encontrou zero execuções nas branches frontend/backend entregues. Não há CI verde comprovado para este circuito nessas branches.
+
+A conclusão registrada acima cobre fornecedor externo com confirmação MANUAL e recebimento INTEGRAL sem divergência. Não cobre envio/aceite autenticado entre empresas, recebimento parcial com divergência no MESMO circuito, nem E2E autônomo de cliques em CI. A fixture visual é assistida; a automação completa percorre as APIs reais e o transporte Electron. Para o critério ampliado apresentado pelo proprietário, esses pontos permanecem pendentes. Não anunciar conclusão desse aceite ampliado nem estimar porcentagem de todo o produto com base neste recorte.
