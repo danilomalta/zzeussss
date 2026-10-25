@@ -25,7 +25,7 @@ func TestInspectionAuthenticatesCountsChangesAndRestoredBusinessDigest(t *testin
 	if e != nil {
 		t.Fatal(e)
 	}
-	if before.Version != 1 || before.SchemaVersion != 64 || len(before.BusinessSHA256) != 64 || before.Records["cash_sessions"] != 0 || len(before.Unavailable) != 0 {
+	if before.Version != 1 || before.SchemaVersion != 65 || len(before.BusinessSHA256) != 64 || before.Records["cash_sessions"] != 0 || len(before.Unavailable) != 0 {
 		t.Fatal("invalid initial inspection", before)
 	}
 	var owner string

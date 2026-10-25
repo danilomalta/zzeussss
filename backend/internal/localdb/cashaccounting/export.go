@@ -87,8 +87,8 @@ func encodeCSV(ctx context.Context, r Report) ([]byte, error) {
 				return nil, err
 			}
 		}
-		names := []string{"opening_cents", "expected_cents", "declared_cents", "difference_cents", "supply_cents", "withdrawal_cents", "sale_count", "gross_sales_cents", "cancelled_sales_cents", "net_sales_cents"}
-		values := []int64{c.Cash.OpeningCents, c.Cash.ExpectedCents, c.Cash.DeclaredCents, c.Cash.DifferenceCents, c.Cash.SupplyCents, c.Cash.WithdrawalCents, c.SaleCount, c.GrossSalesCents, c.CancelledSalesCents, c.NetSalesCents}
+		names := []string{"opening_cents", "expected_cents", "declared_cents", "difference_cents", "supply_cents", "withdrawal_cents", "sale_count", "gross_sales_cents", "cancelled_sales_cents", "returned_sales_cents", "net_sales_cents"}
+		values := []int64{c.Cash.OpeningCents, c.Cash.ExpectedCents, c.Cash.DeclaredCents, c.Cash.DifferenceCents, c.Cash.SupplyCents, c.Cash.WithdrawalCents, c.SaleCount, c.GrossSalesCents, c.CancelledSalesCents, c.ReturnedSalesCents, c.NetSalesCents}
 		for i, name := range names {
 			if err := write("session_metric", map[string]string{"session_id": c.SessionID, "operator_id": s.OperatorID, "operation_id": c.OperationID, "opened_at": c.OpenedAt, "closed_at": c.ClosedAt, "metric": name, "metric_value": num(values[i])}); err != nil {
 				return nil, err

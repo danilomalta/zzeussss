@@ -96,7 +96,7 @@ func TestHTTPAccountingPeriodCrossOperatorTotalsExcludeCurrentDrawer(t *testing.
 	before := accountingCounts(t, f)
 	q := accountingQuery(closedFirst, periodEnd)
 	r := accountingReport(t, f, accountant, q, 200)
-	expected := map[string]int64{"session_count": 2, "sale_count": 1, "gross_sales_cents": 3198, "cancelled_sales_cents": 0, "net_sales_cents": 3198, "sum_openings_cents": 3000, "sum_expected_at_closures_cents": 6498, "sum_declared_at_closures_cents": 6495, "sum_closure_differences_cents": -3, "supply_cents": 600, "withdrawal_cents": 300, "journal_entry_count": 6, "journal_debit_cents": 7098, "journal_credit_cents": 7098, "unclassified_count": 0}
+	expected := map[string]int64{"session_count": 2, "sale_count": 1, "gross_sales_cents": 3198, "cancelled_sales_cents": 0, "returned_sales_cents": 0, "net_sales_cents": 3198, "sum_openings_cents": 3000, "sum_expected_at_closures_cents": 6498, "sum_declared_at_closures_cents": 6495, "sum_closure_differences_cents": -3, "supply_cents": 600, "withdrawal_cents": 300, "journal_entry_count": 6, "journal_debit_cents": 7098, "journal_credit_cents": 7098, "unclassified_count": 0}
 	if !r.Complete || r.Scope != "local_closed_cash_sessions" || r.BankSettlementAvailable || r.StatutoryLedgerAvailable || !reflect.DeepEqual(expected, r.Summary) || len(r.Sessions) != 2 || len(r.Entries) != 6 {
 		t.Fatal(r)
 	}
@@ -234,7 +234,7 @@ func TestHTTPAccountingCSVMatchesSummarySourcesAndPayments(t *testing.T) {
 			}
 		}
 	}
-	if metrics != len(r.Summary) || journals != len(r.Entries) || sessions != 20 || payments != 4 {
+	if metrics != len(r.Summary) || journals != len(r.Entries) || sessions != 22 || payments != 4 {
 		t.Fatal(metrics, journals, sessions, payments)
 	}
 }

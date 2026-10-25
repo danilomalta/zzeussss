@@ -31,13 +31,14 @@ type PaymentSummary struct {
 }
 
 type CashSummary struct {
-	OpeningCents     int64 `json:"opening_cents"`
-	MovementNetCents int64 `json:"movement_net_cents"`
-	ExpectedCents    int64 `json:"expected_cents"`
-	DeclaredCents    int64 `json:"declared_cents"`
-	DifferenceCents  int64 `json:"difference_cents"`
-	SupplyCents      int64 `json:"supply_cents"`
-	WithdrawalCents  int64 `json:"withdrawal_cents"`
+	OpeningCents        int64 `json:"opening_cents"`
+	MovementNetCents    int64 `json:"movement_net_cents"`
+	ExpectedCents       int64 `json:"expected_cents"`
+	DeclaredCents       int64 `json:"declared_cents"`
+	DifferenceCents     int64 `json:"difference_cents"`
+	SupplyCents         int64 `json:"supply_cents"`
+	WithdrawalCents     int64 `json:"withdrawal_cents"`
+	CustomerRefundCents int64 `json:"customer_refund_cents"`
 }
 
 type ClosedReport struct {
@@ -50,6 +51,7 @@ type ClosedReport struct {
 	SaleCount                int64            `json:"sale_count"`
 	GrossSalesCents          int64            `json:"gross_sales_cents"`
 	CancelledSalesCents      int64            `json:"cancelled_sales_cents"`
+	ReturnedSalesCents       int64            `json:"returned_sales_cents"`
 	NetSalesCents            int64            `json:"net_sales_cents"`
 	Payments                 []PaymentSummary `json:"payments"`
 	BankSettlementAvailable  bool             `json:"bank_settlement_available"`
@@ -213,6 +215,41 @@ func readClosedReportTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, d
 	if computed.Cmp(big.NewInt(v.Cash.ExpectedCents)) != 0 {
 		return ClosedReport{}, ErrReportInconsistent
 	}
+	saleRows, e := tx.QueryContext(ctx, `SELECT id FROM sales WHERE tenant_id=? AND store_id=? AND device_id=? AND cash_session_id=? AND EXISTS(SELECT 1 FROM customer_returns r WHERE r.tenant_id=sales.tenant_id AND r.sale_id=sales.id)`, actor.TenantID, actor.StoreID, device.DeviceID, id)
+	if e != nil {
+		return ClosedReport{}, e
+	}
+	var returnedIDs []string
+	for saleRows.Next() {
+		var sid string
+		if e = saleRows.Scan(&sid); e != nil {
+			saleRows.Close()
+			return ClosedReport{}, e
+		}
+		returnedIDs = append(returnedIDs, sid)
+	}
+	e = saleRows.Err()
+	ce := saleRows.Close()
+	if e != nil {
+		return ClosedReport{}, e
+	}
+	if ce != nil {
+		return ClosedReport{}, ce
+	}
+	for _, sid := range returnedIDs {
+		refunded, e := customerRefundTotalTx(ctx, tx, actor, device, sid)
+		if e != nil {
+			return ClosedReport{}, ErrReportInconsistent
+		}
+		if e = reportAdd(&v.ReturnedSalesCents, refunded); e != nil {
+			return ClosedReport{}, e
+		}
+	}
+	if v.ReturnedSalesCents > v.NetSalesCents {
+		return ClosedReport{}, ErrReportInconsistent
+	}
+	v.NetSalesCents -= v.ReturnedSalesCents
+	v.Cash.CustomerRefundCents = v.ReturnedSalesCents
 	v.Complete = true
 	return v, nil
 }

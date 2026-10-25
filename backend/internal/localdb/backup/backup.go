@@ -223,8 +223,8 @@ func validate(ctx context.Context, path string, device identity.DeviceContext) e
 		return ErrBackup
 	}
 	var count int
-	// This release explicitly supports snapshots at schemas 25 through 64.
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || (count != 25 && count != 26 && count != 27 && count != 28 && count != 29 && count != 30 && count != 31 && count != 32 && count != 33 && count != 34 && count != 35 && count != 36 && count != 37 && count != 38 && count != 39 && count != 40 && count != 41 && count != 42 && count != 43 && count != 44 && count != 45 && count != 46 && count != 47 && count != 48 && count != 49 && count != 50 && count != 51 && count != 52 && count != 53 && count != 54 && count != 55 && count != 56 && count != 57 && count != 58 && count != 59 && count != 60 && count != 61 && count != 62 && count != 63 && count != 64) {
+	// This release explicitly supports snapshots at schemas 25 through 65.
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || (count != 25 && count != 26 && count != 27 && count != 28 && count != 29 && count != 30 && count != 31 && count != 32 && count != 33 && count != 34 && count != 35 && count != 36 && count != 37 && count != 38 && count != 39 && count != 40 && count != 41 && count != 42 && count != 43 && count != 44 && count != 45 && count != 46 && count != 47 && count != 48 && count != 49 && count != 50 && count != 51 && count != 52 && count != 53 && count != 54 && count != 55 && count != 56 && count != 57 && count != 58 && count != 59 && count != 60 && count != 61 && count != 62 && count != 63 && count != 64 && count != 65) {
 		return ErrBackup
 	}
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM tenants`).Scan(&count); err != nil || count != 1 {

@@ -12837,6 +12837,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -12864,6 +12872,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -12943,6 +12959,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -12970,6 +12994,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -12997,6 +13029,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13024,6 +13064,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13051,6 +13099,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13078,6 +13134,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13105,6 +13169,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13211,6 +13283,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13238,6 +13318,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13265,6 +13353,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13292,6 +13388,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13319,6 +13423,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13346,6 +13458,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -13373,6 +13493,14 @@
         "parameters": [
           {
             "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -16315,7 +16443,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em receiving-overview.openapi.json"
@@ -16338,7 +16475,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em receiving-overview.openapi.json"
@@ -16407,7 +16553,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em receiving-cases.openapi.json"
@@ -16453,7 +16608,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em receiving-cases.openapi.json"
@@ -16476,7 +16640,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em receiving-cases.openapi.json"
@@ -16499,7 +16672,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em receiving-cases.openapi.json"
@@ -16522,7 +16704,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em receiving-cases.openapi.json"
@@ -16876,7 +17067,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./supplier-returns.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/purchase-supplier-returns": {
@@ -16920,7 +17121,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./supplier-returns.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/purchase-supplier-returns/{id}/history": {
@@ -16942,7 +17153,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./supplier-returns.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/purchase-supplier-returns/{id}/actions": {
@@ -16964,7 +17185,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./supplier-returns.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/purchase-supplier-returns/{id}/dispatch": {
@@ -16986,7 +17217,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./supplier-returns.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/purchase-supplier-returns/{id}/recover": {
@@ -17008,7 +17249,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./supplier-returns.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/purchase-supplier-return-operations/{id}": {
@@ -17030,7 +17281,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./supplier-returns.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/finance/receiving-return-review/{id}": {
@@ -17052,7 +17313,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./supplier-returns.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/fleet/assets": {
@@ -17107,7 +17378,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17130,7 +17410,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17153,7 +17442,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17220,7 +17518,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17243,7 +17550,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17266,7 +17582,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17333,7 +17658,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17356,7 +17690,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17379,7 +17722,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17446,7 +17798,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17469,7 +17830,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17492,7 +17862,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17559,7 +17938,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17582,7 +17970,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17605,7 +18002,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17672,7 +18078,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17695,7 +18110,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17718,7 +18142,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17785,7 +18218,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17808,7 +18250,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17831,7 +18282,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17898,7 +18358,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17921,7 +18390,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -17944,7 +18422,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18011,7 +18498,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18034,7 +18530,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18057,7 +18562,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18124,7 +18638,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18147,7 +18670,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18170,7 +18702,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18193,7 +18734,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18216,7 +18766,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18239,7 +18798,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18262,7 +18830,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18285,7 +18862,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18331,7 +18917,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-maintenance.openapi.json"
@@ -18398,7 +18993,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18421,7 +19025,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18444,7 +19057,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18511,7 +19133,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18534,7 +19165,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18557,7 +19197,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18624,7 +19273,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18647,7 +19305,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18670,7 +19337,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18737,7 +19413,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18760,7 +19445,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18783,7 +19477,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18806,7 +19509,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18829,7 +19541,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18852,7 +19573,16 @@
             "BearerSession": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": "Contrato em fleet-workshop.openapi.json"
@@ -18928,7 +19658,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./suspended-carts.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/pos/carts/{id}/actions": {
@@ -18950,7 +19690,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./suspended-carts.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/pos/carts/{id}/history": {
@@ -18972,7 +19722,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./suspended-carts.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/pos/cart-operations/{id}": {
@@ -18994,7 +19754,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./suspended-carts.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/pos/carts/{id}/reconcile": {
@@ -19016,7 +19786,17 @@
         "externalDocs": {
           "description": "Detailed contract",
           "url": "./suspended-carts.openapi.json"
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/pos/carts/report": {
@@ -19160,7 +19940,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/specialties/{id}/history": {
@@ -19194,7 +19984,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/specialties/{id}/actions": {
@@ -19228,7 +20028,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/technicians": {
@@ -19328,7 +20138,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/technicians/{id}/history": {
@@ -19362,7 +20182,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/technicians/{id}/actions": {
@@ -19396,7 +20226,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/assets": {
@@ -19496,7 +20336,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/assets/{id}/history": {
@@ -19530,7 +20380,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/assets/{id}/actions": {
@@ -19564,7 +20424,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/classifications": {
@@ -19664,7 +20534,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/classifications/{id}/history": {
@@ -19698,7 +20578,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/classifications/{id}/actions": {
@@ -19732,7 +20622,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/operations/{id}": {
@@ -19766,7 +20666,17 @@
           "422": {
             "description": "Explicit source limit exceeded"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/local/v1/maintenance/queue": {
@@ -19865,6 +20775,388 @@
         "x-contract": "purchase-supply-cycle.openapi.json",
         "operationId": "local_POST__local_v1_purchase_deliveries_id_reject"
       }
+    },
+    "/local/v1/cash/sessions/{id}/report": {
+      "$ref": "./cash-closed-report.openapi.json#/paths/~1local~1v1~1cash~1sessions~1{id}~1report"
+    },
+    "/local/v1/catalog/operations/{kind}/{id}": {
+      "$ref": "./catalog-operation-receipts.openapi.json#/paths/~1local~1v1~1catalog~1operations~1{kind}~1{id}"
+    },
+    "/local/v1/catalog/products/{id}/edit-details": {
+      "$ref": "./catalog-operation-receipts.openapi.json#/paths/~1local~1v1~1catalog~1products~1{id}~1edit-details"
+    },
+    "/local/v1/catalog/products/{id}/edit-state": {
+      "$ref": "./catalog-edit.openapi.json#/paths/~1catalog~1products~1{id}~1edit-state"
+    },
+    "/local/v1/catalog/products/{id}/production-usage": {
+      "$ref": "./production-product-usage.openapi.json#/paths/~1local~1v1~1catalog~1products~1{id}~1production-usage"
+    },
+    "/local/v1/catalog/products/{id}/state": {
+      "$ref": "./catalog-product-state.openapi.json#/paths/~1catalog~1products~1{id}~1state"
+    },
+    "/local/v1/catalog/products/{id}/state-history": {
+      "$ref": "./catalog-product-state-history.openapi.json#/paths/~1catalog~1products~1{id}~1state-history"
+    },
+    "/local/v1/checkout/plans/{id}": {
+      "$ref": "./checkout-plans.openapi.json#/paths/~1local~1v1~1checkout~1plans~1{id}"
+    },
+    "/local/v1/company-trade/identity": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1company-trade~1identity"
+    },
+    "/local/v1/company-trade/messages": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1company-trade~1messages"
+    },
+    "/local/v1/company-trade/messages/{id}": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1company-trade~1messages~1{id}"
+    },
+    "/local/v1/company-trade/operations/{id}": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1company-trade~1operations~1{id}"
+    },
+    "/local/v1/company-trade/peers": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1company-trade~1peers"
+    },
+    "/local/v1/company-trade/recovery": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1company-trade~1recovery"
+    },
+    "/local/v1/production/capacity": {
+      "$ref": "./production-capacity.openapi.json#/paths/~1production~1capacity"
+    },
+    "/local/v1/production/losses/{id}": {
+      "$ref": "./production-losses.openapi.json#/paths/~1local~1v1~1production~1losses~1{id}"
+    },
+    "/local/v1/production/losses/{id}/history": {
+      "$ref": "./production-losses.openapi.json#/paths/~1local~1v1~1production~1losses~1{id}~1history"
+    },
+    "/local/v1/production/lot-search": {
+      "$ref": "./production-lot-search.openapi.json#/paths/~1local~1v1~1production~1lot-search"
+    },
+    "/local/v1/production/lots/{id}": {
+      "$ref": "./production-lots.openapi.json#/paths/~1local~1v1~1production~1lots~1{id}"
+    },
+    "/local/v1/production/lots/{id}/history": {
+      "$ref": "./production-lots.openapi.json#/paths/~1local~1v1~1production~1lots~1{id}~1history"
+    },
+    "/local/v1/production/lots/{id}/quality": {
+      "$ref": "./production-quality.openapi.json#/paths/~1local~1v1~1production~1lots~1{id}~1quality"
+    },
+    "/local/v1/production/lots/{id}/quality/history": {
+      "$ref": "./production-quality.openapi.json#/paths/~1local~1v1~1production~1lots~1{id}~1quality~1history"
+    },
+    "/local/v1/production/material-reservations/{id}": {
+      "$ref": "./production-materials.openapi.json#/paths/~1local~1v1~1production~1material-reservations~1{id}"
+    },
+    "/local/v1/production/operations/{kind}/{id}": {
+      "$ref": "./production-operation-receipts.openapi.json#/paths/~1local~1v1~1production~1operations~1{kind}~1{id}"
+    },
+    "/local/v1/production/order-search": {
+      "$ref": "./production-search.openapi.json#/paths/~1local~1v1~1production~1order-search"
+    },
+    "/local/v1/production/orders": {
+      "$ref": "./production-orders.openapi.json#/paths/~1production~1orders"
+    },
+    "/local/v1/production/orders/{id}": {
+      "$ref": "./production-orders.openapi.json#/paths/~1production~1orders~1{id}"
+    },
+    "/local/v1/production/orders/{id}/history": {
+      "$ref": "./production-orders.openapi.json#/paths/~1production~1orders~1{id}~1history"
+    },
+    "/local/v1/production/orders/{id}/stages": {
+      "$ref": "./production-stages.openapi.json#/paths/~1local~1v1~1production~1orders~1{id}~1stages"
+    },
+    "/local/v1/production/orders/{id}/stages/history": {
+      "$ref": "./production-stages.openapi.json#/paths/~1local~1v1~1production~1orders~1{id}~1stages~1history"
+    },
+    "/local/v1/production/orders/{id}/trace": {
+      "$ref": "./production-trace.openapi.json#/paths/~1local~1v1~1production~1orders~1{id}~1trace"
+    },
+    "/local/v1/production/recipe-versions": {
+      "$ref": "./production-recipes.openapi.json#/paths/~1production~1recipe-versions"
+    },
+    "/local/v1/production/recipe-versions/{id}": {
+      "get": {
+        "operationId": "getRecipeVersion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Durable immutable snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./production-recipes.openapi.json#/components/schemas/Version"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID or query"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "404": {
+            "description": "Version not found in scope"
+          },
+          "500": {
+            "description": "Internal failure"
+          }
+        }
+      }
+    },
+    "/local/v1/production/recipes/{id}/state": {
+      "$ref": "./production-recipe-state.openapi.json#/paths/~1production~1recipes~1{id}~1state"
+    },
+    "/local/v1/production/results/{id}": {
+      "$ref": "./production-results.openapi.json#/paths/~1local~1v1~1production~1results~1{id}"
+    },
+    "/local/v1/production/results/{id}/losses": {
+      "$ref": "./production-losses.openapi.json#/paths/~1local~1v1~1production~1results~1{id}~1losses"
+    },
+    "/local/v1/production/results/{id}/lots": {
+      "$ref": "./production-lots.openapi.json#/paths/~1local~1v1~1production~1results~1{id}~1lots"
+    },
+    "/local/v1/purchase-cancellation-operations/{id}/receipt": {
+      "get": {
+        "operationId": "getPurchaseCancelOriginalReceipt",
+        "summary": "Consultar cancelamento original no contexto do operador e aparelho que o registraram.",
+        "description": "Não aceita query string. Exige ViewOrders e aparelho validado. JSON canônico e correspondência entre entrada e auditoria são conferidos, assim como estado do documento original e ausência de autorização contraditória. Nenhum estado, estoque, outbox ou relógio de contrato é alterado.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Até 128 bytes UTF-8, sem espaços nas bordas, NUL, CR ou LF."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recibo original, repeated=false",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./purchase-cancel-operations.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID ou query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão ou aparelho negado"
+          },
+          "404": {
+            "description": "Operação ausente no contexto autorizado"
+          },
+          "409": {
+            "description": "JSON ou auditoria inconsistente"
+          },
+          "503": {
+            "description": "Serviço local indisponível"
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-order-search": {
+      "$ref": "./purchase-search.openapi.json#/paths/~1purchase-order-search"
+    },
+    "/local/v1/purchase-orders/{id}/receiving-history": {
+      "$ref": "./purchase-receiving-history.openapi.json#/paths/~1local~1v1~1purchase-orders~1{id}~1receiving-history"
+    },
+    "/local/v1/purchase-orders/{id}/receiving-trace": {
+      "$ref": "./purchase-receiving-trace.openapi.json#/paths/~1local~1v1~1purchase-orders~1{id}~1receiving-trace"
+    },
+    "/local/v1/purchase-orders/{id}/trace": {
+      "$ref": "./purchase-trace.openapi.json#/paths/~1purchase-orders~1{id}~1trace"
+    },
+    "/local/v1/purchase-receiving/operations/{kind}/{id}/receipt": {
+      "$ref": "./purchase-receiving-operations.openapi.json#/paths/~1purchase-receiving~1operations~1{kind}~1{id}~1receipt"
+    },
+    "/local/v1/purchase-supplier-operations/{id}/receipt": {
+      "get": {
+        "summary": "Recibo original da alteração, restrito ao operador e aparelho; não aceita query string.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato; até 128 bytes UTF-8 no servidor."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./purchase-supplier-interface.openapi.json#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão ou contrato indisponível"
+          },
+          "404": {
+            "description": "Ausente no escopo autorizado"
+          },
+          "409": {
+            "description": "Revisão ou dados preservados inconsistentes"
+          },
+          "503": {
+            "description": "Serviço indisponível"
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-suppliers/{id}/edit-state": {
+      "$ref": "./purchase-supplier-edit.openapi.json#/paths/~1purchase-suppliers~1{id}~1edit-state"
+    },
+    "/local/v1/purchase-suppliers/{id}/history": {
+      "$ref": "./purchase-supplier-history.openapi.json#/paths/~1purchase-suppliers~1{id}~1history"
+    },
+    "/local/v1/sale-return-operations/{id}": {
+      "$ref": "./customer-returns.openapi.json#/paths/~1local~1v1~1sale-return-operations~1{id}"
+    },
+    "/local/v1/sales/{id}/returns": {
+      "$ref": "./customer-returns.openapi.json#/paths/~1local~1v1~1sales~1{id}~1returns"
+    },
+    "/local/v1/stock/availability": {
+      "$ref": "./stock-availability.openapi.json#/paths/~1local~1v1~1stock~1availability"
+    },
+    "/local/v1/stock/operations/history": {
+      "$ref": "./stock-operation-receipts.openapi.json#/paths/~1stock~1operations~1history"
+    },
+    "/local/v1/stock/operations/{id}/receipt": {
+      "$ref": "./stock-operation-receipts.openapi.json#/paths/~1stock~1operations~1{id}~1receipt"
+    },
+    "/local/v1/stock/reservations": {
+      "$ref": "./stock-reservations.openapi.json#/paths/~1local~1v1~1stock~1reservations"
+    },
+    "/local/v1/catalog/products/{id}/update": {
+      "$ref": "./catalog-edit.openapi.json#/paths/~1catalog~1products~1{id}~1update"
+    },
+    "/local/v1/checkout/plans": {
+      "$ref": "./checkout-plans.openapi.json#/paths/~1local~1v1~1checkout~1plans"
+    },
+    "/local/v1/checkout/plans/{id}/cancel": {
+      "$ref": "./checkout-plans.openapi.json#/paths/~1local~1v1~1checkout~1plans~1{id}~1cancel"
+    },
+    "/local/v1/checkout/plans/{id}/finalize-cash": {
+      "$ref": "./checkout-plans.openapi.json#/paths/~1local~1v1~1checkout~1plans~1{id}~1finalize-cash"
+    },
+    "/local/v1/company-trade/orders/import": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1company-trade~1orders~1import"
+    },
+    "/local/v1/company-trade/orders/{id}/decision": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1company-trade~1orders~1{id}~1decision"
+    },
+    "/local/v1/company-trade/peers/{id}/revoke": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1company-trade~1peers~1{id}~1revoke"
+    },
+    "/local/v1/company-trade/recovery/review": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1company-trade~1recovery~1review"
+    },
+    "/local/v1/production/capacity/alternatives": {
+      "$ref": "./production-capacity.openapi.json#/paths/~1production~1capacity~1alternatives"
+    },
+    "/local/v1/production/losses": {
+      "$ref": "./production-losses.openapi.json#/paths/~1local~1v1~1production~1losses"
+    },
+    "/local/v1/production/losses/void": {
+      "$ref": "./production-losses.openapi.json#/paths/~1local~1v1~1production~1losses~1void"
+    },
+    "/local/v1/production/lots": {
+      "$ref": "./production-lots.openapi.json#/paths/~1local~1v1~1production~1lots"
+    },
+    "/local/v1/production/lots/void": {
+      "$ref": "./production-lots.openapi.json#/paths/~1local~1v1~1production~1lots~1void"
+    },
+    "/local/v1/production/material-reservations": {
+      "$ref": "./production-materials.openapi.json#/paths/~1local~1v1~1production~1material-reservations"
+    },
+    "/local/v1/production/material-reservations/state": {
+      "$ref": "./production-materials.openapi.json#/paths/~1local~1v1~1production~1material-reservations~1state"
+    },
+    "/local/v1/production/orders/state": {
+      "$ref": "./production-orders.openapi.json#/paths/~1production~1orders~1state"
+    },
+    "/local/v1/production/quality-reviews": {
+      "$ref": "./production-quality.openapi.json#/paths/~1local~1v1~1production~1quality-reviews"
+    },
+    "/local/v1/production/recipe-state": {
+      "$ref": "./production-recipe-state.openapi.json#/paths/~1production~1recipe-state"
+    },
+    "/local/v1/production/results": {
+      "$ref": "./production-results.openapi.json#/paths/~1local~1v1~1production~1results"
+    },
+    "/local/v1/production/stage-plans": {
+      "$ref": "./production-stages.openapi.json#/paths/~1local~1v1~1production~1stage-plans"
+    },
+    "/local/v1/production/stages/state": {
+      "$ref": "./production-stages.openapi.json#/paths/~1local~1v1~1production~1stages~1state"
+    },
+    "/local/v1/purchase-orders/{id}/authorize-receiving": {
+      "$ref": "./purchase-receiving-authorization.openapi.json#/paths/~1local~1v1~1purchase-orders~1{id}~1authorize-receiving"
+    },
+    "/local/v1/purchase-orders/{id}/cancel": {
+      "$ref": "./purchase-cancel.openapi.json#/paths/~1purchase-orders~1{id}~1cancel"
+    },
+    "/local/v1/purchase-orders/{id}/company-trade/decision": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1purchase-orders~1{id}~1company-trade~1decision"
+    },
+    "/local/v1/purchase-orders/{id}/company-trade/export": {
+      "$ref": "./company-trade.openapi.json#/paths/~1local~1v1~1purchase-orders~1{id}~1company-trade~1export"
+    },
+    "/local/v1/purchase-orders/{id}/receipts": {
+      "$ref": "./purchase-receipts.openapi.json#/paths/~1local~1v1~1purchase-orders~1{id}~1receipts"
+    },
+    "/local/v1/purchase-orders/{id}/receipts/{receipt_id}/void": {
+      "$ref": "./purchase-receipt-voids.openapi.json#/paths/~1local~1v1~1purchase-orders~1{id}~1receipts~1{receipt_id}~1void"
+    },
+    "/local/v1/purchase-orders/{id}/rejections": {
+      "$ref": "./purchase-delivery-rejections.openapi.json#/paths/~1local~1v1~1purchase-orders~1{id}~1rejections"
+    },
+    "/local/v1/purchase-suppliers/{id}/update": {
+      "$ref": "./purchase-supplier-edit.openapi.json#/paths/~1purchase-suppliers~1{id}~1update"
+    },
+    "/local/v1/sales/quote": {
+      "$ref": "./sale-quote.openapi.json#/paths/~1local~1v1~1sales~1quote"
+    },
+    "/local/v1/sales/{id}/returns/quote": {
+      "$ref": "./customer-returns.openapi.json#/paths/~1local~1v1~1sales~1{id}~1returns~1quote"
     }
   },
   "components": {

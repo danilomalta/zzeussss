@@ -3,10 +3,10 @@ name: Backend pilot acceptance
 on:
   push:
     branches: [feat/backend-b02a-compat]
-    paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py']
+    paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py', 'tools/check_api_contracts.py', 'tools/tests/test_api_contracts.py', 'docs/api/**']
   pull_request:
     branches: [main, develop]
-    paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py']
+    paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py', 'tools/check_api_contracts.py', 'tools/tests/test_api_contracts.py', 'docs/api/**']
   workflow_dispatch:
 
 permissions:
@@ -55,6 +55,10 @@ jobs:
           cache-dependency-path: backend/go.sum
       - name: Verify acceptance gate regressions
         run: python3 -m unittest discover -s ../tools/tests -p test_verify_backend_acceptance.py -v
+      - name: Validate API contracts and complete route map
+        run: |
+          python3 -m unittest discover -s ../tools/tests -p test_api_contracts.py -v
+          python3 ../tools/check_api_contracts.py
       - name: Vet backend
         run: go vet ./...
       - name: Build real executables
@@ -80,7 +84,7 @@ jobs:
           env -u TITAN_SESSION_TEST_DATABASE_URL -u TITAN_CATALOG_TEST_DATABASE_URL \
             -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE \
             go test -race ./internal/localapi \
-            -run '^TestTrade|^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore)$' \
+            -run '^TestTrade|^TestHTTPCustomerReturn|^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore|CustomerReturnRestartAndRestore)$' \
             -count=1 -v -timeout=10m -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" \
             | tee "$RUNNER_TEMP/pilot-cli-race.log"
       - name: Upload execution evidence and Linux binaries

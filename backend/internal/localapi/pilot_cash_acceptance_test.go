@@ -13,10 +13,12 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -90,7 +92,10 @@ func TestPilotCashProcess(t *testing.T) {
 	}
 	done := make(chan error, 1)
 	go func() { done <- app.Listener(listener) }()
-	if err = os.WriteFile(c.Ready, []byte("http://"+listener.Addr().String()), 0600); err != nil {
+	if err = os.WriteFile(c.Ready+".pending", []byte("http://"+listener.Addr().String()), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.Rename(c.Ready+".pending", c.Ready); err != nil {
 		t.Fatal(err)
 	}
 	_, _ = io.Copy(io.Discard, os.Stdin)
@@ -156,14 +161,43 @@ func pilotStart(t *testing.T, db string, f *stockHTTPFixture, station ...string)
 	for time.Now().Before(deadline) {
 		ready, e := os.ReadFile(c.Ready)
 		if e == nil {
-			s.url = string(ready)
-			return s
+			if endpoint, valid := pilotReadyURL(ready); valid {
+				s.url = endpoint
+				return s
+			}
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
 	t.Fatal("disposable API did not become ready")
 	return nil
 }
+
+// A readable file may be empty while another process is still publishing it.
+// Only a complete URL for this loopback-only fixture establishes readiness.
+func pilotReadyURL(raw []byte) (string, bool) {
+	value := string(raw)
+	endpoint, err := url.Parse(value)
+	if err != nil || endpoint.Scheme != "http" || endpoint.Hostname() != "127.0.0.1" || endpoint.User != nil || endpoint.Path != "" || endpoint.RawQuery != "" || endpoint.Fragment != "" {
+		return "", false
+	}
+	port, err := strconv.Atoi(endpoint.Port())
+	if err != nil || port < 1 || port > 65535 {
+		return "", false
+	}
+	return value, true
+}
+
+func TestPilotReadinessRejectsIncompleteAndNonLoopbackURL(t *testing.T) {
+	for _, value := range []string{"", "http://", "http://127.0.0.1:", "http://127.0.0.1:0", "http://127.0.0.1:65536", "http://example.com:8181", "http://user@127.0.0.1:8181", "http://127.0.0.1:8181?query=1"} {
+		if _, valid := pilotReadyURL([]byte(value)); valid {
+			t.Fatal("incomplete or foreign readiness accepted")
+		}
+	}
+	if endpoint, valid := pilotReadyURL([]byte("http://127.0.0.1:12345")); !valid || endpoint != "http://127.0.0.1:12345" {
+		t.Fatal("complete readiness rejected")
+	}
+}
+
 func (s *pilotService) stop(t *testing.T) {
 	t.Helper()
 	if s.stopped {
@@ -243,11 +277,24 @@ func TestPilotCashPartialReceiptDiscrepancyRestartAndRestore(t *testing.T) {
 }
 
 func TestPilotCashAuthenticatedSupplierRestartAndRestore(t *testing.T) {
-	pilotCashScenario(t, true, true)
+	pilotCashScenario(t, true, pilotCashOptions{AuthenticatedSupplier: true})
 }
 
-func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
-	companyTrade := len(authenticated) > 0 && authenticated[0]
+func TestPilotCashCustomerReturnRestartAndRestore(t *testing.T) {
+	pilotCashScenario(t, true, pilotCashOptions{AuthenticatedSupplier: true, CustomerReturn: true})
+}
+
+type pilotCashOptions struct {
+	AuthenticatedSupplier bool
+	CustomerReturn        bool
+}
+
+func pilotCashScenario(t *testing.T, partial bool, options ...pilotCashOptions) {
+	var selected pilotCashOptions
+	if len(options) > 0 {
+		selected = options[0]
+	}
+	companyTrade := selected.AuthenticatedSupplier
 	f := stockHTTPSetup(t)
 	accepted, stockAfter, payableAmount, cashExpected := int64(2000), int64(5000), int64(2050), int64(2148)
 	processes := 4
@@ -256,6 +303,15 @@ func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
 		stockAfter = 4000
 		payableAmount = 1025
 		cashExpected = 3173
+		processes++
+	}
+	refundCents, refundMilli, netSales, cashMovements := int64(0), int64(0), int64(3198), int64(2)
+	if selected.CustomerReturn {
+		refundCents, refundMilli = 1599, 1000
+		cashExpected -= refundCents
+		stockAfter += refundMilli
+		netSales -= refundCents
+		cashMovements++
 		processes++
 	}
 	station := pilotPrepareCLIStation(t, f)
@@ -353,7 +409,7 @@ func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
 	if received.Delivery.State != "received" || received.Receipt.AcceptedMilli != accepted {
 		t.Fatal("receipt missing", received)
 	}
-	balance(stockAfter)
+	balance(stockAfter - refundMilli)
 	if partial {
 		var trace purchases.ReceivingTracePage
 		p.call("GET", cycleOrder+"/receiving-trace", nil, 200, &trace)
@@ -376,7 +432,7 @@ func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
 		if trace.AcceptedMilli != 1000 || trace.RejectedMilli != 1000 || trace.RemainingMilli != 1000 {
 			t.Fatal("partial receiving lost on restart")
 		}
-		balance(stockAfter)
+		balance(stockAfter - refundMilli)
 	}
 	finance := cycleFinanceInput()
 	finance.TotalCents = payableAmount
@@ -395,10 +451,52 @@ func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
 	p.token = ownerToken
 	p.call("POST", "/local/v1/cash/movements", map[string]any{"session_id": "turn-one", "operation_id": "withdraw-one", "kind": "withdrawal", "amount_cents": payableAmount, "reason": "Pagamento manual em especie ao fornecedor"}, 200, nil)
 	p.call("POST", payablesPath+"/invoice-one/cash-payments", json.RawMessage(pcPay), 201, nil)
+	var customerRefund sale.CustomerReturn
+	var customerRefundBody map[string]any
+	returnsPath := "/local/v1/sales/" + cart.Cart.SaleID + "/returns"
+	if selected.CustomerReturn {
+		items := []sale.ReturnItemInput{{SaleItemID: receipt.Items[0].ItemID, QuantityMilli: refundMilli, Disposition: "restock"}}
+		var quote sale.CustomerReturnQuote
+		p.call("POST", returnsPath+"/quote", map[string]any{"items": items}, 200, &quote)
+		if quote.RefundCents != refundCents {
+			t.Fatal("refund quote differs from original sale allocation")
+		}
+		customerRefundBody = map[string]any{"operation_id": "pilot-customer-return", "reason": "Cliente devolveu uma unidade apta a revenda; conferencia humana", "expected_refund_cents": refundCents, "items": items}
+		p.call("POST", returnsPath, customerRefundBody, 201, &customerRefund)
+		// Lose the successful POST response at the client boundary, kill the API,
+		// and recover only by the original operation ID in a new process.
+		if e := p.service.cmd.Process.Kill(); e != nil {
+			t.Fatal(e)
+		}
+		_ = p.service.cmd.Wait()
+		p.service.stopped = true
+		p.service = pilotStart(t, dbPath, f, station)
+		var recoveredRefund sale.CustomerReturn
+		p.call("GET", "/local/v1/sale-return-operations/pilot-customer-return", nil, 200, &recoveredRefund)
+		if !reflect.DeepEqual(customerRefund, recoveredRefund) {
+			t.Fatal("original refund receipt changed after crash")
+		}
+		p.call("POST", returnsPath, customerRefundBody, 200, &recoveredRefund)
+		if !recoveredRefund.Repeated || recoveredRefund.ID != customerRefund.ID {
+			t.Fatal("refund retry did not preserve receipt")
+		}
+		changed := map[string]any{}
+		for key, value := range customerRefundBody {
+			changed[key] = value
+		}
+		changed["expected_refund_cents"] = refundCents + 1
+		p.call("POST", returnsPath, changed, 409, nil)
+		var retained sale.Receipt
+		p.call("GET", "/local/v1/sales/"+cart.Cart.SaleID, nil, 200, &retained)
+		if !reflect.DeepEqual(receipt, retained) {
+			t.Fatal("return rewrote original sale or payment")
+		}
+		balance(stockAfter)
+	}
 	p.call("POST", "/local/v1/cash/close", map[string]any{"session_id": "turn-one", "operation_id": "close-one", "declared_cents": cashExpected}, 200, nil)
 	var report register.ClosedReport
 	p.call("GET", closedReportPath, nil, 200, &report)
-	if report.Cash.ExpectedCents != cashExpected || report.Cash.DifferenceCents != 0 || report.Cash.WithdrawalCents != payableAmount || report.NetSalesCents != 3198 || report.SaleCount != 1 {
+	if report.Cash.ExpectedCents != cashExpected || report.Cash.DifferenceCents != 0 || report.Cash.WithdrawalCents != payableAmount || report.NetSalesCents != netSales || report.ReturnedSalesCents != refundCents || report.Cash.CustomerRefundCents != refundCents || report.SaleCount != 1 {
 		t.Fatal("drawer double-counted tender/change/payment", report)
 	}
 	var payable payables.Payable
@@ -440,6 +538,15 @@ func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
 			out[path] = v
 		}
 		return out
+	}
+	if selected.CustomerReturn {
+		paths = append(paths, returnsPath, "/local/v1/sale-return-operations/pilot-customer-return")
+		changed := map[string]any{}
+		for key, value := range customerRefundBody {
+			changed[key] = value
+		}
+		changed["operation_id"] = "pilot-another-refund-after-close"
+		p.call("POST", returnsPath, changed, 409, nil)
 	}
 	want := snapshot()
 	p.service.stop(t)
@@ -499,6 +606,13 @@ func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
 	p.call("POST", cartsPath+"/stable-cart/actions", cartAction("finalize_cash", 2), 200, nil)
 	p.call("POST", cycleDelivery+"/receive", receive, 200, nil)
 	p.call("POST", payablesPath+"/invoice-one/cash-payments", json.RawMessage(pcPay), 200, nil)
+	if selected.CustomerReturn {
+		var repeated sale.CustomerReturn
+		p.call("POST", returnsPath, customerRefundBody, 200, &repeated)
+		if !repeated.Repeated || repeated.ID != customerRefund.ID {
+			t.Fatal("restored return retry duplicated refund")
+		}
+	}
 	if got := snapshot(); !reflect.DeepEqual(want, got) {
 		t.Fatal("idempotent retry changed workflow")
 	}
@@ -513,7 +627,7 @@ func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
 		want  int64
 	}{
 		{`SELECT COUNT(*) FROM sales`, 1}, {`SELECT COUNT(*) FROM sale_payments WHERE method='cash'`, 1},
-		{`SELECT COUNT(*) FROM cash_movements`, 2}, {`SELECT SUM(amount_cents) FROM cash_movements WHERE amount_cents>0`, 3198},
+		{`SELECT COUNT(*) FROM cash_movements`, cashMovements}, {`SELECT SUM(amount_cents) FROM cash_movements WHERE amount_cents>0`, 3198},
 		{`SELECT COUNT(*) FROM purchase_receipts`, 1}, {`SELECT COUNT(*) FROM supplier_payables`, 1},
 		{`SELECT COUNT(*) FROM payable_cash_payments`, 1}, {`SELECT SUM(quantity_milli) FROM stock_movements`, stockAfter},
 	} {
@@ -521,6 +635,16 @@ func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
 		if err = restoredDB.QueryRow(check.query).Scan(&got); err != nil || got != check.want {
 			t.Fatalf("%s: got %d want %d err %v", check.query, got, check.want, err)
 		}
+	}
+	if selected.CustomerReturn {
+		var returns, lines int
+		if e := restoredDB.QueryRow(`SELECT count(*) FROM customer_returns`).Scan(&returns); e != nil || returns != 1 {
+			t.Fatal("refund duplicated or lost", e)
+		}
+		if e := restoredDB.QueryRow(`SELECT count(*) FROM customer_return_items`).Scan(&lines); e != nil || lines != 1 {
+			t.Fatal("refund line duplicated or lost", e)
+		}
+		t.Log("CUSTOMER RETURN: original sale3198, refund1599, net1599; stock5000-sale2000+accepted1000+restocked1000=5000; drawer1000+sale3198-supplier1025-refund1599=1574; original sale/payment remain committed/confirmed; one refund survives crash/restart/CLI restore and same-ID retry")
 	}
 	if partial {
 		var remainingCases int
@@ -555,5 +679,5 @@ func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
 		t.Log("Disposable review ready; production handlers, restored fixture DB, no commercial data")
 		time.Sleep(*pilotReviewWait)
 	}
-	t.Logf("PASS: %d real loopback HTTP requests; %d service processes; original stock5000 - sale2000 + accepted%d = %d milli; drawer1000 + sale3198 - supplier%d = %d cents; payable outstanding0; encrypted backup verified/restored; original IDs unchanged", p.steps, processes, accepted, stockAfter, payableAmount, cashExpected)
+	t.Logf("PASS: %d real loopback HTTP requests; %d service processes; original stock5000 - sale2000 + accepted%d + returned%d = %d milli; drawer1000 + sale3198 - supplier%d - customer_refund%d = %d cents; payable outstanding0; encrypted backup verified/restored; original IDs unchanged", p.steps, processes, accepted, refundMilli, stockAfter, payableAmount, refundCents, cashExpected)
 }

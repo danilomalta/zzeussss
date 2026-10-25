@@ -1,5 +1,5 @@
 {
-  "base": "55fdec1",
+  "base": "3ab18e1",
   "routes": [
     {
       "api": "local",
@@ -3682,6 +3682,34 @@
       "path": "/local/v1/company-trade/recovery/review",
       "authentication": "session",
       "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/sale-return-operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/sales/:id/returns",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/sales/:id/returns",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/sales/:id/returns/quote",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
     }
   ]
 }

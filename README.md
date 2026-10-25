@@ -23,6 +23,10 @@ A variante `-pilot-backup-cli=/caminho/absoluto/titan-backup` executa o binário
 
 Novo contrato [company-trade.openapi.json](docs/api/company-trade.openapi.json): vínculo aprovado pelo dono com fingerprint conferido, pedido aprovado e decisão do fornecedor assinados por estações distintas, destino exato, idempotência, revogação e recibos persistentes. Consultas paginadas permitem localizar pedidos e recuperar provas. Backup restaurado bloqueia novas trocas até revisão do dono, sem apagar histórico; revisão antiga não desbloqueia nova restauração. Veja [guia operacional e limites](docs/architecture/PEDIDOS_AUTENTICADOS_EMPRESAS_20261025.md).
 
+## Devolução parcial em dinheiro
+
+Integrada a entrega anterior de devolução ao cliente, conciliada com os pedidos autenticados na migração65, sem alterar SQL1–64. Cotação autoritativa, devolução parcial, reposição opcional conferida, dinheiro, livro de caixa, recuperação e relatórios preservam a venda original. O quarto piloto executa o circuito com devolução, queda, reinício e restauração pelo backup real. Reembolso novo exige a gaveta original ainda aberta; não entrega estorno eletrônico ou fiscal. Veja [contrato](docs/api/customer-returns.openapi.json) e [integração, provas e limites](docs/architecture/BACKEND_DEVOLUCOES_CLIENTE65_20261025.md).
+
 ## Testes e CI
 
 Requer Go 1.25 compatível e dependências disponíveis. Na pasta `backend/`:
@@ -32,11 +36,11 @@ go vet ./...
 go test ./... -count=1
 go build -o /tmp/titan-backup ./cmd/titan-backup
 go test -race ./internal/localapi \
-  -run '^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore)$' \
+  -run '^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore|CustomerReturnRestartAndRestore)$' \
   -count=1 -v -args -pilot-backup-cli=/tmp/titan-backup
 ```
 
-O workflow específico [backend-pilot.yml](.github/workflows/backend-pilot.yml) dispara em push desta branch, PR para main/develop ou execução manual. Executa vet, suíte backend e os três circuitos HTTP/SQLite e testes de troca entre empresas com detector de corridas e CLI real; publica logs e binários Linux como artefatos. A aprovação precisa ser conferida no run do SHA correspondente, sem inferir sucesso por esse texto. O workflow histórico `ci.yml` permanece separado.
+O workflow específico [backend-pilot.yml](.github/workflows/backend-pilot.yml) dispara em push desta branch, PR para main/develop ou execução manual. Executa verificação dos contratos, vet, suíte backend com PostgreSQL e três pontes frontend obrigatórios e os quatro circuitos HTTP/SQLite e testes de troca entre empresas com detector de corridas e CLI real; publica logs e binários Linux como artefatos. A aprovação precisa ser conferida no run do SHA correspondente, sem inferir sucesso por esse texto. O workflow histórico `ci.yml` permanece separado.
 
 ## Limites e operação
 

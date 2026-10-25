@@ -111,6 +111,13 @@ func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 	if err = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM sale_cancellations WHERE tenant_id=? AND device_id=? AND operation_id=?`, actor.TenantID, device.DeviceID, in.OperationID).Scan(&cancelledOperation); err != nil {
 		return Result{}, err
 	}
+	var refundOperations int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM customer_returns WHERE tenant_id=? AND device_id=? AND operation_id=?`, actor.TenantID, device.DeviceID, in.OperationID).Scan(&refundOperations); err != nil {
+		return Result{}, err
+	}
+	if refundOperations != 0 {
+		return Result{}, ErrConflict
+	}
 	if cancelledOperation != 0 {
 		return Result{}, ErrConflict
 	}

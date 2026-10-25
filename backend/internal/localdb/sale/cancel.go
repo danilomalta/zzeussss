@@ -80,6 +80,13 @@ func CancelWithContract(ctx context.Context, db *sql.DB, contracts *entitlements
 		actor.TenantID, device.DeviceID, in.OperationID).Scan(&reused); err != nil {
 		return CancelResult{}, err
 	}
+	var refundOperations int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM customer_returns WHERE tenant_id=? AND device_id=? AND operation_id=?`, actor.TenantID, device.DeviceID, in.OperationID).Scan(&refundOperations); err != nil {
+		return CancelResult{}, err
+	}
+	if refundOperations != 0 {
+		return CancelResult{}, ErrConflict
+	}
 	if reused != 0 {
 		return CancelResult{}, ErrConflict
 	}
@@ -93,6 +100,13 @@ func CancelWithContract(ctx context.Context, db *sql.DB, contracts *entitlements
 	}
 	if err != nil {
 		return CancelResult{}, err
+	}
+	var returns int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM customer_returns WHERE tenant_id=? AND sale_id=?`, actor.TenantID, in.SaleID).Scan(&returns); err != nil {
+		return CancelResult{}, err
+	}
+	if returns != 0 {
+		return CancelResult{}, ErrConflict
 	}
 	if status != "committed" || total <= 0 {
 		return CancelResult{}, ErrConflict

@@ -400,6 +400,11 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 9007199254740991
+          },
+          "customer_refund_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": [
@@ -409,7 +414,8 @@
           "declared_cents",
           "difference_cents",
           "supply_cents",
-          "withdrawal_cents"
+          "withdrawal_cents",
+          "customer_refund_cents"
         ]
       },
       "ClosedReport": {
@@ -482,6 +488,11 @@
             "enum": [
               false
             ]
+          },
+          "returned_sales_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": [
@@ -497,7 +508,8 @@
           "net_sales_cents",
           "payments",
           "bank_settlement_available",
-          "financial_ledger_available"
+          "financial_ledger_available",
+          "returned_sales_cents"
         ]
       },
       "JournalLeg": {
@@ -731,7 +743,8 @@
           "journal_entry_count",
           "journal_debit_cents",
           "journal_credit_cents",
-          "unclassified_count"
+          "unclassified_count",
+          "returned_sales_cents"
         ],
         "properties": {
           "session_count": {
@@ -805,6 +818,11 @@
             "maximum": 9007199254740991
           },
           "unclassified_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returned_sales_cents": {
             "type": "integer",
             "minimum": 0,
             "maximum": 9007199254740991

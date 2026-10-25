@@ -146,6 +146,7 @@ func NewWithTradeSignerAndGate(db *sql.DB, device identity.DeviceContext, verifi
 	s.mountSupplyCycle(protected)
 	s.mountSupplierReturns(protected)
 	s.mountCarts(protected)
+	s.mountCustomerReturns(protected)
 	s.mountCashMovementReceipt(protected)
 	s.mountProductionMaterials(protected)
 	s.mountProductionResults(protected)
