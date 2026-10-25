@@ -1,3 +1,4 @@
+import OfficialCashMovement from './OfficialCashMovement';
 import OfficialCarts from './OfficialCarts';
 import {createOfficialCarts,type CartResolution} from '../../../core/officialCarts/source.mjs';
 import {draftItems,matchesDraftOrigin} from '../../../core/officialCarts/model.mjs';
@@ -78,7 +79,8 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   const checkoutWords91=words91(i18n.resolvedLanguage||i18n.language);
   const [discountShortcut96,setDiscountShortcut96]=useState(false);const [exposure96,setExposure96]=useState(false);const fullWords96=words96(i18n.resolvedLanguage||i18n.language);const cashPage=mode==='cash';const gateway95=useContext(GatewayContext95),completeWords95=words95(i18n.resolvedLanguage||i18n.language);const [domain95,setDomain95]=useState<Domain95>('payments'),[summary95,setSummary95]=useState<Summary95|undefined>();
   const tillWords94=words94(i18n.resolvedLanguage||i18n.language);
-  const [work94,setWork94]=useState('sale'),[workDirty94,setWorkDirty94]=useState(false),[parts94,setParts94]=useState<Part94[]>([]),[,setPaymentNotice94]=useState('');
+  const [officialMovementDirty,setOfficialMovementDirty]=useState(false);
+ const [work94,setWork94]=useState('sale'),[workDirty94,setWorkDirty94]=useState(false),[parts94,setParts94]=useState<Part94[]>([]),[,setPaymentNotice94]=useState('');
   const draftID94=useRef<string>(crypto.randomUUID());
   const customerWords93=words93(i18n.resolvedLanguage||i18n.language);
   const [customer93,setCustomer93]=useState<Customer93>({document:'',club:'skip'});
@@ -246,7 +248,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
   useEffect(()=>{let alive=true;setGatewayGate95(true);setGatewayError95(false);void read95(checkoutScope91(session),gateway95.mode).then(rows=>{if(alive)setGatewayGate95(rows.some(r=>r.source.startsWith(draftID94.current+':')&&['payments','credit','discount'].includes(r.domain)&&['pending','unknown','approved'].includes(r.state)));}).catch(()=>{if(alive)setGatewayError95(true);});return()=>{alive=false;};},[session,gateway95.mode,reference94,work94]);
   const discountBlocking94=till94.ready&&till94.data.requests.some(r=>r.kind==='discount'&&r.reference===reference94&&['requested','approved'].includes(r.state));
   const baseLocked = busy || turnBusy || loading || !!pending || !operations || !knownCash || !!calculationError;
-  const locked = baseLocked || officialCartBlocked || officialCartExposure;
+  const locked = officialMovementDirty || baseLocked || officialCartBlocked || officialCartExposure;
   const [quickIDs,setQuickIDs]=useState<string[]>([]);
   const quickKey=`titan-pos-quick:${session.tenant_id}:${session.store_id}:${session.identity_id}`;
   useEffect(()=>{try{const value:unknown=JSON.parse(localStorage.getItem(quickKey)||'[]');setQuickIDs(Array.isArray(value)?value.filter((id:unknown):id is string=>typeof id==='string').slice(0,8):[]);}catch{setQuickIDs([]);}},[quickKey]);
@@ -340,6 +342,7 @@ function POSWorkspace({ token, session, mode }: { token: string; session: LocalS
       {cashPage && closedReport && <section className="brand-panel pos-closing-report" role="status"><h2>{t("posUi.closeResult")}</h2><div className="pos-payment-status"><div><span>{t("posUi.declaredCash")}</span><strong>{formatLocalCents(closedReport.declared_cents)}</strong></div><div><span>{t("posUi.expectedCash")}</span><strong>{formatLocalCents(closedReport.expected_cents)}</strong></div><div><span>{closedReport.difference_cents===0?t('posUi.balanced'):closedReport.difference_cents<0?t('posUi.shortage'):t('posUi.surplus')}</span><strong>{formatLocalCents(Math.abs(closedReport.difference_cents))}</strong></div></div></section>}
       {!cashPage&&cash&&<p role="status">{savedDraft96.error?fullWords96[savedDraft96.error]||fullWords96.storageError:savedDraft96.saving?fullWords96.savingDraft96:savedDraft96.ready?fullWords96.savedDraft96:fullWords96.restoringDraft96}</p>}
       {!cashPage&&savedDraft96.review&&<section className="brand-panel"><h2>{fullWords96.reviewRestored96}</h2><p>{fullWords96.pricesChanged96}</p><ul>{savedDraft96.review.items.map(i=><li key={i.product.id}>{i.product.name} · {formatLocalCents(i.product.price_cents)}</li>)}</ul><button className="brand-primary" onClick={savedDraft96.accept}>{fullWords96.acceptRestored96}</button></section>}
+      <OfficialCashMovement cashID={cash?.session_id||''} onDirty={setOfficialMovementDirty}/>
       {!cashPage&&<TillNav94 tab={work94} onChange={selectWork94} closeBlocked={cart.length>0} onCloseBlocked={()=>setError(checkoutWords91.finishSaleFirst)} disabled={locked||paying||customerOpen93||club91||!cash}/>}
       {cashPage&&summary95&&<Report95 scope={checkoutScope91(session)} cash={summary95.cash} official={summary95}/>}
       {!cashPage&&['complete','connections'].includes(work94)&&<Desk95 key={work94+domain95} scope={checkoutScope91(session)} token={token} cash={cash?.session_id||''} reference={reference94} total={total} parts={parts94} actor={actor94} initial={work94==='connections'?'devices':domain95} customer={customer93} onCustomer={setCustomer93} onDirty={setWorkDirty94}/>}
