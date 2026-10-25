@@ -1,0 +1,7 @@
+=== RUN   TestPilotCashScreenFlow
+    pilot_screen_flow_test.go:88: Real API ready: workflow is empty; waiting for screen actions and DONE marker
+    pilot_screen_flow_test.go:89: screen walkthrough did not complete: DONE
+--- FAIL: TestPilotCashScreenFlow (1800.53s)
+FAIL
+FAIL	titansystem-backend/internal/localapi	1800.538s
+FAIL
