@@ -34,21 +34,22 @@ jobs:
       - name: Build real executables
         run: |
           set -euo pipefail
-          CGO_ENABLED=0 go build -trimpath -o "$RUNNER_TEMP/titan-backup" ./cmd/titan-backup
-          CGO_ENABLED=0 go build -trimpath -o "$RUNNER_TEMP/titan-local" ./cmd/titan-local
+          for tool in titan-local titan-backup titan-access titan-peer titan-receive titan-sync; do
+            CGO_ENABLED=0 go build -trimpath -o "$RUNNER_TEMP/$tool" "./cmd/$tool"
+          done
       - name: Full backend regression suite
         run: |
           set -euo pipefail
           env -u TITAN_SESSION_TEST_DATABASE_URL -u TITAN_CATALOG_TEST_DATABASE_URL \
             -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE \
             go test ./... -count=1 -json > "$RUNNER_TEMP/backend-full.jsonl"
-      - name: Full and partial cash pilots with real CLI and race detector
+      - name: Company trade and cash pilots with real CLI and race detector
         run: |
           set -euo pipefail
           env -u TITAN_SESSION_TEST_DATABASE_URL -u TITAN_CATALOG_TEST_DATABASE_URL \
             -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE \
             go test -race ./internal/localapi \
-            -run '^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore)$' \
+            -run '^TestTrade|^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore)$' \
             -count=1 -v -timeout=10m -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" \
             | tee "$RUNNER_TEMP/pilot-cli-race.log"
       - name: Upload execution evidence and Linux binaries
@@ -62,3 +63,7 @@ jobs:
             ${{ runner.temp }}/pilot-cli-race.log
             ${{ runner.temp }}/titan-backup
             ${{ runner.temp }}/titan-local
+            ${{ runner.temp }}/titan-access
+            ${{ runner.temp }}/titan-peer
+            ${{ runner.temp }}/titan-receive
+            ${{ runner.temp }}/titan-sync

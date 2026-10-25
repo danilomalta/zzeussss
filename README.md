@@ -19,6 +19,10 @@ O cenário ampliado recebe 2 unidades, aceita 1 e recusa 1 por avaria. Somente a
 
 A variante `-pilot-backup-cli=/caminho/absoluto/titan-backup` executa o binário real: chave sintética, criação com serviço ativo, inspeção, verificação, recusa de chave/contexto incorretos, restauração e recusa de sobrescrita. Contagens e `business_sha256` do perfil devem coincidir após restauração. Esse resumo cobre as tabelas nomeadas do piloto, não todos os módulos do ERP.
 
+## Aceite autenticado entre empresas
+
+Novo contrato [company-trade.openapi.json](docs/api/company-trade.openapi.json): vínculo aprovado pelo dono com fingerprint conferido, pedido aprovado e decisão do fornecedor assinados por estações distintas, destino exato, idempotência, revogação e recibos persistentes. Consultas paginadas permitem localizar pedidos e recuperar provas. Backup restaurado bloqueia novas trocas até revisão do dono, sem apagar histórico; revisão antiga não desbloqueia nova restauração. Veja [guia operacional e limites](docs/architecture/PEDIDOS_AUTENTICADOS_EMPRESAS_20261025.md).
+
 ## Testes e CI
 
 Requer Go 1.25 compatível e dependências disponíveis. Na pasta `backend/`:
@@ -28,15 +32,15 @@ go vet ./...
 go test ./... -count=1
 go build -o /tmp/titan-backup ./cmd/titan-backup
 go test -race ./internal/localapi \
-  -run '^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore)$' \
+  -run '^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore)$' \
   -count=1 -v -args -pilot-backup-cli=/tmp/titan-backup
 ```
 
-O workflow específico [backend-pilot.yml](.github/workflows/backend-pilot.yml) dispara em push desta branch, PR para main/develop ou execução manual. Executa vet, suíte backend e os dois circuitos HTTP/SQLite com detector de corridas e CLI real; publica logs e binários Linux como artefatos. A aprovação precisa ser conferida no run do SHA correspondente, sem inferir sucesso por esse texto. O workflow histórico `ci.yml` permanece separado.
+O workflow específico [backend-pilot.yml](.github/workflows/backend-pilot.yml) dispara em push desta branch, PR para main/develop ou execução manual. Executa vet, suíte backend e os três circuitos HTTP/SQLite e testes de troca entre empresas com detector de corridas e CLI real; publica logs e binários Linux como artefatos. A aprovação precisa ser conferida no run do SHA correspondente, sem inferir sucesso por esse texto. O workflow histórico `ci.yml` permanece separado.
 
 ## Limites e operação
 
-Testes usam somente instalações descartáveis e licenças sintéticas. Nenhum serviço ou banco comercial é selecionado automaticamente. Fornecedor externo ainda tem confirmação MANUAL, não aceite autenticado entre empresas. Fiscal, TEF/Pix, instalador em máquina Windows limpa, sincronização comercial e aceite entre empresas continuam exigindo entregas próprias. O núcleo local utiliza atualmente proteções de arquivo POSIX 0600/0700; compilar para Windows não basta para homologar essas proteções.
+Testes usam somente instalações descartáveis e licenças sintéticas. Nenhum serviço ou banco comercial é selecionado automaticamente. O fluxo manual continua disponível. O novo circuito de aceite autenticado entre empresas usa bancos/chaves/sessões distintos e transporte explícito de envelopes por cliente autorizado; não é relay público nem Internet comercial homologada. Fiscal, TEF/Pix, instalador em máquina Windows limpa e sincronização comercial continuam exigindo entregas próprias. O núcleo local utiliza atualmente proteções de arquivo POSIX 0600/0700; compilar para Windows não basta para homologar essas proteções.
 
 Backup cifrado tem limite de snapshot 128 MiB. Restaurar exige caminho novo, chave e contexto corretos; sessões antigas são revogadas. A inspeção não substitui a verificação criptográfica, que é executada antes dela. Não publicar `.env`, chaves, estações, bancos ou dados comerciais.
 

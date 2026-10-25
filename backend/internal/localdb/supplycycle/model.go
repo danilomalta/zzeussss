@@ -256,16 +256,23 @@ func prior(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceC
 	r.Repeated = true
 	return r, true, nil
 }
-func finish(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, kind, id, body string, revision int64, r Result) (Result, error) {
+func saveCycleOperationTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, kind, id, body string, revision int64, r Result) error {
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	b, e := json.Marshal(r)
 	if e != nil {
-		return Result{}, e
+		return e
 	}
 	if e = one(ctx, tx, `INSERT INTO purchase_cycle_operations VALUES(?,?,?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, d.DeviceID, r.OperationID, a.IdentityID, kind, id, revision, body, string(b), now); e != nil {
-		return Result{}, e
+		return e
 	}
 	if e = one(ctx, tx, `INSERT INTO purchase_cycle_events VALUES(?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, d.DeviceID, r.OperationID, "purchase.cycle."+kind, string(b), now); e != nil {
+		return e
+	}
+	return nil
+}
+
+func finish(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, kind, id, body string, revision int64, r Result) (Result, error) {
+	if e := saveCycleOperationTx(ctx, tx, a, d, kind, id, body, revision, r); e != nil {
 		return Result{}, e
 	}
 	return r, tx.Commit()

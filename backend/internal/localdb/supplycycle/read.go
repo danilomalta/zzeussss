@@ -66,7 +66,7 @@ func decisionTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (*
 		return nil, e
 	}
 	var v Decision
-	if json.Unmarshal([]byte(body), &v) != nil || v.OrderID != id || v.Revision != rev || v.Revision < 1 || v.EvidenceMode != "manual_external" || v.ExternalVerified {
+	if json.Unmarshal([]byte(body), &v) != nil || v.OrderID != id || v.Revision != rev || v.Revision < 1 || !((v.EvidenceMode == "manual_external" && !v.ExternalVerified) || (v.EvidenceMode == "authenticated_company" && v.ExternalVerified)) {
 		return nil, purchases.ErrConflict
 	}
 	var saved string
@@ -77,6 +77,11 @@ func decisionTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (*
 	}
 	if json.Unmarshal([]byte(saved), &r) != nil || !reflect.DeepEqual(r.Decision, &v) {
 		return nil, purchases.ErrConflict
+	}
+	if v.ExternalVerified {
+		if e := verifiedTradeDecisionTx(ctx, tx, a, v); e != nil {
+			return nil, e
+		}
 	}
 	return &v, nil
 }

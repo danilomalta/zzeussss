@@ -44,6 +44,9 @@ func RecordDecision(ctx context.Context, db *sql.DB, c *entitlementstore.Store, 
 	if previous != nil {
 		revision = previous.Revision
 	}
+	if previous != nil && previous.ExternalVerified {
+		return Result{}, purchases.ErrConflict
+	}
 	if revision != in.ExpectedRevision {
 		return Result{}, purchases.ErrConflict
 	}

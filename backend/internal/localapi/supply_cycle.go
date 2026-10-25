@@ -25,6 +25,9 @@ func (s *Server) mountSupplyCycle(r fiber.Router) {
 	g.Get("/finance/receiving-origins/:id", s.cycleOrigin)
 }
 func cycleError(c *fiber.Ctx, e error) error {
+	if errors.Is(e, supplycycle.ErrTradeRecovery) {
+		return c.Status(503).JSON(fiber.Map{"code": "company_trade_review_required"})
+	}
 	if errors.Is(e, supplycycle.ErrLimit) {
 		return c.Status(422).JSON(fiber.Map{"code": "supply_cycle_source_limit", "max_records": supplycycle.MaxDeliveries})
 	}

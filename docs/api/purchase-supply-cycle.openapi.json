@@ -1690,14 +1690,12 @@
           "evidence_mode": {
             "type": "string",
             "enum": [
-              "manual_external"
+              "manual_external",
+              "authenticated_company"
             ]
           },
           "external_verified": {
-            "type": "boolean",
-            "enum": [
-              false
-            ]
+            "type": "boolean"
           },
           "recorded_by": {
             "type": "string"
@@ -2190,14 +2188,12 @@
               "evidence_mode": {
                 "type": "string",
                 "enum": [
-                  "manual_external"
+                  "manual_external",
+                  "authenticated_company"
                 ]
               },
               "external_verified": {
-                "type": "boolean",
-                "enum": [
-                  false
-                ]
+                "type": "boolean"
               },
               "recorded_by": {
                 "type": "string"

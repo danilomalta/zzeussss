@@ -4,6 +4,8 @@
 package localapi
 
 import (
+	"bytes"
+	"crypto/ed25519"
 	"database/sql"
 	"errors"
 	"io"
@@ -21,9 +23,10 @@ import (
 )
 
 type Server struct {
-	DB        *sql.DB
-	Device    identity.DeviceContext
-	contracts *entitlementstore.Store
+	DB          *sql.DB
+	Device      identity.DeviceContext
+	contracts   *entitlementstore.Store
+	tradeSigner ed25519.PrivateKey
 }
 
 // New preserves authentication and authorized reads without issuer keys.
@@ -41,10 +44,25 @@ func NewWithVerifier(db *sql.DB, device identity.DeviceContext, verifier *entitl
 // NewWithVerifierAndGate installs transport admission BEFORE all routes.
 // Session, device, role, contract and record checks still apply afterwards.
 func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier *entitlements.Verifier, gate fiber.Handler) (*fiber.App, error) {
+	return NewWithTradeSignerAndGate(db, device, verifier, gate, nil)
+}
+
+// Signing key comes only from verified process configuration, never HTTP.
+func NewWithTradeSignerAndGate(db *sql.DB, device identity.DeviceContext, verifier *entitlements.Verifier, gate fiber.Handler, signer ed25519.PrivateKey) (*fiber.App, error) {
 	if db == nil || device.TenantID == "" || device.StoreID == "" || device.DeviceID == "" {
 		return nil, errors.New("servidor local sem aparelho")
 	}
 	s := &Server{DB: db, Device: device}
+	if signer != nil {
+		if len(signer) != ed25519.PrivateKeySize {
+			return nil, errors.New("trade signing identity unavailable")
+		}
+		var public []byte
+		if err := db.QueryRow(`SELECT public_key FROM device_pairings WHERE tenant_id=? AND store_id=? AND device_id=? AND status='approved'`, device.TenantID, device.StoreID, device.DeviceID).Scan(&public); err != nil || !bytes.Equal(public, signer.Public().(ed25519.PublicKey)) {
+			return nil, errors.New("trade signing identity unavailable")
+		}
+		s.tradeSigner = append(ed25519.PrivateKey(nil), signer...)
+	}
 	if verifier != nil {
 		contracts, err := entitlementstore.New(db, verifier, nil)
 		if err != nil {
@@ -99,6 +117,7 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 	s.mountProductStateHistory(protected)
 	s.mountComparison(protected)
 	s.mountPurchases(protected)
+	s.mountTrade(protected)
 	s.mountSupplierEdit(protected)
 	s.mountSupplierHistory(protected)
 	s.mountSupplierOperation(protected)

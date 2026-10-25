@@ -1,5 +1,5 @@
 {
-  "base": "fde43f8",
+  "base": "55fdec1",
   "routes": [
     {
       "api": "local",
@@ -3591,6 +3591,97 @@
       "path": "/api/v1/suppliers/operations/:operation_id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/identity",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company-trade/peers",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/peers",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company-trade/peers/:id/revoke",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/company-trade/export",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company-trade/orders/import",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company-trade/orders/:id/decision",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/company-trade/decision",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/messages",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/messages/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/recovery",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company-trade/recovery/review",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
     }
   ]
 }

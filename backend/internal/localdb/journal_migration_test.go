@@ -20,17 +20,17 @@ func TestMigrationCompleteScriptSupportsTriggersAndAtomicRetry(t *testing.T) {
 	CREATE TRIGGER journal_probe_guard BEFORE INSERT ON journal_probe WHEN NEW.id=2
 	BEGIN SELECT RAISE(ABORT,'blocked; still one string'); END;
 	INSERT INTO journal_probe VALUES (1,'valid; literal');`
-	if err := applyMigration(context.Background(), db, 64, "probe", script+`INSERT INTO journal_probe VALUES(2,'reject');`); err == nil {
+	if err := applyMigration(context.Background(), db, 65, "probe", script+`INSERT INTO journal_probe VALUES(2,'reject');`); err == nil {
 		t.Fatal("accepted failing trigger script")
 	}
 	var n int
 	if err := db.QueryRow(`SELECT count(*) FROM sqlite_master WHERE name LIKE 'journal_probe%'`).Scan(&n); err != nil || n != 0 {
 		t.Fatal("partial DDL/trigger after failure", n, err)
 	}
-	if err := db.QueryRow(`SELECT count(*) FROM schema_migrations WHERE version=64`).Scan(&n); err != nil || n != 0 {
+	if err := db.QueryRow(`SELECT count(*) FROM schema_migrations WHERE version=65`).Scan(&n); err != nil || n != 0 {
 		t.Fatal("failed script recorded", n, err)
 	}
-	if err := applyMigration(context.Background(), db, 64, "probe", script); err != nil {
+	if err := applyMigration(context.Background(), db, 65, "probe", script); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := db.Exec(`INSERT INTO journal_probe VALUES(2,'reject')`); err == nil {
@@ -40,7 +40,7 @@ func TestMigrationCompleteScriptSupportsTriggersAndAtomicRetry(t *testing.T) {
 	if err := db.QueryRow(`SELECT message FROM journal_probe WHERE id=1`).Scan(&text); err != nil || text != "valid; literal" {
 		t.Fatal(text, err)
 	}
-	if err := applyMigration(context.Background(), db, 64, "probe", script); err != nil {
+	if err := applyMigration(context.Background(), db, 65, "probe", script); err != nil {
 		t.Fatal("idempotent script replay", err)
 	}
 }

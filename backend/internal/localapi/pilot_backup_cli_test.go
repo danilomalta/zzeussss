@@ -22,15 +22,14 @@ var pilotBackupCLI = flag.String("pilot-backup-cli", "", "Explicit built titan-b
 
 func pilotPrepareCLIStation(t *testing.T, f *stockHTTPFixture) string {
 	t.Helper()
-	if *pilotBackupCLI == "" {
-		return ""
-	}
-	if !filepath.IsAbs(*pilotBackupCLI) {
+	if *pilotBackupCLI != "" && !filepath.IsAbs(*pilotBackupCLI) {
 		t.Fatal("backup CLI path must be absolute")
 	}
-	info, e := os.Stat(*pilotBackupCLI)
-	if e != nil || !info.Mode().IsRegular() {
-		t.Fatal("built backup CLI required")
+	if *pilotBackupCLI != "" {
+		info, e := os.Stat(*pilotBackupCLI)
+		if e != nil || !info.Mode().IsRegular() {
+			t.Fatal("built backup CLI required")
+		}
 	}
 	public, private, e := ed25519.GenerateKey(rand.Reader)
 	if e != nil {
@@ -98,7 +97,7 @@ func pilotCLIBackupRoundTrip(t *testing.T, f *stockHTTPFixture, dbPath, station 
 	inspect := func(label, path string) backup.Inspection {
 		raw := pilotRunBackupCLI(t, label, true, args("inspect", path)...)
 		var report backup.Inspection
-		if e := json.Unmarshal(raw, &report); e != nil || report.Profile != "pilot_cash_v1" || report.SchemaVersion != 63 || len(report.Unavailable) != 0 {
+		if e := json.Unmarshal(raw, &report); e != nil || report.Profile != "pilot_cash_v1" || report.SchemaVersion != 64 || len(report.Unavailable) != 0 {
 			t.Fatal("invalid CLI inspection report", e)
 		}
 		// Aggregate counts and hashes only; never print keys, station or DB rows.

@@ -29,6 +29,7 @@ import (
 	"titansystem-backend/internal/localdb/purchases"
 	"titansystem-backend/internal/localdb/register"
 	"titansystem-backend/internal/localdb/sale"
+	"titansystem-backend/internal/localdb/stationfile"
 	"titansystem-backend/internal/localdb/stock"
 	"titansystem-backend/internal/localdb/supplycycle"
 )
@@ -41,6 +42,7 @@ type pilotProcessConfig struct {
 	Ready    string
 	Device   identity.DeviceContext
 	Issuer   ed25519.PublicKey
+	Station  string
 }
 
 // TestPilotCashProcess is only the child of the acceptance test. Ordinary test
@@ -67,7 +69,18 @@ func TestPilotCashProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	app, err := NewWithVerifier(db, c.Device, v)
+	var signing ed25519.PrivateKey
+	if c.Station != "" {
+		_ = db.Close()
+		var proven identity.DeviceContext
+		db, proven, signing, err = stationfile.OpenVerified(context.Background(), c.Database, c.Station)
+		if err != nil || proven != c.Device {
+			t.Fatal("synthetic station proof failed")
+		}
+		defer db.Close()
+		defer clear(signing)
+	}
+	app, err := NewWithTradeSignerAndGate(db, c.Device, v, nil, signing)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,10 +110,13 @@ type pilotService struct {
 	stopped bool
 }
 
-func pilotStart(t *testing.T, db string, f *stockHTTPFixture) *pilotService {
+func pilotStart(t *testing.T, db string, f *stockHTTPFixture, station ...string) *pilotService {
 	t.Helper()
 	dir := t.TempDir()
-	c := pilotProcessConfig{db, filepath.Join(dir, "ready"), f.device, f.private.Public().(ed25519.PublicKey)}
+	c := pilotProcessConfig{Database: db, Ready: filepath.Join(dir, "ready"), Device: f.device, Issuer: f.private.Public().(ed25519.PublicKey)}
+	if len(station) > 0 {
+		c.Station = station[0]
+	}
 	raw, err := json.Marshal(c)
 	if err != nil {
 		t.Fatal(err)
@@ -226,7 +242,12 @@ func TestPilotCashPartialReceiptDiscrepancyRestartAndRestore(t *testing.T) {
 	pilotCashScenario(t, true)
 }
 
-func pilotCashScenario(t *testing.T, partial bool) {
+func TestPilotCashAuthenticatedSupplierRestartAndRestore(t *testing.T) {
+	pilotCashScenario(t, true, true)
+}
+
+func pilotCashScenario(t *testing.T, partial bool, authenticated ...bool) {
+	companyTrade := len(authenticated) > 0 && authenticated[0]
 	f := stockHTTPSetup(t)
 	accepted, stockAfter, payableAmount, cashExpected := int64(2000), int64(5000), int64(2050), int64(2148)
 	processes := 4
@@ -251,7 +272,7 @@ func pilotCashScenario(t *testing.T, partial bool) {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.Proxy = nil
 	defer transport.CloseIdleConnections()
-	p := &pilotHTTP{t: t, service: pilotStart(t, dbPath, f), client: &http.Client{Transport: pilotAcceptanceTransport(t, transport), Timeout: 30 * time.Second}, token: f.token}
+	p := &pilotHTTP{t: t, service: pilotStart(t, dbPath, f, station), client: &http.Client{Transport: pilotAcceptanceTransport(t, transport), Timeout: 30 * time.Second}, token: f.token}
 	defer func() { p.service.stop(t) }()
 	// The initial 5 units and R$10 drawer float are explicit fixture inputs.
 	p.call("POST", "/local/v1/stock/operations", stock.Input{OperationID: "pilot-opening-stock", Kind: "entry", ProductID: f.product, ToLocationID: f.shelf, QuantityMilli: 5000, Reason: "Saldo inicial descartavel do piloto"}, 201, nil)
@@ -270,7 +291,7 @@ func pilotCashScenario(t *testing.T, partial bool) {
 	}
 	_ = p.service.cmd.Wait()
 	p.service.stopped = true
-	p.service = pilotStart(t, dbPath, f)
+	p.service = pilotStart(t, dbPath, f, station)
 	var recovered sale.CartResult
 	p.call("GET", "/local/v1/pos/cart-operations/finalize_cash-one", nil, 200, &recovered)
 	if !reflect.DeepEqual(cart, recovered) {
@@ -309,7 +330,11 @@ func pilotCashScenario(t *testing.T, partial bool) {
 	decision := cycleDecisionInput()
 	decision.AcceptedMilli = 2000
 	decision.Reason = "Confirmacao externa registrada manualmente, sem envio automatico"
-	p.call("POST", cycleOrder+"/supplier-decisions", decision, 200, nil)
+	if companyTrade {
+		pilotAuthenticateSupplier(t, p, f, dbPath, station)
+	} else {
+		p.call("POST", cycleOrder+"/supplier-decisions", decision, 200, nil)
+	}
 	p.call("POST", receivingAuthPath, receivingAuthBody(), 200, nil)
 	p.call("POST", cycleOrder+"/deliveries", cyclePlanInput("trip-one", 2000), 200, nil)
 	for i, action := range []string{"load", "arrive"} {
@@ -346,7 +371,7 @@ func pilotCashScenario(t *testing.T, partial bool) {
 		}
 		p.call("POST", casesPath+"/pilot-damage/actions", purchases.CaseActionInput{OperationID: "pilot-damage-start", ExpectedRevision: 1, Action: "start", Reason: "Conferencia iniciada; reposicao depende de acordo humano"}, 200, nil)
 		p.service.stop(t)
-		p.service = pilotStart(t, dbPath, f)
+		p.service = pilotStart(t, dbPath, f, station)
 		p.call("GET", cycleOrder+"/receiving-trace", nil, 200, &trace)
 		if trace.AcceptedMilli != 1000 || trace.RejectedMilli != 1000 || trace.RemainingMilli != 1000 {
 			t.Fatal("partial receiving lost on restart")
@@ -387,6 +412,9 @@ func pilotCashScenario(t *testing.T, partial bool) {
 	if partial {
 		paths = append(paths, cycleOrder+"/receiving-trace", casesPath+"/pilot-damage", casesPath+"/pilot-damage/history?limit=50&offset=0")
 	}
+	if companyTrade {
+		paths = append(paths, "/local/v1/company-trade/operations/pilot-export", "/local/v1/company-trade/operations/pilot-apply")
+	}
 	snapshot := func() map[string]any {
 		t.Helper()
 		out := map[string]any{}
@@ -415,7 +443,7 @@ func pilotCashScenario(t *testing.T, partial bool) {
 	}
 	want := snapshot()
 	p.service.stop(t)
-	p.service = pilotStart(t, dbPath, f)
+	p.service = pilotStart(t, dbPath, f, station)
 	if got := snapshot(); !reflect.DeepEqual(want, got) {
 		t.Fatal("complete workflow changed after service restart")
 	}
@@ -457,7 +485,7 @@ func pilotCashScenario(t *testing.T, partial bool) {
 		}
 	}
 	p.service.stop(t)
-	p.service = pilotStart(t, restored, f)
+	p.service = pilotStart(t, restored, f, station)
 	// Restore deliberately revokes saved sessions; authenticate again, never
 	// weaken revocation to make recovery pass.
 	p.call("GET", "/local/v1/me", nil, 401, nil)
