@@ -108,7 +108,7 @@ func Create(ctx context.Context, db *sql.DB, device identity.DeviceContext, key 
 // Verify authenticates the archive and performs full integrity, foreign-key,
 // migration-history and expected-device checks on a disposable copy.
 func Verify(ctx context.Context, archive string, device identity.DeviceContext, key []byte) error {
-	_, err := withSnapshot(ctx, archive, device, key, "")
+	_, err := withSnapshot(ctx, archive, device, key, "", nil)
 	return err
 }
 
@@ -124,11 +124,11 @@ func Restore(ctx context.Context, archive, destination string, device identity.D
 			return ErrBackup
 		}
 	}
-	_, err := withSnapshot(ctx, archive, device, key, destination)
+	_, err := withSnapshot(ctx, archive, device, key, destination, nil)
 	return err
 }
 
-func withSnapshot(ctx context.Context, archive string, device identity.DeviceContext, key []byte, destination string) (bool, error) {
+func withSnapshot(ctx context.Context, archive string, device identity.DeviceContext, key []byte, destination string, report *Inspection) (bool, error) {
 	crypt, err := aead(key)
 	if err != nil {
 		return false, err
@@ -152,6 +152,13 @@ func withSnapshot(ctx context.Context, archive string, device identity.DeviceCon
 	}
 	if err := validate(ctx, snapshot, device); err != nil {
 		return false, err
+	}
+	if report != nil {
+		result, err := inspectSnapshot(ctx, snapshot, sealed)
+		if err != nil {
+			return false, err
+		}
+		*report = result
 	}
 	if destination == "" {
 		return true, nil

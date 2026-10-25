@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -32,6 +33,23 @@ func run(args []string, out io.Writer) error {
 }
 
 func runContext(parent context.Context, args []string, out io.Writer) error {
+	if len(args) == 1 && (args[0] == "help" || args[0] == "--help" || args[0] == "-h") {
+		_, err := fmt.Fprintln(out, `TitanSystem backup — ferramenta local de instalação (validada em Linux)
+Uso:
+  titan-backup key-init --key ARQUIVO_NOVO
+  titan-backup create --key CHAVE --db BANCO --station ESTACAO --out BACKUP_NOVO
+  titan-backup verify --key CHAVE --archive BACKUP --tenant EMPRESA --store LOJA --device APARELHO
+  titan-backup inspect --key CHAVE --archive BACKUP --tenant EMPRESA --store LOJA --device APARELHO
+  titan-backup restore --key CHAVE --archive BACKUP --tenant EMPRESA --store LOJA --device APARELHO --out BANCO_NOVO
+  titan-backup watch --key CHAVE --db BANCO --station ESTACAO --out DIRETORIO_PRIVADO --interval 1h
+
+inspect autentica o backup e retorna JSON: contagens e hashes do perfil pilot_cash_v1.
+Não exporta registros, senhas, tokens ou chaves. Não restaura nem altera a instalação.
+O perfil cobre somente as tabelas nomeadas do piloto; não representa todos os módulos.
+Restauração exige caminho novo e revoga sessões antigas. Nunca sobrescreve banco existente.
+Snapshot máximo: 128 MiB. Preserve estação e chave em local seguro separado do backup.`)
+		return err
+	}
 	if len(args) == 0 {
 		return errors.New("command required")
 	}
@@ -50,7 +68,7 @@ func runContext(parent context.Context, args []string, out io.Writer) error {
 		if command == "watch" {
 			interval = fs.Duration("interval", time.Hour, "backup interval, 1m to 24h")
 		}
-	case "verify", "restore":
+	case "verify", "restore", "inspect":
 		archive = fs.String("archive", "", "encrypted backup file")
 		tenant = fs.String("tenant", "", "expected tenant")
 		store = fs.String("store", "", "expected store")
@@ -132,6 +150,13 @@ func runContext(parent context.Context, args []string, out io.Writer) error {
 			return errors.New("missing flags")
 		}
 		scope := identity.DeviceContext{TenantID: *tenant, StoreID: *store, DeviceID: *device}
+		if command == "inspect" {
+			report, e := backup.Inspect(ctx, *archive, scope, key)
+			if e != nil {
+				return e
+			}
+			return json.NewEncoder(out).Encode(report)
+		}
 		if command == "verify" {
 			err = backup.Verify(ctx, *archive, scope, key)
 		} else {

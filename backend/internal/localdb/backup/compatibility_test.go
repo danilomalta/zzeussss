@@ -78,6 +78,14 @@ func TestOlderBackupRestoresThroughMigration63(t *testing.T) {
 			if err := Create(context.Background(), db, device, key, archive); err != nil {
 				t.Fatal(err)
 			}
+			inspection, err := Inspect(context.Background(), archive, device, key)
+			if err != nil || inspection.SchemaVersion != historicalVersion {
+				t.Fatal("historical inspection failed", err)
+			}
+			_, payableAvailable := inspection.Records["supplier_payables"]
+			if payableAvailable != (historicalVersion >= 52) {
+				t.Fatal("missing historical table reported as zero")
+			}
 			recovered := filepath.Join(dir, "recovered.sqlite")
 			if err := Restore(context.Background(), archive, recovered, device, key); err != nil {
 				t.Fatal(err)

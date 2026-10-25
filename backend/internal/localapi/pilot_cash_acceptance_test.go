@@ -26,6 +26,7 @@ import (
 	"titansystem-backend/internal/localdb/backup"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/payables"
+	"titansystem-backend/internal/localdb/purchases"
 	"titansystem-backend/internal/localdb/register"
 	"titansystem-backend/internal/localdb/sale"
 	"titansystem-backend/internal/localdb/stock"
@@ -220,8 +221,23 @@ func (p *pilotHTTP) login(id string) string {
 	return r.Token
 }
 
-func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) {
+func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) { pilotCashScenario(t, false) }
+func TestPilotCashPartialReceiptDiscrepancyRestartAndRestore(t *testing.T) {
+	pilotCashScenario(t, true)
+}
+
+func pilotCashScenario(t *testing.T, partial bool) {
 	f := stockHTTPSetup(t)
+	accepted, stockAfter, payableAmount, cashExpected := int64(2000), int64(5000), int64(2050), int64(2148)
+	processes := 4
+	if partial {
+		accepted = 1000
+		stockAfter = 4000
+		payableAmount = 1025
+		cashExpected = 3173
+		processes++
+	}
+	station := pilotPrepareCLIStation(t, f)
 	f.install(t, signedTestContract(t, f.private, f.owner.TenantID, 100, []modules.ID{modules.Core, modules.Inventory, modules.POS, modules.Orders, modules.Logistics, modules.Finance}), 200)
 	policyPerson(t, f.db, f.owner, "pilot-reviewer", "manager")
 	var seq int
@@ -302,19 +318,46 @@ func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) {
 	receive := cycleReceiveInput()
 	receive.LocationID = f.shelf
 	receive.DeliveredMilli = 2000
-	receive.AcceptedMilli = 2000
-	receive.Reason = "Entrega integral conferida"
+	receive.AcceptedMilli = accepted
+	receive.Reason = "Entrega conferida"
+	if partial {
+		receive.Reason = "Uma unidade aceita; outra recusada por avaria; reposicao pendente"
+	}
 	var received supplycycle.Result
 	p.call("POST", cycleDelivery+"/receive", receive, 200, &received)
-	if received.Delivery.State != "received" || received.Receipt.AcceptedMilli != 2000 {
+	if received.Delivery.State != "received" || received.Receipt.AcceptedMilli != accepted {
 		t.Fatal("receipt missing", received)
 	}
-	balance(5000)
+	balance(stockAfter)
+	if partial {
+		var trace purchases.ReceivingTracePage
+		p.call("GET", cycleOrder+"/receiving-trace", nil, 200, &trace)
+		if trace.AcceptedMilli != 1000 || trace.RejectedMilli != 1000 || trace.RemainingMilli != 1000 {
+			t.Fatal("partial receipt quantities not separated", trace)
+		}
+		changed := receive
+		changed.AcceptedMilli = 2000
+		p.call("POST", cycleDelivery+"/receive", changed, 409, nil)
+		in := purchases.CaseOpenInput{OperationID: "pilot-damage-open", CaseID: "pilot-damage", Kind: "damage", RequestedOutcome: "replacement", Reference: "external-trip-one", Reason: "Uma unidade avariada; solicitar reposicao sem gerar compra ou pagamento automatico"}
+		var issue purchases.CaseResult
+		p.call("POST", cycleOrder+"/receiving-cases", in, 200, &issue)
+		if issue.Case.Status != "open" || issue.Case.OpeningEvidence.RemainingMilli != 1000 {
+			t.Fatal("damage case not tied to original remaining quantity", issue)
+		}
+		p.call("POST", casesPath+"/pilot-damage/actions", purchases.CaseActionInput{OperationID: "pilot-damage-start", ExpectedRevision: 1, Action: "start", Reason: "Conferencia iniciada; reposicao depende de acordo humano"}, 200, nil)
+		p.service.stop(t)
+		p.service = pilotStart(t, dbPath, f)
+		p.call("GET", cycleOrder+"/receiving-trace", nil, 200, &trace)
+		if trace.AcceptedMilli != 1000 || trace.RejectedMilli != 1000 || trace.RemainingMilli != 1000 {
+			t.Fatal("partial receiving lost on restart")
+		}
+		balance(stockAfter)
+	}
 	finance := cycleFinanceInput()
-	finance.TotalCents = 2050
+	finance.TotalCents = payableAmount
 	finance.DocumentReference = "RECIBO-PILOTO-1"
-	finance.Description = "Duas unidades recebidas a R$10,25"
-	finance.Installments = []payables.Installment{{ID: "part-one", DueOn: "2026-10-25", AmountCents: 2050}}
+	finance.Description = "Pagamento apenas da quantidade aceita, a R$10,25 por unidade"
+	finance.Installments = []payables.Installment{{ID: "part-one", DueOn: "2026-10-25", AmountCents: payableAmount}}
 	var obligation supplycycle.Result
 	p.call("POST", cycleDelivery+"/payable", finance, 200, &obligation)
 	if obligation.Payable.State != "pending" || obligation.Origin.ReceiptID != received.Receipt.ID || obligation.Origin.FiscalAuthorizationVerified {
@@ -325,28 +368,47 @@ func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) {
 	p.token = p.login("pilot-reviewer")
 	p.call("POST", payablesPath+"/invoice-one/approve", json.RawMessage(payableApprove), 200, nil)
 	p.token = ownerToken
-	p.call("POST", "/local/v1/cash/movements", map[string]any{"session_id": "turn-one", "operation_id": "withdraw-one", "kind": "withdrawal", "amount_cents": 2050, "reason": "Pagamento manual em especie ao fornecedor"}, 200, nil)
+	p.call("POST", "/local/v1/cash/movements", map[string]any{"session_id": "turn-one", "operation_id": "withdraw-one", "kind": "withdrawal", "amount_cents": payableAmount, "reason": "Pagamento manual em especie ao fornecedor"}, 200, nil)
 	p.call("POST", payablesPath+"/invoice-one/cash-payments", json.RawMessage(pcPay), 201, nil)
-	p.call("POST", "/local/v1/cash/close", map[string]any{"session_id": "turn-one", "operation_id": "close-one", "declared_cents": 2148}, 200, nil)
+	p.call("POST", "/local/v1/cash/close", map[string]any{"session_id": "turn-one", "operation_id": "close-one", "declared_cents": cashExpected}, 200, nil)
 	var report register.ClosedReport
 	p.call("GET", closedReportPath, nil, 200, &report)
-	if report.Cash.ExpectedCents != 2148 || report.Cash.DifferenceCents != 0 || report.Cash.WithdrawalCents != 2050 || report.NetSalesCents != 3198 || report.SaleCount != 1 {
+	if report.Cash.ExpectedCents != cashExpected || report.Cash.DifferenceCents != 0 || report.Cash.WithdrawalCents != payableAmount || report.NetSalesCents != 3198 || report.SaleCount != 1 {
 		t.Fatal("drawer double-counted tender/change/payment", report)
 	}
 	var payable payables.Payable
 	p.call("GET", payablesPath+"/invoice-one", nil, 200, &payable)
-	if payable.Cash == nil || payable.Cash.AppliedCents != 2050 || payable.Cash.OutstandingCents != 0 {
+	if payable.Cash == nil || payable.Cash.AppliedCents != payableAmount || payable.Cash.OutstandingCents != 0 {
 		t.Fatal("supplier still outstanding", payable.Cash)
 	}
 
 	// Verify the complete business snapshot via HTTP, not cached client objects.
 	paths := []string{"/local/v1/replenishment/operations/policy/pilot-policy", "/local/v1/replenishment/operations/suggest/pilot-suggest", "/local/v1/replenishment/operations/review/pilot-approve", "/local/v1/replenishment/suggestions", "/local/v1/purchase-suppliers?offset=0", cartsPath + "/stable-cart", "/local/v1/sales/" + cart.Cart.SaleID, closedReportPath, cycleOrder + "/trace", cycleOrder + "/supply-cycle?limit=50&offset=0", cycleDelivery, payablesPath + "/invoice-one", "/local/v1/finance/receiving-origins/invoice-one", "/local/v1/pos/cart-operations/finalize_cash-one", "/local/v1/purchase-cycle-operations/receive-trip", pcPath + "/operations/pay-one"}
+	if partial {
+		paths = append(paths, cycleOrder+"/receiving-trace", casesPath+"/pilot-damage", casesPath+"/pilot-damage/history?limit=50&offset=0")
+	}
 	snapshot := func() map[string]any {
 		t.Helper()
 		out := map[string]any{}
 		for _, path := range paths {
 			var v any
 			p.call("GET", path, nil, 200, &v)
+			if partial && path == casesPath+"/pilot-damage" {
+				object, ok := v.(map[string]any)
+				if !ok {
+					t.Fatal("invalid case detail")
+				}
+				measured, ok := object["measured_at"].(string)
+				if !ok {
+					t.Fatal("missing case query timestamp")
+				}
+				if _, e := time.Parse(time.RFC3339Nano, measured); e != nil {
+					t.Fatal("invalid case query timestamp")
+				}
+				// The read timestamp changes on every GET. Preserve/compare every business
+				// field, revision, opening-evidence timestamp and overdue flag unchanged.
+				delete(object, "measured_at")
+			}
 			out[path] = v
 		}
 		return out
@@ -357,7 +419,7 @@ func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) {
 	if got := snapshot(); !reflect.DeepEqual(want, got) {
 		t.Fatal("complete workflow changed after service restart")
 	}
-	balance(5000)
+	balance(stockAfter)
 
 	// Take a consistent encrypted live SQLite snapshot while the service is up.
 	ctx := context.Background()
@@ -369,26 +431,30 @@ func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) {
 	archiveDir := t.TempDir()
 	archive := filepath.Join(archiveDir, "pilot.tytbak")
 	restored := filepath.Join(archiveDir, "restored.sqlite")
-	key := make([]byte, 32)
-	if _, err = rand.Read(key); err != nil {
-		t.Fatal(err)
-	}
-	if err = backup.Create(ctx, db, f.device, key, archive); err != nil {
-		t.Fatal(err)
-	}
-	if err = backup.Verify(ctx, archive, f.device, key); err != nil {
-		t.Fatal(err)
-	}
-	wrong := append([]byte{}, key...)
-	wrong[0] ^= 1
-	if err = backup.Verify(ctx, archive, f.device, wrong); err == nil {
-		t.Fatal("wrong backup key accepted")
-	}
-	if err = backup.Restore(ctx, archive, restored, f.device, key); err != nil {
-		t.Fatal(err)
-	}
-	if err = backup.Restore(ctx, archive, restored, f.device, key); err == nil {
-		t.Fatal("restore overwrote existing database")
+	if *pilotBackupCLI != "" {
+		restored = pilotCLIBackupRoundTrip(t, f, dbPath, station)
+	} else {
+		key := make([]byte, 32)
+		if _, err = rand.Read(key); err != nil {
+			t.Fatal(err)
+		}
+		if err = backup.Create(ctx, db, f.device, key, archive); err != nil {
+			t.Fatal(err)
+		}
+		if err = backup.Verify(ctx, archive, f.device, key); err != nil {
+			t.Fatal(err)
+		}
+		wrong := append([]byte{}, key...)
+		wrong[0] ^= 1
+		if err = backup.Verify(ctx, archive, f.device, wrong); err == nil {
+			t.Fatal("wrong backup key accepted")
+		}
+		if err = backup.Restore(ctx, archive, restored, f.device, key); err != nil {
+			t.Fatal(err)
+		}
+		if err = backup.Restore(ctx, archive, restored, f.device, key); err == nil {
+			t.Fatal("restore overwrote existing database")
+		}
 	}
 	p.service.stop(t)
 	p.service = pilotStart(t, restored, f)
@@ -399,7 +465,7 @@ func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) {
 	if got := snapshot(); !reflect.DeepEqual(want, got) {
 		t.Fatal("restored workflow differs from original")
 	}
-	balance(5000)
+	balance(stockAfter)
 	// Receipt queries above are enough for recovery. Explicit same-ID repeats
 	// below prove a user retry cannot duplicate stock, sale, withdrawal or link.
 	p.call("POST", cartsPath+"/stable-cart/actions", cartAction("finalize_cash", 2), 200, nil)
@@ -408,7 +474,7 @@ func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) {
 	if got := snapshot(); !reflect.DeepEqual(want, got) {
 		t.Fatal("idempotent retry changed workflow")
 	}
-	balance(5000)
+	balance(stockAfter)
 	restoredDB, err := localdb.Open(ctx, restored)
 	if err != nil {
 		t.Fatal(err)
@@ -421,12 +487,19 @@ func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) {
 		{`SELECT COUNT(*) FROM sales`, 1}, {`SELECT COUNT(*) FROM sale_payments WHERE method='cash'`, 1},
 		{`SELECT COUNT(*) FROM cash_movements`, 2}, {`SELECT SUM(amount_cents) FROM cash_movements WHERE amount_cents>0`, 3198},
 		{`SELECT COUNT(*) FROM purchase_receipts`, 1}, {`SELECT COUNT(*) FROM supplier_payables`, 1},
-		{`SELECT COUNT(*) FROM payable_cash_payments`, 1}, {`SELECT SUM(quantity_milli) FROM stock_movements`, 5000},
+		{`SELECT COUNT(*) FROM payable_cash_payments`, 1}, {`SELECT SUM(quantity_milli) FROM stock_movements`, stockAfter},
 	} {
 		var got int64
 		if err = restoredDB.QueryRow(check.query).Scan(&got); err != nil || got != check.want {
 			t.Fatalf("%s: got %d want %d err %v", check.query, got, check.want, err)
 		}
+	}
+	if partial {
+		var remainingCases int
+		if err = restoredDB.QueryRow(`SELECT count(*) FROM purchase_receiving_cases WHERE id='pilot-damage' AND status='in_progress'`).Scan(&remainingCases); err != nil || remainingCases != 1 {
+			t.Fatal("unresolved damage case lost or silently resolved", err)
+		}
+		t.Log("PARTIAL RECEIPT: delivered2000 accepted1000 rejected1000 remaining1000; damaged units never entered stock; only accepted units billed1025; replacement case remains in_progress after restore")
 	}
 	if *pilotReviewDir != "" {
 		if *pilotReviewWait <= 0 || *pilotReviewWait > 10*time.Minute {
@@ -454,5 +527,5 @@ func TestPilotCashSaleToSupplierFinanceRestartAndRestore(t *testing.T) {
 		t.Log("Disposable review ready; production handlers, restored fixture DB, no commercial data")
 		time.Sleep(*pilotReviewWait)
 	}
-	t.Logf("PASS: %d real loopback HTTP requests; 4 service processes; original stock 5000 - sale 2000 + receipt 2000 = 5000 milli; drawer 1000 + sale 3198 - supplier 2050 = 2148 cents; payable outstanding 0; encrypted backup verified/restored; original IDs unchanged", p.steps)
+	t.Logf("PASS: %d real loopback HTTP requests; %d service processes; original stock5000 - sale2000 + accepted%d = %d milli; drawer1000 + sale3198 - supplier%d = %d cents; payable outstanding0; encrypted backup verified/restored; original IDs unchanged", p.steps, processes, accepted, stockAfter, payableAmount, cashExpected)
 }
