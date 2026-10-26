@@ -1996,3 +1996,33 @@ Suíte completa local: **1.311 principais /2.779 incluindo subtestes, zero falha
 ### Preservação e limites
 
 Os oito fontes pausados de carrinhos continuam8/8 idênticos à base registrada. Outras mudanças de frontend, inclusive o texto local Frontend consolidado65, pertencem a outra entrega; foram preservadas e não incluídas no commit desta revisão. A publicação deste registro contém somente a atualização desta frente e evidência resumida sem credenciais. Nenhuma porcentagem global ou conclusão do backend inteiro deriva desses testes. Permanecem integração operacional no desktop, Internet/TLS comercial, fiscal/Pix/TEF, Windows/hardware e demais fluxos não homologados; não recriar nem apagar entregas existentes para avançar.
+
+## Revisão58 — backup cifrado da fila publicado, instalado e validado
+
+26/10/2026. Conclui o complemento que estava em validação na revisão57. Backend `64eff3d27498329e87a0336f47b2d34adcc9409f`, branch `feat/backend-b02a-compat`; CI **success** no SHA exato: https://github.com/danilomalta/zzeussss/actions/runs/40277261085 . Fonte e testes publicados, sem alteração das527rotas/schema65 ou migração de banco existente.
+
+### Recuperação efetivamente entregue
+
+`titan-trade queue backup`, `verify-backup` e `restore`: snapshot consistente da fila e suas provas externas ao SQLite, AES-256-GCM com nonce aleatório e domínio próprio, arquivos0600 e chave32bytes explicitamente fornecida. Não abre banco, tokens ou chaves privadas da estação. Captura protegida pelos locks da fila/tentativas; JSON estrito e vínculo de cada prova ao job/envelope/fingerprint originais. Arquivo existente nunca é substituído. Restauração publica somente diretório novo0700 com operação Linux sem substituição; não remove destinos ou preparações antigas.
+
+Todos os itens restaurados ficam pausados e `recovery_only:true`. Mesmo reautorização explícita não habilita POST. Consulta o recibo original;404 mantém pendência e retry é recusado. Cópia anterior a uma entrega não apaga a operação remota nem autoriza duplicação. Mensagem realmente não enviada também pode permanecer bloqueada: requer conciliação humana, não criação automática de outroID. Preservar também o backup oficial SQLite; não existe snapshot transacional conjunto das duas empresas.
+
+### Provas completas e instalação
+
+Suíte completa LOCAL E REMOTA: **1.311 testes principais /2.779 incluindo subtestes aprovados, zero falhas, cinco integrações obrigatórias reais aprovadas e três skips estruturais permitidos**. PostgreSQL17 e SQLite descartáveis; pontes frontend de caixa/recebimento/manutenção contra APIs Go reais. `go vet`, contratos das527rotas e detector de corrida dos componentes aprovados. Rodada remota de pilotos com `-race`: **566,887s**, PASS. Esse tempo é da suíte de testes, não da abertura do software.
+
+Quatro cenários do executável real com duas APIs independentes: mensagem não enviada, entrega posterior ao backup, resposta perdida após commit e entrega previamente confirmada. Restauração mantém IDs/hash, não processa automaticamente; após reautorização só recupera recibo ou pausa. Provas persistidas permitem recuperação com origem desligada. Zero POST na recuperação e um único efeito quando havia entrega. Proxy somente injeta falha de transporte sobre commit real, sem sucesso comercial simulado.
+
+Sete binários Linux amd64 PRODUZIDOS PELO CI instalados em `~/.local/opt/titansystem/backend/64eff3d27498329e87a0336f47b2d34adcc9409f/`: titan-local, titan-backup, titan-access, titan-peer, titan-receive, titan-sync e titan-trade. Hashes de todos conferidos; arquivos/diretórios sincronizados antes da troca atômica de `backend/current`. Releases246691c/1d8b885 e anteriores preservadas.
+
+Comandos EFETIVAMENTE INSTALADOS revalidados: smoke com três execuções de API/12assertivas HTTP, reinício, restauração do banco, IDs preservados e escritas sem licença recusadas; PASS. Piloto completo com venda em dinheiro→caixa→estoque→reposição→pedido/fornecedor autenticado→recebimento parcial→financeiro→devolução→fechamento/reinício/restauração +quatro cenários da fila +envio/consulta da CLI: **PASS em5,811s**. O circuito de venda desse ensaio fez200HTTP/nove execuções de API, estoque5000milésimos, caixa1574centavos e obrigação em aberto0; não confundir com total de chamadas dos demais cenários.
+
+Laboratório `work/backend-trade-queue-backup-20261026/`: preimagens/hashes, suíte integral, logs focados, artefatos do CI, `installed.json`, smoke e resumo final. Evidência resumida sem credenciais em `docs/evidence/backend-queue-backup-20261026/acceptance.json`. Fontes e contrato operacional em `docs/architecture/BACKEND_BACKUP_FILA_20261026.md` da branch de backend. Não gerado outro ZIP, não incluídas dependências ou bancos.
+
+### Serviços e trabalho paralelo preservados
+
+Portas8182/8282 mantêm os PIDs1362657/3855147 e os executáveis originais das instalações de teste; healthHTTP200 após a instalação. Nenhum restart, mudança de configuração, leitura de chave/banco comercial ou promoção automática do desktop. Disponibilizar os novos binários não significa atualizar silenciosamente esses serviços. Os oito arquivos pausados de carrinhos permanecem8/8 com os hashes originais. Alterações da outra frente de frontend, inclusive o registro local de pedidos66, continuam preservadas e fora deste commit.
+
+### Limites reais e próxima unidade
+
+Fila/transporte e recuperação local desta entrega estão concluídos, publicados e instalados. Isso não conclui todo o backend/ERP. Permanecem operação Internet/TLS comercial e coordenação do transporte com o desktop autorizado, contratos de renegociação/cancelamento comunicado entre empresas, provedores reais de fiscal/Pix/TEF, Windows/hardware e demais fluxos sem aceite integral. O binário de transporte compilou para Windows em conferência adicional, mas a operação continua recusada sem lock/publicação equivalentes: não é entrega operacional de Windows. As novas telas de outra frente precisam de seu próprio aceite e não foram homologadas por esta revisão. Nenhuma porcentagem global inferida pelo número de testes, rotas ou linhas.
