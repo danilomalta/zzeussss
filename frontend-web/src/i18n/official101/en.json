@@ -31,5 +31,8 @@
   "parts": "Parts",
   "closed": "Closed at",
   "export": "Download official CSV",
-  "print": "Print official report"
+  "print": "Print official report",
+  "returned": "Returned sales",
+  "refunded": "Customer cash refunds",
+  "returnsUnavailable": "Metric unavailable in this service"
 }

@@ -1,3 +1,4 @@
+import {returnWords} from '../../../core/customerReturns/words.mjs';
 import {internalMaintenanceWords} from '../../../core/internalMaintenance/words.mjs';
 import {salesWords} from '../../../core/salesAnalysis/words';
 import {menu90} from '../../../core/operation90/menu';
@@ -87,6 +88,7 @@ export default function LocalMainMenu({settings=false}:{settings?:boolean}){
     for(const area85 of areas85){const item=planned.find(item=>item.id===area85);if(allowed85(capabilities,area85)){if(item){item.path='/local/'+area85;item.label=menuWords85(i18n.resolvedLanguage||i18n.language)[area85];item.planned=false;}else existing.push({id:area85,path:'/local/'+area85,icon:'▦',label:menuWords85(i18n.resolvedLanguage||i18n.language)[area85],group:area85==='documents'?'administration':'operation',planned:false});}else if(item){item.group='restricted85';}}
     for(const item of planned){if(item.id==='food'){if(can86(capabilities,'food')&&profile86&&enabled86(profile86,'food')){item.path='/local/food';item.label=menuWords86(i18n.resolvedLanguage||i18n.language).food;item.planned=false;}else item.group='restricted86';}if(item.id==='production'&&can86(capabilities,'recipes')){item.path='/local/recipes';item.label=menuWords86(i18n.resolvedLanguage||i18n.language).recipes;item.planned=false;}}
     for(const a86 of ['delivery'] as const){if(can86(capabilities,a86))existing.push({id:a86,path:'/local/'+a86,icon:'⇄',label:menuWords86(i18n.resolvedLanguage||i18n.language)[a86],group:'operation',planned:false});}
+    if(capabilities?.permissions.includes('cancel_sale'))existing.push({id:'customer-returns',path:'/local/customer-returns',icon:'↩',label:returnWords(i18n.resolvedLanguage||i18n.language).title,group:'operation',planned:false});
     menu89(existing,planned,capabilities,profile86,i18n.resolvedLanguage||i18n.language);
     menu90(existing,planned,capabilities,i18n.resolvedLanguage||i18n.language);
     if(capabilities?.permissions.includes('view_orders'))existing.push({id:'maintenance',path:'/local/maintenance',icon:'⚙',label:internalMaintenanceWords(i18n.resolvedLanguage||i18n.language).title,group:'operation',planned:false});

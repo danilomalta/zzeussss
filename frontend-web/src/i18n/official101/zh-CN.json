@@ -31,5 +31,8 @@
   "parts": "支付部分数",
   "closed": "关闭时间",
   "export": "下载官方 CSV",
-  "print": "打印官方报告"
+  "print": "打印官方报告",
+  "returned": "退货销售额",
+  "refunded": "客户现金退款",
+  "returnsUnavailable": "服务未提供此指标"
 }

@@ -31,5 +31,8 @@
   "parts": "Parcelas",
   "closed": "Encerrado em",
   "export": "Baixar CSV oficial",
-  "print": "Imprimir relatório oficial"
+  "print": "Imprimir relatório oficial",
+  "returned": "Vendas devolvidas",
+  "refunded": "Reembolsos de clientes",
+  "returnsUnavailable": "Métrica indisponível no serviço"
 }

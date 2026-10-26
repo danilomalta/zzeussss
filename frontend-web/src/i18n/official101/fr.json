@@ -31,5 +31,8 @@
   "parts": "Parts",
   "closed": "Clôture",
   "export": "Télécharger le CSV officiel",
-  "print": "Imprimer le rapport officiel"
+  "print": "Imprimer le rapport officiel",
+  "returned": "Ventes retournées",
+  "refunded": "Remboursements clients",
+  "returnsUnavailable": "Mesure indisponible sur ce service"
 }
