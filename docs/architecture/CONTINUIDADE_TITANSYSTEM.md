@@ -1,7 +1,9 @@
 # Continuidade do TitanSystem
 
-Revisão 56 — 26/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 59 — 26/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
+
+Estado resumido do BACKEND atualizado na revisão59: CI aprovado em `6ff0d2f`, sete executáveis instalados e serviços existentes preservados. As matrizes históricas não são recertificadas por esta atualização; consultar as evidências datadas e a revisão59 ao final.
 
 ## Base, localização e responsáveis
 
@@ -9,7 +11,7 @@ Este arquivo faz parte das fontes do projeto; não implica commit ou publicaçã
 - Branch frontend: `feat/backend-checkout-authority`; base documental da revisão56 `d3d727d535b3446f71d782027b1ce1f435d6f07b`, com os oito arquivos locais do relatório de carrinhos preservados e pausados. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
 - Frontend116 presente; Frontend117 CORRETO de conferência por fornecedor aplicado. Confirmados `SupplierReport117.tsx`, `core/payables117`, cinco dicionários, teste e documento193. O usuário informou em21/10: compatibilidade aprovada, backup,136testes sem falhas, TypeScript/build aprovados em20,05s, sem banco/commit/merge/push.
 - Frontend passa a ser responsabilidade deste chat/Codex, com preservação do trabalho anterior. Em24/10 o proprietário autorizou explicitamente este chat a desenvolver também o backend; a restrição anterior de somente leitura foi superada. Preservar a autoria e as entregas do outro chat.
-- Backend desta frente: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `1d8b885f9a3d5b280d26968e6f472d9316740cc0`, schema65 de devoluções de cliente e transporte CLI explícito de pedidos assinados, preservando pedidos autenticados/schema64. O aplicador do ZIP antigo de devoluções/schema64 NÃO foi executado; seus fontes declarados foram comparados e conciliados manualmente nesta revisão53, sem substituir migrações históricas. Não aplicar o ZIP antigo sobre a base atual. Revisões49–56 registram pilotos com APIs reais, persistência, restauração, empresas independentes e CI. Serviços8182/8282 continuam nos executáveis anteriores, preservados por escolha do proprietário; instalar binários não os atualiza.
+- Backend desta frente: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `6ff0d2f255477aee324c4338c80106bf6734cce2`, schema65 de devoluções de cliente, transporte/fila de pedidos assinados, backup cifrado da fila e recuperação de recibo com sessão nova no destino, preservando pedidos autenticados/schema64. O aplicador do ZIP antigo de devoluções/schema64 NÃO foi executado; seus fontes declarados foram comparados e conciliados manualmente nesta revisão53, sem substituir migrações históricas. Não aplicar o ZIP antigo sobre a base atual. Revisões49–59 registram pilotos com APIs reais, persistência, restauração, empresas independentes e CI. Serviços8182/8282 continuam nos executáveis anteriores, preservados por escolha do proprietário; instalar binários não os atualiza.
 - `~/Downloads/zzeus-frontend` é uma árvore anterior. `Documents/Codex/.../work` contém cópias de laboratório, não a fonte principal.
 - `desktop/` executa as telas compiladas de `frontend-web/`. Até a revisão43 não foi alterado nesta continuidade; revisão44 organiza entrada, build, origem, configuração e transporte desktop. Não contém outra implementação do ERP. `website/` fica reservado ao site público futuro.
 - Meus antigos `workflows117` são o **rascunho de documentos e recebimento**, diferente do117 aplicado. `production118` é outro rascunho não homologado. Não executar seus aplicadores, não copiar seus routers/menus e não usar sua numeração como base de produto.
@@ -2026,3 +2028,31 @@ Portas8182/8282 mantêm os PIDs1362657/3855147 e os executáveis originais das i
 ### Limites reais e próxima unidade
 
 Fila/transporte e recuperação local desta entrega estão concluídos, publicados e instalados. Isso não conclui todo o backend/ERP. Permanecem operação Internet/TLS comercial e coordenação do transporte com o desktop autorizado, contratos de renegociação/cancelamento comunicado entre empresas, provedores reais de fiscal/Pix/TEF, Windows/hardware e demais fluxos sem aceite integral. O binário de transporte compilou para Windows em conferência adicional, mas a operação continua recusada sem lock/publicação equivalentes: não é entrega operacional de Windows. As novas telas de outra frente precisam de seu próprio aceite e não foram homologadas por esta revisão. Nenhuma porcentagem global inferida pelo número de testes, rotas ou linhas.
+
+## Revisão59 — recuperação de recibo com sessão nova e origem desligada
+
+26/10/2026. Backend `6ff0d2f255477aee324c4338c80106bf6734cce2`, branch `feat/backend-b02a-compat`. Unidade concluída, publicada, instalada e revalidada. CI **success** no SHA exato: https://github.com/danilomalta/zzeussss/actions/runs/40280948422 . Sem mudança das527rotas/schema65, de regras comerciais ou de fontes funcionais do frontend.
+
+### Lacuna corrigida e proteção preservada
+
+A consulta de recibo do motor já dispensava a API da origem, mas trocar a sessão do destino exigia ambas as partes online e o worker verificava também o arquivo de credencial da origem. `titan-trade queue recover-session --queue PASTA --id ITEM --target-token ARQUIVO_PRIVADO` resolve isso SOMENTE para leitura. Exige prova original persistida e confere job/envelope/fingerprint/chave pública, além da mesma empresa/loja/aparelho/usuário e fingerprint no destinatário. Não cria uma primeira tentativa, não aceita outra operação e não lê a credencial da origem.
+
+O item mostra `receipt_only_session:true`; o worker só consulta o recibo original e não permite POST/retry.404 pausa; prova desaparecida ou sessão substituída também pausa sem recriar envio ou apagar os IDs. `queue verify --id ITEM` faz a consulta isolada; `run/watch` podem processar OUTROS itens previamente autorizados, cuja autorização não muda. Retomada completa continua exigindo as duas sessões/mesmo envelope e retry separado para operação incerta. A barreira permanente `recovery_only:true` de fila restaurada não é removida por nenhum desses comandos.
+
+### Provas e executáveis instalados
+
+Suíte completa LOCAL E REMOTA: **1.316 testes principais /2.787 incluindo subtestes, zero falhas, cinco integrações obrigatórias reais e três skips permitidos pelo gate (dois helpers de subprocesso e o ensaio visual explícito não executado nesta rodada)**. PostgreSQL17/SQLite descartáveis e pontes frontend contra HTTP Go real. `go vet`, contratos e detector de corrida dos componentes aprovados. Pilotos remotos com `-race`: **640,229s**, PASS. Nenhum tempo de suíte é apresentado como tempo de abertura do software.
+
+Testes reais cobrem entrega incerta, confirmada e fila restaurada com novo login no destino, origem desligada ANTES da reautorização e arquivo de sessão sintético da origem ausente. Recibo original confirmado com zero HTTP na origem e zero POST. Cobertos ainda prova ausente/inválida, sessão de outra empresa, substituição posterior da sessão, perda da prova e404. Proxy somente causa perda de resposta de transporte; os efeitos são transações reais das APIs.
+
+Sete executáveis Linux amd64 PRODUZIDOS PELO CI instalados em `~/.local/opt/titansystem/backend/6ff0d2f255477aee324c4338c80106bf6734cce2/`, hashes conferidos, sync e troca atômica de `backend/current`; versões64eff3d/246691c/1d8b885 e anteriores preservadas. Smoke do `titan-local` instalado: três execuções de API,12assertivas HTTP, reinício/restauração pelo `titan-backup`, IDs preservados, sessão antiga e mutações sem licença recusadas; PASS.
+
+Piloto completo em dinheiro, fila e quatro cenários de backup cifrado usando CLIs de backup/transporte INSTALADAS e servidores Go descartáveis: PASS em **6,785s**; circuito de venda200HTTP/nove execuções de API, estoque5000milésimos, caixa1574centavos, obrigação em aberto0 e tratativa em andamento. Prova adicional com AMBOS os comandos instalados `recover-session` e `verify`: três cenários/origem desligada, PASS em **2,420s**, zero POST. Essa prova adicional usa um overlay externo SOMENTE do arquivo de teste para trocar a chamada de biblioteca por `exec` da CLI; fontes de produto e teste publicados permanecem intactos. O total1316/2787 refere-se à suíte original, sem somar artificialmente esse ensaio extra.
+
+Laboratório `work/backend-trade-recovery-session-20261026/` preserva preimagens, hashes, relatórios local/CI, artefatos, overlay de teste, instalação e resultados reais. Resumo sem credenciais em `docs/evidence/backend-recovery-session-20261026/acceptance.json`. [Guia operacional na branch de backend](https://github.com/danilomalta/zzeussss/blob/6ff0d2f255477aee324c4338c80106bf6734cce2/docs/architecture/BACKEND_RECUPERACAO_SESSAO_DESTINO_20261026.md).
+
+### Preservação e limites
+
+Os serviços8182/8282 não foram reiniciados, migrados ou reconfigurados; permanecem nos executáveis anteriores por escolha expressa do proprietário. Nenhum banco/chave comercial usado. Os oito arquivos pausados de carrinhos seguem com seus hashes originais; demais mudanças de frontend/documentos de outra frente preservadas e fora deste commit. Não criado ZIP nem incluídas dependências ou bancos. Atualizados apenas o estado resumido do BACKEND no início deste registro e esta evidência; matrizes históricas não são recertificadas por esta revisão.
+
+Transporte/fila, backup da fila e recuperação de sessão destas unidades estão entregues. Backend/ERP inteiro não declarado100%: permanecem integração operacional do transporte no desktop, Internet/TLS comercial, contratos de renegociação/cancelamento comunicado entre empresas, fiscal/Pix/TEF com provedores reais, Windows/hardware e demais fluxos ainda sem aceite integral. Nenhuma permissão ampliada ou sucesso comercial simulado para esconder essas dependências. Não usar uma restauração de FILA neste teste como prova nova de restauração do banco remoto; os pilotos de banco continuam sendo provas separadas.
