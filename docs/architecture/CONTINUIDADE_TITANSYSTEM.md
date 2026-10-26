@@ -1974,3 +1974,25 @@ Entrega solicitada pelo proprietario para ampliar o frontend e inventariar o tra
 Nova area `/local/customer-returns` com consulta, cotacao, revisao, reembolso em dinheiro, fila por contexto, consulta/reenvio do mesmoID, recibo/historico/CSV/impressao. Relatorio101 conciliado com devolucoes65 e metricas antigas explicitamente indisponiveis. Nao altera autenticacao/sessoes/backend/migracoes/servicos/atalhos.
 
 Inventario em `docs/frontend/PENDENCIAS_FRONTEND65.md`/json/html e guia `ENTREGA_CONSOLIDADA65.md`.96itens em32frentes incluem aprofundamento, aceite e dependencias externas; nao sao96funcionalidades necessariamente ausentes. Backend/ERP inteiro nao declarado concluido. Relatorios de testes/build/ponteHTTP e limites acompanham o pacote. Aceite visual desta entrega pendente: download do Chromium falhou. A aplicacao no PC executa novamente testes completos/TypeScript/build em candidata isolada antes de gravar; nao usa banco comercial nem promove desktop automaticamente.
+
+## Revisão57 — fila autorizada instalada; backup cifrado em validação remota
+
+26/10/2026. Continuidade do backend na branch `feat/backend-b02a-compat`, sem mudança funcional do frontend nem reinício dos serviços8182/8282.
+
+### Fila concluída, publicada e instalada
+
+Commit `246691c6d68ff5d64920224c411a11f5d04f7ca5`: `titan-trade queue` captura o job/envelope previamente autorizado, vincula as sessões originais e processa lotes limitados. Logout, substituição de sessão/contexto e divergência de hash pausam sem apagar as provas. Estado incerto força consulta do recibo original;404 exige retry explícito, nunca nova operação automática. Teste mata o worker real depois do commit remoto e comprova recuperação por outro processo com zero POST e um único efeito.
+
+CI aprovado no SHA exato: https://github.com/danilomalta/zzeussss/actions/runs/40267611992 . Suíte completa local e remota: **1.305 testes principais /2.769 incluindo subtestes, zero falhas, três skips estruturais permitidos**. As cinco integrações obrigatórias passaram com PostgreSQL real e pontes frontend contra HTTP Go. Pilotos com detector de corrida passaram em529,698s. Circuito mais completo com fila compilada: comércio171HTTP/seis processos + fornecedor29HTTP/três processos =200HTTP/nove execuções; estoque5000milésimos, caixa1574centavos, obrigação em aberto0, tratativa em andamento. Não é evidência de UI completa ou Internet comercial.
+
+Sete executáveis produzidos pelo CI baixados, gate remoto reexecutado e hashes conferidos; instalados em `~/.local/opt/titansystem/backend/246691c6d68ff5d64920224c411a11f5d04f7ca5/`, ponteiro `backend/current` atualizado atomicamente, versões anteriores preservadas. Smoke instalado: três execuções de API,12assertivas HTTP, schema65 e backup/restauração pelo executável; PASS. Piloto completo usando os comandos instalados + ensaio da fila: PASS em2,963s,200HTTP no circuito completo, recuperação sem novo POST. Nenhum serviço existente foi reiniciado, nenhum banco comercial ou chave real foi aberto. Laboratório `work/backend-trade-queue-20261026/` guarda artefatos, logs e hashes.
+
+### Complemento de recuperação, sem antecipar instalação
+
+Commit `64eff3d27498329e87a0336f47b2d34adcc9409f`: backup AES-256-GCM da fila externa ao SQLite, verificação autenticada e restauração somente em pasta nova, com publicação sem substituição. Não inclui tokens, chaves privadas ou banco. Itens restaurados ficam pausados e permanentemente limitados à consulta de recibos originais, inclusive depois de resume; cópia antiga/404 não autoriza novo POST.
+
+Suíte completa local: **1.311 principais /2.779 incluindo subtestes, zero falhas, cinco integrações obrigatórias aprovadas e os mesmos três skips estruturais**. `go vet`, contratos das527rotas, testes unitários com detector de corrida e quatro cenários com executável real/dados descartáveis aprovados. CI https://github.com/danilomalta/zzeussss/actions/runs/40277261085 ainda em execução nesta revisão; NÃO anunciar este complemento como instalado antes do resultado e das verificações pós-instalação. Guia `docs/architecture/BACKEND_BACKUP_FILA_20261026.md` na branch de backend. Laboratório `work/backend-trade-queue-backup-20261026/`.
+
+### Preservação e limites
+
+Os oito fontes pausados de carrinhos continuam8/8 idênticos à base registrada. Outras mudanças de frontend, inclusive o texto local Frontend consolidado65, pertencem a outra entrega; foram preservadas e não incluídas no commit desta revisão. A publicação deste registro contém somente a atualização desta frente e evidência resumida sem credenciais. Nenhuma porcentagem global ou conclusão do backend inteiro deriva desses testes. Permanecem integração operacional no desktop, Internet/TLS comercial, fiscal/Pix/TEF, Windows/hardware e demais fluxos não homologados; não recriar nem apagar entregas existentes para avançar.
