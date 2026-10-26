@@ -55,7 +55,7 @@ func pilotAuthenticateSupplier(t *testing.T, buyer *pilotHTTP, _ *stockHTTPFixtu
 	if *pilotTradeCLI == "" {
 		seller.call("POST", "/local/v1/company-trade/orders/import", input, 200, nil)
 	} else {
-		pilotRunRelayCLI(t, *pilotTradeCLI, buyer, seller, traderelay.Job{Version: 1, Source: traderelay.Endpoint{URL: buyer.service.url + "/local/v1", Party: bi.Party, ActorID: offer.Message.ActorID, Fingerprint: bi.Fingerprint}, Target: traderelay.Endpoint{URL: seller.service.url + "/local/v1", Party: si.Party, ActorID: sellerFixture.owner.OwnerID, Fingerprint: si.Fingerprint}, MessageID: offer.Message.ID, PeerID: input.PeerID, OperationID: input.OperationID}, t.TempDir(), "send")
+		pilotDispatchTrade(t, *pilotTradeCLI, buyer, seller, traderelay.Job{Version: 1, Source: traderelay.Endpoint{URL: buyer.service.url + "/local/v1", Party: bi.Party, ActorID: offer.Message.ActorID, Fingerprint: bi.Fingerprint}, Target: traderelay.Endpoint{URL: seller.service.url + "/local/v1", Party: si.Party, ActorID: sellerFixture.owner.OwnerID, Fingerprint: si.Fingerprint}, MessageID: offer.Message.ID, PeerID: input.PeerID, OperationID: input.OperationID}, t.TempDir(), "send")
 	}
 	seller.service.stop(t)
 	seller.service = pilotStart(t, dbPath, sellerFixture, station)
@@ -113,8 +113,8 @@ func pilotAuthenticateSupplier(t *testing.T, buyer *pilotHTTP, _ *stockHTTPFixtu
 		}
 		job := traderelay.Job{Version: 1, Source: traderelay.Endpoint{URL: seller.service.url + "/local/v1", Party: si.Party, ActorID: sellerFixture.owner.OwnerID, Fingerprint: si.Fingerprint}, Target: traderelay.Endpoint{URL: buyer.service.url + "/local/v1", Party: bi.Party, ActorID: offer.Message.ActorID, Fingerprint: bi.Fingerprint}, MessageID: decision.Message.ID, PeerID: applied.PeerID, OperationID: applied.OperationID}
 		directory := t.TempDir()
-		pilotRunRelayCLI(t, *pilotTradeCLI, seller, buyer, job, directory, "send")
-		pilotRunRelayCLI(t, *pilotTradeCLI, seller, buyer, job, directory, "recover")
+		pilotDispatchTrade(t, *pilotTradeCLI, seller, buyer, job, directory, "send")
+		pilotDispatchTrade(t, *pilotTradeCLI, seller, buyer, job, directory, "recover")
 		buyer.call("GET", "/local/v1/company-trade/operations/"+applied.OperationID, nil, 200, &result)
 	}
 	if result.Cycle.Decision.EvidenceMode != "authenticated_company" || !result.Cycle.Decision.ExternalVerified {

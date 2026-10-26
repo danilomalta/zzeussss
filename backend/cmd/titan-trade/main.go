@@ -23,6 +23,9 @@ func main() {
 	}
 }
 func run(ctx context.Context, args []string, out io.Writer) error {
+	if len(args) > 0 && args[0] == "queue" {
+		return runQueue(ctx, args[1:], out)
+	}
 	if len(args) == 1 && (args[0] == "--help" || args[0] == "help") {
 		_, e := fmt.Fprintln(out, `TitanSystem trade — transporte explícito de mensagens assinadas (Linux)
 Uso: titan-trade --job JOB_PRIVADO --state /PASTA_PRIVADA/TENTATIVA --source-token TOKEN_ORIGEM --target-token TOKEN_DESTINO --mode send|recover|retry
@@ -30,7 +33,8 @@ send transmite uma mensagem já exportada, sem aprovar pedido ou decidir atendim
 recover usa somente o token do destino, mesmo com a origem offline, e nunca faz POST. retry é reenvio explícito com os mesmos IDs após consulta404.
 Arquivos de job/token:0600; pasta de state:0700. HTTPS obrigatório fora de loopback; certificado validado pelo sistema.
 Nenhum token, envelope ou documento comercial é escrito na saída ou no state. Preserve job e state na recuperação.
-Não instala servidor/relay público, não cria credenciais, não agenda reenvios e não confirma fornecedor por conta própria.`)
+Modo avulso não agenda envios. Fila operacional: titan-trade queue help.
+Não instala servidor/relay público, não cria credenciais e não confirma fornecedor por conta própria.`)
 		return e
 	}
 	fs := flag.NewFlagSet("titan-trade", flag.ContinueOnError)

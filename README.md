@@ -54,3 +54,8 @@ Veja [guia do piloto](docs/architecture/PILOTO_DINHEIRO.md), [contratos](docs/ap
 ### Transporte explícito entre empresas
 
 `titan-trade` transporta pedidos previamente exportados e decisões assinadas entre duas APIs autorizadas. Persistência da tentativa, recuperação sem POST/origem online e retry somente explícito com os mesmos IDs. Nenhuma aprovação automática, credencial na linha de comando ou abertura de banco pelo cliente. HTTPS validado fora de loopback; Linux com lock durável. [Contrato dos arquivos, comandos e limites](docs/architecture/BACKEND_TRANSPORTE_ASSINADO_20261026.md). Os serviços instalados existentes não são reiniciados automaticamente.
+
+
+### Fila operacional do transporte assinado
+
+`titan-trade queue` adiciona e processa somente mensagens já autorizadas, com snapshot persistente, vínculo à sessão original e confirmação por recibo. Operação incerta é consultada, sem reenvio automático; mudança de sessão pausa sem apagar prova. Worker cancelável e limites explícitos, com teste de queda após commit real do destinatário. [Comandos, estados e aceites](docs/architecture/BACKEND_FILA_ASSINADA_20261026.md). Não instala daemon nem troca os serviços existentes.

@@ -45,3 +45,6 @@ Piloto completo de dinheiro/devolução com CLI: comércio164requisições/seis 
 CI compila o sétimo executável e o exige nos pilotos com detector de corridas. Os relatórios finais e instalação constam no registro único de continuidade; não confundir rodada focada com suíte integral aprovada. Primeiro erro da fixture era updated_at obrigatório ausente; corrigido no dado descartável. Outro comando passou flag de localapi para pacote diferente e foi rejeitado; repetido corretamente usando variável do executável, sem afrouxar os testes.
 
 Linux é a plataforma validada. Outra plataforma falha explicitamente sem lock durável equivalente, em vez de executar sem proteção. Não é relay público, descoberta de empresas, mensageria com entrega automática, interface de fornecedor, implantação HTTPS comercial, fiscal, Pix/TEF ou validação de todas as funções do ERP. O operador ainda precisa de endpoints e sessões autorizados. Nada foi escolhido/ativado nos serviços8182/8282 existentes.
+
+
+Atualização posterior nesta frente: [fila operacional](BACKEND_FILA_ASSINADA_20261026.md). As observações de ausência de worker acima descrevem o modo avulso original; queue watch entrega somente mensagens enfileiradas por autorização explícita, sem reenviar operações incertas automaticamente.

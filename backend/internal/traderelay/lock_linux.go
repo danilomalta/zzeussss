@@ -18,6 +18,9 @@ func lockState(name string) (func(), error) {
 	}
 	if e = syscall.Flock(fd, syscall.LOCK_EX|syscall.LOCK_NB); e != nil {
 		f.Close()
+		if e == syscall.EWOULDBLOCK {
+			return nil, ErrLocked
+		}
 		return nil, ErrInvalid
 	}
 	return func() { _ = syscall.Flock(fd, syscall.LOCK_UN); _ = f.Close() }, nil

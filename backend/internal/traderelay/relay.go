@@ -26,6 +26,7 @@ import (
 var ErrInvalid = errors.New("invalid private job, destination or saved attempt")
 var ErrContext = errors.New("authenticated identity or pinned station does not match job")
 var ErrUncertain = errors.New("delivery not confirmed; preserve state and recover before explicit retry")
+var ErrLocked = errors.New("another process holds the private attempt lock")
 var ErrTransport = errors.New("transport failed; no credentials or response bodies logged")
 
 type HTTPError struct{ Status int }
@@ -92,8 +93,11 @@ func digest(v any) string {
 // Reject duplicate keys at every depth, unknown fields and trailing JSON.
 func decode(b []byte, out any) error {
 	d := json.NewDecoder(bytes.NewReader(b))
-	var walk func() error
-	walk = func() error {
+	var walk func(int) error
+	walk = func(depth int) error {
+		if depth > 32 {
+			return ErrInvalid
+		}
 		v, e := d.Token()
 		if e != nil {
 			return e
@@ -112,13 +116,13 @@ func decode(b []byte, out any) error {
 						return ErrInvalid
 					}
 					seen[s] = true
-					if e = walk(); e != nil {
+					if e = walk(depth + 1); e != nil {
 						return e
 					}
 				}
 			case '[':
 				for d.More() {
-					if e = walk(); e != nil {
+					if e = walk(depth + 1); e != nil {
 						return e
 					}
 				}
@@ -130,7 +134,7 @@ func decode(b []byte, out any) error {
 		}
 		return nil
 	}
-	if walk() != nil {
+	if walk(0) != nil {
 		return ErrInvalid
 	}
 	if _, e := d.Token(); e != io.EOF {
@@ -279,8 +283,11 @@ func (a api) ready(ctx context.Context) error {
 // Run accepts a private existing job and private state directory. Each invocation
 // issues at most one POST. recover never posts; uncertain send never retries.
 func Run(ctx context.Context, j Job, sourceToken, targetToken, statePath, mode string) (Result, error) {
+	return runBound(ctx, j, sourceToken, targetToken, statePath, mode, "")
+}
+func runBound(ctx context.Context, j Job, sourceToken, targetToken, statePath, mode, expectedHash string) (Result, error) {
 	out := Result{OperationID: j.OperationID, MessageID: j.MessageID}
-	if ctx == nil || j.Validate() != nil || (sourceToken == "" && mode != "recover") || targetToken == "" || (mode != "send" && mode != "recover" && mode != "retry") || !filepath.IsAbs(statePath) {
+	if (expectedHash != "" && !validHash(expectedHash)) || ctx == nil || j.Validate() != nil || (sourceToken == "" && mode != "recover") || targetToken == "" || (mode != "send" && mode != "recover" && mode != "retry") || !filepath.IsAbs(statePath) {
 		return out, ErrInvalid
 	}
 	parent := filepath.Dir(statePath)
@@ -304,16 +311,17 @@ func Run(ctx context.Context, j Job, sourceToken, targetToken, statePath, mode s
 	} else if !errors.Is(e, os.ErrNotExist) {
 		return out, ErrInvalid
 	}
+	if hasState && expectedHash != "" && saved.EnvelopeSHA256 != expectedHash {
+		return out, ErrInvalid
+	}
 	if mode == "send" && hasState {
 		return out, ErrUncertain
 	}
 	if mode != "send" && !hasState {
 		return out, ErrInvalid
 	}
-	transport := http.DefaultTransport.(*http.Transport).Clone()
-	transport.Proxy = nil
-	defer transport.CloseIdleConnections()
-	client := &http.Client{Transport: transport, Timeout: 15 * time.Second, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
+	client, closeClient := newClient()
+	defer closeClient()
 	source, target := api{j.Source, sourceToken, client, &out.SourceCalls}, api{j.Target, targetToken, client, &out.TargetCalls}
 	// Recovery is a read at the destination; the sender may be offline. The
 	// sender public key was pinned and durably captured before the first POST.
@@ -363,6 +371,9 @@ func Run(ctx context.Context, j Job, sourceToken, targetToken, statePath, mode s
 		return out, ErrContext
 	}
 	hash := supplycycle.TradeEnvelopeSHA256(record.Envelope)
+	if expectedHash != "" && hash != expectedHash {
+		return out, ErrContext
+	}
 	if hasState && saved.EnvelopeSHA256 != hash {
 		return out, ErrInvalid
 	}
@@ -426,7 +437,8 @@ func Run(ctx context.Context, j Job, sourceToken, targetToken, statePath, mode s
 	e = confirm(receipt)
 	return out, e
 }
-func save(name string, v State) error {
+func save(name string, v State) error { return saveJSON(name, v) }
+func saveJSON(name string, v any) error {
 	// Lock serializes this directory's cooperating invocations. Files contain no
 	// token, envelope or personal/business document, only the immutable job hash.
 	b, e := json.Marshal(v)
@@ -460,4 +472,10 @@ func save(name string, v State) error {
 	}
 	defer dir.Close()
 	return dir.Sync()
+}
+
+func newClient() (*http.Client, func()) {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.Proxy = nil
+	return &http.Client{Transport: transport, Timeout: 15 * time.Second, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}, transport.CloseIdleConnections
 }
