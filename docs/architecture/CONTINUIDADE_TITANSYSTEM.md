@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 53 — 25/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 54 — 25/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -1893,3 +1893,14 @@ Resumo bruto sem credenciais em `docs/evidence/desktop-performance-20261025/modu
 ### Limites e continuidade
 
 Unidade65 aplicada, testada, publicada e instalada. Backend inteiro não declarado concluído. Novas APIs ainda precisam das telas correspondentes; relay operacional/Internet comercial, fiscal/TEF/Pix, turnos alternativos de restituição, Windows e homologação de hardware não são cobertos por estes pilotos. Desempenho lento informado permanece em investigação até reproduzir o caminho real. Não há matriz medida para percentual global. Próximo passo de desempenho: localizar aba/acesso e medir sua sequência de recursos/consultas sem dados comerciais nos logs; preservar os serviços existentes e as filas incertas. Próxima mudança funcional de frontend continua sujeita à pausa vigente, sem incluir os oito fontes locais de carrinhos.
+
+
+## Revisão54 — esclarecimento: clique para abrir o software
+
+25/10/2026. O proprietário esclareceu novamente: “A do software, quando aperto para entrar no software ele demora, para responder”. A investigação voltou ao lançador, sem assumir que a demora fosse de um módulo. Os tempos de módulos da revisão53 continuam válidos somente para o ensaio descrito.
+
+Executado o caminho real do menu Ubuntu com `gio launch ~/.local/share/applications/titansystem-erp-atual.desktop`, usando o perfil existente e sem preencher login, ler credenciais ou bancos. Retorno do lançador9,04ms; janela real publicada e mapeada em631,63ms (0,63s), estado Normal. WM_CLASS efetivo titansystem-desktop corresponde ao StartupWMClass do atalho. Não foi necessário desativar GPU/sandbox, apagar cache ou matar processo. A janela ficou aberta para o proprietário.
+
+Conferidos os três atalhos do menu, Downloads e área de trabalho: todos apontam ao lançador estável `~/.local/bin/titansystem-desktop`, que abre o runtime/interface já instalados. Nenhum outro atalho TitanSystem em /usr/share/applications ou /usr/local/share/applications; nenhuma entrada Titan/zzeus em favorite-apps do GNOME. Scripts antigos ABRIR_TITAN_UBUNTU.sh dos pacotes1.2/1.3 ainda verificam e extraem a distribuição inteira para pasta temporária em cada execução. Foram apenas lidos, preservados; não há prova de que o proprietário os esteja usando nem de que expliquem180s. Para o caminho medido, usar TitanSystem ERP pelo menu ou o TitanSystem.desktop da área de trabalho/Downloads.
+
+Prova numérica sem credenciais em `docs/evidence/desktop-performance-20261025/real-shortcut-opening.json`. Nenhuma nova alteração de fonte/instalação nesta revisão; não declarar que foi corrigida uma causa ainda não reproduzida. Serviço configurado8182 e serviço8282 preservados. Ainda não foram medidos o clique de login com a conta do proprietário nem o comportamento específico de um eventual atalho diferente.
