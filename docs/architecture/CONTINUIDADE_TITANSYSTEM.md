@@ -1,9 +1,9 @@
 # Continuidade do TitanSystem
 
-Revisão 59 — 26/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 60 — 26/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
-Estado resumido do BACKEND atualizado na revisão59: CI aprovado em `6ff0d2f`, sete executáveis instalados e serviços existentes preservados. As matrizes históricas não são recertificadas por esta atualização; consultar as evidências datadas e a revisão59 ao final.
+Estado resumido do BACKEND atualizado na revisão60: CI aprovado em `49136ea`, schema66/devolução em turno posterior, sete executáveis instalados e serviços existentes preservados. As matrizes históricas não são recertificadas por esta atualização; consultar as evidências datadas e a revisão60 ao final.
 
 ## Base, localização e responsáveis
 
@@ -11,7 +11,7 @@ Estado resumido do BACKEND atualizado na revisão59: CI aprovado em `6ff0d2f`, s
 - Branch frontend: `feat/backend-checkout-authority`; base documental da revisão56 `d3d727d535b3446f71d782027b1ce1f435d6f07b`, com os oito arquivos locais do relatório de carrinhos preservados e pausados. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
 - Frontend116 presente; Frontend117 CORRETO de conferência por fornecedor aplicado. Confirmados `SupplierReport117.tsx`, `core/payables117`, cinco dicionários, teste e documento193. O usuário informou em21/10: compatibilidade aprovada, backup,136testes sem falhas, TypeScript/build aprovados em20,05s, sem banco/commit/merge/push.
 - Frontend passa a ser responsabilidade deste chat/Codex, com preservação do trabalho anterior. Em24/10 o proprietário autorizou explicitamente este chat a desenvolver também o backend; a restrição anterior de somente leitura foi superada. Preservar a autoria e as entregas do outro chat.
-- Backend desta frente: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `6ff0d2f255477aee324c4338c80106bf6734cce2`, schema65 de devoluções de cliente, transporte/fila de pedidos assinados, backup cifrado da fila e recuperação de recibo com sessão nova no destino, preservando pedidos autenticados/schema64. O aplicador do ZIP antigo de devoluções/schema64 NÃO foi executado; seus fontes declarados foram comparados e conciliados manualmente nesta revisão53, sem substituir migrações históricas. Não aplicar o ZIP antigo sobre a base atual. Revisões49–59 registram pilotos com APIs reais, persistência, restauração, empresas independentes e CI. Serviços8182/8282 continuam nos executáveis anteriores, preservados por escolha do proprietário; instalar binários não os atualiza.
+- Backend desta frente: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `49136eab3e53e57d831ad7aae340ab3b6910629d`, schema66 de devoluções de cliente em turno posterior escolhido, transporte/fila de pedidos assinados, backup cifrado da fila e recuperação de recibo com sessão nova no destino, preservando pedidos autenticados/schema64. O aplicador do ZIP antigo de devoluções/schema64 NÃO foi executado; seus fontes declarados foram comparados e conciliados manualmente nesta revisão53, sem substituir migrações históricas. Não aplicar o ZIP antigo sobre a base atual. Revisões49–60 registram pilotos com APIs reais, persistência, restauração, empresas independentes e CI. Serviços8182/8282 continuam nos executáveis anteriores, preservados por escolha do proprietário; instalar binários não os atualiza.
 - `~/Downloads/zzeus-frontend` é uma árvore anterior. `Documents/Codex/.../work` contém cópias de laboratório, não a fonte principal.
 - `desktop/` executa as telas compiladas de `frontend-web/`. Até a revisão43 não foi alterado nesta continuidade; revisão44 organiza entrada, build, origem, configuração e transporte desktop. Não contém outra implementação do ERP. `website/` fica reservado ao site público futuro.
 - Meus antigos `workflows117` são o **rascunho de documentos e recebimento**, diferente do117 aplicado. `production118` é outro rascunho não homologado. Não executar seus aplicadores, não copiar seus routers/menus e não usar sua numeração como base de produto.
@@ -2056,3 +2056,42 @@ Laboratório `work/backend-trade-recovery-session-20261026/` preserva preimagens
 Os serviços8182/8282 não foram reiniciados, migrados ou reconfigurados; permanecem nos executáveis anteriores por escolha expressa do proprietário. Nenhum banco/chave comercial usado. Os oito arquivos pausados de carrinhos seguem com seus hashes originais; demais mudanças de frontend/documentos de outra frente preservadas e fora deste commit. Não criado ZIP nem incluídas dependências ou bancos. Atualizados apenas o estado resumido do BACKEND no início deste registro e esta evidência; matrizes históricas não são recertificadas por esta revisão.
 
 Transporte/fila, backup da fila e recuperação de sessão destas unidades estão entregues. Backend/ERP inteiro não declarado100%: permanecem integração operacional do transporte no desktop, Internet/TLS comercial, contratos de renegociação/cancelamento comunicado entre empresas, fiscal/Pix/TEF com provedores reais, Windows/hardware e demais fluxos ainda sem aceite integral. Nenhuma permissão ampliada ou sucesso comercial simulado para esconder essas dependências. Não usar uma restauração de FILA neste teste como prova nova de restauração do banco remoto; os pilotos de banco continuam sendo provas separadas.
+
+
+## Revisão60 — devolução em dinheiro em turno posterior escolhido —26/10/2026
+
+### Entrega e autoridade
+
+Backend fonte `49136eab3e53e57d831ad7aae340ab3b6910629d` na branch `feat/backend-b02a-compat`. [CI correspondente aprovado](https://github.com/danilomalta/zzeussss/actions/runs/40286664804); migração66,529 rotas mapeadas,29 arquivos de fonte/teste/contrato/documentação desta unidade. Todos os65 scripts SQL anteriores preservados. Esta revisão atualiza somente o estado do backend e sua evidência; não recertifica matrizes históricas de outras áreas.
+
+Duas rotas novas e explícitas: `POST /local/v1/sales/{id}/returns/cash-session/quote` e `POST /local/v1/sales/{id}/returns/cash-session`, com `refund_cash_session_id` obrigatório. A rota antiga conserva a obrigação de usar o turno original aberto, sem escolher outro silenciosamente.
+
+O turno pagador precisa estar aberto, no mesmo aparelho/empresa/loja e vinculado ao próprio operador. Exige CancelSale e ManageCash e dinheiro suficiente; o turno original diferente precisa de fechamento oficial. Nem o dono debita implicitamente a gaveta de outro operador; o gerente titular pode autorizar a devolução de venda anterior de outro operador. Revogação após cotação impede a escrita.
+
+Devolução parcial, dinheiro, reposição física opcional, proveniência imutável, livro e outbox são atômicos. ID de operação vincula o turno escolhido; reenvio idêntico recupera o mesmo resultado depois de fechar/restaurar, contexto ou destino diferente gera conflito. Não apaga tentativa incerta, não reenvia automaticamente e não simula estorno bancário/fiscal.
+
+### Relatórios e compatibilidade
+
+Venda e fechamento originais permanecem idênticos. `cash_session_id` identifica a gaveta pagadora, `original_cash_session_id` identifica a original quando diferente. `cash.prior_session_refund_cents` separa pagamentos por vendas anteriores, já incluídos em `cash.customer_refund_cents`; não somar outra vez. `returned_sales_cents` e `net_sales_cents` mantêm sua definição operacional de mesmo turno, sem se passar por DRE. CSV contábil autorizado inclui a métrica adicional somente se positiva; formato antigo preservado quando ausente.
+
+Schema65 preenchido com venda, devolução e caixa fechado migra para66 preservando recibo, fechamento e checksums. O executável65 foi recusado contra banco66 descartável sem alterar o arquivo. Não há downgrade automático de banco.
+
+### Verificações observadas
+
+Suíte completa LOCAL e CI: **1.328 testes principais /2.821 incluindo subtestes, zero falhas, cinco integrações reais obrigatórias e três skips explicitamente permitidos pelo gate**. PostgreSQL17/SQLite descartáveis, pontes frontend sobre HTTP Go real, análise estática e contratos aprovados. O teste antigo de coexistência esperava65; sua expectativa foi atualizada para66 e a suíte completa repetida. A primeira falha não foi tratada como sucesso.
+
+Detector de corridas LOCAL de devoluções e quatro pilotos com backup CLI: PASS em **304.209s**. Rodada remota de trocas entre empresas/devoluções/quatro pilotos com backup e transporteCLI: PASS em **504.180s**. Esses tempos medem testes, não abertura do aplicativo.
+
+Testes verificam corpo estrito, ausência de seleção automática, caixa fechado/inexistente/sem saldo/de outro aparelho, vínculo e operador, revogação, idempotência e conflito, disputa de quantidade, devoluções em dois turnos, relatório/CSV, contexto imutável e caixa corrompido. Falhas ABORT/IGNORE em sete pontos não deixam dinheiro, estoque ou histórico parcialmente gravados.
+
+Prova adicional com **`titan-local` e `titan-backup` INSTALADOS, produzidos pelo CI**: 10 assertivas HTTP reais, três processos nativos da API, reinício, backup cifrado e restauração em banco novo; recibo/IDs preservados e repetição sem duplicação; saldo do novo caixa401 centavos, PASS em **0.961s**. Usou overlay EXTERNO somente do helper de teste para executar o servidor nativo, sem alterar fontes publicados. Essa prova não infla o total da suíte original. Smoke separado dos executáveis instalados: três processos da API,12 assertivas HTTP, proteção de licença, restart e backup CLI, schema66, PASS.
+
+Dois circuitos completos adicionais usam APIs NATIVAS e CLIs de backup/transporte INSTALADAS: aceite autenticado entre empresas e circuito com devolução, ambos com recebimento parcial e divergência, persistência e restauração. O circuito com devolução registrou **200 assertivas HTTP em 9 processos nativos de API** (comércio+fornecedor), caixa1574 centavos e obrigação0. Logs integrais sanitizados em `native-cash-circuit.txt` e `native-refund.txt` na mesma pasta da evidência. O overlay externo muda somente o helper de testes; não é uma modificação da API nem um novo mock. Não mede interação visual da tela ou entregaWindows.
+
+### Instalação, preservação e pendências
+
+Sete executáveis Linux amd64 instalados em `/home/danillo-malta/.local/opt/titansystem/backend/49136eab3e53e57d831ad7aae340ab3b6910629d`; hashes dos artefatos conferidos, diretório sincronizado e ponteiro `backend/current` trocado atomicamente; versão6ff0d2f e demais versões preservadas. **Os serviços8182/8282 mantêm seus PIDs/executáveis anteriores e health200**, sem reinício, seleção de banco ou migração. Instalar não equivale a atualizar esses serviços. Oito fontes pausados do frontend com hashes8/8 originais e todas as mudanças locais da outra frente preservadas e fora deste commit.
+
+Evidência sanitizada: `docs/evidence/backend-refund-next-shift66-20261026/acceptance.json`. [Guia e contratos da unidade](https://github.com/danilomalta/zzeussss/blob/49136eab3e53e57d831ad7aae340ab3b6910629d/docs/architecture/BACKEND_DEVOLUCOES_TURNO66_20261026.md). Laboratório `work/backend-refund-next-shift66-20261026/` mantém preimagens, hashes, logs, overlay e artefatos. Nenhum ZIP, dependência, banco ou chave comercial incluídos.
+
+Unidade backend entregue; nova ação ainda precisa ser ligada ao frontend, incluindo leitura dos campos opcionais. Não entrega devolução entre aparelhos/lojas, estornos eletrônicos/fiscais, transporte integrado ao desktop, Internet/TLS comercial, homologação Windows/hardware ou conclusão de todos os módulos do ERP. Backend inteiro não declarado100%; fonte, instalação, serviço ativo e integração de tela são estados distintos.
