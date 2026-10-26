@@ -1,6 +1,6 @@
 # Continuidade do TitanSystem
 
-Revisão 54 — 25/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 55 — 25/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
 ## Base, localização e responsáveis
@@ -1904,3 +1904,26 @@ Executado o caminho real do menu Ubuntu com `gio launch ~/.local/share/applicati
 Conferidos os três atalhos do menu, Downloads e área de trabalho: todos apontam ao lançador estável `~/.local/bin/titansystem-desktop`, que abre o runtime/interface já instalados. Nenhum outro atalho TitanSystem em /usr/share/applications ou /usr/local/share/applications; nenhuma entrada Titan/zzeus em favorite-apps do GNOME. Scripts antigos ABRIR_TITAN_UBUNTU.sh dos pacotes1.2/1.3 ainda verificam e extraem a distribuição inteira para pasta temporária em cada execução. Foram apenas lidos, preservados; não há prova de que o proprietário os esteja usando nem de que expliquem180s. Para o caminho medido, usar TitanSystem ERP pelo menu ou o TitanSystem.desktop da área de trabalho/Downloads.
 
 Prova numérica sem credenciais em `docs/evidence/desktop-performance-20261025/real-shortcut-opening.json`. Nenhuma nova alteração de fonte/instalação nesta revisão; não declarar que foi corrigida uma causa ainda não reproduzida. Serviço configurado8182 e serviço8282 preservados. Ainda não foram medidos o clique de login com a conta do proprietário nem o comportamento específico de um eventual atalho diferente.
+
+
+## Revisão55 — falha REAL no menu Ubuntu: sandbox/AppArmor e entrada antiga
+
+25/10/2026,23h local. O proprietário demonstrou que o ícone não abria. A conclusão anterior baseada no lançamento do Codex era insuficiente: abrir pelo terminal deste agente não comprovava o contexto do GNOME. Não repetir essa equivalência. O journal real da sessão mostrou duas ativações do ícone antigo abortando com FATAL setuid_sandbox_host.cc:166 e apontando chrome-sandbox na distribuição antiga em Documents/Codex/work/titan-desktop-package. A entrada ainda era utilizada pelo menu apesar do arquivo atualizado.
+
+Reprodução independente fora do terminal do agente: `systemd-run --user` executou o lançador instalado na sessão Ubuntu; mesmo erro fatal, agora apontando chrome-sandbox no runtime estável. Kernel mantém unprivileged_userns_clone=1 e apparmor_restrict_unprivileged_userns=1. O runtime copiado tem helper755 do usuário; a sessão real não tinha autorização AppArmor para criar a sandbox por user namespace. O ambiente do agente não expunha essa mesma restrição. Não era demonstrado que houvesse processamento de dez minutos: a ativação observada abortava antes de abrir a janela.
+
+### Correção aplicada e autorizada no Ubuntu
+
+Preparado perfil restrito ao caminho exato do Electron instalado, seguindo o formato dos perfis Chrome/VSCode já presentes no sistema: ABI4.0, flags=(unconfined), userns. Essa concessão permite o mecanismo de namespace do Chromium para o executável nomeado; não desativa a sandbox do Electron, não impõe confinamento AppArmor adicional nem autoriza root ao aplicativo. Parser de sintaxe passou antes da instalação. A ação administrativa foi executada por pkexec/autenticação do próprio Ubuntu, sem ler/receber senha. Criado e carregado `/etc/apparmor.d/titansystem-desktop-userns`,644root:root, SHA256f91aafc1a78777bcdea5eb4cc1510a971014b1964f8a33f0ec07967bc500f680. Não existia arquivo anterior; aplicador recusaria sobrescrevê-lo. Nenhum sysctl global alterado, nenhuma dependência instalada, nenhum helper setuid criado, nenhum --no-sandbox. Conteúdo e limites em DESKTOP_UBUNTU_SANDBOX_20261025.md.
+
+Registro novo `~/.local/share/applications/com.titansystem.ERP.desktop`, Nome TitanSystem ERP, Exec lançador estável, DBusActivatable=false e StartupWMClass correspondente. Entrada antiga titansystem-erp-atual.desktop preservada em backup e ocultada com Hidden/NoDisplay para não duplicar o menu ou reutilizar seu caminho em cache. Atalhos Downloads/TitanSystem.desktop e Área de trabalho/TitanSystem.desktop atualizados; três backups .gnome-fix-*.bak e metadados em work/desktop-gnome-launch-20261025/registered.json. desktop-file-validate e update-desktop-database passaram. Sem alterar launcher, runtime, interface, perfil de conexão ou serviços8182/8282.
+
+### Evidências no contexto corrigido
+
+Serviço temporário de validação do próprio Ubuntu abriu janela mapeada em704,59ms; processo com perfil titansystem_desktop e janela Normal permaneceram ativos em30amostras até6,67s. Ativação GTK pelo novo ID também encontrou janela Normal em684,49ms. A checagem imediata250ms foi prematura e preservada como falha de ensaio, não apresentada como sucesso. A consulta inicial a /proc do ambiente do agente não encontrou os PIDs externos; a prova final foi executada por serviço do próprio Ubuntu.
+
+Conferida instância **lançada pelo GNOME**, escopo app-gnome-com.titansystem.ERP-2396946.scope ativo/running, janela Normal. Verificação no namespace real da sessão: processo principal com perfil titansystem_desktop, três filhos com Seccomp=2/NoNewPrivs=1. Linhas de comando não identificaram tipos internos; não inferir renderer/GPU individual nem tratar cada filho como processo principal. O código instalado mantém app.enableSandbox, webPreferences.sandbox=true e launcher sem --no-sandbox. Prova numérica sem dados em docs/evidence/desktop-gnome-launch-20261025/ubuntu-launch-result.json. Não foi feito login nem lida credencial/banco comercial.
+
+Uma tentativa anterior de automatizar o teclado do overview digitou titansystem nesta conversa; interrompida e comunicada ao proprietário. FocusSearch por DBus havia sido negado; não registrar essa tentativa como clique gráfico bem-sucedido. Validação final se baseia na ativação real/escopo GNOME, janela e contexto de segurança acima.
+
+**Falha de abertura por sandbox corrigida no Ubuntu atual**, com aplicativo encontrado aberto no escopo do GNOME. Isso substitui o diagnóstico anterior que não reproduzia o problema; não é homologação de todas as telas nem da autenticação comercial. Trocar o caminho/versão do runtime exige atualizar o perfil específico por administração; não permitir qualquer executável do usuário com glob. Oito arquivos frontend pausados preservados. Serviços8182/8282 permanecem nos executáveis anteriores e nenhum banco migrado. Esta unidade altera configuração de desktop e documentação, sem novas APIs ou mudanças comerciais.
