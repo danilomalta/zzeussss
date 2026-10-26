@@ -64,3 +64,8 @@ Veja [guia do piloto](docs/architecture/PILOTO_DINHEIRO.md), [contratos](docs/ap
 ### Backup privado da fila
 
 `titan-trade queue backup`, `verify-backup` e `restore` cifram e validam os arquivos externos de transporte. Restauração exige pasta nova e mantém os itens pausados e limitados à consulta dos recibos originais; uma cópia antiga nunca autoriza reenvio. Não inclui banco, tokens ou chaves privadas. [Formato, comandos, recuperação e limites](docs/architecture/BACKEND_BACKUP_FILA_20261026.md).
+
+
+### Recuperar recibo com a origem desligada
+
+`titan-trade queue recover-session` reautoriza somente a consulta do recibo original usando sessão nova no destinatário. Exige prova persistida, preserva IDs e bloqueia POST/retry; não depende do arquivo de sessão ou da API da origem. [Regras, comandos e evidências](docs/architecture/BACKEND_RECUPERACAO_SESSAO_DESTINO_20261026.md).

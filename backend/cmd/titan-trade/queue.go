@@ -26,11 +26,13 @@ Comandos:
   queue pause --queue PASTA --id ITEM
   queue resume --queue PASTA --id ITEM --source-token ARQUIVO --target-token ARQUIVO
   queue retry --queue PASTA --id ITEM
+  queue recover-session --queue PASTA --id ITEM --target-token ARQUIVO
 A fila guarda somente configuração explícita, hashes e estado, nunca tokens ou documentos.
 Pasta0700; arquivos0600. Troca/expiração de sessão pausa o item, sem apagá-lo.
 Mensagem incerta: consulta o recibo;404 exige retry explícito. Não reenvia automaticamente.
 watch só entrega mensagens já autorizadas na fila; não aprova compra, não decide atendimento e não cria credenciais.
 status/exit0 do lote não significam aceite comercial: consulte confirmed/uncertain/paused/needs_retry.
+recover-session reautoriza SOMENTE consulta de recibo com prova original; não exige origem online nem permite POST.
 Restauração fica pausada e permanentemente limitada à consulta dos recibos originais.
 Backup da fila não inclui banco, tokens nem chave; preserve também o backup oficial do banco.
 Não instala serviço automaticamente nem modifica banco ou configuração de rede.`
@@ -45,7 +47,7 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 	}
 	command := args[0]
 	switch command {
-	case "backup", "verify-backup", "restore", "init", "add", "status", "run", "watch", "pause", "resume", "retry", "verify":
+	case "recover-session", "backup", "verify-backup", "restore", "init", "add", "status", "run", "watch", "pause", "resume", "retry", "verify":
 	default:
 		return traderelay.ErrInvalid
 	}
@@ -70,9 +72,11 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 	}
 	if command == "add" || command == "resume" {
 		st = fs.String("source-token", "", "")
+	}
+	if command == "add" || command == "resume" || command == "recover-session" {
 		tt = fs.String("target-token", "", "")
 	}
-	if command == "pause" || command == "resume" || command == "retry" || command == "verify" {
+	if command == "pause" || command == "resume" || command == "retry" || command == "verify" || command == "recover-session" {
 		id = fs.String("id", "", "")
 	}
 	if command == "run" || command == "watch" {
@@ -165,6 +169,12 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 		return encoder.Encode(view)
 	case "add":
 		result, e := traderelay.QueueAdd(bounded, *dir, *job, *st, *tt)
+		if e != nil {
+			return e
+		}
+		return encoder.Encode(result)
+	case "recover-session":
+		result, e := traderelay.QueueRecoverSession(bounded, *dir, *id, *tt)
 		if e != nil {
 			return e
 		}
