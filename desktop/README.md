@@ -11,7 +11,7 @@
 - `preload.cjs`: somente leitura/gravação da conexão pela janela local de configuração. Nenhuma execução de comando ou acesso arbitrário a arquivo pelo renderer.
 - `setup/`: configuração de conexão; não contém telas comerciais do ERP.
 - `scripts/build.mjs`: prepara aplicação em `.build/app-…`, sem `.env`, backend, banco ou dependências copiadas. Só o estágio atual entra numa futura distribuição.
-- `scripts/start.cjs`: prepara/reutiliza a compilação e abre o Electron existente. Não instala nada.
+- `scripts/start.cjs`: confere todos os arquivos do estágio já compilado e abre o Electron existente. Não varre fontes, recompila ou instala dependências na abertura normal.
 
 `main.ts` permanece como entrada de compatibilidade para `main.cjs`; não é outra implementação. A árvore `../TitanSystem/desktop/` é histórica e permanece preservada, sem ser usada pelo aplicativo atual.
 
@@ -40,6 +40,8 @@ npm start
 ```
 
 Se Electron ainda não estiver nesta pasta, `npm start` informa a ausência. É possível usar uma instalação existente informando `TITAN_ELECTRON_BINARY` com caminho absoluto. Nenhum comando acima instala dependências, seleciona backend, migra banco ou cria instalador.
+
+Depois de alterar fontes, execute `npm run build` explicitamente. Também é possível pedir compilação e abertura com `npm start -- --build`. `npm start` sozinho mantém a versão compilada anterior, mesmo havendo trabalho não concluído nos fontes; se não houver estágio íntegro, informa o erro e não inicia compilação automática. A conferência de integridade dos arquivos compilados continua obrigatória.
 
 O build não lê `.env`, não carrega a configuração de Vite de desenvolvimento e não abre portas. Mantém os arquivos de estágios anteriores para revisão; não inclui a árvore `.build/` inteira em pacote. Um estágio com as mesmas fontes e arquivos íntegros é reutilizado.
 
