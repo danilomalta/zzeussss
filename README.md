@@ -49,3 +49,8 @@ Testes usam somente instalações descartáveis e licenças sintéticas. Nenhum 
 Backup cifrado tem limite de snapshot 128 MiB. Restaurar exige caminho novo, chave e contexto corretos; sessões antigas são revogadas. A inspeção não substitui a verificação criptográfica, que é executada antes dela. Não publicar `.env`, chaves, estações, bancos ou dados comerciais.
 
 Veja [guia do piloto](docs/architecture/PILOTO_DINHEIRO.md), [contratos](docs/api/), [regras](docs/architecture/PROJECT_RULES.md) e [evidências históricas](docs/architecture/evidence/pilot-cash-20261025/README.md). Os resultados desta entrega serão registrados junto do link CI efetivamente observado.
+
+
+### Transporte explícito entre empresas
+
+`titan-trade` transporta pedidos previamente exportados e decisões assinadas entre duas APIs autorizadas. Persistência da tentativa, recuperação sem POST/origem online e retry somente explícito com os mesmos IDs. Nenhuma aprovação automática, credencial na linha de comando ou abertura de banco pelo cliente. HTTPS validado fora de loopback; Linux com lock durável. [Contrato dos arquivos, comandos e limites](docs/architecture/BACKEND_TRANSPORTE_ASSINADO_20261026.md). Os serviços instalados existentes não são reiniciados automaticamente.

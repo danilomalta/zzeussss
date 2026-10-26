@@ -64,11 +64,12 @@ jobs:
       - name: Build real executables
         run: |
           set -euo pipefail
-          for tool in titan-local titan-backup titan-access titan-peer titan-receive titan-sync; do
+          for tool in titan-local titan-backup titan-access titan-peer titan-receive titan-sync titan-trade; do
             CGO_ENABLED=0 go build -trimpath -o "$RUNNER_TEMP/$tool" "./cmd/$tool"
           done
       - name: Full backend regression suite with mandatory real integrations
         env:
+          TITAN_TRADE_CLI: ${{ runner.temp }}/titan-trade
           TITAN_SESSION_TEST_DATABASE_URL: postgres://titan_ci:ephemeral-ci-fixture-only@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/titan_integration_test?sslmode=disable
           TITAN_CATALOG_TEST_DATABASE_URL: postgres://titan_ci:ephemeral-ci-fixture-only@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/titan_integration_test?sslmode=disable
           TITAN_CASH_JOURNAL_BRIDGE: ${{ github.workspace }}/frontend-contract/frontend-web/tests/cashJournal.bridge.mjs
@@ -85,7 +86,7 @@ jobs:
             -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE \
             go test -race ./internal/localapi \
             -run '^TestTrade|^TestHTTPCustomerReturn|^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore|CustomerReturnRestartAndRestore)$' \
-            -count=1 -v -timeout=10m -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" \
+            -count=1 -v -timeout=10m -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" -pilot-trade-cli="$RUNNER_TEMP/titan-trade" \
             | tee "$RUNNER_TEMP/pilot-cli-race.log"
       - name: Upload execution evidence and Linux binaries
         if: always()
@@ -103,3 +104,4 @@ jobs:
             ${{ runner.temp }}/titan-peer
             ${{ runner.temp }}/titan-receive
             ${{ runner.temp }}/titan-sync
+            ${{ runner.temp }}/titan-trade

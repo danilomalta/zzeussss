@@ -12,6 +12,7 @@ import (
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/backup"
 	"titansystem-backend/internal/localdb/supplycycle"
+	"titansystem-backend/internal/traderelay"
 )
 
 // Two independent databases, station keys, user sessions and OS processes.
@@ -51,7 +52,11 @@ func pilotAuthenticateSupplier(t *testing.T, buyer *pilotHTTP, _ *stockHTTPFixtu
 	var offer supplycycle.TradeResult
 	buyer.call("POST", cycleOrder+"/company-trade/export", supplycycle.TradeExportInput{OperationID: "pilot-export", PeerID: "pilot-vendor", Reason: "Envio explicito do pedido aprovado pelo comercio"}, 200, &offer)
 	input := supplycycle.TradeImportInput{OperationID: "pilot-import", PeerID: "pilot-customer", Envelope: *offer.Envelope}
-	seller.call("POST", "/local/v1/company-trade/orders/import", input, 200, nil)
+	if *pilotTradeCLI == "" {
+		seller.call("POST", "/local/v1/company-trade/orders/import", input, 200, nil)
+	} else {
+		pilotRunRelayCLI(t, *pilotTradeCLI, buyer, seller, traderelay.Job{Version: 1, Source: traderelay.Endpoint{URL: buyer.service.url + "/local/v1", Party: bi.Party, ActorID: offer.Message.ActorID, Fingerprint: bi.Fingerprint}, Target: traderelay.Endpoint{URL: seller.service.url + "/local/v1", Party: si.Party, ActorID: sellerFixture.owner.OwnerID, Fingerprint: si.Fingerprint}, MessageID: offer.Message.ID, PeerID: input.PeerID, OperationID: input.OperationID}, t.TempDir(), "send")
+	}
 	seller.service.stop(t)
 	seller.service = pilotStart(t, dbPath, sellerFixture, station)
 	seller.call("GET", "/local/v1/company-trade/operations/pilot-import", nil, 200, nil)
@@ -96,7 +101,22 @@ func pilotAuthenticateSupplier(t *testing.T, buyer *pilotHTTP, _ *stockHTTPFixtu
 	}
 	applied := supplycycle.TradeImportInput{OperationID: "pilot-apply", PeerID: "pilot-vendor", Envelope: *decision.Envelope}
 	var result supplycycle.TradeResult
-	buyer.call("POST", cycleOrder+"/company-trade/decision", applied, 200, &result)
+	if *pilotTradeCLI == "" {
+		buyer.call("POST", cycleOrder+"/company-trade/decision", applied, 200, &result)
+	} else {
+		// The restored sender must explicitly review retained counterpart trust
+		// before relaying a saved decision. A read-only receipt is not that review.
+		var recovery supplycycle.TradeRecovery
+		seller.call("GET", "/local/v1/company-trade/recovery", nil, 200, &recovery)
+		if recovery.Required {
+			seller.call("POST", "/local/v1/company-trade/recovery/review", supplycycle.TradeRecoveryInput{OperationID: "pilot-relay-review", Generation: recovery.Generation, VerificationReference: "Synthetic supplier owner reconfirmed buyer station fingerprint " + bi.Fingerprint}, 200, nil)
+		}
+		job := traderelay.Job{Version: 1, Source: traderelay.Endpoint{URL: seller.service.url + "/local/v1", Party: si.Party, ActorID: sellerFixture.owner.OwnerID, Fingerprint: si.Fingerprint}, Target: traderelay.Endpoint{URL: buyer.service.url + "/local/v1", Party: bi.Party, ActorID: offer.Message.ActorID, Fingerprint: bi.Fingerprint}, MessageID: decision.Message.ID, PeerID: applied.PeerID, OperationID: applied.OperationID}
+		directory := t.TempDir()
+		pilotRunRelayCLI(t, *pilotTradeCLI, seller, buyer, job, directory, "send")
+		pilotRunRelayCLI(t, *pilotTradeCLI, seller, buyer, job, directory, "recover")
+		buyer.call("GET", "/local/v1/company-trade/operations/"+applied.OperationID, nil, 200, &result)
+	}
 	if result.Cycle.Decision.EvidenceMode != "authenticated_company" || !result.Cycle.Decision.ExternalVerified {
 		t.Fatal("supplier acceptance is not authenticated")
 	}
