@@ -12,6 +12,8 @@ import (
 func (s *Server) mountCustomerReturns(r fiber.Router) {
 	r.Get("/sales/:id/returns", s.customerReturnHistory)
 	r.Post("/sales/:id/returns/quote", s.customerReturnQuote)
+	r.Post("/sales/:id/returns/cash-session/quote", s.customerReturnSessionQuote)
+	r.Post("/sales/:id/returns/cash-session", s.customerReturnSessionCreate)
 	r.Post("/sales/:id/returns", s.customerReturnCreate)
 	r.Get("/sale-return-operations/:id", s.customerReturnOperation)
 }
@@ -70,6 +72,12 @@ func decodeReturnItems(raw json.RawMessage) ([]sale.ReturnItemInput, error) {
 	return typed, nil
 }
 func (s *Server) customerReturnQuote(c *fiber.Ctx) error {
+	return s.customerReturnQuoteForSession(c, false)
+}
+func (s *Server) customerReturnSessionQuote(c *fiber.Ctx) error {
+	return s.customerReturnQuoteForSession(c, true)
+}
+func (s *Server) customerReturnQuoteForSession(c *fiber.Ctx, explicit bool) error {
 	c.Set(fiber.HeaderCacheControl, "no-store")
 	if c.Context().QueryArgs().Len() != 0 {
 		return c.SendStatus(400)
@@ -77,7 +85,11 @@ func (s *Server) customerReturnQuote(c *fiber.Ctx) error {
 	if len(c.Body()) > 128*1024 {
 		return c.SendStatus(413)
 	}
-	values, err := exactSaleObject(c.Body(), []string{"items"})
+	fields := []string{"items"}
+	if explicit {
+		fields = append(fields, "refund_cash_session_id")
+	}
+	values, err := exactSaleObject(c.Body(), fields)
 	if err != nil {
 		return c.SendStatus(400)
 	}
@@ -86,13 +98,28 @@ func (s *Server) customerReturnQuote(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	a := c.Locals("session").(localauth.Session)
-	v, err := sale.QuoteCustomerReturn(c.UserContext(), s.DB, a.Actor, a.Device, c.Params("id"), items)
+	var v sale.CustomerReturnQuote
+	if explicit {
+		var id string
+		if json.Unmarshal(values["refund_cash_session_id"], &id) != nil {
+			return c.SendStatus(400)
+		}
+		v, err = sale.QuoteCustomerReturnWithSession(c.UserContext(), s.DB, a.Actor, a.Device, c.Params("id"), items, id)
+	} else {
+		v, err = sale.QuoteCustomerReturn(c.UserContext(), s.DB, a.Actor, a.Device, c.Params("id"), items)
+	}
 	if err != nil {
 		return customerReturnError(c, err)
 	}
 	return c.JSON(v)
 }
 func (s *Server) customerReturnCreate(c *fiber.Ctx) error {
+	return s.customerReturnCreateForSession(c, false)
+}
+func (s *Server) customerReturnSessionCreate(c *fiber.Ctx) error {
+	return s.customerReturnCreateForSession(c, true)
+}
+func (s *Server) customerReturnCreateForSession(c *fiber.Ctx, explicit bool) error {
 	c.Set(fiber.HeaderCacheControl, "no-store")
 	if s.contracts == nil {
 		return c.SendStatus(503)
@@ -103,7 +130,11 @@ func (s *Server) customerReturnCreate(c *fiber.Ctx) error {
 	if len(c.Body()) > 128*1024 {
 		return c.SendStatus(413)
 	}
-	values, err := exactSaleObject(c.Body(), []string{"operation_id", "reason", "expected_refund_cents", "items"})
+	fields := []string{"operation_id", "reason", "expected_refund_cents", "items"}
+	if explicit {
+		fields = append(fields, "refund_cash_session_id")
+	}
+	values, err := exactSaleObject(c.Body(), fields)
 	if err != nil {
 		return c.SendStatus(400)
 	}
@@ -112,6 +143,9 @@ func (s *Server) customerReturnCreate(c *fiber.Ctx) error {
 	}
 	var in sale.CustomerReturnInput
 	if err = json.Unmarshal(c.Body(), &in); err != nil {
+		return c.SendStatus(400)
+	}
+	if explicit && in.RefundCashSessionID == "" {
 		return c.SendStatus(400)
 	}
 	in.SaleID = c.Params("id")

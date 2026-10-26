@@ -21157,6 +21157,12 @@
     },
     "/local/v1/sales/{id}/returns/quote": {
       "$ref": "./customer-returns.openapi.json#/paths/~1local~1v1~1sales~1{id}~1returns~1quote"
+    },
+    "/local/v1/sales/{id}/returns/cash-session": {
+      "$ref": "./customer-returns.openapi.json#/paths/~1local~1v1~1sales~1{id}~1returns~1cash-session"
+    },
+    "/local/v1/sales/{id}/returns/cash-session/quote": {
+      "$ref": "./customer-returns.openapi.json#/paths/~1local~1v1~1sales~1{id}~1returns~1cash-session~1quote"
     }
   },
   "components": {

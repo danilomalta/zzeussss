@@ -105,7 +105,7 @@ func Read(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceCo
 		if !journal.SourceComplete || journal.HasMore || journal.TotalCount != int64(len(journal.Items)) || journal.Summary.ExpectedCents != closed.Cash.ExpectedCents || journal.Summary.DeclaredCents != closed.Cash.DeclaredCents || journal.Summary.DifferenceCents != closed.Cash.DifferenceCents {
 			return Report{}, ErrInconsistent
 		}
-		values := map[string]int64{"session_count": 1, "sale_count": closed.SaleCount, "gross_sales_cents": closed.GrossSalesCents, "cancelled_sales_cents": closed.CancelledSalesCents, "returned_sales_cents": closed.ReturnedSalesCents, "net_sales_cents": closed.NetSalesCents, "sum_openings_cents": closed.Cash.OpeningCents, "sum_expected_at_closures_cents": closed.Cash.ExpectedCents, "sum_declared_at_closures_cents": closed.Cash.DeclaredCents, "sum_closure_differences_cents": closed.Cash.DifferenceCents, "supply_cents": closed.Cash.SupplyCents, "withdrawal_cents": closed.Cash.WithdrawalCents, "journal_entry_count": journal.TotalCount, "journal_debit_cents": journal.Summary.DebitCents, "journal_credit_cents": journal.Summary.CreditCents, "unclassified_count": journal.Summary.UnclassifiedCount}
+		values := map[string]int64{"prior_session_refund_cents": closed.Cash.PriorSessionRefundCents, "session_count": 1, "sale_count": closed.SaleCount, "gross_sales_cents": closed.GrossSalesCents, "cancelled_sales_cents": closed.CancelledSalesCents, "returned_sales_cents": closed.ReturnedSalesCents, "net_sales_cents": closed.NetSalesCents, "sum_openings_cents": closed.Cash.OpeningCents, "sum_expected_at_closures_cents": closed.Cash.ExpectedCents, "sum_declared_at_closures_cents": closed.Cash.DeclaredCents, "sum_closure_differences_cents": closed.Cash.DifferenceCents, "supply_cents": closed.Cash.SupplyCents, "withdrawal_cents": closed.Cash.WithdrawalCents, "journal_entry_count": journal.TotalCount, "journal_debit_cents": journal.Summary.DebitCents, "journal_credit_cents": journal.Summary.CreditCents, "unclassified_count": journal.Summary.UnclassifiedCount}
 		for name, n := range values {
 			totals[name].Add(totals[name], big.NewInt(n))
 		}
@@ -126,6 +126,9 @@ func Read(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceCo
 		v, err := exact(n)
 		if err != nil {
 			return Report{}, err
+		}
+		if name == "prior_session_refund_cents" && v == 0 {
+			continue
 		}
 		r.Summary[name] = v
 	}

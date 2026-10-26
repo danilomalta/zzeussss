@@ -29,6 +29,15 @@ func ReadCustomerReturns(ctx context.Context, db *sql.DB, actor identity.Scope, 
 }
 
 func QuoteCustomerReturn(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, saleID string, items []ReturnItemInput) (CustomerReturnQuote, error) {
+	return quoteCustomerReturn(ctx, db, actor, device, saleID, items, "")
+}
+func QuoteCustomerReturnWithSession(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, saleID string, items []ReturnItemInput, refundSession string) (CustomerReturnQuote, error) {
+	if !planID(refundSession) {
+		return CustomerReturnQuote{}, ErrInvalid
+	}
+	return quoteCustomerReturn(ctx, db, actor, device, saleID, items, refundSession)
+}
+func quoteCustomerReturn(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, saleID string, items []ReturnItemInput, refundSession string) (CustomerReturnQuote, error) {
 	if db == nil || !planID(saleID) || !validReturnItems(items) {
 		return CustomerReturnQuote{}, ErrInvalid
 	}
@@ -51,7 +60,15 @@ func QuoteCustomerReturn(ctx context.Context, db *sql.DB, actor identity.Scope, 
 	if err != nil {
 		return q, err
 	}
-	if err = returnDrawerTx(ctx, tx, actor, device, h.CashSessionID, q.RefundCents); err != nil {
+	drawer, e := resolveReturnDrawerTx(ctx, tx, actor, device, h.CashSessionID, refundSession)
+	if e != nil {
+		return q, e
+	}
+	q.CashSessionID = drawer
+	if drawer != h.CashSessionID {
+		q.OriginalCashSessionID = h.CashSessionID
+	}
+	if err = returnDrawerTx(ctx, tx, actor, device, drawer, q.RefundCents); err != nil {
 		return q, err
 	}
 	return q, tx.Commit()
@@ -199,7 +216,29 @@ func readCustomerReturnsTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d 
 	}
 	for _, s := range storedReturns {
 		var in CustomerReturnInput
-		if json.Unmarshal([]byte(s.input), &in) != nil || !validCustomerReturn(in) || planHash(in) != s.hash || in.OperationID != s.r.OperationID || in.SaleID != id || in.Reason != s.r.Reason || in.ExpectedRefundCents != s.r.RefundCents || s.r.CashSessionID != h.CashSessionID {
+		if json.Unmarshal([]byte(s.input), &in) != nil || !validCustomerReturn(in) || planHash(in) != s.hash || in.OperationID != s.r.OperationID || in.SaleID != id || in.Reason != s.r.Reason || in.ExpectedRefundCents != s.r.RefundCents {
+			return h, ErrConflict
+		}
+		expectedDrawer := h.CashSessionID
+		if in.RefundCashSessionID != "" {
+			expectedDrawer = in.RefundCashSessionID
+		}
+		if s.r.CashSessionID != expectedDrawer {
+			return h, ErrConflict
+		}
+		cross := s.r.CashSessionID != h.CashSessionID
+		var contexts int
+		if e := tx.QueryRowContext(ctx, `SELECT count(*) FROM customer_return_cross_shifts WHERE tenant_id=? AND return_id=?`, a.TenantID, s.r.ID).Scan(&contexts); e != nil {
+			return h, e
+		}
+		if cross {
+			var original, refund, actor, stamp string
+			e := tx.QueryRowContext(ctx, `SELECT original_cash_session_id,refund_cash_session_id,actor_identity_id,created_at FROM customer_return_cross_shifts WHERE tenant_id=? AND store_id=? AND device_id=? AND return_id=?`, a.TenantID, a.StoreID, d.DeviceID, s.r.ID).Scan(&original, &refund, &actor, &stamp)
+			if e != nil || contexts != 1 || original != h.CashSessionID || refund != s.r.CashSessionID || actor != s.r.ActorID || stamp != s.r.CreatedAt {
+				return h, ErrConflict
+			}
+			s.r.OriginalCashSessionID = original
+		} else if contexts != 0 {
 			return h, ErrConflict
 		}
 		q, e := quoteReturn(h, in.Items)
@@ -249,7 +288,7 @@ func readCustomerReturnsTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d 
 		}
 		var delta, posted int64
 		var reason, stamp, category, operation, who string
-		e = tx.QueryRowContext(ctx, `SELECT m.amount_cents,m.reason,m.created_at,j.cash_delta_cents,j.category,j.operation_id,j.actor_identity_id FROM cash_movements m JOIN cash_journal_entries j ON j.tenant_id=m.tenant_id AND j.entry_id='movement:'||m.id AND j.store_id=m.store_id AND j.session_id=m.cash_session_id AND j.device_id=? WHERE m.tenant_id=? AND m.store_id=? AND m.cash_session_id=? AND m.id=?`, d.DeviceID, a.TenantID, a.StoreID, h.CashSessionID, s.r.CashMovementID).Scan(&delta, &reason, &stamp, &posted, &category, &operation, &who)
+		e = tx.QueryRowContext(ctx, `SELECT m.amount_cents,m.reason,m.created_at,j.cash_delta_cents,j.category,j.operation_id,j.actor_identity_id FROM cash_movements m JOIN cash_journal_entries j ON j.tenant_id=m.tenant_id AND j.entry_id='movement:'||m.id AND j.store_id=m.store_id AND j.session_id=m.cash_session_id AND j.device_id=? WHERE m.tenant_id=? AND m.store_id=? AND m.cash_session_id=? AND m.id=?`, d.DeviceID, a.TenantID, a.StoreID, s.r.CashSessionID, s.r.CashMovementID).Scan(&delta, &reason, &stamp, &posted, &category, &operation, &who)
 		if e != nil || delta != -s.r.RefundCents || posted != delta || reason != "devolucao-cliente:"+s.r.ID || stamp != s.r.CreatedAt || category != "sale_reversal" || operation != s.r.OperationID || who != s.r.ActorID {
 			return h, ErrConflict
 		}

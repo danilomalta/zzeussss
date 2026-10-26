@@ -3710,6 +3710,20 @@
       "path": "/local/v1/sales/:id/returns/quote",
       "authentication": "session",
       "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/sales/:id/returns/cash-session",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/sales/:id/returns/cash-session/quote",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
     }
   ]
 }

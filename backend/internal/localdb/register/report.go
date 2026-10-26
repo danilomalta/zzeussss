@@ -31,14 +31,15 @@ type PaymentSummary struct {
 }
 
 type CashSummary struct {
-	OpeningCents        int64 `json:"opening_cents"`
-	MovementNetCents    int64 `json:"movement_net_cents"`
-	ExpectedCents       int64 `json:"expected_cents"`
-	DeclaredCents       int64 `json:"declared_cents"`
-	DifferenceCents     int64 `json:"difference_cents"`
-	SupplyCents         int64 `json:"supply_cents"`
-	WithdrawalCents     int64 `json:"withdrawal_cents"`
-	CustomerRefundCents int64 `json:"customer_refund_cents"`
+	OpeningCents            int64 `json:"opening_cents"`
+	MovementNetCents        int64 `json:"movement_net_cents"`
+	ExpectedCents           int64 `json:"expected_cents"`
+	DeclaredCents           int64 `json:"declared_cents"`
+	DifferenceCents         int64 `json:"difference_cents"`
+	SupplyCents             int64 `json:"supply_cents"`
+	WithdrawalCents         int64 `json:"withdrawal_cents"`
+	PriorSessionRefundCents int64 `json:"prior_session_refund_cents,omitempty"`
+	CustomerRefundCents     int64 `json:"customer_refund_cents"`
 }
 
 type ClosedReport struct {
@@ -250,6 +251,14 @@ func readClosedReportTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, d
 	}
 	v.NetSalesCents -= v.ReturnedSalesCents
 	v.Cash.CustomerRefundCents = v.ReturnedSalesCents
+	prior, e := priorSessionRefundTotalTx(ctx, tx, actor, device, id)
+	if e != nil {
+		return ClosedReport{}, e
+	}
+	v.Cash.PriorSessionRefundCents = prior
+	if e = reportAdd(&v.Cash.CustomerRefundCents, prior); e != nil {
+		return ClosedReport{}, e
+	}
 	v.Complete = true
 	return v, nil
 }

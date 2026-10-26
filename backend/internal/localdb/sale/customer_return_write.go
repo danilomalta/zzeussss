@@ -15,8 +15,8 @@ import (
 	"titansystem-backend/internal/localdb/identity"
 )
 
-// returnDrawerTx permits refunds only from the sale's original open local
-// drawer. A later shift cannot rewrite an already issued closure/report.
+// returnDrawerTx checks physical funds in the selected local open drawer.
+// Cross-shift authorization and provenance are checked separately.
 func returnDrawerTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, id string, refund int64) error {
 	var opening int64
 	err := tx.QueryRowContext(ctx, `SELECT opening_cents FROM cash_sessions WHERE tenant_id=? AND store_id=? AND device_id=? AND id=? AND closed_at IS NULL`, a.TenantID, a.StoreID, d.DeviceID, id).Scan(&opening)
@@ -65,6 +65,11 @@ func CreateCustomerReturn(ctx context.Context, db *sql.DB, contracts *entitlemen
 	if err = contracts.RequireTx(ctx, tx, a, d, identity.CancelSale, modules.POS); err != nil {
 		return CustomerReturn{}, err
 	}
+	if in.RefundCashSessionID != "" {
+		if err = identity.CanOperateTx(ctx, tx, a, d, identity.ManageCash); err != nil {
+			return CustomerReturn{}, err
+		}
+	}
 	hash := planHash(in)
 	var priorSale, priorActor, priorHash string
 	err = tx.QueryRowContext(ctx, `SELECT sale_id,actor_identity_id,request_hash FROM customer_returns WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=?`, a.TenantID, a.StoreID, d.DeviceID, in.OperationID).Scan(&priorSale, &priorActor, &priorHash)
@@ -112,7 +117,11 @@ func CreateCustomerReturn(ctx context.Context, db *sql.DB, contracts *entitlemen
 	if err = checkReturnUnitsTx(ctx, tx, a, h, in.Items); err != nil {
 		return CustomerReturn{}, err
 	}
-	if err = returnDrawerTx(ctx, tx, a, d, h.CashSessionID, q.RefundCents); err != nil {
+	drawer, e := resolveReturnDrawerTx(ctx, tx, a, d, h.CashSessionID, in.RefundCashSessionID)
+	if e != nil {
+		return CustomerReturn{}, e
+	}
+	if err = returnDrawerTx(ctx, tx, a, d, drawer, q.RefundCents); err != nil {
 		return CustomerReturn{}, err
 	}
 	id, err := localdb.NewID()
@@ -125,15 +134,20 @@ func CreateCustomerReturn(ctx context.Context, db *sql.DB, contracts *entitlemen
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	reason := "devolucao-cliente:" + id
-	if err = cancelWrite(ctx, tx, 1, `INSERT INTO cash_movements VALUES(?,?,?,?,?,?,?)`, cashID, a.TenantID, a.StoreID, h.CashSessionID, -q.RefundCents, reason, now); err != nil {
+	if err = cancelWrite(ctx, tx, 1, `INSERT INTO cash_movements VALUES(?,?,?,?,?,?,?)`, cashID, a.TenantID, a.StoreID, drawer, -q.RefundCents, reason, now); err != nil {
 		return CustomerReturn{}, err
 	}
 	encoded, err := json.Marshal(in)
 	if err != nil {
 		return CustomerReturn{}, err
 	}
-	if err = cancelWrite(ctx, tx, 1, `INSERT INTO customer_returns(tenant_id,store_id,device_id,return_id,operation_id,sale_id,cash_session_id,actor_identity_id,reason,refund_cents,cash_movement_id,request_hash,input_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, d.DeviceID, id, in.OperationID, in.SaleID, h.CashSessionID, a.IdentityID, in.Reason, q.RefundCents, cashID, hash, string(encoded), now); err != nil {
+	if err = cancelWrite(ctx, tx, 1, `INSERT INTO customer_returns(tenant_id,store_id,device_id,return_id,operation_id,sale_id,cash_session_id,actor_identity_id,reason,refund_cents,cash_movement_id,request_hash,input_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, d.DeviceID, id, in.OperationID, in.SaleID, drawer, a.IdentityID, in.Reason, q.RefundCents, cashID, hash, string(encoded), now); err != nil {
 		return CustomerReturn{}, err
+	}
+	if drawer != h.CashSessionID {
+		if err = cancelWrite(ctx, tx, 1, `INSERT INTO customer_return_cross_shifts(tenant_id,store_id,device_id,return_id,original_cash_session_id,refund_cash_session_id,actor_identity_id,created_at) VALUES(?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, d.DeviceID, id, h.CashSessionID, drawer, a.IdentityID, now); err != nil {
+			return CustomerReturn{}, err
+		}
 	}
 	for _, l := range q.Items {
 		var moved any

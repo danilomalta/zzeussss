@@ -16,6 +16,7 @@ type ReturnItemInput struct {
 	Disposition   string `json:"disposition"`
 }
 type CustomerReturnInput struct {
+	RefundCashSessionID string            `json:"refund_cash_session_id,omitempty"`
 	OperationID         string            `json:"operation_id"`
 	SaleID              string            `json:"sale_id"`
 	Reason              string            `json:"reason"`
@@ -31,18 +32,19 @@ type CustomerReturnLine struct {
 	RefundCents        int64   `json:"refund_cents"`
 }
 type CustomerReturn struct {
-	ID               string               `json:"id"`
-	OperationID      string               `json:"operation_id"`
-	SaleID           string               `json:"sale_id"`
-	CashSessionID    string               `json:"cash_session_id"`
-	ActorID          string               `json:"actor_id"`
-	Reason           string               `json:"reason"`
-	RefundCents      int64                `json:"refund_cents"`
-	CashMovementID   string               `json:"cash_movement_id"`
-	CreatedAt        string               `json:"created_at"`
-	Repeated         bool                 `json:"repeated"`
-	FiscalAuthorized bool                 `json:"fiscal_authorized"`
-	Items            []CustomerReturnLine `json:"items"`
+	OriginalCashSessionID string               `json:"original_cash_session_id,omitempty"`
+	ID                    string               `json:"id"`
+	OperationID           string               `json:"operation_id"`
+	SaleID                string               `json:"sale_id"`
+	CashSessionID         string               `json:"cash_session_id"`
+	ActorID               string               `json:"actor_id"`
+	Reason                string               `json:"reason"`
+	RefundCents           int64                `json:"refund_cents"`
+	CashMovementID        string               `json:"cash_movement_id"`
+	CreatedAt             string               `json:"created_at"`
+	Repeated              bool                 `json:"repeated"`
+	FiscalAuthorized      bool                 `json:"fiscal_authorized"`
+	Items                 []CustomerReturnLine `json:"items"`
 }
 type ReturnBalanceLine struct {
 	SaleItemID       string `json:"sale_item_id"`
@@ -71,10 +73,11 @@ type CustomerReturnHistory struct {
 	Returns            []CustomerReturn    `json:"returns"`
 }
 type CustomerReturnQuote struct {
-	SaleID        string               `json:"sale_id"`
-	CashSessionID string               `json:"cash_session_id"`
-	RefundCents   int64                `json:"refund_cents"`
-	Items         []CustomerReturnLine `json:"items"`
+	OriginalCashSessionID string               `json:"original_cash_session_id,omitempty"`
+	SaleID                string               `json:"sale_id"`
+	CashSessionID         string               `json:"cash_session_id"`
+	RefundCents           int64                `json:"refund_cents"`
+	Items                 []CustomerReturnLine `json:"items"`
 }
 
 func validReturnItems(items []ReturnItemInput) bool {
@@ -91,7 +94,7 @@ func validReturnItems(items []ReturnItemInput) bool {
 	return true
 }
 func validCustomerReturn(in CustomerReturnInput) bool {
-	return proofKey(in.OperationID) && planID(in.SaleID) && utf8.ValidString(in.Reason) && strings.TrimSpace(in.Reason) != "" && len(in.Reason) <= 2000 && utf8.RuneCountInString(in.Reason) <= 500 && !strings.ContainsRune(in.Reason, 0) && in.ExpectedRefundCents > 0 && in.ExpectedRefundCents <= checkoutMaxSafe && validReturnItems(in.Items)
+	return (in.RefundCashSessionID == "" || planID(in.RefundCashSessionID)) && proofKey(in.OperationID) && planID(in.SaleID) && utf8.ValidString(in.Reason) && strings.TrimSpace(in.Reason) != "" && len(in.Reason) <= 2000 && utf8.RuneCountInString(in.Reason) <= 500 && !strings.ContainsRune(in.Reason, 0) && in.ExpectedRefundCents > 0 && in.ExpectedRefundCents <= checkoutMaxSafe && validReturnItems(in.Items)
 }
 
 // Cumulative floor allocation makes repeated fractional returns sum to the

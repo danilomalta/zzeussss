@@ -25,7 +25,7 @@ Novo contrato [company-trade.openapi.json](docs/api/company-trade.openapi.json):
 
 ## Devolução parcial em dinheiro
 
-Integrada a entrega anterior de devolução ao cliente, conciliada com os pedidos autenticados na migração65, sem alterar SQL1–64. Cotação autoritativa, devolução parcial, reposição opcional conferida, dinheiro, livro de caixa, recuperação e relatórios preservam a venda original. O quarto piloto executa o circuito com devolução, queda, reinício e restauração pelo backup real. Reembolso novo exige a gaveta original ainda aberta; não entrega estorno eletrônico ou fiscal. Veja [contrato](docs/api/customer-returns.openapi.json) e [integração, provas e limites](docs/architecture/BACKEND_DEVOLUCOES_CLIENTE65_20261025.md).
+Integrada a entrega anterior de devolução ao cliente, conciliada com os pedidos autenticados na migração65, sem alterar SQL1–64. Cotação autoritativa, devolução parcial, reposição opcional conferida, dinheiro, livro de caixa, recuperação e relatórios preservam a venda original. O quarto piloto executa o circuito com devolução, queda, reinício e restauração pelo backup real. A rota original continua exigindo a gaveta da venda aberta. A migração66 acrescenta rotas explícitas para devolver em turno posterior do mesmo aparelho: autorização adicional, caixa escolhido pelo operador, saldo conferido e proveniência imutável, preservando o fechamento anterior. Não entrega estorno eletrônico ou fiscal. Veja [turno posterior, contratos e limites](docs/architecture/BACKEND_DEVOLUCOES_TURNO66_20261026.md). Veja [contrato](docs/api/customer-returns.openapi.json) e [integração, provas e limites](docs/architecture/BACKEND_DEVOLUCOES_CLIENTE65_20261025.md).
 
 ## Testes e CI
 

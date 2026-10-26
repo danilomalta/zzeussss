@@ -87,4 +87,4 @@ type PostingPage struct {
 	HasMore    bool             `json:"has_more"`
 }
 
-var metricNames = []string{"session_count", "sale_count", "gross_sales_cents", "cancelled_sales_cents", "returned_sales_cents", "net_sales_cents", "sum_openings_cents", "sum_expected_at_closures_cents", "sum_declared_at_closures_cents", "sum_closure_differences_cents", "supply_cents", "withdrawal_cents", "journal_entry_count", "journal_debit_cents", "journal_credit_cents", "unclassified_count"}
+var metricNames = []string{"prior_session_refund_cents", "session_count", "sale_count", "gross_sales_cents", "cancelled_sales_cents", "returned_sales_cents", "net_sales_cents", "sum_openings_cents", "sum_expected_at_closures_cents", "sum_declared_at_closures_cents", "sum_closure_differences_cents", "supply_cents", "withdrawal_cents", "journal_entry_count", "journal_debit_cents", "journal_credit_cents", "unclassified_count"}

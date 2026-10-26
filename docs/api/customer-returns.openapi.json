@@ -259,6 +259,154 @@
           }
         }
       }
+    },
+    "/local/v1/sales/{id}/returns/cash-session": {
+      "post": {
+        "operationId": "customer_return_post__local_v1_sales_id_returns__explicit_cash_session",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid or ambiguous body/query; fractional unit or duplicate items."
+          },
+          "401": {
+            "description": "Missing, foreign or revoked session."
+          },
+          "403": {
+            "description": "Permission denied; writes also require POS entitlement."
+          },
+          "404": {
+            "description": "Sale/item/operation absent from the authenticated tenant/store/device."
+          },
+          "409": {
+            "description": "Changed quote, excess return, duplicate operation, closed/insufficient original drawer, unverified payment or inconsistent history."
+          },
+          "422": {
+            "description": "History exceeds 1000 returns or 10000 lines; no partial result."
+          },
+          "500": {
+            "description": "Unexpected failure; transaction rolled back."
+          },
+          "200": {
+            "description": "Validated snapshot or original idempotent receipt. Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerReturn"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Physical return and cash refund committed atomically.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerReturn"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 128 KiB."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnSessionInput"
+              }
+            }
+          }
+        },
+        "description": "Requires CancelSale and ManageCash. Explicit open shift must belong to current operator on the same device; a different original shift must be officially closed. Cash, stock, provenance and outbox commit atomically. Same operation ID recovers its original result even after closure. No implicit selection or automatic retry."
+      }
+    },
+    "/local/v1/sales/{id}/returns/cash-session/quote": {
+      "post": {
+        "operationId": "customer_return_post__local_v1_sales_id_returns_quote__explicit_cash_session",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid or ambiguous body/query; fractional unit or duplicate items."
+          },
+          "401": {
+            "description": "Missing, foreign or revoked session."
+          },
+          "403": {
+            "description": "Permission denied; writes also require POS entitlement."
+          },
+          "404": {
+            "description": "Sale/item/operation absent from the authenticated tenant/store/device."
+          },
+          "409": {
+            "description": "Changed quote, excess return, duplicate operation, closed/insufficient original drawer, unverified payment or inconsistent history."
+          },
+          "422": {
+            "description": "History exceeds 1000 returns or 10000 lines; no partial result."
+          },
+          "500": {
+            "description": "Unexpected failure; transaction rolled back."
+          },
+          "200": {
+            "description": "Validated snapshot or original idempotent receipt. Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnQuote"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 128 KiB."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnSessionQuoteInput"
+              }
+            }
+          }
+        },
+        "description": "Requires CancelSale and ManageCash. Explicit open shift must belong to current operator on the same device; a different original shift must be officially closed. Cash, stock, provenance and outbox commit atomically. Same operation ID recovers its original result even after closure. No implicit selection or automatic retry."
+      }
     }
   },
   "components": {
@@ -422,6 +570,12 @@
             },
             "minItems": 1,
             "maxItems": 500
+          },
+          "original_cash_session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Original sale shift, present only when refund is paid from another shift. Original sale and closure remain unchanged."
           }
         },
         "required": [
@@ -480,6 +634,12 @@
             },
             "minItems": 1,
             "maxItems": 500
+          },
+          "original_cash_session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Original sale shift, present only when refund is paid from another shift. Original sale and closure remain unchanged."
           }
         },
         "required": [
@@ -636,6 +796,72 @@
           "items",
           "returns",
           "cancelled_cents"
+        ]
+      },
+      "ReturnSessionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "expected_refund_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReturnItemInput"
+            },
+            "minItems": 1,
+            "maxItems": 500
+          },
+          "refund_cash_session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Explicit open cash shift owned by this authenticated operator, on the same company/store/device. Never inferred."
+          }
+        },
+        "required": [
+          "operation_id",
+          "reason",
+          "expected_refund_cents",
+          "items",
+          "refund_cash_session_id"
+        ]
+      },
+      "ReturnSessionQuoteInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReturnItemInput"
+            },
+            "minItems": 1,
+            "maxItems": 500
+          },
+          "refund_cash_session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Explicit open cash shift owned by this authenticated operator, on the same company/store/device. Never inferred."
+          }
+        },
+        "required": [
+          "items",
+          "refund_cash_session_id"
         ]
       }
     }
