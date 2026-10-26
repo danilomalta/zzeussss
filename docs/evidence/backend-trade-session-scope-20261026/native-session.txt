@@ -1,0 +1,40 @@
+=== RUN   TestTradeQueueContextCompiledCommandVerifiesSourceAndNeverOverwrites
+    trade_queue_context_test.go:21: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_context_test.go:21: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_context_test.go:21: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+--- PASS: TestTradeQueueContextCompiledCommandVerifiesSourceAndNeverOverwrites (0.79s)
+=== RUN   TestTradeQueueContextRefusesWrongIdentityAndRevokedSession
+    trade_queue_context_test.go:81: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_context_test.go:81: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_context_test.go:81: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+=== RUN   TestTradeQueueContextRefusesWrongIdentityAndRevokedSession/actor
+=== RUN   TestTradeQueueContextRefusesWrongIdentityAndRevokedSession/fingerprint
+=== RUN   TestTradeQueueContextRefusesWrongIdentityAndRevokedSession/logout
+=== NAME  TestTradeQueueContextRefusesWrongIdentityAndRevokedSession
+    trade_queue_context_test.go:96: HTTP POST /local/v1/logout -> 204
+--- PASS: TestTradeQueueContextRefusesWrongIdentityAndRevokedSession (0.76s)
+    --- PASS: TestTradeQueueContextRefusesWrongIdentityAndRevokedSession/actor (0.00s)
+    --- PASS: TestTradeQueueContextRefusesWrongIdentityAndRevokedSession/fingerprint (0.00s)
+    --- PASS: TestTradeQueueContextRefusesWrongIdentityAndRevokedSession/logout (0.00s)
+=== RUN   TestTradeQueueContextSessionFileReplacementDuringVerificationPublishesNothing
+    trade_queue_context_test.go:110: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_context_test.go:110: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_context_test.go:110: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    trade_queue_context_test.go:111: HTTP POST /local/v1/login -> 200
+--- PASS: TestTradeQueueContextSessionFileReplacementDuringVerificationPublishesNothing (0.81s)
+=== RUN   TestTradeQueueSessionScopeNewLoginSameActorNeverResumesOldAttempt
+=== RUN   TestTradeQueueSessionScopeNewLoginSameActorNeverResumesOldAttempt/queued
+    trade_queue_session_scope_test.go:40: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_session_scope_test.go:40: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_session_scope_test.go:40: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    trade_queue_session_scope_test.go:61: HTTP POST /local/v1/login -> 200
+=== RUN   TestTradeQueueSessionScopeNewLoginSameActorNeverResumesOldAttempt/uncertain
+    trade_queue_session_scope_test.go:40: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_session_scope_test.go:40: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_session_scope_test.go:40: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    trade_queue_session_scope_test.go:61: HTTP POST /local/v1/login -> 200
+--- PASS: TestTradeQueueSessionScopeNewLoginSameActorNeverResumesOldAttempt (1.65s)
+    --- PASS: TestTradeQueueSessionScopeNewLoginSameActorNeverResumesOldAttempt/queued (0.82s)
+    --- PASS: TestTradeQueueSessionScopeNewLoginSameActorNeverResumesOldAttempt/uncertain (0.83s)
+PASS
+ok  	titansystem-backend/internal/localapi	4.013s

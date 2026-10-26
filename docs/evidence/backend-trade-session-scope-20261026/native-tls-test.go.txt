@@ -1,0 +1,152 @@
+package localapi
+
+import (
+	"crypto/tls"
+	"encoding/json"
+	"encoding/pem"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"sync/atomic"
+	"testing"
+	"titansystem-backend/internal/traderelay"
+)
+
+// External acceptance only: TLS terminates at loopback test proxies; every
+// business request is forwarded to independently running native Go APIs.
+// No product source, authentication response or business operation is mocked.
+func TestNativeCompanyTradeTrustedHTTPSAndReadOnlyOfflineRecovery(t *testing.T) {
+	b, s, j, _ := relaySetup(t)
+	var sourcePosts, targetPosts, sourceCalls, badTLS atomic.Int32
+	proxy := func(origin string, posts *atomic.Int32, source bool) *httptest.Server {
+		t.Helper()
+		tr := http.DefaultTransport.(*http.Transport).Clone()
+		tr.Proxy = nil
+		t.Cleanup(tr.CloseIdleConnections)
+		server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.TLS == nil || r.TLS.Version < tls.VersionTLS12 {
+				badTLS.Add(1)
+			}
+			if source {
+				sourceCalls.Add(1)
+			}
+			if r.Method == "POST" {
+				posts.Add(1)
+			}
+			request, e := http.NewRequestWithContext(r.Context(), r.Method, origin+r.URL.RequestURI(), r.Body)
+			if e != nil {
+				w.WriteHeader(500)
+				return
+			}
+			request.Header = r.Header.Clone()
+			response, e := tr.RoundTrip(request)
+			if e != nil {
+				w.WriteHeader(502)
+				return
+			}
+			defer response.Body.Close()
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(response.StatusCode)
+			io.Copy(w, response.Body)
+		}))
+		server.Config.ErrorLog = log.New(io.Discard, "", 0)
+		server.StartTLS()
+		t.Cleanup(server.Close)
+		return server
+	}
+	buyer, supplier := proxy(b.p.service.url, &sourcePosts, true), proxy(s.p.service.url, &targetPosts, false)
+	if !buyer.Certificate().Equal(supplier.Certificate()) {
+		t.Fatal("fixture TLS trust roots unexpectedly differ")
+	}
+	parent := t.TempDir()
+	if e := os.Chmod(parent, 0700); e != nil {
+		t.Fatal(e)
+	}
+	ca := filepath.Join(parent, "synthetic-public-ca.pem")
+	emptyCA := filepath.Join(parent, "untrusted-ca.pem")
+	certDir := filepath.Join(parent, "empty-roots")
+	if e := os.Mkdir(certDir, 0700); e != nil {
+		t.Fatal(e)
+	}
+	if e := os.WriteFile(ca, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: buyer.Certificate().Raw}), 0600); e != nil {
+		t.Fatal(e)
+	}
+	if e := os.WriteFile(emptyCA, []byte("no trusted roots"), 0600); e != nil {
+		t.Fatal(e)
+	}
+	j.Source.URL = buyer.URL + "/local/v1"
+	j.Target.URL = supplier.URL + "/local/v1"
+	job, sourceToken, targetToken := filepath.Join(parent, "job.json"), filepath.Join(parent, "source-session"), filepath.Join(parent, "target-session")
+	raw, _ := json.Marshal(j)
+	for path, data := range map[string][]byte{job: raw, sourceToken: []byte(b.p.token), targetToken: []byte(s.p.token)} {
+		if e := os.WriteFile(path, data, 0600); e != nil {
+			t.Fatal(e)
+		}
+	}
+	binary := relayExecutable(t)
+	scope := filepath.Join(parent, "verified-context.json")
+	queue := filepath.Join(parent, "queue")
+	call := func(root string, args ...string) ([]byte, error) {
+		t.Helper()
+		cmd := exec.Command(binary, args...)
+		for _, v := range os.Environ() {
+			if !strings.HasPrefix(v, "SSL_CERT_FILE=") && !strings.HasPrefix(v, "SSL_CERT_DIR=") {
+				cmd.Env = append(cmd.Env, v)
+			}
+		}
+		cmd.Env = append(cmd.Env, "SSL_CERT_FILE="+root, "SSL_CERT_DIR="+certDir)
+		return cmd.CombinedOutput()
+	}
+	if _, e := call(emptyCA, "queue", "context", "--job", job, "--source-token", sourceToken, "--out", scope); e == nil {
+		t.Fatal("untrusted TLS accepted")
+	}
+	if _, e := os.Lstat(scope); !os.IsNotExist(e) {
+		t.Fatal("untrusted TLS published context")
+	}
+	if sourceCalls.Load() != 0 || sourcePosts.Load() != 0 || targetPosts.Load() != 0 {
+		t.Fatal("untrusted TLS reached application handler")
+	}
+	run := func(out any, args ...string) {
+		t.Helper()
+		data, e := call(ca, args...)
+		if e != nil {
+			t.Fatal("native HTTPS command failed; output omitted", e)
+		}
+		if json.Unmarshal(data, out) != nil {
+			t.Fatal("invalid native HTTPS command output")
+		}
+		if strings.Contains(string(data), b.p.token) || strings.Contains(string(data), s.p.token) {
+			t.Fatal("command exposed bearer")
+		}
+	}
+	var created map[string]bool
+	run(&created, "queue", "context", "--job", job, "--source-token", sourceToken, "--out", scope)
+	if !created["context_created"] || sourcePosts.Load() != 0 || targetPosts.Load() != 0 {
+		t.Fatal("context created business effect")
+	}
+	run(&created, "queue", "init", "--queue", queue)
+	var added traderelay.QueueAction
+	run(&added, "queue", "add", "--queue", queue, "--job", job, "--source-token", sourceToken, "--target-token", targetToken)
+	var batch traderelay.QueueBatch
+	run(&batch, "queue", "run", "--queue", queue, "--scope", scope)
+	if batch.Confirmed != 1 || batch.Posts != 1 || sourcePosts.Load() != 0 || targetPosts.Load() != 1 || badTLS.Load() != 0 {
+		t.Fatal("HTTPS delivery not exactly once")
+	}
+	var count int
+	if e := s.f.db.QueryRow(`SELECT count(*) FROM company_trade_operations WHERE operation_id=?`, j.OperationID).Scan(&count); e != nil || count != 1 {
+		t.Fatal("native remote effect not unique", e)
+	}
+	// The source native API is actually stopped, not replaced by a mock/error.
+	b.p.service.stop(t)
+	before := sourceCalls.Load()
+	run(&batch, "queue", "verify", "--queue", queue, "--id", added.Item.ID)
+	if batch.Confirmed != 1 || batch.Posts != 0 || batch.SourceCalls != 0 || sourceCalls.Load() != before || targetPosts.Load() != 1 {
+		t.Fatal("offline HTTPS receipt recovery dispatched a new operation")
+	}
+	t.Log("NATIVE TRUSTED HTTPS: TLS1.2+, verified source session/station, signed delivery exactly once between independent native companies; untrusted TLS refused before HTTP; source offline receipt recovery with zero POST; no public listener or commercial data")
+}
