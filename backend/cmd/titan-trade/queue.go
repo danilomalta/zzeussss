@@ -19,9 +19,9 @@ Comandos:
   queue backup --queue PASTA --key ARQUIVO_PRIVADO --out ARQUIVO_NOVO
   queue verify-backup --archive ARQUIVO --key ARQUIVO_PRIVADO
   queue restore --archive ARQUIVO --key ARQUIVO_PRIVADO --queue PASTA_NOVA
-  queue status --queue PASTA
-  queue run --queue PASTA --limit 10
-  queue watch --queue PASTA --limit 10 --interval 10s
+  queue status --queue PASTA [--scope CONTEXTO_PRIVADO]
+  queue run --queue PASTA --limit 10 [--scope CONTEXTO_PRIVADO]
+  queue watch --queue PASTA --limit 10 --interval 10s [--scope CONTEXTO_PRIVADO]
   queue verify --queue PASTA --id ITEM
   queue pause --queue PASTA --id ITEM
   queue resume --queue PASTA --id ITEM --source-token ARQUIVO --target-token ARQUIVO
@@ -35,6 +35,8 @@ status/exit0 do lote não significam aceite comercial: consulte confirmed/uncert
 recover-session reautoriza SOMENTE consulta de recibo com prova original; não exige origem online nem permite POST.
 Restauração fica pausada e permanentemente limitada à consulta dos recibos originais.
 Backup da fila não inclui banco, tokens nem chave; preserve também o backup oficial do banco.
+--scope filtra URL, empresa, loja, aparelho, operador e fingerprint originais; não cria autorização.
+Troca/remoção do contexto encerra o worker antes de outra chamada; tentativas em curso e provas ficam preservadas.
 Não instala serviço automaticamente nem modifica banco ou configuração de rede.`
 
 func runQueue(ctx context.Context, args []string, out io.Writer) error {
@@ -65,6 +67,10 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 	if command == "verify-backup" || command == "restore" {
 		archive = fs.String("archive", "", "")
 	}
+	var scopeFile *string
+	if command == "status" || command == "run" || command == "watch" {
+		scopeFile = fs.String("scope", "", "contexto privado fixo do worker")
+	}
 	var limit *int
 	var interval *time.Duration
 	if command == "add" {
@@ -87,6 +93,23 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 	}
 	if fs.Parse(args[1:]) != nil || fs.NArg() != 0 || (*dir == "" && command != "verify-backup") {
 		return traderelay.ErrInvalid
+	}
+	var binding *traderelay.QueueBinding
+	scopePresent := false
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "scope" {
+			scopePresent = true
+		}
+	})
+	if scopePresent {
+		if scopeFile == nil || *scopeFile == "" {
+			return traderelay.ErrInvalid
+		}
+		var e error
+		binding, e = traderelay.BindQueueScope(*scopeFile)
+		if e != nil {
+			return e
+		}
 	}
 	encoder := json.NewEncoder(out)
 	if keyFile != nil {
@@ -120,7 +143,7 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 		if *interval < time.Second || *interval > 5*time.Minute || *limit < 1 || *limit > 100 {
 			return traderelay.ErrInvalid
 		}
-		if _, e := traderelay.QueueRead(*dir); e != nil {
+		if _, e := queueRead(*dir, binding); e != nil {
 			return e
 		}
 		if e := encoder.Encode(map[string]bool{"watching": true}); e != nil {
@@ -131,7 +154,7 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 				return nil
 			}
 			pass, cancel := context.WithTimeout(ctx, 2*time.Minute)
-			batch, e := traderelay.QueueRun(pass, *dir, *limit, time.Now().UTC())
+			batch, e := queuePass(pass, *dir, *limit, time.Now().UTC(), binding)
 			cancel()
 			if ctx.Err() != nil {
 				return nil
@@ -162,7 +185,7 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 		}
 		return encoder.Encode(map[string]bool{"initialized": true})
 	case "status":
-		view, e := traderelay.QueueRead(*dir)
+		view, e := queueRead(*dir, binding)
 		if e != nil {
 			return e
 		}
@@ -191,7 +214,7 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 		}
 		return encoder.Encode(map[string]bool{"paused": true})
 	case "run":
-		batch, e := traderelay.QueueRun(bounded, *dir, *limit, time.Now().UTC())
+		batch, e := queuePass(bounded, *dir, *limit, time.Now().UTC(), binding)
 		if e != nil {
 			return e
 		}
@@ -210,4 +233,17 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 		return encoder.Encode(batch)
 	}
 	return traderelay.ErrInvalid
+}
+
+func queueRead(dir string, binding *traderelay.QueueBinding) (traderelay.QueueView, error) {
+	if binding != nil {
+		return binding.Read(dir)
+	}
+	return traderelay.QueueRead(dir)
+}
+func queuePass(ctx context.Context, dir string, limit int, now time.Time, binding *traderelay.QueueBinding) (traderelay.QueueBatch, error) {
+	if binding != nil {
+		return binding.Run(ctx, dir, limit, now)
+	}
+	return traderelay.QueueRun(ctx, dir, limit, now)
 }

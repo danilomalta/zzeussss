@@ -69,3 +69,8 @@ Veja [guia do piloto](docs/architecture/PILOTO_DINHEIRO.md), [contratos](docs/ap
 ### Recuperar recibo com a origem desligada
 
 `titan-trade queue recover-session` reautoriza somente a consulta do recibo original usando sessão nova no destinatário. Exige prova persistida, preserva IDs e bloqueia POST/retry; não depende do arquivo de sessão ou da API da origem. [Regras, comandos e evidências](docs/architecture/BACKEND_RECUPERACAO_SESSAO_DESTINO_20261026.md).
+
+
+### Worker com contexto explícito
+
+`queue status/run/watch --scope ARQUIVO_PRIVADO` limita a fila ao servidor, empresa, loja, aparelho, operador e fingerprint originais. Mudança do arquivo encerra o worker, preservando tentativas e provas; não amplia permissão nem vincula outro contexto silenciosamente. [Formato, segurança e integração desktop pendente](docs/architecture/BACKEND_FILA_CONTEXTO_20261026.md).

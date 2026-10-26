@@ -534,9 +534,18 @@ func addBatch(b *QueueBatch, i QueueItem, r Result) {
 // QueueRun performs a bounded pass. Existing engine state forces recovery-only;
 // a persisted uncertain operation is never automatically resent after restart.
 func QueueRun(ctx context.Context, dir string, limit int, now time.Time) (QueueBatch, error) {
+	return queueRun(ctx, dir, limit, now, nil)
+}
+func queueRun(ctx context.Context, dir string, limit int, now time.Time, binding *QueueBinding) (QueueBatch, error) {
 	var batch QueueBatch
 	if ctx == nil || limit < 1 || limit > 100 || now.IsZero() {
 		return batch, ErrInvalid
+	}
+	if binding != nil {
+		if e := binding.check(); e != nil {
+			return batch, e
+		}
+		ctx = context.WithValue(ctx, queueScopeGuardKey{}, binding.check)
 	}
 	unlock, e := queueLock(dir)
 	if e != nil {
@@ -555,6 +564,9 @@ func QueueRun(ctx context.Context, dir string, limit int, now time.Time) (QueueB
 			return batch, e
 		}
 		i := &q.Items[n]
+		if binding != nil && i.Job.Source != binding.scope.Source {
+			continue
+		}
 		if i.Status != "queued" && i.Status != "retrying" && i.Status != "uncertain" {
 			continue
 		}
@@ -565,6 +577,9 @@ func QueueRun(ctx context.Context, dir string, limit int, now time.Time) (QueueB
 		if now.Before(due) {
 			continue
 		}
+		if e := checkScopeContext(ctx); e != nil {
+			return batch, e
+		}
 		r, e := attemptQueued(ctx, dir, i, now, false)
 		if e != nil {
 			return batch, e
@@ -573,6 +588,9 @@ func QueueRun(ctx context.Context, dir string, limit int, now time.Time) (QueueB
 			return batch, e
 		}
 		addBatch(&batch, *i, r)
+	}
+	if e := checkScopeContext(ctx); e != nil {
+		return batch, e
 	}
 	return batch, nil
 }

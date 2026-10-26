@@ -203,7 +203,6 @@ type api struct {
 }
 
 func (a api) call(ctx context.Context, method, path string, body, out any) error {
-	*a.calls++
 	var reader io.Reader
 	if body != nil {
 		b, e := json.Marshal(body)
@@ -221,6 +220,10 @@ func (a api) call(ctx context.Context, method, path string, body, out any) error
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+	if e := checkScopeContext(ctx); e != nil {
+		return e
+	}
+	*a.calls++
 	resp, e := a.client.Do(req)
 	if e != nil {
 		return ErrTransport
@@ -426,6 +429,9 @@ func runPolicy(ctx context.Context, j Job, sourceToken, targetToken, statePath, 
 	if _, e = target.identity(ctx); e != nil {
 		return out, e
 	}
+	if e = checkScopeContext(ctx); e != nil {
+		return out, e
+	}
 	saved.Status = "uncertain"
 	if e = save(statePath, saved); e != nil {
 		return out, e
@@ -437,6 +443,11 @@ func runPolicy(ctx context.Context, j Job, sourceToken, targetToken, statePath, 
 	input := supplycycle.TradeImportInput{OperationID: j.OperationID, PeerID: j.PeerID, Envelope: record.Envelope}
 	out.Posts = 1
 	if e = target.call(ctx, "POST", endpoint, input, &receipt); e != nil {
+		if errors.Is(e, ErrScopeChanged) {
+			out.Posts = 0
+			out.Status = "uncertain"
+			return out, e
+		}
 		out.Status = "uncertain"
 		return out, ErrUncertain
 	}
