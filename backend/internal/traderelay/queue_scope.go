@@ -2,7 +2,9 @@ package traderelay
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 )
@@ -12,8 +14,9 @@ import (
 // operator explicitly provisions this private file; no API or identity is
 // selected by this package, and no token or business document belongs here.
 type QueueScope struct {
-	Version int      `json:"version"`
-	Source  Endpoint `json:"source"`
+	Version           int      `json:"version"`
+	Source            Endpoint `json:"source"`
+	SourceSessionHash string   `json:"source_session_sha256,omitempty"`
 }
 
 // ErrScopeChanged deliberately exposes no path, identity, credential or body.
@@ -31,10 +34,34 @@ func readQueueScope(file string) (QueueScope, error) {
 		return scope, ErrInvalid
 	}
 	raw, e := readPrivate(file, 4096)
-	if e != nil || decode(raw, &scope) != nil || scope.Version != 1 || !validEndpoint(scope.Source) {
+	if e != nil || decode(raw, &scope) != nil || !validEndpoint(scope.Source) {
+		return QueueScope{}, ErrInvalid
+	}
+	// Version1 remains an explicit administrative identity filter. Version2
+	// additionally pins the original source session, even for the same actor.
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(raw, &fields) != nil {
+		return QueueScope{}, ErrInvalid
+	}
+	// encoding/json otherwise accepts case-insensitive field aliases. Reject
+	// those rather than silently accepting a session field as a v1 extension.
+	for key := range fields {
+		if key != "version" && key != "source" && key != "source_session_sha256" {
+			return QueueScope{}, ErrInvalid
+		}
+	}
+	_, hasSession := fields["source_session_sha256"]
+	if (scope.Version == 1 && hasSession) ||
+		(scope.Version == 2 && !validHash(scope.SourceSessionHash)) ||
+		(scope.Version != 1 && scope.Version != 2) {
 		return QueueScope{}, ErrInvalid
 	}
 	return scope, nil
+}
+
+func (b *QueueBinding) matches(i QueueItem) bool {
+	return i.Job.Source == b.scope.Source &&
+		(b.scope.Version == 1 || i.SourceSessionHash == b.scope.SourceSessionHash)
 }
 
 // BindQueueScope pins the original context for this worker lifetime. Editing a
@@ -81,7 +108,7 @@ func (b *QueueBinding) Read(dir string) (QueueView, error) {
 	}
 	view := QueueView{Version: 1, Items: []QueueItemView{}}
 	for _, i := range q.Items {
-		if i.Job.Source == b.scope.Source {
+		if b.matches(i) {
 			view.Items = append(view.Items, itemView(i))
 		}
 	}
@@ -101,4 +128,41 @@ func (b *QueueBinding) Run(ctx context.Context, dir string, limit int, now time.
 		return QueueBatch{}, ErrInvalid
 	}
 	return queueRun(ctx, dir, limit, now, b)
+}
+
+// CreateQueueSessionScope verifies the explicitly selected source via real API
+// before publishing a new private v2 context. It never reads target sessions,
+// dispatches documents, rewrites an existing context or selects a company.
+func CreateQueueSessionScope(ctx context.Context, source Endpoint, sourceTokenFile, out string) error {
+	if ctx == nil || !validEndpoint(source) || !tokenPath(sourceTokenFile) || !tokenPath(out) || !privateDir(filepath.Dir(out)) {
+		return ErrInvalid
+	}
+	if _, e := os.Lstat(out); !os.IsNotExist(e) {
+		return ErrInvalid
+	}
+	token, e := ReadToken(sourceTokenFile)
+	if e != nil {
+		return e
+	}
+	client, closeClient := newClient()
+	defer closeClient()
+	calls := 0
+	origin := api{source, token, client, &calls}
+	if _, e = origin.identity(ctx); e != nil {
+		return e
+	}
+	// A token file replaced during the verified reads must not publish an old
+	// context as though it belonged to the newly selected login.
+	current, e := ReadToken(sourceTokenFile)
+	if e != nil || current != token {
+		return ErrScopeChanged
+	}
+	if e = ctx.Err(); e != nil {
+		return e
+	}
+	raw, e := json.Marshal(QueueScope{Version: 2, Source: source, SourceSessionHash: digest(token)})
+	if e != nil || len(raw) > 4096 {
+		return ErrInvalid
+	}
+	return publishPrivate(out, raw)
 }

@@ -14,6 +14,7 @@ import (
 
 const queueHelp = `TitanSystem trade queue — fila privada de mensagens previamente autorizadas
 Comandos:
+  queue context --job ARQUIVO --source-token ARQUIVO --out CONTEXTO_PRIVADO_NOVO
   queue init --queue /PASTA_PRIVADA_NOVA
   queue add --queue PASTA --job ARQUIVO --source-token ARQUIVO --target-token ARQUIVO
   queue backup --queue PASTA --key ARQUIVO_PRIVADO --out ARQUIVO_NOVO
@@ -36,6 +37,8 @@ recover-session reautoriza SOMENTE consulta de recibo com prova original; não e
 Restauração fica pausada e permanentemente limitada à consulta dos recibos originais.
 Backup da fila não inclui banco, tokens nem chave; preserve também o backup oficial do banco.
 --scope filtra URL, empresa, loja, aparelho, operador e fingerprint originais; não cria autorização.
+Contexto v2 exige também source_session_sha256: nova sessão do mesmo usuário não retoma tentativas antigas.
+Contexto v1 é filtro administrativo de identidade; não comprova vínculo à sessão atual do desktop.
 Troca/remoção do contexto encerra o worker antes de outra chamada; tentativas em curso e provas ficam preservadas.
 Não instala serviço automaticamente nem modifica banco ou configuração de rede.`
 
@@ -49,7 +52,7 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 	}
 	command := args[0]
 	switch command {
-	case "recover-session", "backup", "verify-backup", "restore", "init", "add", "status", "run", "watch", "pause", "resume", "retry", "verify":
+	case "context", "recover-session", "backup", "verify-backup", "restore", "init", "add", "status", "run", "watch", "pause", "resume", "retry", "verify":
 	default:
 		return traderelay.ErrInvalid
 	}
@@ -61,7 +64,7 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 	if command == "backup" || command == "verify-backup" || command == "restore" {
 		keyFile = fs.String("key", "", "")
 	}
-	if command == "backup" {
+	if command == "backup" || command == "context" {
 		output = fs.String("out", "", "")
 	}
 	if command == "verify-backup" || command == "restore" {
@@ -73,10 +76,10 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 	}
 	var limit *int
 	var interval *time.Duration
-	if command == "add" {
+	if command == "add" || command == "context" {
 		job = fs.String("job", "", "")
 	}
-	if command == "add" || command == "resume" {
+	if command == "add" || command == "resume" || command == "context" {
 		st = fs.String("source-token", "", "")
 	}
 	if command == "add" || command == "resume" || command == "recover-session" {
@@ -91,8 +94,23 @@ func runQueue(ctx context.Context, args []string, out io.Writer) error {
 	if command == "watch" {
 		interval = fs.Duration("interval", 10*time.Second, "")
 	}
-	if fs.Parse(args[1:]) != nil || fs.NArg() != 0 || (*dir == "" && command != "verify-backup") {
+	if fs.Parse(args[1:]) != nil || fs.NArg() != 0 || (*dir == "" && command != "verify-backup" && command != "context") {
 		return traderelay.ErrInvalid
+	}
+	if command == "context" {
+		if *dir != "" || *job == "" || *st == "" || *output == "" {
+			return traderelay.ErrInvalid
+		}
+		selected, e := traderelay.ReadJob(*job)
+		if e != nil {
+			return e
+		}
+		bounded, cancel := context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
+		if e = traderelay.CreateQueueSessionScope(bounded, selected.Source, *st, *output); e != nil {
+			return e
+		}
+		return json.NewEncoder(out).Encode(map[string]bool{"context_created": true})
 	}
 	var binding *traderelay.QueueBinding
 	scopePresent := false

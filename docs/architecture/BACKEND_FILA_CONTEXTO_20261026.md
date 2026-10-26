@@ -45,3 +45,23 @@ Testes isolados cobrem seis dimensões do endpoint, fila mista, status sem vazam
 Resultados consolidados eCI do commit final ficam no registro único de continuidade da branch frontend e em `docs/evidence/backend-trade-scope-20261026/acceptance.json`. Não inferir aprovação por este texto; consultar o run correspondente e os logs.
 
 Esta unidade não expõe banco na Internet, não cria sessão remota, não altera políticas de fornecedor nem remove a proteção `recovery_only` de fila restaurada. Fiscal, Pix/TEF, homologação Windows e ligação visual do transporte continuam fora desta prova. Serviços8182/8282 preservados; instalar o binário não os reinicia.
+
+
+## Contexto de sessão v2 — complemento de 26/10/2026
+
+O formato v2 exige `source_session_sha256` além de todos os campos da origem. É o vínculo exato já gravado nos metadados privados do item: SHA-256 da representação JSON string do token original, conforme o transporte existente. Não é o token nem concede acesso. Não divulgar esse identificador de correlação em status, logs ou exportações públicas.
+
+`status/run/watch --scope` em v2 somente considera itens da mesma identidade E da mesma sessão. Entrar novamente como o mesmo usuário não autoriza automaticamente tentativas de uma sessão anterior. Esses itens permanecem intactos, inclusive prova de resultado incerto, IDs, contadores e agendamento; não são apagados, pausados ou reenviados pelo filtro. O limite de lote conta somente correspondências. Retomar exige a ação explícita já existente; consulta de recibo continua sem POST e a barreira de restauração não é removida.
+
+Trocar apenas o hash no arquivo encerra o worker previamente vinculado, antes de outra chamada. Uma chamada já enviada pode concluir e tem sua prova preservada. A proteção não promete revogar pacotes já despachados. O host continua responsável por invalidar o contexto ao fazer logout, inclusive quando não há login subsequente.
+
+Compatibilidade: v1 continua sendo filtro administrativo por identidade, sem alegação de proteção de sessão do desktop. v1 rejeita a presença do campo de sessão, inclusive nulo ou vazio. v2 rejeita ausência, nulo, vazio, hash inválido, chaves duplicadas e campos desconhecidos. Não há fallback v2→v1. Não houve migração, alteração das APIs de negócio ou integração automática ao Electron.
+
+
+### Geração verificada do contexto
+
+`titan-trade queue context --job ARQUIVO_PRIVADO --source-token ARQUIVO_PRIVADO --out CONTEXTO_NOVO` verifica a origem explícita do job contra `/me` e `/company-trade/identity`. Confere empresa, loja, aparelho, usuário e fingerprint real da estação antes de criar o arquivo v2. Não acessa o destinatário nem envia mensagem. O arquivo de sessão é lido novamente depois das consultas; substituição durante a verificação impede a publicação.
+
+O destino deve ser novo em pasta privada0700; arquivo0600 publicado com fsync/link sem substituição. Contexto existente ou simbólico é recusado. A saída é somente `context_created:true`; não expõe hash de sessão, credencial ou identidade. Sem token em argumentos de linha de comando: a opção recebe exclusivamente o caminho privado. Um contexto criado é um retrato verificado, não uma sessão permanente: o host ainda precisa invalidá-lo ao sair, e cada entrega continua validando autorização na API.
+
+O orçamento do CI foi aumentado de15 para20 minutos no ensaio race e de30 para40 minutos no job, mantendo todos os testes. A rodada anterior mediu852,493s só no race, antes dos novos cenários. Trata-se de limite de validação do runner, não de timeout operacional nem medição de abertura do aplicativo.

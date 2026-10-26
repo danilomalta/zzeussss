@@ -564,7 +564,7 @@ func queueRun(ctx context.Context, dir string, limit int, now time.Time, binding
 			return batch, e
 		}
 		i := &q.Items[n]
-		if binding != nil && i.Job.Source != binding.scope.Source {
+		if binding != nil && !binding.matches(*i) {
 			continue
 		}
 		if i.Status != "queued" && i.Status != "retrying" && i.Status != "uncertain" {

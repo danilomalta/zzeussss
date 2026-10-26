@@ -141,7 +141,7 @@ func TestQueueScopeChangedOrRemovedNeverRebindsRunningWorker(t *testing.T) {
 			case "actor":
 				source := i.Job.Source
 				source.ActorID = "new-actor"
-				raw, _ := json.Marshal(QueueScope{1, source})
+				raw, _ := json.Marshal(QueueScope{Version: 1, Source: source})
 				os.WriteFile(file, raw, 0600)
 			case "removed":
 				os.Remove(file)
