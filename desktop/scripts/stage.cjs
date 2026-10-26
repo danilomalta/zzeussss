@@ -23,14 +23,15 @@ function resolveStage(root){
  }catch{invalid();}
 }
 function startDesktop(args=[],options={}){
- if(args.length>1||args.length===1&&args[0]!=='--build')throw Error('Uso: npm start [-- --build]. A compilação só ocorre quando solicitada.');
+ if(!Array.isArray(args)||args.length>2||new Set(args).size!==args.length||args.some(v=>!['--build','--software-rendering'].includes(v)))throw Error('Uso: npm start [-- --build] [--software-rendering]. A compilação só ocorre quando solicitada.');
  const root=options.root||path.resolve(__dirname,'..');const spawn=options.spawn||spawnSync;
- if(args[0]==='--build'){const build=spawn(process.execPath,[path.join(root,'scripts/build.mjs')],{cwd:root,stdio:'inherit'});if(build.error)throw build.error;if(build.status!==0)return build.status||1;}
+ if(args.includes('--build')){const build=spawn(process.execPath,[path.join(root,'scripts/build.mjs')],{cwd:root,stdio:'inherit'});if(build.error)throw build.error;if(build.status!==0)return build.status||1;}
  const stage=resolveStage(root),environment=options.environment||process.env;
  let electron=options.electron||environment.TITAN_ELECTRON_BINARY;
  if(!electron){try{electron=require('electron');}catch{throw Error('Electron indisponível. Informe TITAN_ELECTRON_BINARY com uma instalação existente. Nenhuma dependência foi instalada.');}}
  if(typeof electron!=='string'||!path.isAbsolute(electron)||!fs.statSync(electron).isFile())throw Error('Caminho do Electron inválido.');
  const env={...environment};delete env.ELECTRON_RUN_AS_NODE;
+ if(args.includes('--software-rendering'))env.TITAN_RENDERING_MODE='software';
  const child=spawn(electron,[stage],{cwd:root,stdio:'inherit',env});if(child.error)throw child.error;return child.status??1;
 }
 module.exports={resolveStage,startDesktop};

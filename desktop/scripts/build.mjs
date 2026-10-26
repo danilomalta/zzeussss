@@ -1,7 +1,7 @@
 import {readFile,writeFile,mkdir,readdir,copyFile,lstat} from 'node:fs/promises';
 import {join,resolve,relative,dirname} from 'node:path';import {fileURLToPath,pathToFileURL} from 'node:url';import {createHash,randomUUID} from 'node:crypto';import {spawnSync} from 'node:child_process';
 const desktop=resolve(dirname(fileURLToPath(import.meta.url)),'..'),front=resolve(desktop,'../frontend-web'),builds=join(desktop,'.build'),pointer=join(builds,'current.json');
-const runtime=['main.cjs','preload.cjs','src/config.cjs','src/transport.cjs','src/assets.cjs','setup/index.html','setup/setup.js','setup/setup.css','setup/words.js','package.json'];
+const runtime=['main.cjs','preload.cjs','src/config.cjs','src/transport.cjs','src/assets.cjs','src/startup.cjs','setup/index.html','setup/setup.js','setup/setup.css','setup/words.js','package.json'];
 async function files(dir){const out=[];for(const entry of await readdir(dir,{withFileTypes:true})){if(entry.isSymbolicLink())throw Error('Symlink in build sources');const p=join(dir,entry.name);if(entry.isDirectory())out.push(...await files(p));else if(entry.isFile())out.push(p);}return out;}
 // Do not load Vite config or any .env. Only application source and tracked public assets.
 const tracked=spawnSync('git',['ls-files','-z','--','frontend-web/public'],{cwd:resolve(desktop,'..'),encoding:'utf8'});if(tracked.status!==0)throw Error('Cannot inventory public assets');
