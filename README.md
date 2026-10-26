@@ -59,3 +59,8 @@ Veja [guia do piloto](docs/architecture/PILOTO_DINHEIRO.md), [contratos](docs/ap
 ### Fila operacional do transporte assinado
 
 `titan-trade queue` adiciona e processa somente mensagens já autorizadas, com snapshot persistente, vínculo à sessão original e confirmação por recibo. Operação incerta é consultada, sem reenvio automático; mudança de sessão pausa sem apagar prova. Worker cancelável e limites explícitos, com teste de queda após commit real do destinatário. [Comandos, estados e aceites](docs/architecture/BACKEND_FILA_ASSINADA_20261026.md). Não instala daemon nem troca os serviços existentes.
+
+
+### Backup privado da fila
+
+`titan-trade queue backup`, `verify-backup` e `restore` cifram e validam os arquivos externos de transporte. Restauração exige pasta nova e mantém os itens pausados e limitados à consulta dos recibos originais; uma cópia antiga nunca autoriza reenvio. Não inclui banco, tokens ou chaves privadas. [Formato, comandos, recuperação e limites](docs/architecture/BACKEND_BACKUP_FILA_20261026.md).

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -46,6 +47,42 @@ func TestQueueCLIRefusesInvalidOperationsAndSchedules(t *testing.T) {
 		}
 		if out.Len() != 0 {
 			t.Fatal("printed private data or falsely announced startup")
+		}
+	}
+}
+
+func TestQueueCLIBackupRestoreAndValidation(t *testing.T) {
+	base := t.TempDir()
+	dir := filepath.Join(base, "queue")
+	archive := filepath.Join(base, "backup.enc")
+	key := filepath.Join(base, "backup.key")
+	dest := filepath.Join(base, "restored")
+	if e := os.WriteFile(key, bytes.Repeat([]byte{7}, 32), 0600); e != nil {
+		t.Fatal(e)
+	}
+	for _, args := range [][]string{
+		{"queue", "init", "--queue", dir},
+		{"queue", "backup", "--queue", dir, "--key", key, "--out", archive},
+		{"queue", "verify-backup", "--archive", archive, "--key", key},
+		{"queue", "restore", "--archive", archive, "--key", key, "--queue", dest},
+	} {
+		var out bytes.Buffer
+		if e := run(context.Background(), args, &out); e != nil {
+			t.Fatalf("CLI %s: %v", args[1], e)
+		}
+		if bytes.Contains(out.Bytes(), []byte(key)) {
+			t.Fatal("private key path leaked")
+		}
+	}
+	for _, args := range [][]string{
+		{"queue", "backup", "--queue", dir, "--key", key, "--out", archive},
+		{"queue", "restore", "--archive", archive, "--key", key, "--queue", dest},
+		{"queue", "verify-backup", "--archive", archive, "--key", key, "--queue", dir},
+		{"queue", "backup", "--queue", dir, "--key", key},
+	} {
+		var out bytes.Buffer
+		if e := run(context.Background(), args, &out); e == nil || out.Len() != 0 {
+			t.Fatal("invalid CLI accepted or false success")
 		}
 	}
 }

@@ -286,7 +286,13 @@ func Run(ctx context.Context, j Job, sourceToken, targetToken, statePath, mode s
 	return runBound(ctx, j, sourceToken, targetToken, statePath, mode, "")
 }
 func runBound(ctx context.Context, j Job, sourceToken, targetToken, statePath, mode, expectedHash string) (Result, error) {
+	return runPolicy(ctx, j, sourceToken, targetToken, statePath, mode, expectedHash, false)
+}
+func runPolicy(ctx context.Context, j Job, sourceToken, targetToken, statePath, mode, expectedHash string, recoveryOnly bool) (Result, error) {
 	out := Result{OperationID: j.OperationID, MessageID: j.MessageID}
+	if recoveryOnly && mode == "retry" {
+		return out, ErrInvalid
+	}
 	if (expectedHash != "" && !validHash(expectedHash)) || ctx == nil || j.Validate() != nil || (sourceToken == "" && mode != "recover") || targetToken == "" || (mode != "send" && mode != "recover" && mode != "retry") || !filepath.IsAbs(statePath) {
 		return out, ErrInvalid
 	}
@@ -400,7 +406,7 @@ func runBound(ctx context.Context, j Job, sourceToken, targetToken, statePath, m
 	if !errors.As(e, &code) || code.Status != 404 {
 		return out, e
 	}
-	if mode == "recover" {
+	if mode == "recover" || recoveryOnly {
 		out.Status = "not_found"
 		return out, ErrUncertain
 	}

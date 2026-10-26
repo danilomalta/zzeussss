@@ -18,6 +18,7 @@ const maxQueueBytes = 4 << 20
 var ErrQueueFull = errors.New("private queue limit reached; preserve existing records")
 
 type QueueItem struct {
+	RecoveryOnly      bool   `json:"recovery_only,omitempty"`
 	ID                string `json:"id"`
 	Job               Job    `json:"job"`
 	EnvelopeHash      string `json:"envelope_sha256"`
@@ -38,6 +39,7 @@ type queueFile struct {
 	Items   []QueueItem `json:"items"`
 }
 type QueueItemView struct {
+	RecoveryOnly  bool   `json:"recovery_only,omitempty"`
 	ID            string `json:"id"`
 	OperationID   string `json:"operation_id"`
 	MessageID     string `json:"message_id"`
@@ -70,7 +72,7 @@ type QueueBatch struct {
 }
 
 func itemView(i QueueItem) QueueItemView {
-	return QueueItemView{i.ID, i.Job.OperationID, i.Job.MessageID, i.Status, i.Attempts, i.NextAttemptAt, i.LastError, i.LastAction}
+	return QueueItemView{ID: i.ID, OperationID: i.Job.OperationID, MessageID: i.Job.MessageID, Status: i.Status, Attempts: i.Attempts, NextAttemptAt: i.NextAttemptAt, LastError: i.LastError, LastAction: i.LastAction, RecoveryOnly: i.RecoveryOnly}
 }
 func queuePath(dir string) string     { return filepath.Join(dir, "queue.json") }
 func statePath(dir, id string) string { return filepath.Join(dir, id+".state.json") }
@@ -102,14 +104,14 @@ func queueStatus(s string) bool {
 }
 func validQueueError(s string) bool {
 	switch s {
-	case "", "authentication_or_permission", "api_refused", "session_or_context_changed", "transport_unavailable", "result_uncertain", "attempt_locked", "private_state_invalid", "confirmed_receipt_missing":
+	case "", "authentication_or_permission", "api_refused", "session_or_context_changed", "transport_unavailable", "result_uncertain", "attempt_locked", "private_state_invalid", "confirmed_receipt_missing", "restored_queue_review_required", "restored_receipt_missing":
 		return true
 	}
 	return false
 }
 func validQueueAction(s string) bool {
 	switch s {
-	case "authorized_add", "operator_pause", "operator_reauthorization", "worker_attempt", "operator_retry", "operator_verify":
+	case "authorized_add", "operator_pause", "operator_reauthorization", "worker_attempt", "operator_retry", "operator_verify", "restored_snapshot":
 		return true
 	}
 	return false
@@ -127,6 +129,15 @@ func readQueue(dir string) (queueFile, error) {
 	if e != nil || decode(b, &q) != nil || q.Version != 1 || q.Items == nil || len(q.Items) > MaxQueueItems {
 		return queueFile{}, ErrInvalid
 	}
+	if validateQueue(q) != nil {
+		return queueFile{}, ErrInvalid
+	}
+	return q, nil
+}
+func validateQueue(q queueFile) error {
+	if q.Version != 1 || q.Items == nil || len(q.Items) > MaxQueueItems {
+		return ErrInvalid
+	}
 	seen := map[string]bool{}
 	operations := map[string]bool{}
 	messages := map[string]bool{}
@@ -140,17 +151,17 @@ func readQueue(dir string) (queueFile, error) {
 			Message string
 		}{i.Job.Target.Party, i.Job.MessageID})
 		if i.Job.Validate() != nil || i.ID != digest(i.Job) || !validHash(i.EnvelopeHash) || !validHash(i.SourceSessionHash) || !validHash(i.TargetSessionHash) || !tokenPath(i.SourceTokenFile) || !tokenPath(i.TargetTokenFile) || !queueStatus(i.Status) || !validQueueError(i.LastError) || !validQueueAction(i.LastAction) || i.Attempts < 0 || i.Attempts > 1000000 || !queueTime(i.CreatedAt) || !queueTime(i.UpdatedAt) || (i.NextAttemptAt != "" && !queueTime(i.NextAttemptAt)) || seen[i.ID] || operations[op] || messages[msg] {
-			return queueFile{}, ErrInvalid
+			return ErrInvalid
 		}
 		scheduled := i.Status == "queued" || i.Status == "retrying" || i.Status == "uncertain"
 		if scheduled != (i.NextAttemptAt != "") {
-			return queueFile{}, ErrInvalid
+			return ErrInvalid
 		}
 		seen[i.ID] = true
 		operations[op] = true
 		messages[msg] = true
 	}
-	return q, nil
+	return nil
 }
 func queueLock(dir string) (func(), error) {
 	if !privateDir(dir) {
@@ -440,7 +451,7 @@ func attemptQueued(ctx context.Context, dir string, i *QueueItem, now time.Time,
 		}
 		mode = "retry"
 	}
-	result, e := runBound(ctx, i.Job, st, tt, path, mode, i.EnvelopeHash)
+	result, e := runPolicy(ctx, i.Job, st, tt, path, mode, i.EnvelopeHash, i.RecoveryOnly)
 	if e == nil && result.Status == "confirmed" {
 		i.Status = "confirmed"
 		i.NextAttemptAt = ""
@@ -452,6 +463,10 @@ func attemptQueued(ctx context.Context, dir string, i *QueueItem, now time.Time,
 	switch {
 	case result.Status == "not_found":
 		i.Status = "needs_retry"
+		if i.RecoveryOnly {
+			i.Status = "paused"
+			i.LastError = "restored_receipt_missing"
+		}
 	case errors.Is(e, ErrTransport):
 		i.Status = "retrying"
 		if mode == "recover" {
@@ -555,7 +570,7 @@ func QueueRetry(ctx context.Context, dir, id string, now time.Time) (QueueBatch,
 			continue
 		}
 		i := &q.Items[n]
-		if i.Status != "needs_retry" {
+		if i.Status != "needs_retry" || i.RecoveryOnly {
 			return batch, ErrInvalid
 		}
 		r, e := attemptQueued(ctx, dir, i, now, true)
@@ -592,7 +607,7 @@ func QueueVerify(ctx context.Context, dir, id string, now time.Time) (QueueBatch
 			continue
 		}
 		i := &q.Items[n]
-		if _, e = os.Lstat(statePath(dir, i.ID)); e != nil {
+		if _, e = os.Lstat(statePath(dir, i.ID)); e != nil && !i.RecoveryOnly {
 			return batch, ErrInvalid
 		}
 		wasConfirmed := i.Status == "confirmed"
