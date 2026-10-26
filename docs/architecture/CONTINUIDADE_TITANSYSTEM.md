@@ -1,9 +1,9 @@
 # Continuidade do TitanSystem
 
-Revisão 60 — 26/10/2026. Registro único de continuidade a atualizar a cada entrega.
+Revisão 61 — 26/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
-Estado resumido do BACKEND atualizado na revisão60: CI aprovado em `49136ea`, schema66/devolução em turno posterior, sete executáveis instalados e serviços existentes preservados. As matrizes históricas não são recertificadas por esta atualização; consultar as evidências datadas e a revisão60 ao final.
+Estado resumido do BACKEND atualizado na revisão61: CI aprovado em `a43af76`, schema66/devolução em turno posterior e worker da fila vinculado ao contexto original, sete executáveis instalados e serviços existentes preservados. As matrizes históricas não são recertificadas por esta atualização; consultar as evidências datadas e a revisão61 ao final.
 
 ## Base, localização e responsáveis
 
@@ -11,7 +11,7 @@ Estado resumido do BACKEND atualizado na revisão60: CI aprovado em `49136ea`, s
 - Branch frontend: `feat/backend-checkout-authority`; base documental da revisão56 `d3d727d535b3446f71d782027b1ce1f435d6f07b`, com os oito arquivos locais do relatório de carrinhos preservados e pausados. A base histórica auditada era `c5579808c62826174b43a2b7a45fbc2ceda1e47b`; entregas posteriores constam abaixo. O HEAD sozinho não representa alterações locais ainda não publicadas.
 - Frontend116 presente; Frontend117 CORRETO de conferência por fornecedor aplicado. Confirmados `SupplierReport117.tsx`, `core/payables117`, cinco dicionários, teste e documento193. O usuário informou em21/10: compatibilidade aprovada, backup,136testes sem falhas, TypeScript/build aprovados em20,05s, sem banco/commit/merge/push.
 - Frontend passa a ser responsabilidade deste chat/Codex, com preservação do trabalho anterior. Em24/10 o proprietário autorizou explicitamente este chat a desenvolver também o backend; a restrição anterior de somente leitura foi superada. Preservar a autoria e as entregas do outro chat.
-- Backend desta frente: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `49136eab3e53e57d831ad7aae340ab3b6910629d`, schema66 de devoluções de cliente em turno posterior escolhido, transporte/fila de pedidos assinados, backup cifrado da fila e recuperação de recibo com sessão nova no destino, preservando pedidos autenticados/schema64. O aplicador do ZIP antigo de devoluções/schema64 NÃO foi executado; seus fontes declarados foram comparados e conciliados manualmente nesta revisão53, sem substituir migrações históricas. Não aplicar o ZIP antigo sobre a base atual. Revisões49–60 registram pilotos com APIs reais, persistência, restauração, empresas independentes e CI. Serviços8182/8282 continuam nos executáveis anteriores, preservados por escolha do proprietário; instalar binários não os atualiza.
+- Backend desta frente: `/home/danillo-malta/Downloads/zzeus-frontend-backend-b02a/backend/`; branch `feat/backend-b02a-compat`, HEAD `a43af76e22b06d2f153e46f99f330b4ddc95dd0a`, schema66 de devoluções de cliente em turno posterior escolhido, transporte/fila de pedidos assinados com worker vinculado ao contexto, backup cifrado da fila e recuperação de recibo com sessão nova no destino, preservando pedidos autenticados/schema64. O aplicador do ZIP antigo de devoluções/schema64 NÃO foi executado; seus fontes declarados foram comparados e conciliados manualmente nesta revisão53, sem substituir migrações históricas. Não aplicar o ZIP antigo sobre a base atual. Revisões49–61 registram pilotos com APIs reais, persistência, restauração, empresas independentes e CI. Serviços8182/8282 continuam nos executáveis anteriores, preservados por escolha do proprietário; instalar binários não os atualiza.
 - `~/Downloads/zzeus-frontend` é uma árvore anterior. `Documents/Codex/.../work` contém cópias de laboratório, não a fonte principal.
 - `desktop/` executa as telas compiladas de `frontend-web/`. Até a revisão43 não foi alterado nesta continuidade; revisão44 organiza entrada, build, origem, configuração e transporte desktop. Não contém outra implementação do ERP. `website/` fica reservado ao site público futuro.
 - Meus antigos `workflows117` são o **rascunho de documentos e recebimento**, diferente do117 aplicado. `production118` é outro rascunho não homologado. Não executar seus aplicadores, não copiar seus routers/menus e não usar sua numeração como base de produto.
@@ -2107,3 +2107,44 @@ Observado: 23 testes novos, 2465 totais, TypeScript e build; ponte Node→dois s
 26/10/2026: mantém os módulos de produção/custos existentes e acrescenta ponte de aceite dos clientes reais contra Go/Fiber/SQLite descartável: versões imutáveis, capacidade compartilhada, estimativa/cenário, ordem, aprovação, reserva/consumo, etapas, resultado, perda, lote/qualidade e recuperação após perda da resposta de resultado. Confere resultado único e saldos finais; não comprova cliques, reinício/restore do servidor ou operação comercial.
 
 Desktop ganha diagnóstico de instância existente, carregamento, renderer e timeout; mostra janela quando o carregamento termina e oferece modo software explícito antes do ready. Sandbox/perfis/dados permanecem preservados. O aviso MESA do proprietário motivou esse modo, mas não houve homologação gráfica no PC. Não altera backend, banco, autenticação, sessões, serviços ou carrinhos. Evidências no pacote; pendências em PENDENCIAS_FRONTEND67.*. Não conclui todo o ERP.
+
+
+## Revisão61 — worker da fila vinculado ao contexto original — 26/10/2026
+
+Backend fonte `a43af76e22b06d2f153e46f99f330b4ddc95dd0a`, branch `feat/backend-b02a-compat`; [CI aprovado](https://github.com/danilomalta/zzeussss/actions/runs/40352341813). Dez arquivos de fonte, testes, schema e documentação. Schema66 e529 rotas preservados, sem alteração dos66 scripts SQL históricos. A entrega anterior de devolução após o fechamento permanece incluída.
+
+### Comportamento e autoridade
+
+`queue status/run/watch --scope ARQUIVO_PRIVADO` limita a leitura e o processamento à origem exata: URL da API, empresa, loja, aparelho, operador e fingerprint da estação. O limite do lote conta somente itens correspondentes. Outros contextos não têm tokens lidos, tentativas incrementadas, registros de erro atribuídos ou agendamento alterado; o status não revela seus IDs ou contagens.
+
+O arquivo não é credencial nem autorização. Job/envelope congelado, hashes de sessão, permissões, aprovação de pares e barreiras de restauração continuam exigidos. Arquivo absoluto regular0600, até4096bytes; JSON estrito rejeita campos desconhecidos, duplicados e nulos. `--scope` explicitamente vazio é erro, sem fallback silencioso. A execução administrativa antiga, sem a opção, conserva seu comportamento autorizado.
+
+O worker fixa seu contexto original durante toda a execução. Mudança, remoção ou invalidação do arquivo encerra o worker em vez de vincular outro operador. Há guard antes de cada tentativa e de cada chamada HTTP, inclusive oPOST. Chamadas impedidas pelo guard não são contadas como HTTP enviado.
+
+Uma requisição que já saiu pode terminar: seu resultado e prova são gravados antes de encerrar o lote. Resposta perdida após efeito remoto mantém a operação incerta e os IDs originais. Voltar ao contexto original recupera o recibo sem novoPOST; não apaga prova nem cria retry automático. O guard não promete cancelar retroativamente um pacote já enviado.
+
+### Verificações reais
+
+LOCAL e CI: **1339 testes principais /2845 incluindo subtestes, zero falhas, cinco integrações obrigatórias reais e três skips auxiliares permitidos**. PostgreSQL17/SQLite descartáveis, pontes frontend contra HTTP Go real, análise estática, contratos e schema JSON conferidos. Nenhuma migração nesta unidade.
+
+Detector de corridas local dos novos cenários HTTP: PASS em **60.070s**; componentes de fila/CLI também aprovados com `-race`. Rodada remota completa de trocas, devoluções e quatro pilotos com CLIs reais: PASS em **852.493s**. Esses tempos não medem abertura do aplicativo.
+
+Prova adicional com `titan-local` NATIVO e `titan-trade` INSTALADOS, produzidos pelo CI: PASS em **6.265s**. Dois contextos reais na mesma fila, seis dimensões de origem, mudança antes doPOST com zero efeito, depois doPOST confirmado e depois do efeito com perda da resposta. `status/run/watch --scope` compilados testados; owatch encerra ao substituir o arquivo mesmo quando a nova origem passaria a corresponder à mensagem pendente. Fila restaurada e origem desligada/arquivo de sessão ausente preservam barreira permanente e permitem apenas recuperar o recibo, com zeroPOST.
+
+O ensaio nativo usa overlay EXTERNO somente na preparação dos testes para iniciar os servidores instalados e desligar a origem nativa no cenário correspondente; fontes publicados não mudam. Não infla o total original da suíte. Log sanitizado `docs/evidence/backend-trade-scope-20261026/native-scope.txt`.
+
+Regressão integral adicional com executáveis instalados: venda → caixa → estoque → reposição → pedido/aceite autenticado → recebimento parcial com divergência → financeiro → devolução, reinício e restauração pelo CLI. **200 assertivas HTTP e 9 processos nativos de API**, caixa1574 centavos, obrigação em aberto0; PASS em **2.288s**. Log `native-cash.txt` na mesma pasta. Smoke separado dos binários instalados: três execuções da API,12 assertivas HTTP, schema66, restart/backup/restauração e proteção de licença, PASS.
+
+### Instalação e preservação
+
+Sete executáveis Linux amd64 do CI instalados em `/home/danillo-malta/.local/opt/titansystem/backend/a43af76e22b06d2f153e46f99f330b4ddc95dd0a`, hashes conferidos e ponteiro `backend/current` trocado atomicamente após sincronizar a nova versão. A versão49136ea e as anteriores ficam preservadas. Os serviços8182/8282 continuam nos PIDs/executáveis anteriores com health200, sem reinício ou seleção de banco; instalar executáveis não os atualiza.
+
+Oito arquivos pausados do frontend seguem com os hashes8/8 originais. As alterações locais de outra frente em frontend, desktop e neste documento foram preservadas e não entram no commit desta revisão. Evidência sanitizada `docs/evidence/backend-trade-scope-20261026/acceptance.json`; laboratório `work/backend-trade-scope-20261026/` preserva preimagens, hashes, logs, overlay e artefatos. Não foram incluídos dependências,ZIP, banco ou credenciais comerciais.
+
+[Guia e formato do contexto na branch backend](https://github.com/danilomalta/zzeussss/blob/a43af76e22b06d2f153e46f99f330b4ddc95dd0a/docs/architecture/BACKEND_FILA_CONTEXTO_20261026.md).
+
+### Limites e continuidade
+
+O filtro do worker está entregue. **Ainda não está ligado ao menu do Electron**. O host deve derivar o contexto de uma sessão e identidade de estação verificadas, invalidar o arquivo antigo e parar o worker ao sair ou trocar sessão/perfil; não ampliar autoridade com dados fornecidos pelo renderer. Esta unidade não altera os arquivos desktop em andamento e não usa sua existência como prova de integração visual.
+
+Continuam sem aceite completo a ligação operacional no desktop, Internet/TLS comercial, fiscal/Pix/TEF com provedores reais, homologação Windows/hardware e outros fluxos sem prova integral. Backend inteiro não declarado100%. Nenhum serviço ou dado comercial foi exposto na Internet. As matrizes históricas de outras áreas não são recertificadas por esta revisão.
