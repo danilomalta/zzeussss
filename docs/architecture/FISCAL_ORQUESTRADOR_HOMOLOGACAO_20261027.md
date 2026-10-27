@@ -87,3 +87,12 @@ São36 resultados no núcleo/store e62 na API;33 comandos reais de backup.
 Análise estática dos pacotes afetados, build de titan-local/titan-fiscal e mapa
 de537rotas passaram. A suíte geral de todo o repositório não foi repetida
 localmente nesta unidade; o workflow remoto continua exigindo-a.
+
+## Atualização pela migração69
+
+A partir da unidade de numeração, o orquestrador exige a atribuição durável
+original de número/chave/instante. O host chama o alocador e utiliza seus dados;
+preencher um número manualmente já não satisfaz o guard do orquestrador.
+A compatibilidade do journal técnico legado não permite tomar números já
+reservados. Ver FISCAL_NUMERACAO_HOMOLOGACAO_20261027.md para origem explícita,
+concorrência, recuperação e limites de autoridade de uma única base.

@@ -85,10 +85,21 @@ func (r *HomologationRecorder) Reserve(ctx context.Context, in fiscalcore.Record
 		return err
 	}
 	defer tx.Rollback()
+	if err = numberLockTx(ctx, tx); err != nil {
+		return err
+	}
 	if err = r.sendPermissionTx(ctx, tx); err != nil {
 		return err
 	}
 	var n int
+	// Manual legacy technical requests must not steal an assigned number or
+	// change the key already reserved for this intent.
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM fiscal_number_allocations WHERE (issuer=? AND model=? AND series=? AND number=? AND NOT(tenant_id=? AND store_id=? AND intent_id=?)) OR (tenant_id=? AND store_id=? AND intent_id=? AND access_key<>?)`, r.key[6:20], r.key[20:22], r.key[22:25], r.key[25:34], r.actor.TenantID, r.actor.StoreID, r.intentID, r.actor.TenantID, r.actor.StoreID, r.intentID, r.key).Scan(&n); err != nil {
+		return err
+	}
+	if n != 0 {
+		return fiscalcore.ErrRecorded
+	}
 	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM fiscal_transmission_requests WHERE tenant_id=? AND ((store_id=? AND intent_id=?) OR (device_id=? AND operation_id=?) OR (substr(access_key,7,14)=? AND substr(access_key,21,2)=? AND substr(access_key,23,3)=? AND substr(access_key,26,9)=?))`, r.actor.TenantID, r.actor.StoreID, r.intentID, r.device.DeviceID, in.OperationID, r.key[6:20], r.key[20:22], r.key[22:25], r.key[25:34]).Scan(&n); err != nil {
 		return err
 	}
@@ -235,43 +246,53 @@ func (r *HomologationRecorder) BeforeSend(ctx context.Context, operationID strin
 	return tx.Commit()
 }
 func (r *HomologationRecorder) sendPermissionTx(ctx context.Context, tx *sql.Tx) error {
+	intent, err := r.intentAuthorityTx(ctx, tx)
+	if err != nil {
+		return err
+	}
+	if len(r.key) != 44 || r.key[6:20] != intent.Snapshot.Profile.CNPJ {
+		return ErrInvalid
+	}
+	return nil
+}
+func (r *HomologationRecorder) intentAuthorityTx(ctx context.Context, tx *sql.Tx) (Intent, error) {
 	var err error
 	if err = fiscalSessionTx(ctx, tx, r.actor, r.device, r.token); err != nil {
-		return err
+		return Intent{}, err
 	}
 	sessionDigest := sha256.Sum256([]byte(r.token))
 	var originalSession []byte
 	if err = tx.QueryRowContext(ctx, `SELECT session_sha256 FROM fiscal_intent_session_bindings WHERE tenant_id=? AND store_id=? AND intent_id=?`, r.actor.TenantID, r.actor.StoreID, r.intentID).Scan(&originalSession); errors.Is(err, sql.ErrNoRows) {
-		return localauth.ErrDenied
+		return Intent{}, localauth.ErrDenied
 	} else if err != nil {
-		return err
+		return Intent{}, err
 	}
 	if subtle.ConstantTimeCompare(sessionDigest[:], originalSession) != 1 {
-		return localauth.ErrDenied
+		return Intent{}, localauth.ErrDenied
 	}
 	if err = r.license.RequireTx(ctx, tx, r.actor, r.device, identity.Sell, modules.Fiscal); err != nil {
-		return err
+		return Intent{}, err
 	}
 	intent, err := intentTx(ctx, tx, r.actor, r.intentID)
 	if err != nil {
-		return err
+		return Intent{}, err
 	}
-	if intent.ActorID != r.actor.IdentityID || intent.DeviceID != r.device.DeviceID || r.key[6:20] != intent.Snapshot.Profile.CNPJ || intent.Snapshot.Profile.Environment != "homologation" {
-		return ErrInvalid
+	if intent.ActorID != r.actor.IdentityID || intent.DeviceID != r.device.DeviceID || intent.Snapshot.Profile.Environment != "homologation" {
+		return Intent{}, ErrInvalid
 	}
 	p, err := profileTx(ctx, tx, r.actor, intent.Input.ProfileID, 0)
 	if err != nil {
-		return err
+		return Intent{}, err
 	}
 	if p.Revision != intent.Input.ProfileRevision {
-		return ErrConflict
+		return Intent{}, ErrConflict
 	}
 	var n int
 	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM fiscal_restore_barriers WHERE tenant_id=?`, r.actor.TenantID).Scan(&n); err != nil {
-		return err
+		return Intent{}, err
 	}
 	if n != 0 {
-		return ErrRestored
+		return Intent{}, ErrRestored
 	}
-	return nil
+	return intent, nil
 }

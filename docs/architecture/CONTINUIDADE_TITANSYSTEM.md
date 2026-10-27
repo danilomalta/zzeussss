@@ -2302,3 +2302,30 @@ Verificação local da nova unidade:42 funções principais/98 resultados inclui
 subtestes com -race, zero falhas/zero skips;33 comandos de backup real. Vet dos
 pacotes afetados, compilação e537rotas conferidos. Suíte geral do repositório
 não repetida localmente neste delta; CI deve executá-la na revisão publicada.
+
+
+## Fiscal69 — numeração durável da base emissora em homologação
+
+Basefc0d0f0. Migração69 acrescenta origem explícita de série pelo owner e
+atribuição imutável de número/instante/cNF/chave à intenção e sessão originais.
+Sem expiração/reuso automático. Concorrência é serializada antes de ler a
+sequência, inclusive entre conexões SQLite. Orquestrador passa a exigir essa
+atribuição; tentativas técnicas legadas não podem roubar número reservado.
+Backup aceita25–69; restauração conserva atribuição e bloqueia novas reservas.
+Não houve alteração das pastas originais, serviços, frontend, Electron ou banco
+comercial. Esta é autoridade de uma única base, não numeração global entre
+instalações ou outros ERPs. Produção/rotas comerciais não foram habilitadas.
+
+Detalhes e limites em [FISCAL_NUMERACAO_HOMOLOGACAO_20261027.md](FISCAL_NUMERACAO_HOMOLOGACAO_20261027.md).
+Resultados finais devem constar no registro de evidência antes da entrega.
+Continuam pendentes política tributária completa aprovada, autoridade entre
+instalações, reconciliação/consulta/eventos oficiais, DANFE, SPED/PVA, NFS-e
+produção e homologação real. O bloqueio de merge por credenciais antigas
+ainda não trocadas permanece. Não substituir essas pendências por mock.
+
+Resultados finais fiscal69:58pacotes/1400 funções principais/
+2976 resultados aprovados na suíte geral, zero falhas, oito skips
+explicitados no registro. Fiscal -race:31 funções/80 resultados,44 comandos
+de backup real, zero falhas/zero skips. Vet completo, quatro builds técnicos,
+17 testes dos validadores e537rotas aprovados. Nada instalado. CI do commit
+novo continua obrigatório antes de aceitar essa unidade; não há merge.

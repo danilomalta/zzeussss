@@ -30,8 +30,11 @@ func boundFiscalInvoice(intent fiscal.Intent) fiscalcore.Invoice {
 func TestFiscalInvoiceBindingUsesOriginalSaleAndExactAmounts(t *testing.T) {
 	f := fiscalFixture(t)
 	intent := fiscalIntent(t, f, fiscalIntentBody, 201)
-	r := fiscalJournal(t, f, f.db, intent, f.token)
+	assignment := numberingPrepare(t, f, intent, 1)
+	r := numberedFiscalJournal(t, f, f.db, intent, f.token, assignment)
 	base := boundFiscalInvoice(intent)
+	base.Key.Number = assignment.Number
+	base.Key.NumericCode = assignment.AccessKey[35:43]
 	if err := r.ValidateInvoice(context.Background(), base); err != nil {
 		t.Fatal("original sale", err)
 	}
@@ -86,16 +89,19 @@ func TestFiscalInvoiceBindingUsesOriginalSaleAndExactAmounts(t *testing.T) {
 func TestFiscalInvoiceBindingLogoutBlocksPreparationWithoutLosingIntent(t *testing.T) {
 	f := fiscalFixture(t)
 	intent := fiscalIntent(t, f, fiscalIntentBody, 201)
-	r := fiscalJournal(t, f, f.db, intent, f.token)
+	assignment := numberingPrepare(t, f, intent, 1)
+	r := numberedFiscalJournal(t, f, f.db, intent, f.token, assignment)
+	in := boundFiscalInvoice(intent)
+	in.Key.NumericCode = assignment.AccessKey[35:43]
 	if err := localauth.Logout(context.Background(), f.db, f.token); err != nil {
 		t.Fatal(err)
 	}
-	if err := r.ValidateInvoice(context.Background(), boundFiscalInvoice(intent)); err == nil {
+	if err := r.ValidateInvoice(context.Background(), in); err == nil {
 		t.Fatal("stale session built invoice")
 	}
 	nextToken := loginToken(t, f.app, f.owner.OwnerID)
-	next := fiscalJournal(t, f, f.db, intent, nextToken)
-	if err := next.ValidateInvoice(context.Background(), boundFiscalInvoice(intent)); err == nil {
+	next := numberedFiscalJournal(t, f, f.db, intent, nextToken, assignment)
+	if err := next.ValidateInvoice(context.Background(), in); err == nil {
 		t.Fatal("new session took over old intent")
 	}
 	var n int

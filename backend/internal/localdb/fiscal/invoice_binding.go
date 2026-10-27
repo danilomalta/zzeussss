@@ -3,6 +3,7 @@ package fiscal
 import (
 	"context"
 	"math/big"
+	"time"
 	"titansystem-backend/internal/fiscalcore"
 )
 
@@ -22,6 +23,14 @@ func (r *HomologationRecorder) ValidateInvoice(ctx context.Context, in fiscalcor
 	intent, err := intentTx(ctx, tx, r.actor, r.intentID)
 	if err != nil {
 		return err
+	}
+	assignment, err := numberAssignmentTx(ctx, tx, r.actor, r.intentID)
+	if err != nil {
+		return err
+	}
+	issued, err := time.Parse(time.RFC3339Nano, assignment.IssuedAt)
+	if err != nil || !in.Key.IssuedAt.Equal(issued) || assignment.AccessKey != r.key || assignment.ActorID != r.actor.IdentityID || assignment.DeviceID != r.device.DeviceID {
+		return ErrInvalid
 	}
 	s := intent.Snapshot
 	p := s.Profile
