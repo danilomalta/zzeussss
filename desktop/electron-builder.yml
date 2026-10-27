@@ -17,6 +17,7 @@ linux:
     - AppImage
     - deb
 win:
+  executableName: TitanSystem
   target:
     - nsis
 nsis:

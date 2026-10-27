@@ -51,7 +51,8 @@ jobs:
           test ! -d /opt/TitanSystem
           mapfile -t packages < <(find "$RUNNER_TEMP/titan-release" -maxdepth 1 -name '*.deb')
           test "${#packages[@]}" -eq 1
-          sudo dpkg -i "${packages[0]}"
+          sudo apt-get update
+          sudo apt-get install -y "${packages[0]}"
           executable="$(dpkg -L titansystem-desktop | awk '/\/opt\/.*\/titansystem-desktop$/ {print;exit}')"
           test -x "$executable"
           xvfb-run -a node desktop/scripts/verify-installed.cjs "$executable" "$RUNNER_TEMP/installed-evidence"
@@ -67,7 +68,10 @@ jobs:
           $installed = Start-Process -FilePath $installer[0].FullName -ArgumentList @('/S', "/D=$destination") -Wait -PassThru
           if ($installed.ExitCode -ne 0) { throw "Installer exit $($installed.ExitCode)" }
           $binary = Join-Path $destination 'TitanSystem.exe'
-          if (!(Test-Path $binary)) { throw 'Installed executable not found' }
+          if (!(Test-Path $binary)) {
+            Get-ChildItem $destination -Recurse -File | Select-Object FullName
+            throw 'Installed executable not found'
+          }
           node desktop/scripts/verify-installed.cjs "$binary" "$env:RUNNER_TEMP/installed-evidence"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload installers and observed startup evidence
