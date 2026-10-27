@@ -13,5 +13,6 @@
   "devDependencies": {
     "electron": "44.9.2",
     "electron-builder": "26.15.3"
-  }
+  },
+  "homepage": "https://github.com/danilomalta/zzeussss"
 }
