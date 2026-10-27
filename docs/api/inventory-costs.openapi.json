@@ -1,0 +1,1362 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — inventario revisado e estimativa de materiais",
+    "version": "2026.10.22",
+    "description": "API adicional. Nao e sincronizacao distribuida, custo real completo ou prova criptografica de instalacao. Escritas exigem inventory; leituras historicas exigem autorizacao atual."
+  },
+  "paths": {
+    "/local/v1/stock/inventories": {
+      "post": {
+        "operationId": "reviewed_inventory_open",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Resultado original ou consulta autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Inventario criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenInput"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "reviewed_inventory_list",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "submitted",
+                "approved",
+                "rejected",
+                "cancelled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado original ou consulta autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        }
+      }
+    },
+    "/local/v1/stock/inventories/{id}": {
+      "get": {
+        "operationId": "reviewed_inventory_detail",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado original ou consulta autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Detail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        }
+      }
+    },
+    "/local/v1/stock/inventories/{id}/counts": {
+      "post": {
+        "operationId": "reviewed_inventory_count",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado original ou consulta autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CountInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/stock/inventories/{id}/state": {
+      "post": {
+        "operationId": "reviewed_inventory_state",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado original ou consulta autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StateInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/stock/inventories/{id}/history": {
+      "get": {
+        "operationId": "reviewed_inventory_history",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado original ou consulta autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        }
+      }
+    },
+    "/local/v1/stock/inventories/{id}/report.csv": {
+      "get": {
+        "operationId": "reviewed_inventory_csv",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quantidades em milesimos, valores nao contados vazios; download",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        }
+      }
+    },
+    "/local/v1/stock/inventory-operations/{id}": {
+      "get": {
+        "operationId": "reviewed_inventory_receipt",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado original ou consulta autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        }
+      }
+    },
+    "/local/v1/system/info": {
+      "get": {
+        "operationId": "local_system_info",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Resultado original ou consulta autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        }
+      }
+    },
+    "/local/v1/production/recipe-versions/{id}/material-cost": {
+      "get": {
+        "operationId": "recipe_material_cost",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "batches",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado original ou consulta autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialCostEstimate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        }
+      }
+    },
+    "/local/v1/production/orders/{id}/material-cost": {
+      "get": {
+        "operationId": "order_material_cost",
+        "security": [
+          {
+            "LocalSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado original ou consulta autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialCostEstimate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Objeto, campo, unidade, quantidade ou consulta invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida"
+          },
+          "403": {
+            "description": "Sem permissao, aparelho autorizado ou contrato necessario"
+          },
+          "404": {
+            "description": "Registro/recibo nao encontrado no contexto autorizado"
+          },
+          "409": {
+            "description": "Conflito de revisao/operacao, recontagem necessaria ou saldo abaixo de reserva"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "500": {
+            "description": "Erro interno sem detalhes sensiveis"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "LocalSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "OpenInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "inventory_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "product_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "unit",
+                    "kg",
+                    "g",
+                    "liter",
+                    "ml",
+                    "meter"
+                  ]
+                }
+              },
+              "required": [
+                "product_id",
+                "unit"
+              ]
+            }
+          }
+        },
+        "required": [
+          "operation_id",
+          "inventory_id",
+          "location_id",
+          "title",
+          "items"
+        ]
+      },
+      "CountInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "product_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "counted_milli": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "product_id",
+                "counted_milli"
+              ]
+            }
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "items"
+        ]
+      },
+      "StateInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "submit",
+              "reopen",
+              "approve",
+              "reject",
+              "cancel"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "action",
+          "reason"
+        ]
+      },
+      "Result": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "inventory_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "action": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "submitted",
+              "approved",
+              "rejected",
+              "cancelled"
+            ]
+          },
+          "changed_lines": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 200
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation_id",
+          "inventory_id",
+          "action",
+          "revision",
+          "status",
+          "changed_lines",
+          "occurred_at",
+          "repeated"
+        ]
+      },
+      "Session": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "inventory_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "inventory_id",
+          "location_id",
+          "title",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Line": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "type": "string"
+          },
+          "counted_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "previous_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "difference_milli": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "counted_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "nullable": true
+          },
+          "counted_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "movement_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "nullable": true
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "counted_milli",
+          "previous_milli",
+          "difference_milli",
+          "counted_by",
+          "counted_at",
+          "movement_id"
+        ]
+      },
+      "Detail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "inventory": {
+            "$ref": "#/components/schemas/Session"
+          },
+          "lines": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/Line"
+            }
+          }
+        },
+        "required": [
+          "inventory",
+          "lines"
+        ]
+      },
+      "Event": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "action": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "occurred_at": {
+            "type": "string"
+          },
+          "request": {
+            "type": "object",
+            "description": "Pedido original canonico; esquema da respectiva acao"
+          },
+          "result": {
+            "$ref": "#/components/schemas/Result"
+          }
+        },
+        "required": [
+          "revision",
+          "operation_id",
+          "actor_id",
+          "device_id",
+          "action",
+          "reason",
+          "occurred_at",
+          "request",
+          "result"
+        ]
+      },
+      "SessionPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Session"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "EventPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "ExactCost": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "numerator": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "denominator": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$"
+          }
+        },
+        "required": [
+          "numerator",
+          "denominator"
+        ]
+      },
+      "MaterialCostLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "type": "string"
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "catalog_cost_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "cost_cents_exact": {
+            "$ref": "#/components/schemas/ExactCost"
+          },
+          "requires_cost_review": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "quantity_milli",
+          "catalog_cost_cents",
+          "cost_cents_exact",
+          "requires_cost_review"
+        ]
+      },
+      "MaterialCostEstimate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "current_catalog_material_estimate"
+            ]
+          },
+          "valued_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "batches": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "output_unit": {
+            "type": "string"
+          },
+          "output_quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "lines": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/MaterialCostLine"
+            }
+          },
+          "material_cost_cents_exact": {
+            "$ref": "#/components/schemas/ExactCost"
+          },
+          "material_cost_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "material_unit_cost_cents_exact": {
+            "$ref": "#/components/schemas/ExactCost"
+          },
+          "rounding": {
+            "type": "string",
+            "enum": [
+              "half_up_on_aggregate"
+            ]
+          },
+          "labor_cost_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "overhead_cost_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "is_complete": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "source",
+          "valued_at",
+          "version_id",
+          "batches",
+          "output_unit",
+          "output_quantity_milli",
+          "lines",
+          "material_cost_cents_exact",
+          "material_cost_cents",
+          "material_unit_cost_cents_exact",
+          "rounding",
+          "labor_cost_cents",
+          "overhead_cost_cents",
+          "is_complete"
+        ]
+      },
+      "SystemInfo": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "titan-local"
+            ]
+          },
+          "build_revision": {
+            "type": "string"
+          },
+          "schema_version": {
+            "type": "integer"
+          },
+          "reviewed_inventory_api": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "tenant_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "store_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "service",
+          "build_revision",
+          "schema_version",
+          "reviewed_inventory_api",
+          "tenant_id",
+          "store_id",
+          "device_id"
+        ]
+      }
+    }
+  }
+}

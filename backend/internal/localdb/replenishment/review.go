@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"titansystem-backend/internal/localdb/catalog"
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
@@ -95,6 +96,9 @@ func review(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		return ReviewResult{}, ErrConflict
 	}
 	if in.Decision == "approved" {
+		if e := catalog.RequireActiveProductTx(ctx, tx, actor.TenantID, product); e != nil {
+			return ReviewResult{}, e
+		}
 		var currentRevision int64
 		err = tx.QueryRowContext(ctx, `SELECT revision FROM restock_policies WHERE tenant_id=? AND store_id=? AND product_id=?`,
 			actor.TenantID, actor.StoreID, product).Scan(&currentRevision)

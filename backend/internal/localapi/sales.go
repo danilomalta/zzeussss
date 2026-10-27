@@ -12,6 +12,7 @@ import (
 )
 
 func (s *Server) mountSales(router fiber.Router) {
+	router.Post("/sales/quote", s.quoteSale)
 	router.Get("/sales", s.saleHistory)
 	router.Post("/sales/:id/cancel", s.cancelSale)
 	router.Post("/sales", s.completeSale)

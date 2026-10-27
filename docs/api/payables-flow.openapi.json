@@ -1,0 +1,5418 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem B02B14 — contas a pagar locais com especie auditada",
+    "version": "1.0.0",
+    "description": "Contrato consolidado; reaproveita B02B11/B02B12/B02B13 sem renomear rotas. Exemplos de teste conferidos contra handlers reais e SQLite descartavel. O unico endpoint novo B02B14 recupera o movimento auditado original. Nenhuma acao bancaria, fiscal ou automatica."
+  },
+  "paths": {
+    "/local/v1/finance/payables": {
+      "post": {
+        "operationId": "supplier_payables_post_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "responses": {
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou revogada"
+          },
+          "403": {
+            "description": "Permissao ou Finance indisponivel"
+          },
+          "404": {
+            "description": "Registro nao encontrado neste contexto"
+          },
+          "409": {
+            "description": "Documento/estado/integridade/texto CSV conflitantes"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "422": {
+            "description": "Limite ou soma inexata excedido"
+          },
+          "500": {
+            "description": "Falha interna; sem efeito parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "200": {
+            "description": "Resultado ou recibo original na repeticao",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/supplier_payables_PayableResult"
+                },
+                "examples": {
+                  "replay_original_create": {
+                    "summary": "Dados de teste; replay_original_create",
+                    "value": {
+                      "operation_id": "create-invoice",
+                      "payable": {
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "creator_id": "owner-test",
+                        "currency": "BRL",
+                        "description": "Compra de farinha",
+                        "document_reference": "NFe-123",
+                        "history": [
+                          {
+                            "action": "create",
+                            "actor_id": "owner-test",
+                            "created_at": "2026-10-20T12:00:00Z",
+                            "from_state": "",
+                            "operation_id": "create-invoice",
+                            "reason": "Compra de farinha",
+                            "to_state": "pending"
+                          }
+                        ],
+                        "id": "invoice-one",
+                        "installments": [
+                          {
+                            "amount_cents": 10000,
+                            "due_on": "2026-10-10",
+                            "id": "part-one"
+                          },
+                          {
+                            "amount_cents": 9600,
+                            "due_on": "2026-10-20",
+                            "id": "part-two"
+                          },
+                          {
+                            "amount_cents": 11900,
+                            "due_on": "2026-11-20",
+                            "id": "part-three"
+                          }
+                        ],
+                        "issued_on": "2026-10-01",
+                        "last_operation_id": "create-invoice",
+                        "payment_execution_available": false,
+                        "settled_cents": null,
+                        "state": "pending",
+                        "supplier_id": "supplier",
+                        "supplier_name": "Padaria",
+                        "total_cents": 31500,
+                        "updated_at": "2026-10-20T12:00:00Z"
+                      },
+                      "repeated": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Documento criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/supplier_payables_PayableResult"
+                },
+                "examples": {
+                  "create_document": {
+                    "summary": "Dados de teste; create_document",
+                    "value": {
+                      "operation_id": "create-invoice",
+                      "payable": {
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "creator_id": "owner-test",
+                        "currency": "BRL",
+                        "description": "Compra de farinha",
+                        "document_reference": "NFe-123",
+                        "history": [
+                          {
+                            "action": "create",
+                            "actor_id": "owner-test",
+                            "created_at": "2026-10-20T12:00:00Z",
+                            "from_state": "",
+                            "operation_id": "create-invoice",
+                            "reason": "Compra de farinha",
+                            "to_state": "pending"
+                          }
+                        ],
+                        "id": "invoice-one",
+                        "installments": [
+                          {
+                            "amount_cents": 10000,
+                            "due_on": "2026-10-10",
+                            "id": "part-one"
+                          },
+                          {
+                            "amount_cents": 9600,
+                            "due_on": "2026-10-20",
+                            "id": "part-two"
+                          },
+                          {
+                            "amount_cents": 11900,
+                            "due_on": "2026-11-20",
+                            "id": "part-three"
+                          }
+                        ],
+                        "issued_on": "2026-10-01",
+                        "last_operation_id": "create-invoice",
+                        "payment_execution_available": false,
+                        "settled_cents": null,
+                        "state": "pending",
+                        "supplier_id": "supplier",
+                        "supplier_name": "Padaria",
+                        "total_cents": 31500,
+                        "updated_at": "2026-10-20T12:00:00Z"
+                      },
+                      "repeated": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/supplier_payables_CreatePayable"
+              },
+              "examples": {
+                "create_document": {
+                  "value": {
+                    "currency": "BRL",
+                    "description": "Compra de farinha",
+                    "document_reference": "NFe-123",
+                    "installments": [
+                      {
+                        "amount_cents": 10000,
+                        "due_on": "2026-10-10",
+                        "id": "part-one"
+                      },
+                      {
+                        "amount_cents": 9600,
+                        "due_on": "2026-10-20",
+                        "id": "part-two"
+                      },
+                      {
+                        "amount_cents": 11900,
+                        "due_on": "2026-11-20",
+                        "id": "part-three"
+                      }
+                    ],
+                    "issued_on": "2026-10-01",
+                    "operation_id": "create-invoice",
+                    "payable_id": "invoice-one",
+                    "supplier_id": "supplier",
+                    "total_cents": 31500
+                  }
+                },
+                "replay_original_create": {
+                  "value": {
+                    "currency": "BRL",
+                    "description": "Compra de farinha",
+                    "document_reference": "NFe-123",
+                    "installments": [
+                      {
+                        "amount_cents": 10000,
+                        "due_on": "2026-10-10",
+                        "id": "part-one"
+                      },
+                      {
+                        "amount_cents": 9600,
+                        "due_on": "2026-10-20",
+                        "id": "part-two"
+                      },
+                      {
+                        "amount_cents": 11900,
+                        "due_on": "2026-11-20",
+                        "id": "part-three"
+                      }
+                    ],
+                    "issued_on": "2026-10-01",
+                    "operation_id": "create-invoice",
+                    "payable_id": "invoice-one",
+                    "supplier_id": "supplier",
+                    "total_cents": 31500
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": true,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false,
+        "x-explicit-user-command-required": true,
+        "x-recovery-get": "/local/v1/finance/payables/operations/{operation_id}"
+      },
+      "get": {
+        "operationId": "supplier_payables_get_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "responses": {
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou revogada"
+          },
+          "403": {
+            "description": "Permissao ou Finance indisponivel"
+          },
+          "404": {
+            "description": "Registro nao encontrado neste contexto"
+          },
+          "409": {
+            "description": "Documento/estado/integridade/texto CSV conflitantes"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "422": {
+            "description": "Limite ou soma inexata excedido"
+          },
+          "500": {
+            "description": "Falha interna; sem efeito parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "200": {
+            "description": "Resultado ou recibo original na repeticao",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/supplier_payables_PayablePage"
+                },
+                "examples": {
+                  "documents_page": {
+                    "summary": "Dados de teste; documents_page",
+                    "value": {
+                      "has_more": false,
+                      "items": [
+                        {
+                          "cash": {
+                            "applied_cents": 0,
+                            "basis": "declared_cash_audited_sources",
+                            "outstanding_cents": 31500,
+                            "paid_cents": 0,
+                            "returned_cents": 0
+                          },
+                          "created_at": "2026-10-20T12:00:00Z",
+                          "creator_id": "owner-test",
+                          "currency": "BRL",
+                          "description": "Compra de farinha",
+                          "document_reference": "NFe-123",
+                          "history": [
+                            {
+                              "action": "create",
+                              "actor_id": "owner-test",
+                              "created_at": "2026-10-20T12:00:00Z",
+                              "from_state": "",
+                              "operation_id": "create-invoice",
+                              "reason": "Compra de farinha",
+                              "to_state": "pending"
+                            },
+                            {
+                              "action": "approve",
+                              "actor_id": "payable-reviewer",
+                              "created_at": "2026-10-20T12:00:00Z",
+                              "from_state": "pending",
+                              "operation_id": "approve-invoice",
+                              "reason": "Documento e vencimentos conferidos",
+                              "to_state": "approved"
+                            }
+                          ],
+                          "id": "invoice-one",
+                          "installments": [
+                            {
+                              "amount_cents": 10000,
+                              "due_on": "2026-10-10",
+                              "id": "part-one"
+                            },
+                            {
+                              "amount_cents": 9600,
+                              "due_on": "2026-10-20",
+                              "id": "part-two"
+                            },
+                            {
+                              "amount_cents": 11900,
+                              "due_on": "2026-11-20",
+                              "id": "part-three"
+                            }
+                          ],
+                          "issued_on": "2026-10-01",
+                          "last_operation_id": "approve-invoice",
+                          "payment_execution_available": false,
+                          "settled_cents": null,
+                          "state": "approved",
+                          "supplier_id": "supplier",
+                          "supplier_name": "Padaria",
+                          "total_cents": 31500,
+                          "updated_at": "2026-10-20T12:00:00Z"
+                        }
+                      ],
+                      "limit": 1,
+                      "offset": 0,
+                      "total_count": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/finance/payables/report": {
+      "get": {
+        "operationId": "supplier_payables_get__report",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados. Vencimentos from/to inclusivos, ate366datas; as_of explicito. Resumo integral separado por estado. Limites1000documentos locais e10000parcelas no periodo. complete so cobre estas fontes locais. cash_applied/saldo sao atuais; as_of nao e corte historico dos pagamentos. Nao somar totais documentais novamente com saldo/aplicado.",
+        "responses": {
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou revogada"
+          },
+          "403": {
+            "description": "Permissao ou Finance indisponivel"
+          },
+          "404": {
+            "description": "Registro nao encontrado neste contexto"
+          },
+          "409": {
+            "description": "Documento/estado/integridade/texto CSV conflitantes"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "422": {
+            "description": "Limite ou soma inexata excedido"
+          },
+          "500": {
+            "description": "Falha interna; sem efeito parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "200": {
+            "description": "Resultado ou recibo original na repeticao",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/supplier_payables_PayablesReport"
+                },
+                "examples": {
+                  "final_report": {
+                    "summary": "Dados de teste; final_report",
+                    "value": {
+                      "complete": true,
+                      "currency": "BRL",
+                      "generated_at": "2026-10-20T12:00:00Z",
+                      "items": [
+                        {
+                          "cash_applied_cents": 4000,
+                          "document_reference": "NFe-123",
+                          "installment": {
+                            "amount_cents": 10000,
+                            "due_on": "2026-10-10",
+                            "id": "part-one"
+                          },
+                          "outstanding_cents": 6000,
+                          "payable_id": "invoice-one",
+                          "state": "approved",
+                          "supplier_id": "supplier",
+                          "supplier_name": "Padaria",
+                          "timing": "overdue"
+                        },
+                        {
+                          "cash_applied_cents": 0,
+                          "document_reference": "NFe-123",
+                          "installment": {
+                            "amount_cents": 9600,
+                            "due_on": "2026-10-20",
+                            "id": "part-two"
+                          },
+                          "outstanding_cents": 9600,
+                          "payable_id": "invoice-one",
+                          "state": "approved",
+                          "supplier_id": "supplier",
+                          "supplier_name": "Padaria",
+                          "timing": "today"
+                        },
+                        {
+                          "cash_applied_cents": 0,
+                          "document_reference": "NFe-123",
+                          "installment": {
+                            "amount_cents": 11900,
+                            "due_on": "2026-11-20",
+                            "id": "part-three"
+                          },
+                          "outstanding_cents": 11900,
+                          "payable_id": "invoice-one",
+                          "state": "approved",
+                          "supplier_id": "supplier",
+                          "supplier_name": "Padaria",
+                          "timing": "future"
+                        }
+                      ],
+                      "payment_execution_available": false,
+                      "scope": "local_supplier_obligations",
+                      "settled_cents": null,
+                      "summary": {
+                        "approved_cents": 31500,
+                        "approved_future_cents": 11900,
+                        "approved_outstanding_cents": 27500,
+                        "approved_outstanding_future_cents": 11900,
+                        "approved_outstanding_overdue_cents": 6000,
+                        "approved_outstanding_today_cents": 9600,
+                        "approved_overdue_cents": 10000,
+                        "approved_today_cents": 9600,
+                        "cancelled_cents": 0,
+                        "cash_applied_cents": 4000,
+                        "installment_count": 3,
+                        "pending_cents": 0,
+                        "rejected_cents": 0
+                      },
+                      "window": {
+                        "as_of": "2026-10-20",
+                        "from": "2026-10-01",
+                        "to": "2026-11-30"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/finance/payables/report.csv": {
+      "get": {
+        "operationId": "supplier_payables_get__report.csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados. Vencimentos from/to inclusivos, ate366datas; as_of explicito. Resumo integral separado por estado. Limites1000documentos locais e10000parcelas no periodo. complete so cobre estas fontes locais. cash_applied/saldo sao atuais; as_of nao e corte historico dos pagamentos. Nao somar totais documentais novamente com saldo/aplicado.",
+        "responses": {
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou revogada"
+          },
+          "403": {
+            "description": "Permissao ou Finance indisponivel"
+          },
+          "404": {
+            "description": "Registro nao encontrado neste contexto"
+          },
+          "409": {
+            "description": "Documento/estado/integridade/texto CSV conflitantes"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "422": {
+            "description": "Limite ou soma inexata excedido"
+          },
+          "500": {
+            "description": "Falha interna; sem efeito parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "200": {
+            "description": "CSV integral UTF8 BOM, ponto e virgula e CRLF; formato2; ate4MiB,10000parcelas. Valores centavos, liquidacao desconhecida. Sem soma entre resumo e detalhes. Colunas cash_applied_cents,outstanding_cents anexadas. Saldo nao inclui pagamentos externos desconhecidos.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "final_csv_format2": {
+                    "summary": "Dados de teste; final_csv_format2",
+                    "value": "﻿format_version;row_type;scope;from;to;as_of;currency;metric;metric_value;payable_id;supplier_id;supplier_name;document_reference;state;installment_id;due_on;amount_cents;timing;cash_applied_cents;outstanding_cents\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_cents;31500;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_future_cents;11900;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_cents;27500;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_future_cents;11900;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_overdue_cents;6000;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_today_cents;9600;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_overdue_cents;10000;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_today_cents;9600;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;cancelled_cents;0;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;cash_applied_cents;4000;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;installment_count;3;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;pending_cents;0;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;rejected_cents;0;;;;;;;;;;;\r\n2;installment;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;;;invoice-one;supplier;Padaria;NFe-123;approved;part-one;2026-10-10;10000;overdue;4000;6000\r\n2;installment;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;;;invoice-one;supplier;Padaria;NFe-123;approved;part-two;2026-10-20;9600;today;0;9600\r\n2;installment;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;;;invoice-one;supplier;Padaria;NFe-123;approved;part-three;2026-11-20;11900;future;0;11900\r\n"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/finance/payables/operations/{id}": {
+      "get": {
+        "operationId": "supplier_payables_get__operations_id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "responses": {
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou revogada"
+          },
+          "403": {
+            "description": "Permissao ou Finance indisponivel"
+          },
+          "404": {
+            "description": "Registro nao encontrado neste contexto"
+          },
+          "409": {
+            "description": "Documento/estado/integridade/texto CSV conflitantes"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "422": {
+            "description": "Limite ou soma inexata excedido"
+          },
+          "500": {
+            "description": "Falha interna; sem efeito parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "200": {
+            "description": "Resultado ou recibo original na repeticao",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/supplier_payables_PayableResult"
+                },
+                "examples": {
+                  "recover_document_after_discarded_reply": {
+                    "summary": "Dados de teste; recover_document_after_discarded_reply",
+                    "value": {
+                      "operation_id": "create-invoice",
+                      "payable": {
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "creator_id": "owner-test",
+                        "currency": "BRL",
+                        "description": "Compra de farinha",
+                        "document_reference": "NFe-123",
+                        "history": [
+                          {
+                            "action": "create",
+                            "actor_id": "owner-test",
+                            "created_at": "2026-10-20T12:00:00Z",
+                            "from_state": "",
+                            "operation_id": "create-invoice",
+                            "reason": "Compra de farinha",
+                            "to_state": "pending"
+                          }
+                        ],
+                        "id": "invoice-one",
+                        "installments": [
+                          {
+                            "amount_cents": 10000,
+                            "due_on": "2026-10-10",
+                            "id": "part-one"
+                          },
+                          {
+                            "amount_cents": 9600,
+                            "due_on": "2026-10-20",
+                            "id": "part-two"
+                          },
+                          {
+                            "amount_cents": 11900,
+                            "due_on": "2026-11-20",
+                            "id": "part-three"
+                          }
+                        ],
+                        "issued_on": "2026-10-01",
+                        "last_operation_id": "create-invoice",
+                        "payment_execution_available": false,
+                        "settled_cents": null,
+                        "state": "pending",
+                        "supplier_id": "supplier",
+                        "supplier_name": "Padaria",
+                        "total_cents": 31500,
+                        "updated_at": "2026-10-20T12:00:00Z"
+                      },
+                      "repeated": false
+                    }
+                  },
+                  "recover_approval": {
+                    "summary": "Dados de teste; recover_approval",
+                    "value": {
+                      "operation_id": "approve-invoice",
+                      "payable": {
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "creator_id": "owner-test",
+                        "currency": "BRL",
+                        "description": "Compra de farinha",
+                        "document_reference": "NFe-123",
+                        "history": [
+                          {
+                            "action": "create",
+                            "actor_id": "owner-test",
+                            "created_at": "2026-10-20T12:00:00Z",
+                            "from_state": "",
+                            "operation_id": "create-invoice",
+                            "reason": "Compra de farinha",
+                            "to_state": "pending"
+                          },
+                          {
+                            "action": "approve",
+                            "actor_id": "payable-reviewer",
+                            "created_at": "2026-10-20T12:00:00Z",
+                            "from_state": "pending",
+                            "operation_id": "approve-invoice",
+                            "reason": "Documento e vencimentos conferidos",
+                            "to_state": "approved"
+                          }
+                        ],
+                        "id": "invoice-one",
+                        "installments": [
+                          {
+                            "amount_cents": 10000,
+                            "due_on": "2026-10-10",
+                            "id": "part-one"
+                          },
+                          {
+                            "amount_cents": 9600,
+                            "due_on": "2026-10-20",
+                            "id": "part-two"
+                          },
+                          {
+                            "amount_cents": 11900,
+                            "due_on": "2026-11-20",
+                            "id": "part-three"
+                          }
+                        ],
+                        "issued_on": "2026-10-01",
+                        "last_operation_id": "approve-invoice",
+                        "payment_execution_available": false,
+                        "settled_cents": null,
+                        "state": "approved",
+                        "supplier_id": "supplier",
+                        "supplier_name": "Padaria",
+                        "total_cents": 31500,
+                        "updated_at": "2026-10-20T12:00:00Z"
+                      },
+                      "repeated": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/finance/payables/{id}": {
+      "get": {
+        "operationId": "supplier_payables_get__id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "responses": {
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou revogada"
+          },
+          "403": {
+            "description": "Permissao ou Finance indisponivel"
+          },
+          "404": {
+            "description": "Registro nao encontrado neste contexto"
+          },
+          "409": {
+            "description": "Documento/estado/integridade/texto CSV conflitantes"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "422": {
+            "description": "Limite ou soma inexata excedido"
+          },
+          "500": {
+            "description": "Falha interna; sem efeito parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "200": {
+            "description": "Resultado ou recibo original na repeticao",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/supplier_payables_Payable"
+                },
+                "examples": {
+                  "document_with_current_cash": {
+                    "summary": "Dados de teste; document_with_current_cash",
+                    "value": {
+                      "cash": {
+                        "applied_cents": 0,
+                        "basis": "declared_cash_audited_sources",
+                        "outstanding_cents": 31500,
+                        "paid_cents": 0,
+                        "returned_cents": 0
+                      },
+                      "created_at": "2026-10-20T12:00:00Z",
+                      "creator_id": "owner-test",
+                      "currency": "BRL",
+                      "description": "Compra de farinha",
+                      "document_reference": "NFe-123",
+                      "history": [
+                        {
+                          "action": "create",
+                          "actor_id": "owner-test",
+                          "created_at": "2026-10-20T12:00:00Z",
+                          "from_state": "",
+                          "operation_id": "create-invoice",
+                          "reason": "Compra de farinha",
+                          "to_state": "pending"
+                        },
+                        {
+                          "action": "approve",
+                          "actor_id": "payable-reviewer",
+                          "created_at": "2026-10-20T12:00:00Z",
+                          "from_state": "pending",
+                          "operation_id": "approve-invoice",
+                          "reason": "Documento e vencimentos conferidos",
+                          "to_state": "approved"
+                        }
+                      ],
+                      "id": "invoice-one",
+                      "installments": [
+                        {
+                          "amount_cents": 10000,
+                          "due_on": "2026-10-10",
+                          "id": "part-one"
+                        },
+                        {
+                          "amount_cents": 9600,
+                          "due_on": "2026-10-20",
+                          "id": "part-two"
+                        },
+                        {
+                          "amount_cents": 11900,
+                          "due_on": "2026-11-20",
+                          "id": "part-three"
+                        }
+                      ],
+                      "issued_on": "2026-10-01",
+                      "last_operation_id": "approve-invoice",
+                      "payment_execution_available": false,
+                      "settled_cents": null,
+                      "state": "approved",
+                      "supplier_id": "supplier",
+                      "supplier_name": "Padaria",
+                      "total_cents": 31500,
+                      "updated_at": "2026-10-20T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/finance/payables/{id}/approve": {
+      "post": {
+        "operationId": "supplier_payables_post__id_approve",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "responses": {
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou revogada"
+          },
+          "403": {
+            "description": "Permissao ou Finance indisponivel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                },
+                "examples": {
+                  "creator_cannot_approve": {
+                    "summary": "Dados de teste; creator_cannot_approve",
+                    "value": {
+                      "error": {
+                        "code": "forbidden",
+                        "message": "Operação não autorizada."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Registro nao encontrado neste contexto"
+          },
+          "409": {
+            "description": "Documento/estado/integridade/texto CSV conflitantes"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "422": {
+            "description": "Limite ou soma inexata excedido"
+          },
+          "500": {
+            "description": "Falha interna; sem efeito parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "200": {
+            "description": "Resultado ou recibo original na repeticao",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/supplier_payables_PayableResult"
+                },
+                "examples": {
+                  "approve_document": {
+                    "summary": "Dados de teste; approve_document",
+                    "value": {
+                      "operation_id": "approve-invoice",
+                      "payable": {
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "creator_id": "owner-test",
+                        "currency": "BRL",
+                        "description": "Compra de farinha",
+                        "document_reference": "NFe-123",
+                        "history": [
+                          {
+                            "action": "create",
+                            "actor_id": "owner-test",
+                            "created_at": "2026-10-20T12:00:00Z",
+                            "from_state": "",
+                            "operation_id": "create-invoice",
+                            "reason": "Compra de farinha",
+                            "to_state": "pending"
+                          },
+                          {
+                            "action": "approve",
+                            "actor_id": "payable-reviewer",
+                            "created_at": "2026-10-20T12:00:00Z",
+                            "from_state": "pending",
+                            "operation_id": "approve-invoice",
+                            "reason": "Documento e vencimentos conferidos",
+                            "to_state": "approved"
+                          }
+                        ],
+                        "id": "invoice-one",
+                        "installments": [
+                          {
+                            "amount_cents": 10000,
+                            "due_on": "2026-10-10",
+                            "id": "part-one"
+                          },
+                          {
+                            "amount_cents": 9600,
+                            "due_on": "2026-10-20",
+                            "id": "part-two"
+                          },
+                          {
+                            "amount_cents": 11900,
+                            "due_on": "2026-11-20",
+                            "id": "part-three"
+                          }
+                        ],
+                        "issued_on": "2026-10-01",
+                        "last_operation_id": "approve-invoice",
+                        "payment_execution_available": false,
+                        "settled_cents": null,
+                        "state": "approved",
+                        "supplier_id": "supplier",
+                        "supplier_name": "Padaria",
+                        "total_cents": 31500,
+                        "updated_at": "2026-10-20T12:00:00Z"
+                      },
+                      "repeated": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/supplier_payables_PayableAction"
+              },
+              "examples": {
+                "creator_cannot_approve": {
+                  "value": {
+                    "operation_id": "approve-invoice",
+                    "reason": "Documento e vencimentos conferidos"
+                  }
+                },
+                "approve_document": {
+                  "value": {
+                    "operation_id": "approve-invoice",
+                    "reason": "Documento e vencimentos conferidos"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": true,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false,
+        "x-explicit-user-command-required": true,
+        "x-recovery-get": "/local/v1/finance/payables/operations/{operation_id}"
+      }
+    },
+    "/local/v1/finance/payables/{id}/reject": {
+      "post": {
+        "operationId": "supplier_payables_post__id_reject",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "responses": {
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou revogada"
+          },
+          "403": {
+            "description": "Permissao ou Finance indisponivel"
+          },
+          "404": {
+            "description": "Registro nao encontrado neste contexto"
+          },
+          "409": {
+            "description": "Documento/estado/integridade/texto CSV conflitantes"
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "422": {
+            "description": "Limite ou soma inexata excedido"
+          },
+          "500": {
+            "description": "Falha interna; sem efeito parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "200": {
+            "description": "Resultado ou recibo original na repeticao",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/supplier_payables_PayableResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/supplier_payables_PayableAction"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": true,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false,
+        "x-explicit-user-command-required": true,
+        "x-recovery-get": "/local/v1/finance/payables/operations/{operation_id}"
+      }
+    },
+    "/local/v1/finance/payables/{id}/cancel": {
+      "post": {
+        "operationId": "supplier_payables_post__id_cancel",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "responses": {
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao ausente ou revogada"
+          },
+          "403": {
+            "description": "Permissao ou Finance indisponivel"
+          },
+          "404": {
+            "description": "Registro nao encontrado neste contexto"
+          },
+          "409": {
+            "description": "Documento/estado/integridade/texto CSV conflitantes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                },
+                "examples": {
+                  "cancel_with_applied_money": {
+                    "summary": "Dados de teste; cancel_with_applied_money",
+                    "value": {
+                      "error": {
+                        "code": "conflict",
+                        "message": "Operação em conflito; consulte seu estado antes de tentar novamente."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Corpo excede limite"
+          },
+          "422": {
+            "description": "Limite ou soma inexata excedido"
+          },
+          "500": {
+            "description": "Falha interna; sem efeito parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "200": {
+            "description": "Resultado ou recibo original na repeticao",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/supplier_payables_PayableResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/supplier_payables_PayableAction"
+              },
+              "examples": {
+                "cancel_with_applied_money": {
+                  "value": {
+                    "operation_id": "cancel-paid",
+                    "reason": "Documento precisa de revisao"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": true,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false,
+        "x-explicit-user-command-required": true,
+        "x-recovery-get": "/local/v1/finance/payables/operations/{operation_id}"
+      }
+    },
+    "/local/v1/finance/payables/{id}/cash-payments": {
+      "post": {
+        "operationId": "payable_cash_post__local_v1_finance_payables_id_cash-payments",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator.",
+        "responses": {
+          "200": {
+            "description": "Consulta ou recibo original em replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payable_cash_CashResult"
+                },
+                "examples": {
+                  "replay_same_cash_link": {
+                    "summary": "Dados de teste; replay_same_cash_link",
+                    "value": {
+                      "operation_id": "pay-one",
+                      "payment": {
+                        "actor_id": "owner-test",
+                        "amount_cents": 6000,
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "id": "payment-one",
+                        "installment_id": "part-one",
+                        "operation_id": "pay-one",
+                        "payable_id": "invoice-one",
+                        "recipient": "Responsavel do fornecedor",
+                        "reference": "receipt-one",
+                        "return": null,
+                        "withdrawal_operation_id": "withdraw-one"
+                      },
+                      "repeated": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Permissao/licenca ausente ou ator da fonte diferente"
+          },
+          "404": {
+            "description": "Registro fora do escopo ou inexistente"
+          },
+          "409": {
+            "description": "Fonte/estado/valor/conflito/integridade",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                },
+                "examples": {
+                  "same_id_changed_content": {
+                    "summary": "Dados de teste; same_id_changed_content",
+                    "value": {
+                      "error": {
+                        "code": "conflict",
+                        "message": "Operação em conflito; consulte seu estado antes de tentar novamente."
+                      }
+                    }
+                  },
+                  "same_origin_different_ids": {
+                    "summary": "Dados de teste; same_origin_different_ids",
+                    "value": {
+                      "error": {
+                        "code": "conflict",
+                        "message": "Operação em conflito; consulte seu estado antes de tentar novamente."
+                      }
+                    }
+                  },
+                  "above_installment_balance": {
+                    "summary": "Dados de teste; above_installment_balance",
+                    "value": {
+                      "error": {
+                        "code": "conflict",
+                        "message": "Operação em conflito; consulte seu estado antes de tentar novamente."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Corpo acima de8KiB"
+          },
+          "422": {
+            "description": "Limites numericos/historicos"
+          },
+          "500": {
+            "description": "Falha interna,sem escrita parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "201": {
+            "description": "Vinculo registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payable_cash_CashResult"
+                },
+                "examples": {
+                  "confirm_first_cash_link": {
+                    "summary": "Dados de teste; confirm_first_cash_link",
+                    "value": {
+                      "operation_id": "pay-one",
+                      "payment": {
+                        "actor_id": "owner-test",
+                        "amount_cents": 6000,
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "id": "payment-one",
+                        "installment_id": "part-one",
+                        "operation_id": "pay-one",
+                        "payable_id": "invoice-one",
+                        "recipient": "Responsavel do fornecedor",
+                        "reference": "receipt-one",
+                        "return": null,
+                        "withdrawal_operation_id": "withdraw-one"
+                      },
+                      "repeated": false
+                    }
+                  },
+                  "complete_first_installment": {
+                    "summary": "Dados de teste; complete_first_installment",
+                    "value": {
+                      "operation_id": "pay-two",
+                      "payment": {
+                        "actor_id": "owner-test",
+                        "amount_cents": 4000,
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "id": "payment-two",
+                        "installment_id": "part-one",
+                        "operation_id": "pay-two",
+                        "payable_id": "invoice-one",
+                        "recipient": "Responsavel do fornecedor",
+                        "reference": "receipt-two",
+                        "return": null,
+                        "withdrawal_operation_id": "withdraw-two"
+                      },
+                      "repeated": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/payable_cash_CashInput"
+              },
+              "examples": {
+                "confirm_first_cash_link": {
+                  "value": {
+                    "installment_id": "part-one",
+                    "operation_id": "pay-one",
+                    "payment_id": "payment-one",
+                    "recipient": "Responsavel do fornecedor",
+                    "reference": "receipt-one",
+                    "withdrawal_operation_id": "withdraw-one"
+                  }
+                },
+                "replay_same_cash_link": {
+                  "value": {
+                    "installment_id": "part-one",
+                    "operation_id": "pay-one",
+                    "payment_id": "payment-one",
+                    "recipient": "Responsavel do fornecedor",
+                    "reference": "receipt-one",
+                    "withdrawal_operation_id": "withdraw-one"
+                  }
+                },
+                "same_id_changed_content": {
+                  "value": {
+                    "installment_id": "part-one",
+                    "operation_id": "pay-one",
+                    "payment_id": "payment-one",
+                    "recipient": "Responsavel do fornecedor",
+                    "reference": "receipt-different",
+                    "withdrawal_operation_id": "withdraw-one"
+                  }
+                },
+                "same_origin_different_ids": {
+                  "value": {
+                    "installment_id": "part-one",
+                    "operation_id": "pay-duplicate",
+                    "payment_id": "payment-duplicate",
+                    "recipient": "Responsavel do fornecedor",
+                    "reference": "receipt-duplicate",
+                    "withdrawal_operation_id": "withdraw-one"
+                  }
+                },
+                "complete_first_installment": {
+                  "value": {
+                    "installment_id": "part-one",
+                    "operation_id": "pay-two",
+                    "payment_id": "payment-two",
+                    "recipient": "Responsavel do fornecedor",
+                    "reference": "receipt-two",
+                    "withdrawal_operation_id": "withdraw-two"
+                  }
+                },
+                "above_installment_balance": {
+                  "value": {
+                    "installment_id": "part-one",
+                    "operation_id": "pay-over",
+                    "payment_id": "payment-over",
+                    "recipient": "Responsavel do fornecedor",
+                    "reference": "receipt-over",
+                    "withdrawal_operation_id": "withdraw-over"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": true,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false,
+        "x-explicit-user-command-required": true,
+        "x-recovery-get": "/local/v1/finance/payable-cash/operations/{operation_id}"
+      },
+      "get": {
+        "operationId": "payable_cash_get__local_v1_finance_payables_id_cash-payments",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator.",
+        "responses": {
+          "200": {
+            "description": "Consulta ou recibo original em replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payable_cash_CashPage"
+                },
+                "examples": {
+                  "cash_history_after_restart": {
+                    "summary": "Dados de teste; cash_history_after_restart",
+                    "value": {
+                      "has_more": true,
+                      "items": [
+                        {
+                          "actor_id": "owner-test",
+                          "amount_cents": 6000,
+                          "created_at": "2026-10-20T12:00:00Z",
+                          "id": "payment-one",
+                          "installment_id": "part-one",
+                          "operation_id": "pay-one",
+                          "payable_id": "invoice-one",
+                          "recipient": "Responsavel do fornecedor",
+                          "reference": "receipt-one",
+                          "return": {
+                            "actor_id": "owner-test",
+                            "created_at": "2026-10-20T12:00:00Z",
+                            "operation_id": "return-one",
+                            "reason": "Fornecedor devolveu integralmente em especie",
+                            "supply_operation_id": "return-supply"
+                          },
+                          "withdrawal_operation_id": "withdraw-one"
+                        }
+                      ],
+                      "limit": 1,
+                      "offset": 0,
+                      "summary": {
+                        "applied_cents": 4000,
+                        "basis": "declared_cash_audited_sources",
+                        "outstanding_cents": 27500,
+                        "paid_cents": 10000,
+                        "returned_cents": 6000
+                      },
+                      "total_count": 2
+                    }
+                  },
+                  "cash_history_second_page": {
+                    "summary": "Dados de teste; cash_history_second_page",
+                    "value": {
+                      "has_more": false,
+                      "items": [
+                        {
+                          "actor_id": "owner-test",
+                          "amount_cents": 4000,
+                          "created_at": "2026-10-20T12:00:00Z",
+                          "id": "payment-two",
+                          "installment_id": "part-one",
+                          "operation_id": "pay-two",
+                          "payable_id": "invoice-one",
+                          "recipient": "Responsavel do fornecedor",
+                          "reference": "receipt-two",
+                          "return": null,
+                          "withdrawal_operation_id": "withdraw-two"
+                        }
+                      ],
+                      "limit": 1,
+                      "offset": 1,
+                      "summary": {
+                        "applied_cents": 4000,
+                        "basis": "declared_cash_audited_sources",
+                        "outstanding_cents": 27500,
+                        "paid_cents": 10000,
+                        "returned_cents": 6000
+                      },
+                      "total_count": 2
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Permissao/licenca ausente ou ator da fonte diferente"
+          },
+          "404": {
+            "description": "Registro fora do escopo ou inexistente"
+          },
+          "409": {
+            "description": "Fonte/estado/valor/conflito/integridade"
+          },
+          "413": {
+            "description": "Corpo acima de8KiB"
+          },
+          "422": {
+            "description": "Limites numericos/historicos"
+          },
+          "500": {
+            "description": "Falha interna,sem escrita parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          }
+        },
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/finance/payable-cash/{id}/return": {
+      "post": {
+        "operationId": "payable_cash_post__local_v1_finance_payable-cash_id_return",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator.",
+        "responses": {
+          "200": {
+            "description": "Consulta ou recibo original em replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payable_cash_CashResult"
+                },
+                "examples": {
+                  "replay_integral_return": {
+                    "summary": "Dados de teste; replay_integral_return",
+                    "value": {
+                      "operation_id": "return-one",
+                      "payment": {
+                        "actor_id": "owner-test",
+                        "amount_cents": 6000,
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "id": "payment-one",
+                        "installment_id": "part-one",
+                        "operation_id": "pay-one",
+                        "payable_id": "invoice-one",
+                        "recipient": "Responsavel do fornecedor",
+                        "reference": "receipt-one",
+                        "return": {
+                          "actor_id": "owner-test",
+                          "created_at": "2026-10-20T12:00:00Z",
+                          "operation_id": "return-one",
+                          "reason": "Fornecedor devolveu integralmente em especie",
+                          "supply_operation_id": "return-supply"
+                        },
+                        "withdrawal_operation_id": "withdraw-one"
+                      },
+                      "repeated": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Permissao/licenca ausente ou ator da fonte diferente"
+          },
+          "404": {
+            "description": "Registro fora do escopo ou inexistente"
+          },
+          "409": {
+            "description": "Fonte/estado/valor/conflito/integridade",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                },
+                "examples": {
+                  "second_return_new_operation": {
+                    "summary": "Dados de teste; second_return_new_operation",
+                    "value": {
+                      "error": {
+                        "code": "conflict",
+                        "message": "Operação em conflito; consulte seu estado antes de tentar novamente."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Corpo acima de8KiB"
+          },
+          "422": {
+            "description": "Limites numericos/historicos"
+          },
+          "500": {
+            "description": "Falha interna,sem escrita parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "201": {
+            "description": "Vinculo registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payable_cash_CashResult"
+                },
+                "examples": {
+                  "confirm_integral_return": {
+                    "summary": "Dados de teste; confirm_integral_return",
+                    "value": {
+                      "operation_id": "return-one",
+                      "payment": {
+                        "actor_id": "owner-test",
+                        "amount_cents": 6000,
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "id": "payment-one",
+                        "installment_id": "part-one",
+                        "operation_id": "pay-one",
+                        "payable_id": "invoice-one",
+                        "recipient": "Responsavel do fornecedor",
+                        "reference": "receipt-one",
+                        "return": {
+                          "actor_id": "owner-test",
+                          "created_at": "2026-10-20T12:00:00Z",
+                          "operation_id": "return-one",
+                          "reason": "Fornecedor devolveu integralmente em especie",
+                          "supply_operation_id": "return-supply"
+                        },
+                        "withdrawal_operation_id": "withdraw-one"
+                      },
+                      "repeated": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/payable_cash_CashReturnInput"
+              },
+              "examples": {
+                "confirm_integral_return": {
+                  "value": {
+                    "operation_id": "return-one",
+                    "reason": "Fornecedor devolveu integralmente em especie",
+                    "supply_operation_id": "return-supply"
+                  }
+                },
+                "replay_integral_return": {
+                  "value": {
+                    "operation_id": "return-one",
+                    "reason": "Fornecedor devolveu integralmente em especie",
+                    "supply_operation_id": "return-supply"
+                  }
+                },
+                "second_return_new_operation": {
+                  "value": {
+                    "operation_id": "return-duplicate",
+                    "reason": "Fornecedor devolveu integralmente em especie",
+                    "supply_operation_id": "return-supply"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": true,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false,
+        "x-explicit-user-command-required": true,
+        "x-recovery-get": "/local/v1/finance/payable-cash/operations/{operation_id}"
+      }
+    },
+    "/local/v1/finance/payable-cash/operations/{id}": {
+      "get": {
+        "operationId": "payable_cash_get__local_v1_finance_payable-cash_operations_id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator.",
+        "responses": {
+          "200": {
+            "description": "Consulta ou recibo original em replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payable_cash_CashResult"
+                },
+                "examples": {
+                  "recover_cash_link_after_discarded_reply": {
+                    "summary": "Dados de teste; recover_cash_link_after_discarded_reply",
+                    "value": {
+                      "operation_id": "pay-one",
+                      "payment": {
+                        "actor_id": "owner-test",
+                        "amount_cents": 6000,
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "id": "payment-one",
+                        "installment_id": "part-one",
+                        "operation_id": "pay-one",
+                        "payable_id": "invoice-one",
+                        "recipient": "Responsavel do fornecedor",
+                        "reference": "receipt-one",
+                        "return": null,
+                        "withdrawal_operation_id": "withdraw-one"
+                      },
+                      "repeated": false
+                    }
+                  },
+                  "recover_integral_return": {
+                    "summary": "Dados de teste; recover_integral_return",
+                    "value": {
+                      "operation_id": "return-one",
+                      "payment": {
+                        "actor_id": "owner-test",
+                        "amount_cents": 6000,
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "id": "payment-one",
+                        "installment_id": "part-one",
+                        "operation_id": "pay-one",
+                        "payable_id": "invoice-one",
+                        "recipient": "Responsavel do fornecedor",
+                        "reference": "receipt-one",
+                        "return": {
+                          "actor_id": "owner-test",
+                          "created_at": "2026-10-20T12:00:00Z",
+                          "operation_id": "return-one",
+                          "reason": "Fornecedor devolveu integralmente em especie",
+                          "supply_operation_id": "return-supply"
+                        },
+                        "withdrawal_operation_id": "withdraw-one"
+                      },
+                      "repeated": false
+                    }
+                  },
+                  "original_payment_receipt_is_immutable": {
+                    "summary": "Dados de teste; original_payment_receipt_is_immutable",
+                    "value": {
+                      "operation_id": "pay-one",
+                      "payment": {
+                        "actor_id": "owner-test",
+                        "amount_cents": 6000,
+                        "created_at": "2026-10-20T12:00:00Z",
+                        "id": "payment-one",
+                        "installment_id": "part-one",
+                        "operation_id": "pay-one",
+                        "payable_id": "invoice-one",
+                        "recipient": "Responsavel do fornecedor",
+                        "reference": "receipt-one",
+                        "return": null,
+                        "withdrawal_operation_id": "withdraw-one"
+                      },
+                      "repeated": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Permissao/licenca ausente ou ator da fonte diferente"
+          },
+          "404": {
+            "description": "Registro fora do escopo ou inexistente"
+          },
+          "409": {
+            "description": "Fonte/estado/valor/conflito/integridade"
+          },
+          "413": {
+            "description": "Corpo acima de8KiB"
+          },
+          "422": {
+            "description": "Limites numericos/historicos"
+          },
+          "500": {
+            "description": "Falha interna,sem escrita parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          }
+        },
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/finance/payables/{id}/installment-balances": {
+      "get": {
+        "operationId": "payable_readiness_InstallmentBalances_balances",
+        "summary": "Saldos por parcela no mesmo snapshot",
+        "description": "ViewAccounting; contexto da sessão. GET sem corpo, queries exatas e sem repetição. Fontes são próprias do ator e apenas uma consulta; não reservam dinheiro nem certificam autorização/licença para escrever. Revalidar na transação de pagamento/devolução existente. Nenhuma mutação.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot completo, Cache-Control: no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payable_readiness_InstallmentBalances"
+                },
+                "examples": {
+                  "initial_balances": {
+                    "summary": "Dados de teste; initial_balances",
+                    "value": {
+                      "complete": true,
+                      "currency": "BRL",
+                      "generated_at": "2026-10-20T12:00:00Z",
+                      "items": [
+                        {
+                          "applied_cents": 0,
+                          "installment": {
+                            "amount_cents": 10000,
+                            "due_on": "2026-10-10",
+                            "id": "part-one"
+                          },
+                          "outstanding_cents": 10000,
+                          "paid_cents": 0,
+                          "returned_cents": 0
+                        },
+                        {
+                          "applied_cents": 0,
+                          "installment": {
+                            "amount_cents": 9600,
+                            "due_on": "2026-10-20",
+                            "id": "part-two"
+                          },
+                          "outstanding_cents": 9600,
+                          "paid_cents": 0,
+                          "returned_cents": 0
+                        },
+                        {
+                          "applied_cents": 0,
+                          "installment": {
+                            "amount_cents": 11900,
+                            "due_on": "2026-11-20",
+                            "id": "part-three"
+                          },
+                          "outstanding_cents": 11900,
+                          "paid_cents": 0,
+                          "returned_cents": 0
+                        }
+                      ],
+                      "payable_id": "invoice-one",
+                      "state": "approved",
+                      "summary": {
+                        "applied_cents": 0,
+                        "basis": "declared_cash_audited_sources",
+                        "outstanding_cents": 31500,
+                        "paid_cents": 0,
+                        "returned_cents": 0
+                      }
+                    }
+                  },
+                  "balances_after_restart": {
+                    "summary": "Dados de teste; balances_after_restart",
+                    "value": {
+                      "complete": true,
+                      "currency": "BRL",
+                      "generated_at": "2026-10-20T12:00:00Z",
+                      "items": [
+                        {
+                          "applied_cents": 4000,
+                          "installment": {
+                            "amount_cents": 10000,
+                            "due_on": "2026-10-10",
+                            "id": "part-one"
+                          },
+                          "outstanding_cents": 6000,
+                          "paid_cents": 10000,
+                          "returned_cents": 6000
+                        },
+                        {
+                          "applied_cents": 0,
+                          "installment": {
+                            "amount_cents": 9600,
+                            "due_on": "2026-10-20",
+                            "id": "part-two"
+                          },
+                          "outstanding_cents": 9600,
+                          "paid_cents": 0,
+                          "returned_cents": 0
+                        },
+                        {
+                          "applied_cents": 0,
+                          "installment": {
+                            "amount_cents": 11900,
+                            "due_on": "2026-11-20",
+                            "id": "part-three"
+                          },
+                          "outstanding_cents": 11900,
+                          "paid_cents": 0,
+                          "returned_cents": 0
+                        }
+                      ],
+                      "payable_id": "invoice-one",
+                      "state": "approved",
+                      "summary": {
+                        "applied_cents": 4000,
+                        "basis": "declared_cash_audited_sources",
+                        "outstanding_cents": 27500,
+                        "paid_cents": 10000,
+                        "returned_cents": 6000
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Sem permissão"
+          },
+          "404": {
+            "description": "Recurso ausente no contexto"
+          },
+          "409": {
+            "description": "Histórico ou fonte inconsistente"
+          },
+          "422": {
+            "description": "Fonte excede limite de segurança"
+          },
+          "500": {
+            "description": "Falha interna sem resultado parcial"
+          }
+        },
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/finance/payables/{id}/cash-sources": {
+      "get": {
+        "operationId": "payable_readiness_CashCandidates_pay",
+        "summary": "Sangrias próprias elegíveis para uma parcela",
+        "description": "ViewAccounting; contexto da sessão. GET sem corpo, queries exatas e sem repetição. Fontes são próprias do ator e apenas uma consulta; não reservam dinheiro nem certificam autorização/licença para escrever. Revalidar na transação de pagamento/devolução existente. Nenhuma mutação.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            }
+          },
+          {
+            "name": "installment_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot completo, Cache-Control: no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payable_readiness_CashCandidates"
+                },
+                "examples": {
+                  "select_payment_source": {
+                    "summary": "Dados de teste; select_payment_source",
+                    "value": {
+                      "amount_limit_cents": 10000,
+                      "amount_rule": "up_to_outstanding",
+                      "blocked_reason": "",
+                      "complete": true,
+                      "currency": "BRL",
+                      "generated_at": "2026-10-20T12:00:00Z",
+                      "has_more": false,
+                      "installment_id": "part-one",
+                      "items": [
+                        {
+                          "actor_id": "owner-test",
+                          "amount_cents": 6000,
+                          "kind": "withdrawal",
+                          "movement_id": "movement-test-withdraw-one",
+                          "occurred_at": "2026-10-20T12:00:00Z",
+                          "operation_id": "withdraw-one",
+                          "session_id": "turn-one"
+                        },
+                        {
+                          "actor_id": "owner-test",
+                          "amount_cents": 4000,
+                          "kind": "withdrawal",
+                          "movement_id": "movement-test-withdraw-two",
+                          "occurred_at": "2026-10-20T12:00:00Z",
+                          "operation_id": "withdraw-two",
+                          "session_id": "turn-one"
+                        }
+                      ],
+                      "limit": 50,
+                      "offset": 0,
+                      "purpose": "pay",
+                      "reservation_created": false,
+                      "target_id": "invoice-one",
+                      "total_count": 2,
+                      "write_authorization_checked": false
+                    }
+                  },
+                  "fully_applied_source_list": {
+                    "summary": "Dados de teste; fully_applied_source_list",
+                    "value": {
+                      "amount_limit_cents": 0,
+                      "amount_rule": "up_to_outstanding",
+                      "blocked_reason": "installment_fully_applied",
+                      "complete": true,
+                      "currency": "BRL",
+                      "generated_at": "2026-10-20T12:00:00Z",
+                      "has_more": false,
+                      "installment_id": "part-one",
+                      "items": [],
+                      "limit": 50,
+                      "offset": 0,
+                      "purpose": "pay",
+                      "reservation_created": false,
+                      "target_id": "invoice-one",
+                      "total_count": 0,
+                      "write_authorization_checked": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Sem permissão"
+          },
+          "404": {
+            "description": "Recurso ausente no contexto"
+          },
+          "409": {
+            "description": "Histórico ou fonte inconsistente"
+          },
+          "422": {
+            "description": "Fonte excede limite de segurança"
+          },
+          "500": {
+            "description": "Falha interna sem resultado parcial"
+          }
+        },
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/finance/payable-cash/{id}/return-sources": {
+      "get": {
+        "operationId": "payable_readiness_CashCandidates_return",
+        "summary": "Suprimentos próprios elegíveis para devolução integral",
+        "description": "ViewAccounting; contexto da sessão. GET sem corpo, queries exatas e sem repetição. Fontes são próprias do ator e apenas uma consulta; não reservam dinheiro nem certificam autorização/licença para escrever. Revalidar na transação de pagamento/devolução existente. Nenhuma mutação.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot completo, Cache-Control: no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payable_readiness_CashCandidates"
+                },
+                "examples": {
+                  "select_return_source": {
+                    "summary": "Dados de teste; select_return_source",
+                    "value": {
+                      "amount_limit_cents": 6000,
+                      "amount_rule": "exact_payment_amount",
+                      "blocked_reason": "",
+                      "complete": true,
+                      "currency": "BRL",
+                      "generated_at": "2026-10-20T12:00:00Z",
+                      "has_more": false,
+                      "installment_id": "part-one",
+                      "items": [
+                        {
+                          "actor_id": "owner-test",
+                          "amount_cents": 6000,
+                          "kind": "supply",
+                          "movement_id": "movement-test-return-supply",
+                          "occurred_at": "2026-10-20T12:00:00Z",
+                          "operation_id": "return-supply",
+                          "session_id": "turn-one"
+                        }
+                      ],
+                      "limit": 50,
+                      "offset": 0,
+                      "purpose": "return",
+                      "reservation_created": false,
+                      "target_id": "payment-one",
+                      "total_count": 1,
+                      "write_authorization_checked": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Sem permissão"
+          },
+          "404": {
+            "description": "Recurso ausente no contexto"
+          },
+          "409": {
+            "description": "Histórico ou fonte inconsistente"
+          },
+          "422": {
+            "description": "Fonte excede limite de segurança"
+          },
+          "500": {
+            "description": "Falha interna sem resultado parcial"
+          }
+        },
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/cash/movements/operations/{id}": {
+      "get": {
+        "operationId": "readOwnAuditedCashMovementReceipt",
+        "summary": "Recupera o movimento auditado original do próprio ator",
+        "description": "ViewAccounting. Sem licença ativa exigida. Contexto da sessão. GET sem corpo/query; id percent-encoded uma vez, até128bytes UTF-8. Retorna apenas o próprio ator, em turno aberto ou fechado. Valida fonte/journal. Não cria, reserva ou vincula dinheiro. repeated=false representa o movimento original e não autoriza novo envio.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recibo auditado; Cache-Control: no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/cash_movement_receipt_MovementReceipt"
+                },
+                "examples": {
+                  "recover_original_withdrawal": {
+                    "summary": "Dados de teste; recover_original_withdrawal",
+                    "value": {
+                      "amount_cents": 6000,
+                      "created_at": "2026-10-20T12:00:00Z",
+                      "kind": "withdrawal",
+                      "movement_id": "movement-test-withdraw-one",
+                      "operation_id": "withdraw-one",
+                      "reason": "Movimento de teste conferido",
+                      "repeated": false,
+                      "session_id": "turn-one"
+                    }
+                  },
+                  "recover_original_supply": {
+                    "summary": "Dados de teste; recover_original_supply",
+                    "value": {
+                      "amount_cents": 6000,
+                      "created_at": "2026-10-20T12:00:00Z",
+                      "kind": "supply",
+                      "movement_id": "movement-test-return-supply",
+                      "operation_id": "return-supply",
+                      "reason": "Movimento de teste conferido",
+                      "repeated": false,
+                      "session_id": "turn-one"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID/query/corpo inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ViewAccounting ausente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ausente ou pertence a outro ator/contexto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Fonte ou journal inconsistente/incompatível com inteiros seguros",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha interna; estado desconhecido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/purchase-suppliers": {
+      "get": {
+        "operationId": "localPurchaseSuppliers",
+        "summary": "Lista fornecedores",
+        "description": "view_orders; referências comerciais da loja, sem conta externa autenticada.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "default": 0
+            },
+            "description": "Inteiro não negativo; representação até 10 caracteres. Página fixa 50, sem total ou snapshot."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado local ou repetição",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/orders_replenishment_comparison_PurchaseSupplierPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-flow-prerequisite": true,
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      },
+      "post": {
+        "operationId": "localCreatePurchaseSupplier",
+        "summary": "Cadastra fornecedor local",
+        "description": "manage_replenishment e contrato Orders. JSON exato até 4096 bytes; IDs 1–128 bytes sem espaços nas bordas; nome após trim 1–255 bytes. Repetição idêntica 200, divergência 409; cadastro não é atualização geral.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado local ou repetição",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/orders_replenishment_comparison_PurchaseResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Novo registro local",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/orders_replenishment_comparison_PurchaseResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado em texto ou JSON code; com X-Titan-Error-Format: v1 usa Error. Timeout não autoriza repetir com novos IDs.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/http_errors_Error"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/orders_replenishment_comparison_PurchaseSupplierInput"
+              }
+            }
+          }
+        },
+        "x-flow-prerequisite": true,
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": true,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false,
+        "x-explicit-user-command-required": true
+      }
+    },
+    "/local/v1/cash/current": {
+      "get": {
+        "operationId": "localCurrentCash",
+        "summary": "Consulta o turno do operador",
+        "description": "sell. Retorna session=null sem turno aberto. Não expõe opening_cents ou expected_cents. Leitura autorizada não exige contrato atual.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/cash_sales_Current"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          }
+        },
+        "x-flow-prerequisite": true,
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": false,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false
+      }
+    },
+    "/local/v1/cash/open": {
+      "post": {
+        "operationId": "localOpenCash",
+        "summary": "Abre turno",
+        "description": "sell e contrato POS. JSON exato até 4096 bytes. session_id após trim: 1–128 bytes; opening_cents>=0. Novo turno 201/repeated=false; repetição idêntica aberta 200/true; turno encerrado não reabre por retry.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/cash_sales_OpenResult"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/cash_sales_OpenResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/cash_sales_OpenInput"
+              }
+            }
+          }
+        },
+        "x-flow-prerequisite": true,
+        "x-local-only": true,
+        "x-financial-execution": false,
+        "x-mutates-records": true,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": false,
+        "x-explicit-user-command-required": true
+      }
+    },
+    "/local/v1/cash/movements": {
+      "post": {
+        "operationId": "localCashMovement",
+        "summary": "Registra suprimento ou sangria",
+        "description": "manage_cash e contrato POS; JSON exato até 8192 bytes. IDs até 128 bytes, sem trim implícito/NUL; amount_cents>0. supply adiciona, withdrawal retira; fundos insuficientes/overflow 409. Repetição idêntica funciona após fechamento; operação nova exige turno aberto. Não devolve saldo esperado.",
+        "security": [
+          {
+            "Session": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/http_errors_ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta persistida da operação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/cash_sales_MovementResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro legado ou JSON opcional negociado. Não repetir escrita automaticamente por timeout/409/503.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/http_errors_Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/cash_sales_MovementInput"
+              }
+            }
+          }
+        },
+        "x-flow-prerequisite": true,
+        "x-local-only": true,
+        "x-financial-execution": "declared_physical_cash_movement_only",
+        "x-mutates-records": true,
+        "x-reserves-source": false,
+        "x-mutates-cash-ledger": true,
+        "x-explicit-user-command-required": true,
+        "x-recovery-get": "/local/v1/cash/movements/operations/{operation_id}"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "Session": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Sessão local opaca; escopo deriva da sessão e estação."
+      }
+    },
+    "schemas": {
+      "supplier_payables_Installment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "due_on",
+          "amount_cents"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "due_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "supplier_payables_PayableEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "actor_id",
+          "action",
+          "from_state",
+          "to_state",
+          "reason",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "approve",
+              "reject",
+              "cancel"
+            ]
+          },
+          "from_state": {
+            "type": "string",
+            "enum": [
+              "",
+              "pending",
+              "approved"
+            ]
+          },
+          "to_state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+              "cancelled"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "supplier_payables_CashSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "paid_cents",
+          "returned_cents",
+          "applied_cents",
+          "outstanding_cents",
+          "basis"
+        ],
+        "properties": {
+          "paid_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returned_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "applied_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outstanding_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "declared_cash_audited_sources"
+            ]
+          }
+        }
+      },
+      "supplier_payables_Payable": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "supplier_id",
+          "supplier_name",
+          "document_reference",
+          "description",
+          "issued_on",
+          "currency",
+          "total_cents",
+          "creator_id",
+          "state",
+          "created_at",
+          "updated_at",
+          "last_operation_id",
+          "installments",
+          "history",
+          "payment_execution_available",
+          "settled_cents"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "supplier_name": {
+            "type": "string"
+          },
+          "document_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "issued_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "BRL"
+            ]
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "creator_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+              "cancelled"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "installments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/supplier_payables_Installment"
+            },
+            "minItems": 1,
+            "maxItems": 120
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/supplier_payables_PayableEvent"
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "payment_execution_available": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "settled_cents": {
+            "type": "integer",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "cash": {
+            "$ref": "#/components/schemas/supplier_payables_CashSummary"
+          }
+        }
+      },
+      "supplier_payables_PayableResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "repeated",
+          "payable"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "payable": {
+            "$ref": "#/components/schemas/supplier_payables_Payable"
+          }
+        }
+      },
+      "supplier_payables_CreatePayable": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "payable_id",
+          "supplier_id",
+          "document_reference",
+          "description",
+          "issued_on",
+          "currency",
+          "total_cents",
+          "installments"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "payable_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "supplier_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "document_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "issued_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "BRL"
+            ]
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "installments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/supplier_payables_Installment"
+            },
+            "minItems": 1,
+            "maxItems": 120
+          }
+        }
+      },
+      "supplier_payables_PayablePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total_count",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/supplier_payables_Payable"
+            },
+            "maxItems": 100
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "supplier_payables_DueItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "payable_id",
+          "supplier_id",
+          "supplier_name",
+          "document_reference",
+          "state",
+          "installment",
+          "timing",
+          "cash_applied_cents",
+          "outstanding_cents"
+        ],
+        "properties": {
+          "payable_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "supplier_name": {
+            "type": "string"
+          },
+          "document_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+              "cancelled"
+            ]
+          },
+          "installment": {
+            "$ref": "#/components/schemas/supplier_payables_Installment"
+          },
+          "timing": {
+            "type": "string",
+            "enum": [
+              "overdue",
+              "today",
+              "future"
+            ]
+          },
+          "cash_applied_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outstanding_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "supplier_payables_PayablesReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "scope",
+          "window",
+          "currency",
+          "generated_at",
+          "complete",
+          "payment_execution_available",
+          "settled_cents",
+          "summary",
+          "items"
+        ],
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "local_supplier_obligations"
+            ]
+          },
+          "window": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to",
+              "as_of"
+            ],
+            "properties": {
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "to": {
+                "type": "string",
+                "format": "date"
+              },
+              "as_of": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "BRL"
+            ]
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "complete": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "payment_execution_available": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "settled_cents": {
+            "type": "integer",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "summary": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "installment_count",
+              "pending_cents",
+              "approved_cents",
+              "rejected_cents",
+              "cancelled_cents",
+              "approved_overdue_cents",
+              "approved_today_cents",
+              "approved_future_cents",
+              "cash_applied_cents",
+              "approved_outstanding_cents",
+              "approved_outstanding_overdue_cents",
+              "approved_outstanding_today_cents",
+              "approved_outstanding_future_cents"
+            ],
+            "properties": {
+              "installment_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "pending_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "rejected_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "cancelled_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_overdue_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_today_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_future_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "cash_applied_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_outstanding_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_outstanding_overdue_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_outstanding_today_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "approved_outstanding_future_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/supplier_payables_DueItem"
+            },
+            "maxItems": 10000
+          }
+        }
+      },
+      "http_errors_Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "supplier_payables_PayableAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "payable_cash_CashPayment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "payable_id",
+          "installment_id",
+          "withdrawal_operation_id",
+          "amount_cents",
+          "actor_id",
+          "recipient",
+          "reference",
+          "created_at",
+          "operation_id",
+          "return"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "payable_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "installment_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "withdrawal_operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "recipient": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "return": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "supply_operation_id",
+              "actor_id",
+              "reason",
+              "created_at",
+              "operation_id"
+            ],
+            "properties": {
+              "supply_operation_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "actor_id": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "operation_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "nullable": true
+          }
+        }
+      },
+      "payable_cash_CashResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "repeated",
+          "payment"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/payable_cash_CashPayment"
+          }
+        }
+      },
+      "payable_cash_CashInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "payment_id",
+          "installment_id",
+          "withdrawal_operation_id",
+          "recipient",
+          "reference"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "payment_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "installment_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "withdrawal_operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "recipient": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "payable_cash_CashSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "paid_cents",
+          "returned_cents",
+          "applied_cents",
+          "outstanding_cents",
+          "basis"
+        ],
+        "properties": {
+          "paid_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returned_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "applied_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outstanding_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "declared_cash_audited_sources"
+            ]
+          }
+        }
+      },
+      "payable_cash_CashPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "summary",
+          "total_count",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/payable_cash_CashPayment"
+            },
+            "maxItems": 100
+          },
+          "summary": {
+            "$ref": "#/components/schemas/payable_cash_CashSummary"
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "payable_cash_CashReturnInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "supply_operation_id",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "supply_operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "payable_readiness_InstallmentBalance": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "installment",
+          "paid_cents",
+          "returned_cents",
+          "applied_cents",
+          "outstanding_cents"
+        ],
+        "properties": {
+          "installment": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "due_on",
+              "amount_cents"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              },
+              "due_on": {
+                "type": "string",
+                "format": "date"
+              },
+              "amount_cents": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              }
+            }
+          },
+          "paid_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returned_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "applied_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outstanding_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "payable_readiness_InstallmentBalances": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "payable_id",
+          "state",
+          "currency",
+          "generated_at",
+          "complete",
+          "summary",
+          "items"
+        ],
+        "properties": {
+          "payable_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+              "cancelled"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "BRL"
+            ]
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "complete": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "summary": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "paid_cents",
+              "returned_cents",
+              "applied_cents",
+              "outstanding_cents",
+              "basis"
+            ],
+            "properties": {
+              "paid_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "returned_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "applied_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "outstanding_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "declared_cash_audited_sources"
+                ]
+              }
+            }
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 120,
+            "items": {
+              "$ref": "#/components/schemas/payable_readiness_InstallmentBalance"
+            }
+          }
+        }
+      },
+      "payable_readiness_CashCandidate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "session_id",
+          "movement_id",
+          "actor_id",
+          "kind",
+          "amount_cents",
+          "occurred_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "movement_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "withdrawal",
+              "supply"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "payable_readiness_CashCandidates": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "purpose",
+          "target_id",
+          "installment_id",
+          "currency",
+          "generated_at",
+          "complete",
+          "reservation_created",
+          "write_authorization_checked",
+          "amount_rule",
+          "amount_limit_cents",
+          "blocked_reason",
+          "items",
+          "total_count",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "pay",
+              "return"
+            ]
+          },
+          "target_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "installment_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "BRL"
+            ]
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "complete": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "reservation_created": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "write_authorization_checked": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "amount_rule": {
+            "type": "string",
+            "enum": [
+              "up_to_outstanding",
+              "exact_payment_amount"
+            ]
+          },
+          "amount_limit_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "blocked_reason": {
+            "type": "string",
+            "enum": [
+              "",
+              "document_not_approved",
+              "installment_fully_applied",
+              "payment_history_limit",
+              "historical_amount_limit",
+              "payment_already_returned"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/payable_readiness_CashCandidate"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "cash_movement_receipt_MovementReceipt": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "supply",
+              "withdrawal"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string"
+          },
+          "movement_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "repeated": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "session_id",
+          "operation_id",
+          "kind",
+          "amount_cents",
+          "reason",
+          "movement_id",
+          "created_at",
+          "repeated"
+        ],
+        "additionalProperties": false
+      },
+      "orders_replenishment_comparison_PurchaseSupplier": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "orders_replenishment_comparison_PurchaseSupplierPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/orders_replenishment_comparison_PurchaseSupplier"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "orders_replenishment_comparison_PurchaseResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "repeated"
+        ],
+        "additionalProperties": false
+      },
+      "orders_replenishment_comparison_PurchaseSupplierInput": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "name",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "cash_sales_Current": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "object",
+            "properties": {
+              "session_id": {
+                "type": "string"
+              },
+              "opened_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "session_id",
+              "opened_at"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "session"
+        ],
+        "additionalProperties": false
+      },
+      "cash_sales_OpenResult": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "session_id",
+          "repeated"
+        ],
+        "additionalProperties": false
+      },
+      "cash_sales_OpenInput": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "opening_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "session_id",
+          "opening_cents"
+        ],
+        "additionalProperties": false
+      },
+      "cash_sales_MovementResult": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "supply",
+              "withdrawal"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string"
+          },
+          "movement_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "session_id",
+          "operation_id",
+          "kind",
+          "amount_cents",
+          "reason",
+          "movement_id",
+          "created_at",
+          "repeated"
+        ],
+        "additionalProperties": false
+      },
+      "cash_sales_MovementInput": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "supply",
+              "withdrawal"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string",
+            "description": "Até 500 caracteres, UTF-8 válido, sem NUL e não vazio após trim."
+          }
+        },
+        "required": [
+          "session_id",
+          "operation_id",
+          "kind",
+          "amount_cents",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "parameters": {
+      "http_errors_ErrorFormat": {
+        "name": "X-Titan-Error-Format",
+        "in": "header",
+        "required": false,
+        "description": "v1 solicita erro JSON genérico; ausente preserva o formato legado. Status HTTP e headers de autenticação/retry permanecem. Não implica que uma operação possa ser repetida.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "v1"
+          ]
+        }
+      }
+    }
+  }
+}

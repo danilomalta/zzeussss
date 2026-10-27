@@ -12,6 +12,7 @@ import (
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/localdb/stockreservation"
 )
 
 var (
@@ -24,6 +25,7 @@ var (
 type Input struct {
 	OperationID    string `json:"operation_id"`
 	Kind           string `json:"kind"`
+	ExpectedUnit   string `json:"expected_unit,omitempty"`
 	ProductID      string `json:"product_id"`
 	FromLocationID string `json:"from_location_id,omitempty"`
 	ToLocationID   string `json:"to_location_id,omitempty"`
@@ -57,7 +59,7 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		return Result{}, ErrInvalidOperation
 	}
 	if in.OperationID == "" || in.ProductID == "" || in.QuantityMilli <= 0 ||
-		in.Reason == "" || len(in.Reason) > 255 || !validLocations(in) {
+		in.Reason == "" || len(in.Reason) > 255 || !validLocations(in) || (in.ExpectedUnit != "" && (!validAvailabilityUnit(in.ExpectedUnit) || in.QuantityMilli > MaxAvailabilityQuantity)) {
 		return Result{}, ErrInvalidOperation
 	}
 	tx, err := db.BeginTx(ctx, nil)
@@ -65,8 +67,41 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		return Result{}, err
 	}
 	defer tx.Rollback()
+	out, err := recordTx(ctx, tx, actor, device, in, authorize)
+	if err != nil {
+		return Result{}, err
+	}
+	return out, tx.Commit()
+}
+
+func recordTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, in Input, authorize stockAuthorization) (Result, error) {
+	if tx == nil {
+		return Result{}, ErrInvalidOperation
+	}
+	in.OperationID = strings.TrimSpace(in.OperationID)
+	in.ProductID = strings.TrimSpace(in.ProductID)
+	in.Reason = strings.TrimSpace(in.Reason)
+	if len(in.OperationID) > 128 || len(in.ProductID) > 128 || len(in.FromLocationID) > 128 || len(in.ToLocationID) > 128 {
+		return Result{}, ErrInvalidOperation
+	}
+	if in.OperationID == "" || in.ProductID == "" || in.QuantityMilli <= 0 ||
+		in.Reason == "" || len(in.Reason) > 255 || !validLocations(in) || (in.ExpectedUnit != "" && (!validAvailabilityUnit(in.ExpectedUnit) || in.QuantityMilli > MaxAvailabilityQuantity)) {
+		return Result{}, ErrInvalidOperation
+	}
+	var err error
 	if err := authorize(ctx, tx, actor, device); err != nil {
 		return Result{}, err
+	}
+	if in.ExpectedUnit != "" {
+		var current string
+		if err := tx.QueryRowContext(ctx, `SELECT unit FROM products WHERE tenant_id=? AND id=?`, actor.TenantID, in.ProductID).Scan(&current); errors.Is(err, sql.ErrNoRows) {
+			return Result{}, ErrInvalidOperation
+		} else if err != nil {
+			return Result{}, err
+		}
+		if current != in.ExpectedUnit {
+			return Result{}, ErrOperationConflict
+		}
 	}
 	var existing struct {
 		tenant, store, device, actor, kind, product, reason string
@@ -86,9 +121,6 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 			existing.quantity != in.QuantityMilli || existing.reason != in.Reason {
 			return Result{}, ErrOperationConflict
 		}
-		if err := tx.Commit(); err != nil {
-			return Result{}, err
-		}
 		return Result{OperationID: in.OperationID, Repeated: true}, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
@@ -99,7 +131,14 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		if err != nil {
 			return Result{}, err
 		}
-		if balance < in.QuantityMilli {
+		free, err := stockreservation.FreeTx(ctx, tx, actor.TenantID, actor.StoreID, in.ProductID, in.FromLocationID, balance)
+		if errors.Is(err, stockreservation.ErrUnavailable) {
+			return Result{}, ErrInsufficientStock
+		}
+		if err != nil {
+			return Result{}, err
+		}
+		if free < in.QuantityMilli {
 			return Result{}, ErrInsufficientStock
 		}
 	}
@@ -132,13 +171,15 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 			return Result{}, err
 		}
 	}
+	eventInput := in
+	eventInput.ExpectedUnit = "" // Request precondition does not change the stock.operation event contract.
 	payload, err := json.Marshal(struct {
 		TenantID string `json:"tenant_id"`
 		StoreID  string `json:"store_id"`
 		DeviceID string `json:"device_id"`
 		ActorID  string `json:"actor_id"`
 		Input
-	}{device.TenantID, device.StoreID, device.DeviceID, actor.IdentityID, in})
+	}{device.TenantID, device.StoreID, device.DeviceID, actor.IdentityID, eventInput})
 	if err != nil {
 		return Result{}, err
 	}
@@ -154,9 +195,6 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		in.OperationID, in.ProductID, string(payload), now)
 	if err != nil {
 		return Result{}, fmt.Errorf("registrar outbox: %w", err)
-	}
-	if err := tx.Commit(); err != nil {
-		return Result{}, err
 	}
 	return Result{OperationID: in.OperationID}, nil
 }

@@ -1,0 +1,183 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cancelamento local de compras",
+    "version": "P26"
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "localSession": []
+    }
+  ],
+  "paths": {
+    "/purchase-orders/{id}/cancel": {
+      "post": {
+        "summary": "Cancelar uma vez, sem movimento ou reutilizacao da aprovacao",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso / replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida, query desconhecida ou JSON ambiguo"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Sem permissao ou contrato vigente para escrita"
+          },
+          "404": {
+            "description": "Registro nao encontrado no escopo"
+          },
+          "409": {
+            "description": "Conflito de revisao, replay ou integridade"
+          },
+          "413": {
+            "description": "Corpo acima de 4096 bytes"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelInput"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "CancelInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_status",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_status": {
+            "type": "string",
+            "enum": [
+              "local_not_sent"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        }
+      },
+      "Cancellation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "device_id",
+          "actor_id",
+          "reason",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "created_at": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        }
+      },
+      "CancelResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "order_id",
+          "status",
+          "repeated",
+          "cancellation"
+        ],
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "cancelled"
+            ]
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "cancellation": {
+            "$ref": "#/components/schemas/Cancellation"
+          }
+        }
+      }
+    }
+  }
+}

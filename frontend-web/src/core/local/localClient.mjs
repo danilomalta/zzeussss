@@ -157,6 +157,30 @@ export function createLocalClient(fetcher = globalThis.fetch) {
         (result) => result?.session_id === input.session_id && typeof result.repeated === 'boolean' && isCents(result.expected_cents) &&
           Number.isSafeInteger(result.difference_cents) && result.difference_cents === input.declared_cents - result.expected_cents);
     },
+    async quoteSale(token, input) {
+      requireToken(token);
+      if (!input || !isID(input.cash_session_id) || !Array.isArray(input.items) || !input.items.length || input.items.length > 500 ||
+          !input.items.every(item => item && isID(item.product_id) && isID(item.location_id) && Number.isSafeInteger(item.quantity_milli) && item.quantity_milli > 0)) invalid();
+      const result = await request('/sales/quote', token, input, 'POST');
+      if (!result || result.cash_session_id !== input.cash_session_id || result.reserved !== false ||
+          result.discounts_supported !== false || result.loyalty_supported !== false ||
+          !Array.isArray(result.payment_methods) || result.payment_methods.length !== 1 || result.payment_methods[0] !== 'cash' ||
+          !isCents(result.total_cents) || result.total_cents <= 0 || !Array.isArray(result.items) || result.items.length !== input.items.length) invalid();
+      const used = new Map();
+      for (const [index, item] of result.items.entries()) {
+        const expected = input.items[index];
+        if (!item || item.product_id !== expected.product_id || item.location_id !== expected.location_id || item.quantity_milli !== expected.quantity_milli ||
+            !['unit', 'kg', 'g', 'liter', 'ml', 'meter'].includes(item.unit) || (item.unit === 'unit' && item.quantity_milli % 1000 !== 0) ||
+            !isCents(item.unit_price_cents) || !isCents(item.total_cents) || !isCents(item.available_milli) ||
+            (BigInt(item.unit_price_cents) * BigInt(item.quantity_milli) + 500n) / 1000n !== BigInt(item.total_cents)) invalid();
+        const key = JSON.stringify([item.product_id, item.location_id]);
+        const required = (used.get(key) || 0n) + BigInt(item.quantity_milli);
+        if (required > BigInt(item.available_milli)) invalid();
+        used.set(key, required);
+      }
+      if (result.items.reduce((sum, item) => sum + BigInt(item.total_cents), 0n) !== BigInt(result.total_cents)) invalid();
+      return result;
+    },
     completeSale(token, input) {
       return mutation('/sales', token, input, validSale(input),
         (result) => result?.sale_id === input.sale_id && result.total_cents === input.payments[0].amount_cents && typeof result.repeated === 'boolean');

@@ -1,0 +1,687 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem durable checkout allocations",
+    "version": "B02B3",
+    "description": "Durable allocations with atomic cash-only finalization. Noncash parts stay not_requested; electronic confirmation and financial ledger unavailable. Cash finalization requires received_cents and rechecks current POS contract, shift, active products, exact prices/units and free stock. Can_finalize is a cash readiness hint, not an authorization or reservation. Replays recover the stored completion and do not sell again, even after sale cancellation. Existing sale receipt endpoint provides the operational record; no fiscal authorization. B02B9: plano com qualquer historico de comprovante externo recusa cancelamento automatico409, inclusive apos retirada/rejeicao/revogacao documental; essas acoes nao provam estorno. Os estados de pagamento e can_finalize permanecem inalterados."
+  },
+  "paths": {
+    "/local/v1/checkout/plans": {
+      "post": {
+        "operationId": "createCheckoutPlan",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plan"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Original plan recovered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plan"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session or device"
+          },
+          "403": {
+            "description": "Permission or POS contract denied"
+          },
+          "404": {
+            "description": "Plan not found in actor scope"
+          },
+          "409": {
+            "description": "ID reuse, stale total, stock or shift conflict"
+          },
+          "413": {
+            "description": "Payload too large"
+          },
+          "500": {
+            "description": "Transaction failed"
+          },
+          "503": {
+            "description": "Verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/checkout/plans/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      ],
+      "get": {
+        "operationId": "readCheckoutPlan",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Durable plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plan"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session or device"
+          },
+          "403": {
+            "description": "Permission or POS contract denied"
+          },
+          "404": {
+            "description": "Plan not found in actor scope"
+          },
+          "409": {
+            "description": "ID reuse, stale total, stock or shift conflict"
+          },
+          "413": {
+            "description": "Payload too large"
+          },
+          "500": {
+            "description": "Transaction failed"
+          },
+          "503": {
+            "description": "Verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/checkout/plans/{id}/cancel": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      ],
+      "post": {
+        "operationId": "cancelCheckoutPlan",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Durable plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plan"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session or device"
+          },
+          "403": {
+            "description": "Permission or POS contract denied"
+          },
+          "404": {
+            "description": "Plan not found in actor scope"
+          },
+          "409": {
+            "description": "ID reuse, stale total, stock or shift conflict"
+          },
+          "413": {
+            "description": "Payload too large"
+          },
+          "500": {
+            "description": "Transaction failed"
+          },
+          "503": {
+            "description": "Verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelPlanInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/checkout/plans/{id}/finalize-cash": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      ],
+      "post": {
+        "operationId": "finalizeCashCheckoutPlan",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinalizeCashInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cash sale committed atomically",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plan"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Original cash finalization recovered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plan"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid tender or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session/device"
+          },
+          "403": {
+            "description": "Permission or POS contract denied"
+          },
+          "404": {
+            "description": "Checkout outside original actor scope or not found"
+          },
+          "409": {
+            "description": "Noncash allocation, ID reuse, cancelled plan, changed prices/units, insufficient stock or closed shift"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Atomic write failed"
+          },
+          "503": {
+            "description": "Verifier unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "PartInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "part_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "cash",
+              "debit",
+              "credit",
+              "pix",
+              "creditAccount"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "part_id",
+          "method",
+          "amount_cents"
+        ]
+      },
+      "ItemInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "product_id",
+          "location_id",
+          "quantity_milli"
+        ]
+      },
+      "CreatePlanInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "checkout_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "cash_session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_total_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 500,
+            "items": {
+              "$ref": "#/components/schemas/ItemInput"
+            }
+          },
+          "parts": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/PartInput"
+            }
+          }
+        },
+        "required": [
+          "operation_id",
+          "checkout_id",
+          "cash_session_id",
+          "expected_total_cents",
+          "items",
+          "parts"
+        ]
+      },
+      "CancelPlanInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "operation_id",
+          "reason"
+        ]
+      },
+      "Part": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "part_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "cash",
+              "debit",
+              "credit",
+              "pix",
+              "creditAccount"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "not_requested",
+              "confirmed",
+              "reversed"
+            ]
+          },
+          "provider_confirmed": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "part_id",
+          "method",
+          "amount_cents",
+          "state",
+          "provider_confirmed"
+        ]
+      },
+      "Item": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "l",
+              "ml"
+            ]
+          },
+          "unit_price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "available_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "product_id",
+          "location_id",
+          "quantity_milli",
+          "unit",
+          "unit_price_cents",
+          "total_cents",
+          "available_milli"
+        ]
+      },
+      "Cancellation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "operation_id",
+          "reason",
+          "cancelled_at"
+        ]
+      },
+      "Plan": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "checkout_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "cash_session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "prepared",
+              "cancelled",
+              "completed"
+            ]
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 500,
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          },
+          "parts": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/Part"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "can_finalize": {
+            "type": "boolean"
+          },
+          "cancellation": {
+            "$ref": "#/components/schemas/Cancellation"
+          },
+          "completion": {
+            "$ref": "#/components/schemas/Completion"
+          }
+        },
+        "required": [
+          "checkout_id",
+          "operation_id",
+          "cash_session_id",
+          "state",
+          "total_cents",
+          "items",
+          "parts",
+          "created_at",
+          "repeated",
+          "can_finalize"
+        ]
+      },
+      "Completion": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sale_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "sale_status": {
+            "type": "string",
+            "enum": [
+              "committed",
+              "cancelled"
+            ]
+          },
+          "received_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "change_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "sale_id",
+          "operation_id",
+          "sale_status",
+          "received_cents",
+          "change_cents",
+          "completed_at"
+        ]
+      },
+      "FinalizeCashInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "received_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "operation_id",
+          "received_cents"
+        ]
+      }
+    }
+  }
+}

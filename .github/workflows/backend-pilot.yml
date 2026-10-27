@@ -1,0 +1,108 @@
+name: Backend pilot acceptance
+
+on:
+  push:
+    branches: [feat/backend-b02a-compat]
+    paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py', 'tools/check_api_contracts.py', 'tools/tests/test_api_contracts.py', 'docs/api/**']
+  pull_request:
+    branches: [main, develop]
+    paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py', 'tools/check_api_contracts.py', 'tools/tests/test_api_contracts.py', 'docs/api/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend-pilot:
+    name: Real HTTP, PostgreSQL, SQLite, frontend bridges and recovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: titan_ci
+          POSTGRES_PASSWORD: ephemeral-ci-fixture-only
+          POSTGRES_DB: titan_integration_test
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd "pg_isready -U titan_ci -d titan_integration_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    defaults:
+      run:
+        working-directory: backend
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Read pinned frontend contract adapters
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: b5b786d900365dfa6288f6273123d4ca8f1a6a7b
+          path: frontend-contract
+          persist-credentials: false
+          sparse-checkout: |
+            frontend-web/src/core
+            frontend-web/tests
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: '1.25.8'
+          cache-dependency-path: backend/go.sum
+      - name: Verify acceptance gate regressions
+        run: python3 -m unittest discover -s ../tools/tests -p test_verify_backend_acceptance.py -v
+      - name: Validate API contracts and complete route map
+        run: |
+          python3 -m unittest discover -s ../tools/tests -p test_api_contracts.py -v
+          python3 ../tools/check_api_contracts.py
+      - name: Vet backend
+        run: go vet ./...
+      - name: Build real executables
+        run: |
+          set -euo pipefail
+          for tool in titan-local titan-backup titan-access titan-peer titan-receive titan-sync titan-trade; do
+            CGO_ENABLED=0 go build -trimpath -o "$RUNNER_TEMP/$tool" "./cmd/$tool"
+          done
+      - name: Full backend regression suite with mandatory real integrations
+        env:
+          TITAN_TRADE_QUEUE: "1"
+          TITAN_TRADE_CLI: ${{ runner.temp }}/titan-trade
+          TITAN_SESSION_TEST_DATABASE_URL: postgres://titan_ci:ephemeral-ci-fixture-only@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/titan_integration_test?sslmode=disable
+          TITAN_CATALOG_TEST_DATABASE_URL: postgres://titan_ci:ephemeral-ci-fixture-only@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/titan_integration_test?sslmode=disable
+          TITAN_CASH_JOURNAL_BRIDGE: ${{ github.workspace }}/frontend-contract/frontend-web/tests/cashJournal.bridge.mjs
+          TITAN_DELIVERY_BRIDGE: ${{ github.workspace }}/frontend-contract/frontend-web/tests/deliveryCycle.bridge.mjs
+          TITAN_MAINTENANCE_BRIDGE: ${{ github.workspace }}/frontend-contract/frontend-web/tests/internalMaintenance.bridge.mjs
+        run: |
+          set -euo pipefail
+          go test ./... -count=1 -json > "$RUNNER_TEMP/backend-full.jsonl"
+          python3 ../tools/verify_backend_acceptance.py "$RUNNER_TEMP/backend-full.jsonl" | tee "$RUNNER_TEMP/backend-integrations.json"
+      - name: Company trade and cash pilots with real CLI and race detector
+        run: |
+          set -euo pipefail
+          env -u TITAN_SESSION_TEST_DATABASE_URL -u TITAN_CATALOG_TEST_DATABASE_URL \
+            -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE \
+            go test -race ./internal/localapi \
+            -run '^TestTrade|^TestHTTPCustomerReturn|^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore|CustomerReturnRestartAndRestore)$' \
+            -count=1 -v -timeout=20m -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" -pilot-trade-cli="$RUNNER_TEMP/titan-trade" -pilot-trade-queue \
+            | tee "$RUNNER_TEMP/pilot-cli-race.log"
+      - name: Upload execution evidence and Linux binaries
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backend-pilot-${{ github.sha }}
+          retention-days: 14
+          path: |
+            ${{ runner.temp }}/backend-integrations.json
+            ${{ runner.temp }}/backend-full.jsonl
+            ${{ runner.temp }}/pilot-cli-race.log
+            ${{ runner.temp }}/titan-backup
+            ${{ runner.temp }}/titan-local
+            ${{ runner.temp }}/titan-access
+            ${{ runner.temp }}/titan-peer
+            ${{ runner.temp }}/titan-receive
+            ${{ runner.temp }}/titan-sync
+            ${{ runner.temp }}/titan-trade

@@ -12,7 +12,10 @@ import (
 )
 
 func (s *Server) mountStock(router fiber.Router) {
+	s.mountReviewedInventory(router)
 	router.Get("/stock/balance", s.stockBalance)
+	router.Get("/stock/operations/history", s.stockOperationHistory)
+	router.Get("/stock/operations/:id/receipt", s.stockOperationReceipt)
 	router.Post("/stock/operations", s.recordStock)
 }
 
@@ -77,7 +80,7 @@ func decodeStockInput(body []byte) (stock.Input, error) {
 			return stock.Input{}, stock.ErrInvalidOperation
 		}
 		switch name {
-		case "operation_id", "kind", "product_id", "from_location_id", "to_location_id", "quantity_milli", "reason":
+		case "operation_id", "kind", "expected_unit", "product_id", "from_location_id", "to_location_id", "quantity_milli", "reason":
 		default:
 			return stock.Input{}, stock.ErrInvalidOperation
 		}

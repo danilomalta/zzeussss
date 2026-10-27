@@ -1,0 +1,1494 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan local — local dock agenda",
+    "version": "2026-10-22.1"
+  },
+  "paths": {
+    "/local/v1/logistics/docks": {
+      "get": {
+        "operationId": "dock_agenda_docks",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. Lists local dock resources.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DockPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "dock_agenda_save_dock",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. Writes additionally require existing signed Logistics contract and dependencies. Replays preserve original IDs/payload; changed payload conflicts. Owner/manager only. expected_revision0 creates; existing resource needs exact positive revision. Cannot disable while any reserved/arrived/unloading appointment exists.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DockInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/logistics/docks/{id}/history": {
+      "get": {
+        "operationId": "dock_agenda_dock_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. Immutable successful operations in resource revision order.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/logistics/appointments": {
+      "get": {
+        "operationId": "dock_agenda_appointments",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. Planned windows overlapping [from,to), max31days, whole-second timestamps; stable starts_at/id order. Includes local status only.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dock_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "reserved",
+                "arrived",
+                "unloading",
+                "completed",
+                "cancelled",
+                "no_show"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "dock_agenda_reserve",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. Writes additionally require existing signed Logistics contract and dependencies. Replays preserve original IDs/payload; changed payload conflicts. Local reservation for existing uncancelled order and active supplier derived from that order. [starts_at,ends_at), seconds only, UTC-normalized;5min..8h; years2000..2200. No overlap on one dock; one active appointment per order. Does not confirm supplier.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/logistics/appointments.csv": {
+      "get": {
+        "operationId": "dock_agenda_appointments_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. CSV of returned page, not all pages; text formula prefixes protected. No folder selection by backend.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dock_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "reserved",
+                "arrived",
+                "unloading",
+                "completed",
+                "cancelled",
+                "no_show"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/logistics/appointments/{id}": {
+      "get": {
+        "operationId": "dock_agenda_detail",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. Reports server-recorded arrival/wait/unloading time, null when unknown; signed arrival delay may be negative. Current order_cancelled flag is observational.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Detail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/logistics/appointments/{id}/actions": {
+      "post": {
+        "operationId": "dock_agenda_action",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. Writes additionally require existing signed Logistics contract and dependencies. Replays preserve original IDs/payload; changed payload conflicts. reserved→arrived→unloading→completed; cancel reserved/arrived; no_show only reserved and current server time after planned end; reschedule only reserved with dock_id/starts_at/ends_at required. Other actions prohibit nonempty reschedule fields. No expiry releases automatically. Actual unloading blocks another start despite adjacent planned times. Complete means dock released, NOT inventory received/payment confirmed.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/logistics/appointments/{id}/history": {
+      "get": {
+        "operationId": "dock_agenda_history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. Successful operation snapshots, original request JSON and actor/device IDs, paginated by revision.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/logistics/operations/{id}": {
+      "get": {
+        "operationId": "dock_agenda_receipt",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. Original response restricted to original actor/device/current tenant/store. Receipt remains unchanged after later appointment transitions.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/logistics/occupancy": {
+      "get": {
+        "operationId": "dock_agenda_occupancy",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Current approved device, manage_stock and view_orders. Historical reads need no license renewal. Actual unloading and arrived waiting count by dock, independent of planned date window. Late unloading from a previous day remains visible.",
+        "responses": {
+          "200": {
+            "description": "Local scoped result; no supplier acknowledgement or stock receipt",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccupancyPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, unknown, duplicate, null or unsafe input"
+          },
+          "401": {
+            "description": "Session missing or revoked"
+          },
+          "403": {
+            "description": "Permission/device/license denied"
+          },
+          "404": {
+            "description": "Reference or actor/device-bound receipt absent in scope"
+          },
+          "409": {
+            "description": "Revision/state/operation conflict, occupied slot or unavailable order"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "500": {
+            "description": "Internal/SQLite contention: consult same operation receipt before retry"
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "ActionInput": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "reschedule",
+              "arrive",
+              "start",
+              "complete",
+              "cancel",
+              "no_show"
+            ]
+          },
+          "dock_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expected_revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "action",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "Appointment": {
+        "additionalProperties": false,
+        "properties": {
+          "appointment_id": {
+            "type": "string"
+          },
+          "arrived_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "completed_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "dock_id": {
+            "type": "string"
+          },
+          "ends_at": {
+            "type": "string"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "starts_at": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "stock_received": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "supplier_confirmed": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "unloading_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appointment_id",
+          "dock_id",
+          "order_id",
+          "supplier_id",
+          "starts_at",
+          "ends_at",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "arrived_at",
+          "unloading_at",
+          "completed_at",
+          "supplier_confirmed",
+          "stock_received"
+        ],
+        "type": "object"
+      },
+      "BookInput": {
+        "additionalProperties": false,
+        "properties": {
+          "appointment_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "dock_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "operation_id",
+          "appointment_id",
+          "dock_id",
+          "order_id",
+          "starts_at",
+          "ends_at",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "Detail": {
+        "additionalProperties": false,
+        "properties": {
+          "appointment": {
+            "$ref": "#/components/schemas/Appointment"
+          },
+          "arrival_delay_seconds": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "order_cancelled": {
+            "type": "boolean"
+          },
+          "unloading_seconds": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "waiting_seconds": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "appointment",
+          "measured_at",
+          "order_cancelled",
+          "arrival_delay_seconds",
+          "waiting_seconds",
+          "unloading_seconds"
+        ],
+        "type": "object"
+      },
+      "Dock": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "dock_id": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dock_id",
+          "name",
+          "enabled",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "DockInput": {
+        "additionalProperties": false,
+        "properties": {
+          "dock_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "operation_id",
+          "dock_id",
+          "name",
+          "enabled",
+          "expected_revision"
+        ],
+        "type": "object"
+      },
+      "Event": {
+        "additionalProperties": false,
+        "properties": {
+          "actor_id": {
+            "type": "string"
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "request_json": {
+            "type": "string"
+          },
+          "result": {
+            "$ref": "#/components/schemas/Result"
+          }
+        },
+        "required": [
+          "result",
+          "actor_id",
+          "device_id",
+          "request_json"
+        ],
+        "type": "object"
+      },
+      "Occupancy": {
+        "additionalProperties": false,
+        "properties": {
+          "dock": {
+            "$ref": "#/components/schemas/Dock"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "unloading": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Appointment"
+              }
+            ],
+            "nullable": true
+          },
+          "waiting_count": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dock",
+          "unloading",
+          "waiting_count",
+          "measured_at"
+        ],
+        "type": "object"
+      },
+      "Result": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "appointment": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Appointment"
+              }
+            ],
+            "nullable": true
+          },
+          "dock": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Dock"
+              }
+            ],
+            "nullable": true
+          },
+          "entity_id": {
+            "type": "string"
+          },
+          "entity_kind": {
+            "type": "string"
+          },
+          "occurred_at": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "operation_id",
+          "entity_kind",
+          "entity_id",
+          "action",
+          "revision",
+          "occurred_at",
+          "repeated"
+        ],
+        "type": "object"
+      },
+      "DockPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Dock"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        }
+      },
+      "AppointmentPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Appointment"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        }
+      },
+      "EventPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        }
+      },
+      "OccupancyPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Occupancy"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        }
+      }
+    }
+  }
+}

@@ -20,8 +20,8 @@ import (
 
 // Build an actual schema-25 database from unchanged historical migrations,
 // not by deleting tables from a newer database.
-func TestOlderBackupRestoresThroughMigration27(t *testing.T) {
-	for _, historicalVersion := range []int{25, 26} {
+func TestOlderBackupRestoresThroughMigration65(t *testing.T) {
+	for _, historicalVersion := range []int{25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66} {
 		t.Run(strconv.Itoa(historicalVersion), func(t *testing.T) {
 			dir := t.TempDir()
 			path := filepath.Join(dir, "older.sqlite")
@@ -55,19 +55,8 @@ func TestOlderBackupRestoresThroughMigration27(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				var lines []string
-				for _, line := range strings.Split(string(body), "\n") {
-					if !strings.HasPrefix(strings.TrimSpace(line), "--") {
-						lines = append(lines, line)
-					}
-				}
-				for _, statement := range strings.Split(strings.Join(lines, "\n"), ";") {
-					if strings.TrimSpace(statement) == "" {
-						continue
-					}
-					if _, err := db.Exec(statement); err != nil {
-						t.Fatalf("historical migration %d: %v", version, err)
-					}
+				if _, err := db.Exec(string(body)); err != nil {
+					t.Fatalf("historical migration %d: %v", version, err)
 				}
 				checksum := fmt.Sprintf("%x", sha256.Sum256(body))
 				if _, err := db.Exec(`INSERT INTO schema_migrations VALUES (?,?,'now')`, version, checksum); err != nil {
@@ -89,6 +78,14 @@ func TestOlderBackupRestoresThroughMigration27(t *testing.T) {
 			if err := Create(context.Background(), db, device, key, archive); err != nil {
 				t.Fatal(err)
 			}
+			inspection, err := Inspect(context.Background(), archive, device, key)
+			if err != nil || inspection.SchemaVersion != historicalVersion {
+				t.Fatal("historical inspection failed", err)
+			}
+			_, payableAvailable := inspection.Records["supplier_payables"]
+			if payableAvailable != (historicalVersion >= 52) {
+				t.Fatal("missing historical table reported as zero")
+			}
 			recovered := filepath.Join(dir, "recovered.sqlite")
 			if err := Restore(context.Background(), archive, recovered, device, key); err != nil {
 				t.Fatal(err)
@@ -99,7 +96,7 @@ func TestOlderBackupRestoresThroughMigration27(t *testing.T) {
 			}
 			defer current.Close()
 			var count int
-			if err := current.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != 27 {
+			if err := current.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != 66 {
 				t.Fatalf("migration count %d %v", count, err)
 			}
 			if err := db.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != historicalVersion {

@@ -1,5 +1,5 @@
 {
-  "base": "fde43f8",
+  "base": "3ab18e1",
   "routes": [
     {
       "api": "local",
@@ -60,9 +60,93 @@
     {
       "api": "local",
       "method": "GET",
+      "path": "/local/v1/accounting/cash/journal",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_accounting.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/accounting/cash/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_accounting.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/accounting/cash/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_accounting.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/accounting/cash/sessions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_accounting.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
       "path": "/local/v1/capabilities",
       "authentication": "session",
       "source": "backend/internal/localapi/server.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/bags",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_bags.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/bags",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_bags.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/bags/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_bags.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/bags/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_bags.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/bags/:id/dispatch",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_bags.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/bags/:id/receive",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_bags.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/bags/:id/reject",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_bags.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/bags/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_bags.go"
     },
     {
       "api": "local",
@@ -87,6 +171,13 @@
     },
     {
       "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/movements/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_movement_receipt.go"
+    },
+    {
+      "api": "local",
       "method": "POST",
       "path": "/local/v1/cash/open",
       "authentication": "session",
@@ -95,9 +186,331 @@
     {
       "api": "local",
       "method": "GET",
+      "path": "/local/v1/cash/sessions/:id/custody",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_bags.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/sessions/:id/journal",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/sessions/:id/journal.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/sessions/:id/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_report.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vault-counts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vault-counts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vault-counts/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vault-counts/:id/accept",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vault-counts/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vault-counts/:id/reject",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vault-counts/:id/submit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vault-counts/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vaults",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vaults/:id/archive",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vaults/:id/deposit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/:id/statement",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vaults/:id/supply",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/cash/vaults/:id/transfer",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/pending-bags",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vaults.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/cash/vaults/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/cash_vault_counts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/operations/:kind/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/products/:id/edit-details",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/products/:id/edit-state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/products/:id/production-usage",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_product_usage.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/products/:id/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_product_state.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/catalog/products/:id/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_product_state.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/catalog/products/:id/state-history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_product_state_history.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/catalog/products/:id/update",
+      "authentication": "session",
+      "source": "backend/internal/localapi/catalog_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
       "path": "/local/v1/catalog/search",
       "authentication": "session",
       "source": "backend/internal/localapi/catalog.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/plans",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_plans.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/plans/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_plans.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/plans/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_plans.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/plans/:id/finalize-cash",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_plans.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/plans/:id/parts/:part/proofs",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/proofs",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/proofs/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/proofs/:id/accept",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/proofs/:id/reject",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/proofs/:id/revoke",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/checkout/proofs/:id/withdraw",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/proofs/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/proofs/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/proofs/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_proofs.go"
     },
     {
       "api": "local",
@@ -119,6 +532,692 @@
       "path": "/local/v1/comparison-sites",
       "authentication": "session",
       "source": "backend/internal/localapi/comparison.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payable-cash/:id/return",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_cash.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payable-cash/:id/return-sources",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_readiness.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payable-cash/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_cash.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payables",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/:id/approve",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/:id/cash-payments",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_cash.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/:id/cash-payments",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_cash.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/:id/cash-sources",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_readiness.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/:id/installment-balances",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payable_readiness.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/:id/reject",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/payables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/receiving-origins/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/receiving-return-review/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supplier_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/assets",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/assets/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id/availability",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id/costs",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id/costs.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/assets/:id/preventive",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/expenses",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/expenses",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/expenses/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/expenses/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/expenses/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/impacts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/impacts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/impacts/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/impacts/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/impacts/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/income",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/income",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/income/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/income/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/income/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/notices",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/notices/:id/ack",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/plans",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/plans",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/plans/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/plans/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/plans/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/profiles",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/profiles",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/profiles/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/profiles/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/profiles/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/providers",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/providers",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/providers/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/providers/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/providers/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/quotes",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/quotes",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/quotes/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/quotes/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/quotes/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/requests",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/requests",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/requests/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/requests/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/requests/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/requests/:id/workshop",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/requests/:id/workshop.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/trips",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/trips",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/trips/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/trips/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/trips/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/inspections",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/inspections",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/inspections/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/inspections/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/inspections/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/labor",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/labor",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/labor/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/labor/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/labor/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/requirements",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/requirements",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/requirements/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/requirements/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/requirements/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/templates",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/templates",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/templates/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fleet/workshop/templates/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fleet/workshop/templates/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fleet_workshop.go"
     },
     {
       "api": "local",
@@ -150,10 +1249,381 @@
     },
     {
       "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/appointments",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/logistics/appointments",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/appointments.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/appointments/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/logistics/appointments/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/appointments/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/docks",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/logistics/docks",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/docks/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/insights/availability",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_insights.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/insights/pending",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_insights.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/insights/pending.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_insights.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/insights/suppliers/performance",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_insights.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/insights/suppliers/performance.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_insights.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/insights/utilization",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_utilization.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/insights/utilization.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_utilization.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/occupancy",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/logistics/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/dock_agenda.go"
+    },
+    {
+      "api": "local",
       "method": "POST",
       "path": "/local/v1/logout",
       "authentication": "session",
       "source": "backend/internal/localapi/server.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/assets",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/assets",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/assets/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/assets/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/assets/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/candidates",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/classifications",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/classifications",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/classifications/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/classifications/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/classifications/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/queue",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/specialties",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/specialties",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/specialties/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/specialties/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/specialties/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/technicians",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/technicians",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/technicians/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/maintenance/technicians/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/maintenance/technicians/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/maintenance.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/management/inventories/:id/variance",
+      "authentication": "session",
+      "source": "backend/internal/localapi/management_reports.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/management/production/recipe-versions/:id/cost-scenario",
+      "authentication": "session",
+      "source": "backend/internal/localapi/management_reports.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/management/production/simultaneous-plan",
+      "authentication": "session",
+      "source": "backend/internal/localapi/management_reports.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/management/purchases/receiving-board",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receiving_board.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/management/purchases/receiving-board.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receiving_board.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/management/replenishment/preview",
+      "authentication": "session",
+      "source": "backend/internal/localapi/management_reports.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/management/sales/products",
+      "authentication": "session",
+      "source": "backend/internal/localapi/management_reports.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/management/sales/products.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/management_reports.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/management/stock/positions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/management_reports.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/management/stock/positions.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/management_reports.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/management/stock/valuation",
+      "authentication": "session",
+      "source": "backend/internal/localapi/management_reports.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/management/stock/valuation.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/management_reports.go"
     },
     {
       "api": "local",
@@ -168,6 +1638,349 @@
       "path": "/local/v1/module-contracts",
       "authentication": "session",
       "source": "backend/internal/localapi/server.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/cart-operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/pos/carts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/pos/carts/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts/:id/reconcile",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/pos/carts/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/suspended_carts.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/capacity",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_capacity.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/capacity/alternatives",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_capacity.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/losses",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_losses.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/losses/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_losses.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/losses/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_losses.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/losses/void",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_losses.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/lot-search",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lot_search.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/lots",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lots.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/lots/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lots.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/lots/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lots.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/lots/:id/quality",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_quality.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/lots/:id/quality/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_quality.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/lots/void",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lots.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/material-reservations",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_materials.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/material-reservations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_materials.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/material-reservations/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_materials.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/operations/:kind/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_operations.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/order-search",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_search.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_orders.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/orders",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_orders.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_orders.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_orders.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id/material-cost",
+      "authentication": "session",
+      "source": "backend/internal/localapi/material_cost.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id/stages",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_stages.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id/stages/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_stages.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/orders/:id/trace",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_trace.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/orders/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_orders.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/quality-reviews",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_quality.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/recipe-state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_recipe_state.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/recipe-versions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/recipe-versions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/recipe-versions/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/recipe-versions/:id/material-cost",
+      "authentication": "session",
+      "source": "backend/internal/localapi/material_cost.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/recipes/:id/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_recipe_state.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/results",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_results.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/results/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_results.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/results/:id/losses",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_losses.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/production/results/:id/lots",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_lots.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/stage-plans",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_stages.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/production/stages/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/production_stages.go"
     },
     {
       "api": "local",
@@ -193,6 +2006,69 @@
     {
       "api": "local",
       "method": "GET",
+      "path": "/local/v1/purchase-cancellation-operations/:id/receipt",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_cancel_operation.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-cycle-operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-deliveries/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-deliveries/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-deliveries/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-deliveries/:id/payable",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-deliveries/:id/receive",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-deliveries/:id/reject",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-order-search",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_search.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
       "path": "/local/v1/purchase-orders",
       "authentication": "session",
       "source": "backend/internal/localapi/purchases.go"
@@ -213,6 +2089,209 @@
     },
     {
       "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/authorize-receiving",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receiving_authorization.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_cancel.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/deliveries",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/receipts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receipts.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/receipts/:receipt_id/void",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receipt_voids.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/receiving-cases",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receiving_cases.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-orders/:id/receiving-history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receiving_history.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-orders/:id/receiving-overview",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receiving_overview.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-orders/:id/receiving-overview.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receiving_overview.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-orders/:id/receiving-trace",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receiving_trace.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/rejections",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_rejections.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/supplier-decisions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-orders/:id/supply-cycle",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-orders/:id/trace",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_trace.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-receiving-case-operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receiving_cases.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-receiving-cases",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receiving_cases.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-receiving-cases/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receiving_cases.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-receiving-cases/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receiving_cases.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-receiving-cases/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receiving_cases.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-receiving-cases/:id/returns",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supplier_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-receiving/operations/:kind/:id/receipt",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_receiving_operations.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-supplier-operations/:id/receipt",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_supplier_operation.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-supplier-return-operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supplier_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-supplier-returns",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supplier_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-supplier-returns/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supplier_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-supplier-returns/:id/actions",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supplier_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-supplier-returns/:id/dispatch",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supplier_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-supplier-returns/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supplier_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-supplier-returns/:id/recover",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supplier_returns.go"
+    },
+    {
+      "api": "local",
       "method": "GET",
       "path": "/local/v1/purchase-suppliers",
       "authentication": "session",
@@ -224,6 +2303,27 @@
       "path": "/local/v1/purchase-suppliers",
       "authentication": "session",
       "source": "backend/internal/localapi/purchases.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-suppliers/:id/edit-state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_supplier_edit.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-suppliers/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_supplier_history.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-suppliers/:id/update",
+      "authentication": "session",
+      "source": "backend/internal/localapi/purchase_supplier_edit.go"
     },
     {
       "api": "local",
@@ -297,6 +2397,13 @@
     },
     {
       "api": "local",
+      "method": "POST",
+      "path": "/local/v1/sales/quote",
+      "authentication": "session",
+      "source": "backend/internal/localapi/sale_quote.go"
+    },
+    {
+      "api": "local",
       "method": "GET",
       "path": "/local/v1/staff",
       "authentication": "session",
@@ -326,9 +2433,72 @@
     {
       "api": "local",
       "method": "GET",
+      "path": "/local/v1/stock/availability",
+      "authentication": "session",
+      "source": "backend/internal/localapi/stock_availability.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
       "path": "/local/v1/stock/balance",
       "authentication": "session",
       "source": "backend/internal/localapi/stock.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/inventories",
+      "authentication": "session",
+      "source": "backend/internal/localapi/reviewed_inventory.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/stock/inventories",
+      "authentication": "session",
+      "source": "backend/internal/localapi/reviewed_inventory.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/inventories/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/reviewed_inventory.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/stock/inventories/:id/counts",
+      "authentication": "session",
+      "source": "backend/internal/localapi/reviewed_inventory.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/inventories/:id/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/reviewed_inventory.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/inventories/:id/report.csv",
+      "authentication": "session",
+      "source": "backend/internal/localapi/reviewed_inventory.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/stock/inventories/:id/state",
+      "authentication": "session",
+      "source": "backend/internal/localapi/reviewed_inventory.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/inventory-operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/reviewed_inventory.go"
     },
     {
       "api": "local",
@@ -336,6 +2506,34 @@
       "path": "/local/v1/stock/operations",
       "authentication": "session",
       "source": "backend/internal/localapi/stock.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/operations/:id/receipt",
+      "authentication": "session",
+      "source": "backend/internal/localapi/stock.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/operations/history",
+      "authentication": "session",
+      "source": "backend/internal/localapi/stock.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/stock/reservations",
+      "authentication": "session",
+      "source": "backend/internal/localapi/stock_reservations.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/system/info",
+      "authentication": "session",
+      "source": "backend/internal/localapi/reviewed_inventory.go"
     },
     {
       "api": "online",
@@ -435,241 +2633,15 @@
     },
     {
       "api": "online",
-      "method": "POST",
-      "path": "/api/v1/discounts/suggest",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go",
-      "state": "implemented"
-    },
-    {
-      "api": "online",
       "method": "GET",
-      "path": "/api/v1/discounts/suggestions",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go",
-      "state": "implemented"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/discounts/suggestions/:id/review",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/produtos/",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go",
-      "state": "implemented"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/produtos/",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go",
-      "state": "implemented"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/recompensas/indicacoes",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/recompensas/indicacoes/recompensar",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/recompensas/indicacoes/saldo",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/saude",
-      "authentication": "public",
-      "source": "backend/internal/core/routes/routes.go",
-      "state": "implemented"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/produtos/:id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/produtos/:id/details",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/produtos/:id/price",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/produtos/:id/active",
+      "path": "/api/v1/catalog/adjustments",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/produtos/:id/history",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/operations/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/produtos/search",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/produtos/:id/creation",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/creations/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/batches/preview",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/batches/apply",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/batches",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/batches/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/undos/preview",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/undos/apply",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/undos/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/batches/:operation_id/undo",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/imports/preview",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/imports/apply",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/imports/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/batches/:operation_id/import",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/exports/preview",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/exports/csv",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/adjustments/preview",
+      "path": "/api/v1/catalog/adjustments/:operation_id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
@@ -683,14 +2655,7 @@
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/catalog/adjustments/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/adjustments",
+      "path": "/api/v1/catalog/adjustments/exports/csv",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
@@ -703,36 +2668,50 @@
     },
     {
       "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/adjustments/exports/csv",
+      "method": "POST",
+      "path": "/api/v1/catalog/adjustments/preview",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/produtos/:id/barcodes",
+      "path": "/api/v1/catalog/barcodes/batches/:operation_id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "POST",
-      "path": "/api/v1/produtos/:id/barcodes",
+      "path": "/api/v1/catalog/barcodes/batches/apply",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "POST",
-      "path": "/api/v1/produtos/:id/barcodes/:barcode_id/active",
+      "path": "/api/v1/catalog/barcodes/batches/preview",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/catalog/barcodes/import/apply",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/catalog/barcodes/import/preview",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/produtos/:id/barcodes/history",
+      "path": "/api/v1/catalog/barcodes/import/template",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
@@ -752,57 +2731,176 @@
     },
     {
       "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/barcodes/batches/preview",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/barcodes/batches/apply",
+      "method": "GET",
+      "path": "/api/v1/catalog/batches",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/catalog/barcodes/batches/:operation_id",
+      "path": "/api/v1/catalog/batches/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/batches/:operation_id/import",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/batches/:operation_id/undo",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "POST",
-      "path": "/api/v1/catalog/barcodes/import/preview",
+      "path": "/api/v1/catalog/batches/apply",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "POST",
-      "path": "/api/v1/catalog/barcodes/import/apply",
+      "path": "/api/v1/catalog/batches/preview",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/catalog/barcodes/import/template",
+      "path": "/api/v1/catalog/cost-history/entries",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/produtos/:id/barcodes/export.csv",
+      "path": "/api/v1/catalog/cost-history/entries/:operation_id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/catalog/quality/summary",
+      "path": "/api/v1/catalog/cost-history/export.csv",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/cost-history/products/:id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/cost-history/summary",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/costs/operations/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/creations/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/exports/csv",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/exports/preview",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/imports/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/catalog/imports/apply",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/catalog/imports/preview",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/margins/below-target",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/margins/export.csv",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/margins/missing-cost",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/margins/negative",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/margins/summary",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/operations/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/quality/export.csv",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
@@ -823,6 +2921,13 @@
     {
       "api": "online",
       "method": "GET",
+      "path": "/api/v1/catalog/quality/summary",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
       "path": "/api/v1/catalog/quality/zero-stock",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
@@ -830,42 +2935,203 @@
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/catalog/quality/export.csv",
+      "path": "/api/v1/catalog/replenishment/export.csv",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/discounts/suggestions/:id",
+      "path": "/api/v1/catalog/replenishment/items",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/replenishment/operations/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/replenishment/products/:id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "POST",
-      "path": "/api/v1/discounts/suggestions/:id/approve",
+      "path": "/api/v1/catalog/replenishment/products/:id/simulate",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/replenishment/proposals",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "POST",
-      "path": "/api/v1/discounts/suggestions/:id/reject",
+      "path": "/api/v1/catalog/replenishment/proposals",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/discounts/suggestions/:id/reviews",
+      "path": "/api/v1/catalog/replenishment/proposals/:proposal_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/catalog/replenishment/proposals/:proposal_id/approve",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/catalog/replenishment/proposals/:proposal_id/cancel",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/discounts/reviews/:operation_id",
+      "path": "/api/v1/catalog/replenishment/proposals/:proposal_id/check",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/replenishment/proposals/:proposal_id/history",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/replenishment/proposals/export.csv",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/replenishment/proposals/summary",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/replenishment/summary",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/stock-settings/operations/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/stock/below-minimum",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/stock/coverage",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/stock/export.csv",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/stock/summary",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/stock/zero",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/catalog/undos/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/catalog/undos/apply",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/catalog/undos/preview",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/discounts/checks/export.csv",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/discounts/checks/inactive",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/discounts/checks/price-changed",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/discounts/checks/suggestions/:id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/discounts/checks/summary",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
@@ -907,35 +3173,124 @@
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/discounts/checks/summary",
+      "path": "/api/v1/discounts/reviews/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/discounts/suggest",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "implemented"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/discounts/suggestions",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "implemented"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/discounts/suggestions/:id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/discounts/suggestions/:id/approve",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/discounts/suggestions/:id/reject",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/discounts/suggestions/:id/review",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/discounts/suggestions/:id/reviews",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/discounts/checks/price-changed",
+      "path": "/api/v1/produtos/",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "implemented"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/produtos/",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "implemented"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/produtos/:id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/produtos/:id/active",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/discounts/checks/inactive",
+      "path": "/api/v1/produtos/:id/barcodes",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/produtos/:id/barcodes",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/produtos/:id/barcodes/:barcode_id/active",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/discounts/checks/suggestions/:id",
+      "path": "/api/v1/produtos/:id/barcodes/export.csv",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/discounts/checks/export.csv",
+      "path": "/api/v1/produtos/:id/barcodes/history",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
@@ -963,7 +3318,21 @@
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/catalog/costs/operations/:operation_id",
+      "path": "/api/v1/produtos/:id/creation",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/produtos/:id/details",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/produtos/:id/history",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
@@ -976,106 +3345,8 @@
     },
     {
       "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/margins/summary",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/margins/missing-cost",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/margins/negative",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/margins/below-target",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/margins/export.csv",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/cost-history/summary",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/cost-history/entries",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/cost-history/entries/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/cost-history/products/:id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/cost-history/export.csv",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/stock/summary",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/stock/zero",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/stock/below-minimum",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/stock/coverage",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/stock/export.csv",
+      "method": "POST",
+      "path": "/api/v1/produtos/:id/price",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
@@ -1089,21 +3360,7 @@
     {
       "api": "online",
       "method": "POST",
-      "path": "/api/v1/produtos/:id/stock-settings/preview",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
       "path": "/api/v1/produtos/:id/stock-settings",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/stock-settings/operations/:operation_id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
@@ -1116,246 +3373,15 @@
     },
     {
       "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/replenishment/summary",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/replenishment/items",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/replenishment/products/:id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
       "method": "POST",
-      "path": "/api/v1/catalog/replenishment/products/:id/simulate",
+      "path": "/api/v1/produtos/:id/stock-settings/preview",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
     {
       "api": "online",
       "method": "GET",
-      "path": "/api/v1/catalog/replenishment/export.csv",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/replenishment/proposals",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/replenishment/proposals/:proposal_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/replenishment/proposals/:proposal_id/approve",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/catalog/replenishment/proposals/:proposal_id/cancel",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/replenishment/operations/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/replenishment/proposals/summary",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/replenishment/proposals",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/replenishment/proposals/:proposal_id/history",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/replenishment/proposals/:proposal_id/check",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/catalog/replenishment/proposals/export.csv",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/suppliers",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "PUT",
-      "path": "/api/v1/suppliers/:supplier_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/suppliers/:supplier_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/suppliers",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/suppliers/operations/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/supplier-offers",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "PUT",
-      "path": "/api/v1/supplier-offers/:offer_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/supplier-offers/:offer_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/supplier-offers",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/supplier-offers/operations/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/purchases",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/purchases/:purchase_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/purchases/:purchase_id/approve",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "POST",
-      "path": "/api/v1/purchases/:purchase_id/cancel",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/purchases/operations/:operation_id",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/purchases/summary",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/purchases",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/purchases/:purchase_id/history",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/purchases/:purchase_id/check",
-      "authentication": "session",
-      "source": "backend/internal/core/routes/routes.go"
-    },
-    {
-      "api": "online",
-      "method": "GET",
-      "path": "/api/v1/purchases/export.csv",
+      "path": "/api/v1/produtos/search",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
     },
@@ -1393,6 +3419,311 @@
       "path": "/api/v1/purchase-documents/operations/:operation_id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/purchases",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/purchases",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/purchases/:purchase_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/purchases/:purchase_id/approve",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/purchases/:purchase_id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/purchases/:purchase_id/check",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/purchases/:purchase_id/history",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/purchases/export.csv",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/purchases/operations/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/purchases/summary",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/recompensas/indicacoes",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/recompensas/indicacoes/recompensar",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/recompensas/indicacoes/saldo",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/saude",
+      "authentication": "public",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "implemented"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/supplier-offers",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/supplier-offers",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/supplier-offers/:offer_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "PUT",
+      "path": "/api/v1/supplier-offers/:offer_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/supplier-offers/operations/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/suppliers",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/suppliers",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/suppliers/:supplier_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "PUT",
+      "path": "/api/v1/suppliers/:supplier_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/suppliers/operations/:operation_id",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/identity",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company-trade/peers",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/peers",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company-trade/peers/:id/revoke",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/company-trade/export",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company-trade/orders/import",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company-trade/orders/:id/decision",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/:id/company-trade/decision",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/messages",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/messages/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company-trade/recovery",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company-trade/recovery/review",
+      "authentication": "session",
+      "source": "backend/internal/localapi/trade.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/sale-return-operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/sales/:id/returns",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/sales/:id/returns",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/sales/:id/returns/quote",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/sales/:id/returns/cash-session",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/sales/:id/returns/cash-session/quote",
+      "authentication": "session",
+      "source": "backend/internal/localapi/customer_returns.go"
     }
   ]
 }

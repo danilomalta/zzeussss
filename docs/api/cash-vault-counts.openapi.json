@@ -1,0 +1,1224 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem B02B8 — conferencias e relatorio dos cofres",
+    "version": "1.0.0",
+    "description": "Dinheiro fisico local; esperado omitido no registro antes da contagem, sem restringir consultas de saldo ja autorizadas. Conferencia bloqueia movimentos, exige revisao independente e nao ajusta saldo. CSV completo limitado a1000cofres/2MiB; textos inseguros sao recusados sem alterar JSON."
+  },
+  "paths": {
+    "/local/v1/cash/vaults/report": {
+      "get": {
+        "summary": "Relatorio integral dos cofres",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/vaults/report.csv": {
+      "get": {
+        "summary": "CSV integral dos cofres",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts": {
+      "post": {
+        "summary": "Inicia conferencia e bloqueia cofre",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCount"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Lista conferencias",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountPage"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/vault-counts/operations/{id}": {
+      "get": {
+        "summary": "Recibo original do autor",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/vault-counts/{id}": {
+      "get": {
+        "summary": "Consulta conferencia",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultCount"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/vault-counts/{id}/submit": {
+      "post": {
+        "summary": "Transicao submit",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitCount"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts/{id}/accept": {
+      "post": {
+        "summary": "Transicao accept",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCount"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts/{id}/reject": {
+      "post": {
+        "summary": "Transicao reject",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCount"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/vault-counts/{id}/cancel": {
+      "post": {
+        "summary": "Transicao cancel",
+        "description": "ManageCash; escritas exigem POS. Contagem e revisao distintas; nenhuma divergencia altera saldo.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais ou mutacao; sem reparo automatico."
+          },
+          "200": {
+            "description": "Resultado ou recibo original; repeated sinaliza reenvio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCount"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "CountEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "actor_id",
+          "action",
+          "from_state",
+          "to_state",
+          "reason",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "actor_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "submit",
+              "accept",
+              "reject",
+              "cancel"
+            ]
+          },
+          "from_state": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "to_state": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "created_at": {
+            "type": "string",
+            "maxLength": 64
+          }
+        }
+      },
+      "VaultCount": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "vault_id",
+          "creator_id",
+          "counter_id",
+          "reason",
+          "state",
+          "expected_cents",
+          "counted_cents",
+          "difference_cents",
+          "vault_operation_id",
+          "reviewer_id",
+          "created_at",
+          "updated_at",
+          "last_operation_id",
+          "history"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "vault_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "creator_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "counter_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "counting",
+              "submitted",
+              "accepted",
+              "rejected",
+              "cancelled"
+            ]
+          },
+          "expected_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "counted_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "difference_cents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "vault_operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "maxLength": 128,
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "updated_at": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "last_operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "history": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": {
+              "$ref": "#/components/schemas/CountEvent"
+            }
+          }
+        }
+      },
+      "CountResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "repeated",
+          "count"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "count": {
+            "$ref": "#/components/schemas/VaultCount"
+          }
+        }
+      },
+      "CountPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total_count",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/VaultCount"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateCount": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "count_id",
+          "vault_id",
+          "counter_id",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "count_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "vault_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "counter_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "SubmitCount": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "counted_cents"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "counted_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "ReviewCount": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "Vault": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "creation_operation_id",
+          "last_operation_id",
+          "state",
+          "balance_cents"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "creation_operation_id": {
+            "type": "string"
+          },
+          "last_operation_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ]
+          },
+          "balance_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "VaultReportItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "vault",
+          "latest_count"
+        ],
+        "properties": {
+          "vault": {
+            "$ref": "#/components/schemas/Vault"
+          },
+          "latest_count": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "vault_id",
+              "creator_id",
+              "counter_id",
+              "reason",
+              "state",
+              "expected_cents",
+              "counted_cents",
+              "difference_cents",
+              "vault_operation_id",
+              "reviewer_id",
+              "created_at",
+              "updated_at",
+              "last_operation_id",
+              "history"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+              },
+              "vault_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+              },
+              "creator_id": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "counter_id": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "reason": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "counting",
+                  "submitted",
+                  "accepted",
+                  "rejected",
+                  "cancelled"
+                ]
+              },
+              "expected_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "counted_cents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "difference_cents": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "vault_operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+              },
+              "reviewer_id": {
+                "type": "string",
+                "maxLength": 128,
+                "nullable": true
+              },
+              "created_at": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "updated_at": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "last_operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+              },
+              "history": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 3,
+                "items": {
+                  "$ref": "#/components/schemas/CountEvent"
+                }
+              }
+            },
+            "nullable": true
+          }
+        }
+      },
+      "VaultReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "scope",
+          "generated_at",
+          "total_balance_cents",
+          "vault_count",
+          "active_vault_count",
+          "archived_vault_count",
+          "counting_count",
+          "awaiting_review_count",
+          "divergent_latest_count",
+          "items"
+        ],
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "local_physical_vaults"
+            ]
+          },
+          "generated_at": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "total_balance_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "vault_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "active_vault_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "archived_vault_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "counting_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "awaiting_review_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "divergent_latest_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/VaultReportItem"
+            }
+          }
+        }
+      }
+    }
+  }
+}
