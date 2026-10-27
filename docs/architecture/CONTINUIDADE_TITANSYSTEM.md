@@ -2231,3 +2231,26 @@ colisão de nomes FormGuard.tsx/formGuard.mjs corrigida com componente
 ProductionFormGuard.tsx, homepage do pacote e nome explícito do executável
 Windows. Sandbox preservado em ambos os sistemas. Artefatos de avaliação
 ainda não equivalem a instalação comercial assinada nem cliente real operando.
+
+### Decisão do proprietário: aprovação de mantenedor único
+
+Em27/10/2026, o proprietário escolheu explicitamente: CI obrigatório, revisão
+automática do Codex quando habilitada e sua autorização final para merge.
+Esta decisão substitui a exigência anterior de aprovação por outra conta.
+A proteção mantém os sete checks vinculados ao GitHub Actions, base estrita,
+aplicação a administradores, resolução de conversas e bloqueio de force-push
+e exclusão. A contagem de aprovações externas passa a zero; aprovação da
+última atualização por terceiro é desativada. Nenhum merge automático.
+
+A autorização desta decisão não autoriza o merge do PR4. Ele continua
+aguardando todos os checks, a revisão automática disponível e a decisão
+final do dono. Comentário pedindo revisão não comprova revisão concluída
+nem habilitação da integração; o resultado deve ser conferido no GitHub.
+
+Provas da revisão0c1e16d: seis checks verdes, incluindo backend e frontend
+(2465 testes frontend, TypeScript/build), runtime desktop e instaladores
+Ubuntu/Windows/backend Linux. Abertura instalada:971ms Linux e869ms Windows;
+imagens e relatórios conferidos, hashes dos artefatos validados. O check
+HTTP integral ainda executava os pilotos com detector de corridas na hora
+deste registro. Não é declarado aprovado antes de sua conclusão. A alteração
+de política/documentação também precisa dos checks de sua própria revisão.
