@@ -29,7 +29,7 @@ Integrada a entrega anterior de devolução ao cliente, conciliada com os pedido
 
 ## Testes e CI
 
-Requer Go 1.25 compatível e dependências disponíveis. Na pasta `backend/`:
+Requer o toolchain fixado em `backend/go.mod` (Go1.26.10 nesta integração), Node24 e um ambiente de teste descartável compatível e dependências disponíveis. Na pasta `backend/`:
 
 ```bash
 go vet ./...
@@ -84,3 +84,28 @@ Veja [guia do piloto](docs/architecture/PILOTO_DINHEIRO.md), [contratos](docs/ap
 - `website/`: área reservada ao site público futuro, sem copiar telas, dados ou permissões do ERP.
 
 Não mover as pastas históricas apenas para mudar nomes: contratos, scripts, CI e alterações locais dependem dos caminhos atuais. Consulte [a execução desktop](desktop/README.md) e o [registro único de continuidade](docs/architecture/CONTINUIDADE_TITANSYSTEM.md).
+
+
+## Integração em revisão e critérios de entrega
+
+Esta integração combina os commits publicados `3270029` do backend e `3d5abc9`
+do frontend com a main `024dd3f`, preservando as alterações locais não publicadas
+do frontend. Inclui o incremento fiscal local conferido por hashes, descrito em
+[FISCAL_COMPONENTES_20261026.md](docs/architecture/FISCAL_COMPONENTES_20261026.md).
+Emissão, DANFE e SPED oficiais continuam indisponíveis; geração/assinatura local
+de teste não é homologação fiscal.
+
+O CI de PR testa a combinação efetiva de backend e frontend, sem trocar seus
+adaptadores por outra revisão. Os checks obrigatórios executam a suíte frontend
+completa, regressões Go, o piloto real com reinício/restauração e os testes de
+runtime. `desktop-installers.yml` prepara instaladores em runners descartáveis
+Ubuntu/Windows, instala em caminho novo e verifica abertura com perfil limpo,
+registrando imagem e tempo. Um job separado verifica o instalador Linux do
+backend com binários reais e banco sintético. O cliente Windows conecta a um
+servidor autorizado; este ensaio não entrega backend local Windows, TEF, fiscal,
+equipamentos ou cliente comercial em uso.
+
+Instaladores são artefatos de avaliação sem assinatura comercial ou publicação
+automática. Os resultados precisam ser lidos no run do SHA deste PR; a existência
+do workflow não prova que ele passou. A main exige aprovação independente,
+checks verdes e resolução das conversas; não há merge automático.

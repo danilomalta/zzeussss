@@ -1,69 +1,19 @@
 package usecase
 
 import (
-	"fmt"
-	"math/rand"
+	"errors"
+	"github.com/google/uuid"
 	"time"
-
-	"titansystem-backend/internal/core/database"
 	"titansystem-backend/internal/modules/financial/domain"
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
+var ErrSpedUnavailable = errors.New("SPED generation is not implemented")
 
-// GenerateJobID generates a random job ID for tracking SPED processing
-func GenerateJobID() string {
-	return fmt.Sprintf("SPED-%d-%d", time.Now().Unix(), rand.Intn(10000))
-}
+// GenerateJobID remains available for callers, without seeding global PRNG state.
+func GenerateJobID() string { return "SPED-" + uuid.NewString() }
 
-// RequestSpedGeneration creates a job and starts processing
+// RequestSpedGeneration must not publish a fabricated file or completed job.
+// Existing HTTP routes remain unavailable. No database write or goroutine runs.
 func RequestSpedGeneration(startDate, endDate time.Time, requestedBy string) (*domain.SpedJob, error) {
-	job := &domain.SpedJob{
-		JobID:       GenerateJobID(),
-		Type:        "EFD-ICMS/IPI",
-		Status:      domain.SpedJobStatusPending,
-		StartDate:   startDate,
-		EndDate:     endDate,
-		RequestedBy: requestedBy,
-	}
-
-	if err := database.DB.Create(job).Error; err != nil {
-		return nil, err
-	}
-
-	// Update status to processing and save
-	job.Status = domain.SpedJobStatusProcessing
-	database.DB.Save(job)
-
-	// Launch async rendering worker
-	go processSpedJob(job.ID)
-
-	return job, nil
-}
-
-// processSpedJob mock of heavy processing
-func processSpedJob(jobID uint) {
-	// Simulate delay 5 to 15 seconds
-	delay := time.Duration(rand.Intn(10)+5) * time.Second
-	time.Sleep(delay)
-
-	var job domain.SpedJob
-	if err := database.DB.First(&job, jobID).Error; err != nil {
-		return // Job not found probably
-	}
-
-	// Make sure it doesn't fail sporadically
-	if rand.Float32() < 0.05 { // 5% chance of failure (mocking real-world issues)
-		job.Status = domain.SpedJobStatusFailed
-		job.ErrorMsg = "Falha ao consultar NFe's no banco de dados."
-	} else {
-		job.Status = domain.SpedJobStatusCompleted
-		job.FileURL = fmt.Sprintf("https://s3.titansystem.com/sped/download/%s.txt", job.JobID)
-		now := time.Now()
-		job.CompletedAt = &now
-	}
-
-	database.DB.Save(&job)
+	return nil, ErrSpedUnavailable
 }

@@ -1,0 +1,109 @@
+name: Desktop installer acceptance
+
+on:
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: Desktop installer (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Install locked build dependencies in disposable runner
+        run: |
+          npm ci --prefix frontend-web
+          npm ci --prefix desktop
+      - name: Runtime regressions
+        run: node --test --test-isolation=none desktop/tests/*.test.cjs
+      - name: Build compiled ERP stage without Vite server or env files
+        run: node desktop/scripts/build.mjs
+      - name: Package platform installer
+        working-directory: desktop
+        run: |
+          set -euo pipefail
+          stage="$(node -e 'const p=require("node:path"),f=require("node:fs");console.log(p.resolve(".build",JSON.parse(f.readFileSync(".build/current.json")).stage))')"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then target=(--win nsis); else target=(--linux deb); fi
+          extra=()
+          if [[ "$RUNNER_OS" != "Windows" ]]; then extra=(--config.linux.maintainer="TitanSystem CI <ci@example.invalid>"); fi
+          npx --no-install electron-builder --projectDir "$stage" --config "$GITHUB_WORKSPACE/desktop/electron-builder.yml" --config.directories.output="$RUNNER_TEMP/titan-release" --publish never "${extra[@]}" "${target[@]}"
+      - name: Install Linux package in fresh runner
+        if: runner.os == 'Linux'
+        run: |
+          set -euo pipefail
+          test ! -d /opt/TitanSystem
+          mapfile -t packages < <(find "$RUNNER_TEMP/titan-release" -maxdepth 1 -name '*.deb')
+          test "${#packages[@]}" -eq 1
+          sudo dpkg -i "${packages[0]}"
+          executable="$(dpkg -L titansystem-desktop | awk '/\/opt\/.*\/titansystem-desktop$/ {print;exit}')"
+          test -x "$executable"
+          xvfb-run -a node desktop/scripts/verify-installed.cjs "$executable" "$RUNNER_TEMP/installed-evidence"
+      - name: Install and open Windows package in fresh runner
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $installer = @(Get-ChildItem "$env:RUNNER_TEMP/titan-release" -Filter *.exe)
+          if ($installer.Count -ne 1) { throw 'Expected one NSIS installer' }
+          $destination = "$env:RUNNER_TEMP/titan-clean-install"
+          if (Test-Path $destination) { throw 'Install path already exists' }
+          $installed = Start-Process -FilePath $installer[0].FullName -ArgumentList @('/S', "/D=$destination") -Wait -PassThru
+          if ($installed.ExitCode -ne 0) { throw "Installer exit $($installed.ExitCode)" }
+          $binary = Join-Path $destination 'TitanSystem.exe'
+          if (!(Test-Path $binary)) { throw 'Installed executable not found' }
+          node desktop/scripts/verify-installed.cjs "$binary" "$env:RUNNER_TEMP/installed-evidence"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Upload installers and observed startup evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: desktop-install-${{ matrix.os }}-${{ github.sha }}
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/titan-release/*.exe
+            ${{ runner.temp }}/titan-release/*.deb
+            ${{ runner.temp }}/installed-evidence/
+  linux-backend:
+    name: Linux backend installer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Build actual managed binaries
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          mkdir -m 700 "$RUNNER_TEMP/backend-bin"
+          for tool in titan-local titan-sync titan-receive titan-peer titan-access titan-backup; do
+            CGO_ENABLED=0 go build -trimpath -o "$RUNNER_TEMP/backend-bin/$tool" "./cmd/$tool"
+            chmod 700 "$RUNNER_TEMP/backend-bin/$tool"
+          done
+      - name: Install, initialize and recheck discarded installation
+        run: python3 -B tools/verify_clean_backend_install.py --binaries "$RUNNER_TEMP/backend-bin" --report "$RUNNER_TEMP/backend-install.json"
+      - name: Upload installation result only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: linux-backend-install-${{ github.sha }}
+          path: ${{ runner.temp }}/backend-install.json

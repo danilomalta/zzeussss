@@ -167,6 +167,7 @@ func NewWithTradeSignerAndGate(db *sql.DB, device identity.DeviceContext, verifi
 	s.mountVaultCounts(protected)
 	s.mountCashVaults(protected)
 	s.mountSales(protected)
+	s.mountFiscal(protected)
 	return app, nil
 }
 

@@ -1,18 +1,24 @@
 module titansystem-backend
 
-go 1.25.0
+go 1.26.2
+
+toolchain go1.26.10
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/beevik/etree v1.7.0
+	github.com/boombuler/barcode v1.1.0
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/gofiber/websocket/v2 v2.2.1
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/joho/godotenv v1.5.1
-	github.com/stretchr/testify v1.11.1
+	github.com/lestrrat-go/helium v0.11.0
+	github.com/russellhaering/goxmldsig v1.6.1
+	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.49.0
-	golang.org/x/text v0.35.0
+	golang.org/x/text v0.42.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
 	modernc.org/sqlite v1.50.1
@@ -21,6 +27,7 @@ require (
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dlclark/regexp2 v1.12.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fasthttp/websocket v1.5.3 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -28,6 +35,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -44,7 +52,8 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sync v0.20.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
+	golang.org/x/sync v0.23.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.72.3 // indirect

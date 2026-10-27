@@ -144,10 +144,10 @@ func TestHTTPCustomerReturnLaterShiftUpgradePopulated65(t *testing.T) {
 		}
 	}
 	var version int
-	if e = db.QueryRow(`SELECT max(version) FROM schema_migrations`).Scan(&version); e != nil || version != 66 {
+	if e = db.QueryRow(`SELECT max(version) FROM schema_migrations`).Scan(&version); e != nil || version != 67 {
 		t.Fatal(version, e)
 	}
-	t.Log("Populated schema65 -> 66 preserves original return, closed report, IDs and all 65 historical SQL checksums")
+	t.Log("Populated schema65 -> 67 preserves original return, closed report, IDs and all 65 historical SQL checksums")
 }
 
 func TestHTTPCustomerReturnLaterShiftImmutableProvenanceAndDamagedCash(t *testing.T) {

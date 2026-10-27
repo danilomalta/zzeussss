@@ -2183,3 +2183,19 @@ Sete executáveis Linux amd64 do CI instalados em `/home/danillo-malta/.local/op
 Os oito arquivos pausados do frontend mantêm os hashes originais. Trabalho preexistente do registro único preservado separadamente no working tree; este commit contém somente esta revisão e as evidências sanitizadas em `docs/evidence/backend-trade-session-scope-20261026/`. Laboratório/preimagens/logs/hashes em `work/backend-trade-session-scope-20261026/`. Sem ZIP ou dependências nesta entrega.
 
 O transporte com contexto de sessão e sua geração verificada estão entregues. **A ligação automática ao Electron continua pendente**: o host deve invalidar o contexto ao sair ou mudar perfil e parar o worker; contexto criado não é sessão permanente nem autorização adicional. Esta entrega não altera telas, desktop ou backend online de provedores. O transporte/fila ainda recusa execução fora do Linux (`lock_other.go` retorna `ErrInvalid`): Windows exige implementação e prova de lock durável e arquivos privados, além da homologação do hardware. Fiscal/Pix/TEF reais, operação comercial na Internet e demais fluxos sem aceite integral não estão concluídos por estes testes. Backend inteiro não declarado100%. Guia atualizado na branch backend: `docs/architecture/BACKEND_FILA_CONTEXTO_20261026.md`.
+
+
+## Integração revisável — 27/10/2026
+
+Worktree isolada `integration/piloto-main-20261027`; originais preservados. Bases
+publicadas: backend3270029, frontend3d5abc9, main024dd3f. Conflito somente no
+README, resolvido combinando responsabilidades do desktop e do backend.
+O incremento fiscal local foi conferido antes da cópia por lista exata de86
+arquivos, com workflows reconciliados sem perder os checks de integração.
+Alterações frontend posteriores ao head publicado permanecem fora desta revisão.
+
+PRs rascunhos2 e3 registram as branches publicadas. A integração conjunta segue
+em PR próprio e não autoriza merge ou implantação em banco real. Proteção de
+main exige CI e aprovação independente. Ensaios de instalador devem registrar
+SO, pacote, perfil descartável, imagem e tempo; não substituir validação em
+equipamento do piloto nem anunciar cliente real sem implantação autorizada.

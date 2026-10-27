@@ -6,7 +6,6 @@ on:
     paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py', 'tools/check_api_contracts.py', 'tools/tests/test_api_contracts.py', 'docs/api/**']
   pull_request:
     branches: [main, develop]
-    paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py', 'tools/check_api_contracts.py', 'tools/tests/test_api_contracts.py', 'docs/api/**']
   workflow_dispatch:
 
 permissions:
@@ -37,21 +36,12 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - name: Read pinned frontend contract adapters
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: b5b786d900365dfa6288f6273123d4ca8f1a6a7b
-          path: frontend-contract
-          persist-credentials: false
-          sparse-checkout: |
-            frontend-web/src/core
-            frontend-web/tests
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
-          go-version: '1.25.8'
+          go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - name: Verify acceptance gate regressions
         run: python3 -m unittest discover -s ../tools/tests -p test_verify_backend_acceptance.py -v
@@ -73,9 +63,9 @@ jobs:
           TITAN_TRADE_CLI: ${{ runner.temp }}/titan-trade
           TITAN_SESSION_TEST_DATABASE_URL: postgres://titan_ci:ephemeral-ci-fixture-only@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/titan_integration_test?sslmode=disable
           TITAN_CATALOG_TEST_DATABASE_URL: postgres://titan_ci:ephemeral-ci-fixture-only@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/titan_integration_test?sslmode=disable
-          TITAN_CASH_JOURNAL_BRIDGE: ${{ github.workspace }}/frontend-contract/frontend-web/tests/cashJournal.bridge.mjs
-          TITAN_DELIVERY_BRIDGE: ${{ github.workspace }}/frontend-contract/frontend-web/tests/deliveryCycle.bridge.mjs
-          TITAN_MAINTENANCE_BRIDGE: ${{ github.workspace }}/frontend-contract/frontend-web/tests/internalMaintenance.bridge.mjs
+          TITAN_CASH_JOURNAL_BRIDGE: ${{ github.workspace }}/frontend-web/tests/cashJournal.bridge.mjs
+          TITAN_DELIVERY_BRIDGE: ${{ github.workspace }}/frontend-web/tests/deliveryCycle.bridge.mjs
+          TITAN_MAINTENANCE_BRIDGE: ${{ github.workspace }}/frontend-web/tests/internalMaintenance.bridge.mjs
         run: |
           set -euo pipefail
           go test ./... -count=1 -json > "$RUNNER_TEMP/backend-full.jsonl"

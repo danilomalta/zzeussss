@@ -1,5 +1,63 @@
 # Backend e integração — matriz de progresso
 
+## Fiscal — componentes locais, 26/10/2026 (incremento sobre preparação67)
+
+O proprietário confirmou não possuir certificado nem emitente piloto. A base
+continua `327002939a517a314864cb2d42cfb984ca09f79e`, branch
+`feat/backend-b02a-compat`; alterações anteriores e migrações foram preservadas.
+
+Adicionados `internal/fiscalcore` e `cmd/titan-fiscal`: aritmética decimal exata
+com política explícita/vigência, chave nas27UFs, serialização NF-e55/NFC-e65,
+XMLDSig RSA com vínculo ao e-CNPJ e XSD oficial embutido, cancelamento110111,
+QR2/3 e PNG, transporte técnico mTLS com reserva durável antes do POST e
+recuperação sem reenvio automático. Nenhum desses componentes habilita a API
+fiscal existente ou altera serviços instalados. O CLI é exclusivamente offline.
+
+**Não é fiscal completo nem emissão homologada.** Cobertura de UF significa
+identificação/configuração; não constitui tabela tributária nacional aprovada.
+DPS/NFS-e de produção encontra incompatibilidade real no campo `serie` do
+XSD1.01 fixado; o teste registra recusa, sem remover a regra. O novo pacote
+oficial de homologação20/10/2026 foi acrescentado separadamente e passou na
+geração/assinatura/envelope local com CNPJ numérico e alfanumérico, exigindo
+ambiente2 e `finNFSe`; não habilita produção ou transmissão pela API. DANFE oficial,
+SPED/PVA, motor/classificação legal completo, RTC, fila SQLite/numeração,
+reconciliação oficial e homologação continuam pendentes. Sem certificado não
+é possível comprovar homologação; outras pendências são de implementação.
+
+O toolchain passa a Go1.26.10 (mínimo go1.26.2) por requisito do validador Go.
+Workflows leem `backend/go.mod`; remoção apenas da instalação de linter antigo
+não utilizado (a checagem real permanece `go vet`). Sem execução remota de CI.
+Registro técnico e evidências: [FISCAL_COMPONENTES_20261026.md](FISCAL_COMPONENTES_20261026.md).
+Validação observada:58pacotes Go aprovados; após o perfil de homologação,
+19funções fiscais/CLI com race, vet e build completos aprovados;537rotas e10testes
+do verificador OpenAPI aprovados. Builds técnicos Linux/Windows compilados, sem
+instalação nem execução em Windows. Sequência e limites no documento citado.
+
+
+
+## Fiscal — preparação durável, 26/10/2026
+
+Base: `327002939a517a314864cb2d42cfb984ca09f79e`, branch
+`feat/backend-b02a-compat`. Esquema67 incremental, sem mudança nas migrações1–66.
+Perfis fiscais versionados por loja, somente owner ativo e módulo Fiscal;
+solicitações vinculadas a venda persistida com snapshot e SHA-256, idempotência,
+recuperação pelo ator/aparelho original e consultas paginadas. Oito operações
+HTTP autenticadas, referências documentais das27UFs e backup25–67.
+O gerador SPED legado deixou de criar conclusão/link fictícios.
+
+**Entrega de preparação; emissão fiscal NÃO concluída.** Nenhuma numeração,
+chave fiscal, assinatura XML, certificado, tributo ou protocolo foi inventado.
+`blocked_configuration` e capacidades negativas são os estados reais.
+O campo production do perfil é apenas configuração de rascunho, sem habilitação.
+NF-e/NFC-e, NFS-e, eventos, contingência e SPED oficiais continuam pendentes.
+Não substituir o emitente por APIs de consulta nem presumir que o levantamento
+estadual completo equivale à homologação nas27UFs.
+
+Contrato: [fiscal-preparation.openapi.json](../api/fiscal-preparation.openapi.json).
+Resultados e limites: [FISCAL_PREPARACAO_20261026.md](FISCAL_PREPARACAO_20261026.md).
+Validação final:56pacotes Go aprovados,14novos testes, race fiscal, build/vet e
+HTTP real + backupCLI + três processos aprovados. Evidências no documento citado.
+
 ## B02B12 — aplicação de espécie e devoluções de fornecedores
 
 Base no PC: B02B11 `d176beb`, Go/race,89 testes locais, build e árvore limpa

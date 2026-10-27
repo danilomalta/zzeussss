@@ -6,7 +6,6 @@ on:
     paths: ['desktop/**', '.github/workflows/desktop-launcher.yml']
   pull_request:
     branches: [main, develop]
-    paths: ['desktop/**', '.github/workflows/desktop-launcher.yml']
   workflow_dispatch:
 
 permissions:
@@ -14,6 +13,7 @@ permissions:
 
 jobs:
   runtime:
+    name: Desktop runtime
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

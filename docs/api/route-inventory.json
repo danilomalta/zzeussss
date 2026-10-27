@@ -3724,6 +3724,62 @@
       "path": "/local/v1/sales/:id/returns/cash-session/quote",
       "authentication": "session",
       "source": "backend/internal/localapi/customer_returns.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fiscal/capabilities",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fiscal/requirements/:uf",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/profiles",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fiscal/profiles/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/intents",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fiscal/intents",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fiscal/intents/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fiscal/operations/:id/receipt",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
     }
   ]
 }

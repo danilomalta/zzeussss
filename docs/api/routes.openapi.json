@@ -21163,6 +21163,27 @@
     },
     "/local/v1/sales/{id}/returns/cash-session/quote": {
       "$ref": "./customer-returns.openapi.json#/paths/~1local~1v1~1sales~1{id}~1returns~1cash-session~1quote"
+    },
+    "/local/v1/fiscal/capabilities": {
+      "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1capabilities"
+    },
+    "/local/v1/fiscal/requirements/{uf}": {
+      "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1requirements~1{uf}"
+    },
+    "/local/v1/fiscal/profiles": {
+      "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1profiles"
+    },
+    "/local/v1/fiscal/profiles/{id}": {
+      "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1profiles~1{id}"
+    },
+    "/local/v1/fiscal/intents": {
+      "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1intents"
+    },
+    "/local/v1/fiscal/intents/{id}": {
+      "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1intents~1{id}"
+    },
+    "/local/v1/fiscal/operations/{id}/receipt": {
+      "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1operations~1{id}~1receipt"
     }
   },
   "components": {
