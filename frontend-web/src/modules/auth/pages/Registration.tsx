@@ -1,4 +1,4 @@
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import type {FormEvent} from 'react';
 import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
@@ -8,10 +8,12 @@ import './registration.css';
 import {recommended87,proposal87} from '../../../core/sectors86/profile87';
 import type {Profile86} from '../../../core/sectors86/types';
 import {dictionary86} from '../../../core/sectors86/words';
-import BusinessProfileFields87 from '../../../shared/brand/BusinessProfileFields87';
+import RegistrationProfile112 from './RegistrationProfile112';
+import RegistrationSummary112 from './RegistrationSummary112';
+import './registration112.css';
 const recommendation:Record<string,string>={retail:'pos',production:'production',staff:'staff',accounting:'accounting'};
-const sizes=['mei','micro','small','medium','large'],stores=['local','server','cloud','hybrid'];
 export default function Registration() {
+ useEffect(()=>{document.documentElement.classList.add('registration112-page');return()=>document.documentElement.classList.remove('registration112-page');},[]);
  const {t,i18n}=useTranslation(), money=(cents:number)=>formatMoney(cents,i18n.resolvedLanguage);
  const [step,setStep]=useState(0),[size,setSize]=useState('mei'),[activity,setActivity]=useState('retail'),[storage,setStorage]=useState('local'),[users,setUsers]=useState('2');
  const [businessProfile,setBusinessProfile]=useState<Profile86>(()=>recommended87('market'));
@@ -38,18 +40,13 @@ export default function Registration() {
    <p className="plan-description">{t('modules.'+plan.id+'Help')}</p><span className="plan-selection">{t(selected.includes(plan.id)?'modules.selected':'modules.select')}</span>
   </button>)}</div>;
  }
- return <BrandShell><section className="registration">
+ return <BrandShell><section className="registration registration112">
   <div className="registration-intro"><Link className="brand-link registration-back-login" to="/local/login">← {t('register.backLogin')}</Link><p className="brand-eyebrow">{t('register.eyebrow')}</p><h1>{t('register.title')}</h1><p className="brand-state">{t('register.subtitle')}</p></div>
   <ol className="registration-progress" aria-label={t('register.steps')}>{steps.map((label,index)=><li key={label} aria-current={step===index?'step':undefined} className={index<step?'completed':index===step?'current':''}><span aria-hidden="true">{index<step?'✓':index+1}</span><span>{t('register.'+label)}</span></li>)}</ol>
   <div className="registration-meter" role="progressbar" aria-label={t('register.steps')} aria-valuemin={0} aria-valuemax={4} aria-valuenow={step+1}><span style={{width:`${(step+1)*25}%`}}/></div>
-  <form noValidate onSubmit={submit}>
+  <form noValidate onSubmit={submit} className="reg112-layout"><div className="reg112-main">
    <h2 ref={heading} tabIndex={-1} className="registration-heading">{step+1}. {t('register.'+steps[step])}</h2>
-   {step===0&&<section className="brand-panel"><div className="catalog-form">
-    <label>{t('register.size')}<select value={size} onChange={event=>{setSize(event.target.value);setReviewed(false);}}>{sizes.map(value=><option value={value} key={value}>{t('size.'+value)}</option>)}</select></label>
-
-    <label>{t('register.storage')}<select value={storage} aria-describedby="storage-help" onChange={event=>{setStorage(event.target.value);setReviewed(false);}}>{stores.map(value=><option value={value} key={value}>{t('storage.'+value)}</option>)}</select><span id="storage-help" className="registration-field-help">{t('storage.'+storage+'Help')}</span></label>
-    <label>{t('register.users')}<input required type="number" min="1" max="10000" step="1" value={users} onChange={event=>{setUsers(event.target.value);setReviewed(false);}}/><span className="registration-field-help">{t('register.usersHelp')}</span></label>
-   </div><section className="brand-panel"><h3>{bt('profileTitle87')}</h3><p>{bt('proposalHelp87')}</p><BusinessProfileFields87 value={businessProfile} onChange={changeBusiness} t={bt}/></section>{size==='mei'&&<p className="registration-advice"><span aria-hidden="true">ⓘ</span><span>{t('register.meiHelp')}</span></p>}</section>}
+   {step===0&&<RegistrationProfile112 size={size} storage={storage} users={users} profile={businessProfile} onSize={value=>{setSize(value);setReviewed(false);}} onStorage={value=>{setStorage(value);setReviewed(false);}} onUsers={value=>{setUsers(value);setReviewed(false);}} onProfile={changeBusiness}/>}
    {step===1&&<><p className="brand-state">{t('register.recommend',{activity:bt(businessProfile.activity)})}</p>{cards([recommended])}<button type="button" className="brand-secondary registration-more" aria-expanded={others} aria-controls="other-modules" onClick={()=>setOthers(value=>!value)}>{t(others?'register.less':'register.more')} <span aria-hidden="true">{others?'−':'+'}</span></button><div id="other-modules" hidden={!others}>{others&&cards(plans.filter(plan=>plan.id!==recommended).map(plan=>plan.id))}</div><p className="brand-state">{t('register.optionalHelp')}</p></>}
    {step===2&&<section className="brand-panel"><p className="brand-state">{t('register.dataHelp')}</p><div className="catalog-form">
     <label>{t('register.name')}<input required autoComplete="name" maxLength={150} value={name} onChange={event=>{setName(event.target.value);setReviewed(false);}}/></label>
@@ -65,7 +62,7 @@ export default function Registration() {
     <div><dt>{t('register.total')}</dt><dd>{money(totals.monthly)}</dd></div>
    </dl><p className="brand-message">{t('register.unavailable')}</p><label className="registration-confirm"><input type="checkbox" required checked={reviewed} onChange={event=>setReviewed(event.target.checked)}/>{t('register.confirm')}</label></section>}
    {message&&<p className="brand-message" role="status">{t(message)}</p>}
-   <div className="registration-sticky"><div className="registration-total" aria-live="polite"><span>{chosen.length===1?t('modules.'+chosen[0].id):t('register.chosen',{count:chosen.length})}</span><strong>{money(totals.monthly)}<small>{t('modules.month')}</small></strong>{totals.savings>0&&<span className="plan-savings">{t('modules.savings',{price:money(totals.savings)})}</span>}</div><div className="registration-sticky-actions">{step>0&&<button type="button" className="brand-secondary" onClick={()=>go(step-1)}>{t('register.back')}</button>}<button type="submit" className="brand-primary" disabled={step===1&&!selected.length}>{t(step===3?'register.finish':'register.continue')}<span aria-hidden="true"> →</span></button></div></div>
+   </div><RegistrationSummary112 size={size} storage={storage} users={users} profile={businessProfile} modules={chosen} totals={totals}>{step>0&&<button type="button" className="brand-secondary" onClick={()=>go(step-1)}>{t('register.back')}</button>}<button type="submit" className="brand-primary" disabled={step===1&&!selected.length}>{t(step===3?'register.finish':'register.continue')}<span aria-hidden="true"> →</span></button></RegistrationSummary112>
   </form>
  </section></BrandShell>;
 }

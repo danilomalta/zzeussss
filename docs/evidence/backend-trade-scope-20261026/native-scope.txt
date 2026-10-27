@@ -1,0 +1,48 @@
+=== RUN   TestTradeQueueScopeRealMixedCompaniesAndAllSourceDimensions
+    trade_queue_scope_test.go:36: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:36: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:36: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    trade_queue_scope_test.go:36: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:36: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:36: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+--- PASS: TestTradeQueueScopeRealMixedCompaniesAndAllSourceDimensions (1.56s)
+=== RUN   TestTradeQueueScopeChangeDuringRealHTTPNeverRepostsOrDropsProof
+=== RUN   TestTradeQueueScopeChangeDuringRealHTTPNeverRepostsOrDropsProof/before-post
+    trade_queue_scope_test.go:105: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:105: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:105: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    trade_queue_scope_test.go:216: SCOPED REAL HTTP: before-post; posts0; original operation/message retained; replaced context never dispatched; no automatic resend
+=== RUN   TestTradeQueueScopeChangeDuringRealHTTPNeverRepostsOrDropsProof/confirmed-response
+    trade_queue_scope_test.go:105: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:105: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:105: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    trade_queue_scope_test.go:216: SCOPED REAL HTTP: confirmed-response; posts1; original operation/message retained; replaced context never dispatched; no automatic resend
+=== RUN   TestTradeQueueScopeChangeDuringRealHTTPNeverRepostsOrDropsProof/lost-response
+    trade_queue_scope_test.go:105: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:105: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:105: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    trade_queue_scope_test.go:216: SCOPED REAL HTTP: lost-response; posts1; original operation/message retained; replaced context never dispatched; no automatic resend
+--- PASS: TestTradeQueueScopeChangeDuringRealHTTPNeverRepostsOrDropsProof (2.34s)
+    --- PASS: TestTradeQueueScopeChangeDuringRealHTTPNeverRepostsOrDropsProof/before-post (0.77s)
+    --- PASS: TestTradeQueueScopeChangeDuringRealHTTPNeverRepostsOrDropsProof/confirmed-response (0.78s)
+    --- PASS: TestTradeQueueScopeChangeDuringRealHTTPNeverRepostsOrDropsProof/lost-response (0.79s)
+=== RUN   TestTradeQueueScopeCompiledExecutableFiltersAndDelivers
+    trade_queue_scope_test.go:221: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:221: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:221: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    trade_queue_scope_test.go:262: COMPILED SCOPED QUEUE: real HTTP delivery, wrong actor hidden and untouched, original IDs, repeat produces zero POST
+--- PASS: TestTradeQueueScopeCompiledExecutableFiltersAndDelivers (0.79s)
+=== RUN   TestTradeQueueScopeCompiledWatchNeverRebindsToReplacement
+    trade_queue_scope_test.go:266: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:266: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:266: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    trade_queue_scope_test.go:311: COMPILED WATCH: replacement context stopped worker; pending original record retained with zero attempts and zero remote effect
+--- PASS: TestTradeQueueScopeCompiledWatchNeverRebindsToReplacement (0.77s)
+=== RUN   TestTradeQueueScopeRestoredReceiptKeepsBarrierWithSourceOffline
+    trade_queue_scope_test.go:315: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:315: HTTP POST /local/v1/company-trade/peers -> 200
+    trade_queue_scope_test.go:315: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    trade_queue_scope_test.go:356: SCOPED RESTORED QUEUE: explicit receipt reauthorization, source API/file absent, original IDs and permanent recovery-only barrier retained, zero POST
+--- PASS: TestTradeQueueScopeRestoredReceiptKeepsBarrierWithSourceOffline (0.80s)
+PASS
+ok  	titansystem-backend/internal/localapi	6.265s

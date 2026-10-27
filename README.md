@@ -1,6 +1,6 @@
 # TitanSystem
 
-ERP destinado ao aplicativo desktop, com núcleo operacional local e serviços online separados. Esta branch, `feat/backend-b02a-compat`, concentra a evolução do backend. O estado do produto é descrito pelos fontes, contratos e evidências da branch; a existência de uma tela ou de um binário não comprova integração comercial.
+ERP/PDV para desktop Windows/Linux, com telas React compiladas, núcleo operacional local e serviços online separados. O aplicativo se conecta ao serviço autorizado da empresa conforme a configuração; não é o site institucional. Esta branch reúne a integração dos commits publicados de backend e frontend para revisão e CI. Tela, binário e teste automatizado não substituem aceite comercial.
 
 ## Arquitetura efetiva
 
@@ -74,3 +74,13 @@ Veja [guia do piloto](docs/architecture/PILOTO_DINHEIRO.md), [contratos](docs/ap
 ### Worker com contexto explícito
 
 `queue status/run/watch --scope ARQUIVO_PRIVADO` limita a fila ao servidor, empresa, loja, aparelho, operador e fingerprint originais. Mudança do arquivo encerra o worker, preservando tentativas e provas; não amplia permissão nem vincula outro contexto silenciosamente. [Formato, segurança e integração desktop pendente](docs/architecture/BACKEND_FILA_CONTEXTO_20261026.md).
+
+
+## Desktop, serviços e site
+
+- `frontend-web/`: fonte única das telas internas do software. Vite é ferramenta de desenvolvimento/compilação.
+- `desktop/`: executa e distribui essas telas como aplicativo; não duplica os módulos.
+- `backend/`: serviços Go, autorização e persistência. O servidor pode ser separado do PC cliente; não é conteúdo de página web.
+- `website/`: área reservada ao site público futuro, sem copiar telas, dados ou permissões do ERP.
+
+Não mover as pastas históricas apenas para mudar nomes: contratos, scripts, CI e alterações locais dependem dos caminhos atuais. Consulte [a execução desktop](desktop/README.md) e o [registro único de continuidade](docs/architecture/CONTINUIDADE_TITANSYSTEM.md).

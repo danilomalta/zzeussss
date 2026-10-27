@@ -1,0 +1,20 @@
+import type {LocalCapabilities} from '../local/localClient.mjs';
+export interface Summary113{paid_cents:number;returned_cents:number;applied_cents:number;outstanding_cents:number;basis:'declared_cash_audited_sources'}
+export interface Part113{id:string;due_on:string;amount_cents:number}
+export interface Document113{id:string;supplier_name:string;document_reference:string;state:'pending'|'approved'|'rejected'|'cancelled';installments:Part113[];total_cents:number;cash:Summary113|null}
+export interface Payment113{id:string;payable_id:string;installment_id:string;withdrawal_operation_id:string;amount_cents:number;actor_id:string;recipient:string;reference:string;created_at:string;operation_id:string;return:null|{supply_operation_id:string;actor_id:string;reason:string;created_at:string;operation_id:string}}
+export interface CashPage113{items:Payment113[];summary:Summary113;total_count:number;limit:number;offset:number;has_more:boolean}
+export type Input113=Record<string,string>;
+export interface Result113{operation_id:string;repeated:boolean;payment:Payment113}
+export function key113(v:unknown):boolean;
+export function date113(v:unknown):boolean;
+export function summary113(v:unknown):Summary113;
+export function payment113(v:unknown,id:string):Payment113;
+export function cashPage113(v:unknown,id:string,offset?:number):CashPage113;
+export function document113(v:unknown):Document113;
+export function documents113(v:unknown):Document113[];
+export function filter113(rows:Document113[],filter:{query?:string;state?:string;from?:string;to?:string;due?:string;today:string}):Document113[];
+export function cashInput113(v:Input113,kind:string):Input113;
+export function result113(v:unknown,document:string,request:Input113,kind:string,paymentID?:string):Result113;
+export function money113(n:number,locale?:string):string;
+export function access113(cap:LocalCapabilities|null):{read:boolean;write:boolean};

@@ -1,28 +1,25 @@
-appId: com.titansystem.pos
-productName: TitanSystem POS
-copyright: Copyright © 2024 TitanSystem
+appId: com.titansystem.erp
+productName: TitanSystem
+asar: true
 directories:
-  output: dist
-  buildResources: build
+  output: release
 files:
-  - dist/**/*
-  - main.js
-  - preload.js
-mac:
-  category: public.app-category.business
-  target:
-    - dmg
-    - zip
-  # [SECURITY] Para publicar no Mac (Gatekeeper), você precisará de certificados
-  # hardenedRuntime: true
-  # entitlements: build/entitlements.mac.plist
-win:
-  target:
-    - nsis
-  # [SECURITY] Exige assinatura EV Code Signing para evitar tela vermelha do Windows SmartScreen
-  # certificateFile: "caminho/para/cert.pfx"
-  # certificatePassword: "senha"
+  - main.cjs
+  - preload.cjs
+  - src/**/*.cjs
+  - setup/**/*
+  - ui/**/*
+  - build-manifest.json
+  - package.json
 linux:
+  category: Office
   target:
     - AppImage
     - deb
+win:
+  target:
+    - nsis
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true

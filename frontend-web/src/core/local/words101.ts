@@ -1,0 +1,2 @@
+import pt from '../../i18n/official101/pt-BR.json';import en from '../../i18n/official101/en.json';import es from '../../i18n/official101/es.json';import fr from '../../i18n/official101/fr.json';import zh from '../../i18n/official101/zh-CN.json';
+export function words101(l:string):Record<string,string>{return l.startsWith('en')?en:l.startsWith('es')?es:l.startsWith('fr')?fr:l.startsWith('zh')?zh:pt;}

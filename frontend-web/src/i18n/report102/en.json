@@ -1,0 +1,13 @@
+{
+  "details": "View closing breakdown",
+  "balanced": "No cash difference",
+  "shortage": "Counted cash shortage",
+  "surplus": "Counted cash surplus",
+  "localPrint": "Print local review",
+  "localExport": "Download local review CSV",
+  "previous": "Previous closing records",
+  "previousNote": "Previously saved record; it may not reflect the current server state.",
+  "localTitle": "Review on this computer",
+  "localNote": "Receipts and bags support the review. They do not change official results or confirm bank payments.",
+  "paymentDetails": "View payment review"
+}

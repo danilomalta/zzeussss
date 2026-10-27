@@ -1,0 +1,8 @@
+=== RUN   TestNativeCompanyTradeTrustedHTTPSAndReadOnlyOfflineRecovery
+    native_tls_acceptance_external_test.go:24: HTTP POST /local/v1/company-trade/peers -> 200
+    native_tls_acceptance_external_test.go:24: HTTP POST /local/v1/company-trade/peers -> 200
+    native_tls_acceptance_external_test.go:24: HTTP POST /local/v1/purchase-orders/order/company-trade/export -> 200
+    native_tls_acceptance_external_test.go:151: NATIVE TRUSTED HTTPS: TLS1.2+, verified source session/station, signed delivery exactly once between independent native companies; untrusted TLS refused before HTTP; source offline receipt recovery with zero POST; no public listener or commercial data
+--- PASS: TestNativeCompanyTradeTrustedHTTPSAndReadOnlyOfflineRecovery (0.83s)
+PASS
+ok  	titansystem-backend/internal/localapi	0.832s

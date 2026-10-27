@@ -1,0 +1,2 @@
+import pt from '../../i18n/returns100/pt-BR.json';import en from '../../i18n/returns100/en.json';import es from '../../i18n/returns100/es.json';import fr from '../../i18n/returns100/fr.json';import zh from '../../i18n/returns100/zh-CN.json';import {words99} from './words99';
+export function words100(locale:string):Record<string,string>{const own=locale.startsWith('en')?en:locale.startsWith('es')?es:locale.startsWith('fr')?fr:locale.startsWith('zh')?zh:pt;return {...words99(locale),...own};}

@@ -1,0 +1,44 @@
+import {useProductionSelectionGuard} from '../../../../core/productionRead/FormGuard';
+import {useEffect,useMemo,useRef,useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {useLocalAccess} from '../../../../core/local/LocalAccess';
+import {useLocalSession} from '../../../../core/local/useLocalSession';
+import {createProductionRead,type ProductionRead,type RecipeVersion,type CapacityResult} from '../../../../core/productionRead/source.mjs';
+import {productionWords} from '../../../../core/productionRead/words';
+import './officialRecipes.css';
+import ProductionCommands from './ProductionCommands';
+import {createProductionCommands,type ProductionCommands as CommandSource} from '../../../../core/productionRead/commands.mjs';
+
+export default function OfficialRecipes(){
+ const token=useLocalSession(s=>s.token),session=useLocalSession(s=>s.session),{capabilities}=useLocalAccess(),cap=useRef(capabilities);cap.current=capabilities;
+ const {i18n}=useTranslation(),locale=i18n.resolvedLanguage||i18n.language,w=productionWords(locale);
+ const options=useMemo(()=>token&&session&&capabilities?{token,session,capabilities,isCurrent:()=>{const current=useLocalSession.getState();return current.token===token&&current.session===session&&cap.current===capabilities;}}:null,[token,session,capabilities,JSON.stringify([session,capabilities])]);
+ const source=useMemo(()=>{try{return options?createProductionRead(options):null;}catch{return null;}},[options]);
+ const commands=useMemo(()=>{try{return options?createProductionCommands({...options,storage:window.localStorage,locks:navigator.locks}):null;}catch{return null;}},[options]);
+ return source?<Recipes key={source.scope+token+JSON.stringify(capabilities)} source={source} commands={commands||undefined} locale={locale}/>:<section className="brand-panel"><h2>{w.title}</h2><p role="alert">{w.denied}</p></section>;
+}
+export function Recipes({source,commands,locale}:{source:ProductionRead;commands?:CommandSource;locale:string}){
+ const w=productionWords(locale),[filter,setFilter]=useState(''),[query,setQuery]=useState(''),[offset,setOffset]=useState(0),[refresh,setRefresh]=useState(0),[rows,setRows]=useState<RecipeVersion[]|null>(null),[selected,setSelected]=useState<RecipeVersion|null>(null),[locations,setLocations]=useState<{id:string;name:string}[]>([]),[location,setLocation]=useState(''),[result,setResult]=useState<CapacityResult|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const protect=useProductionSelectionGuard();
+ const generation=useRef(0),active=useRef<AbortController|null>(null);
+ const stop=()=>{generation.current++;active.current?.abort();active.current=null;};
+ useEffect(()=>{stop();const c=new AbortController();active.current=c;const g=generation.current;setRows(null);setSelected(null);setResult(null);setError('');setBusy(true);source.versions(query,offset,c.signal).then(items=>{if(g===generation.current&&!c.signal.aborted)setRows(items);}).catch(e=>{if(g===generation.current&&!c.signal.aborted)setError(errorKey(e));}).finally(()=>{if(g===generation.current&&!c.signal.aborted)setBusy(false);});return stop;},[source,query,offset,refresh]);
+ useEffect(()=>{let live=true;const c=new AbortController();setLocations([]);setLocation('');source.locations(c.signal).then(items=>{if(live)setLocations(items);}).catch(()=>{/* Capacity remains unavailable until locations can be loaded; recipes are independent. */});return()=>{live=false;c.abort();};},[source,refresh]);
+ const select=async(row:RecipeVersion)=>{stop();const c=new AbortController();active.current=c;const g=generation.current;setSelected(null);setResult(null);setError('');setBusy(true);try{const version=await source.version(row.version_id,c.signal);if(g===generation.current&&!c.signal.aborted)setSelected(version);}catch(e){if(g===generation.current&&!c.signal.aborted)setError(errorKey(e));}finally{if(g===generation.current&&!c.signal.aborted)setBusy(false);}};
+ const calculate=async()=>{if(!selected||!location)return;stop();const c=new AbortController();active.current=c;const g=generation.current;setResult(null);setError('');setBusy(true);try{const value=await source.capacity(selected,location,c.signal);if(g===generation.current&&!c.signal.aborted)setResult(value);}catch(e){if(g===generation.current&&!c.signal.aborted)setError(errorKey(e));}finally{if(g===generation.current&&!c.signal.aborted)setBusy(false);}};
+ const qty=(n:number)=>{const value=BigInt(n),whole=new Intl.NumberFormat(locale,{maximumFractionDigits:0}).format(value/1000n),fraction=(value%1000n).toString().padStart(3,'0').replace(/0+$/,'');const decimal=new Intl.NumberFormat(locale).formatToParts(1.1).find(p=>p.type==='decimal')?.value||'.';return whole+(fraction?decimal+fraction:'');};
+ const unit=(u:string)=>({unit:w.unitUnit,kg:w.unitKg,g:w.unitG,liter:w.unitLiter,ml:w.unitMl,meter:w.unitMeter}[u]||u);
+ const a=result?.alternatives[0];
+ return <section className="brand-panel official-recipes" aria-labelledby="official-recipes-title"><h2 id="official-recipes-title">{w.title}</h2><p>{w.intro}</p>
+ <form onSubmit={e=>{e.preventDefault();stop();setSelected(null);setResult(null);setQuery(filter);setOffset(0);setRefresh(v=>v+1);}}><label>{w.filter}<input value={filter} maxLength={128} onChange={e=>setFilter(e.target.value)}/></label><button className="brand-secondary" disabled={busy}>{w.load}</button></form>
+ {busy&&<p role="status">{w.loading}</p>}{error&&<p role="alert">{w[error as keyof typeof w]||w.unavailable}</p>}{rows?.length===0&&<p>{w.empty}</p>}
+ {!!rows?.length&&<div className="official-recipes-table" tabIndex={0} role="region" aria-label={w.title}><table><thead><tr><th>{w.name}</th><th>{w.revision}</th><th>{w.yield}</th><th>{w.details}</th></tr></thead><tbody>{rows.map(row=><tr key={row.version_id}><td>{row.name}<small>{row.recipe_id}</small></td><td>{new Intl.NumberFormat(locale).format(row.revision)}</td><td>{qty(row.yield_milli)} {unit(row.output_unit)}</td><td><button className="brand-secondary" disabled={busy} onClick={()=>protect(()=>void select(row))} aria-label={`${w.details}: ${row.name}, ${w.revision} ${row.revision}`}>{w.details}</button></td></tr>)}</tbody></table></div>}
+ <nav aria-label={w.page}><button className="brand-secondary" disabled={busy||offset===0} onClick={()=>setOffset(v=>Math.max(0,v-50))}>{w.previous}</button><span>{w.page} {new Intl.NumberFormat(locale).format(offset/50+1)}</span><button className="brand-secondary" disabled={busy||rows?.length!==50} onClick={()=>setOffset(v=>v+50)}>{w.next}</button></nav>
+ {selected&&<section aria-label={selected.name}><h3>{selected.name} · {w.revision} {selected.revision}</h3><p>{w.product}: {selected.output_product_id} · {w.yield}: {qty(selected.yield_milli)} {unit(selected.output_unit)}</p><div className="official-recipes-table" tabIndex={0} role="region" aria-label={w.details}><table><thead><tr><th>{w.product}</th><th>{w.quantity}</th></tr></thead><tbody>{selected.ingredients.map(i=><tr key={i.product_id}><td>{i.product_id}</td><td>{qty(i.quantity_milli)} {unit(i.unit)}</td></tr>)}</tbody></table></div>
+ <label>{w.location}<select value={location} onChange={e=>{stop();setBusy(false);setLocation(e.target.value);setResult(null);setError('');}}><option value="">{w.choose}</option>{locations.map(l=><option key={l.id} value={l.id}>{l.name}</option>)}</select></label>{!locations.length&&<p>{w.unavailable}</p>}<button className="brand-primary" disabled={busy||!location} onClick={()=>void calculate()}>{w.capacity}</button><p className="official-recipes-warning">{w.warning}</p>
+ {a&&result&&<section aria-live="polite"><p>{w.measured}: {new Intl.DateTimeFormat(locale,{dateStyle:'short',timeStyle:'medium'}).format(new Date(result.measured_at))}</p><p><strong>{w.batches}: {new Intl.NumberFormat(locale).format(a.possible_batches)}</strong> · {w.output}: {qty(a.possible_output_milli)} {unit(a.output_unit)}</p><div className="official-recipes-table" tabIndex={0} role="region" aria-label={w.capacity}><table><thead><tr><th>{w.product}</th><th>{w.quantity}</th><th>{w.stock}</th><th>{w.limiting}</th></tr></thead><tbody>{a.materials.map(m=><tr key={m.product_id}><td>{m.product_id}</td><td>{qty(m.required_milli)} {unit(m.recipe_unit)}</td><td>{qty(m.stock_milli)} {unit(m.stock_unit)}</td><td>{m.limiting?w.yes:w.no}</td></tr>)}</tbody></table></div></section>}
+ </section>}
+ {commands&&<ProductionCommands source={commands} read={source} selectedVersion={selected} locale={locale} onChanged={()=>setRefresh(v=>v+1)}/>}
+ </section>;
+}
+function errorKey(e:unknown){const status=(e as {status?:number})?.status;if(status===401)return 'expired';if(status===403)return 'denied';if(status===404)return 'notfound';if(status===409)return 'conflict';if(e instanceof Error&&e.message==='productionInvalid')return 'invalid';return 'unavailable';}

@@ -16,6 +16,11 @@ export function createPOSOperations(client, storage, scope, lock) {
   const fields = ['tenant_id', 'store_id', 'device_id', 'identity_id'];
   if (!scope || !fields.every((key) => isID(scope[key]))) throw new Error('Contexto local inválido.');
   const key = `titansystem-pos-v1:${JSON.stringify(fields.map((field) => scope[field]))}`;
+  const cartKey='titan-pos-carts:v1:'+JSON.stringify([scope.tenant_id,scope.store_id,scope.identity_id,scope.device_id]);
+  function noCartPending(){
+    try{if(storage.getItem(cartKey)!==null)throw Error();}
+    catch{throw new Error('Há uma tentativa de carrinho oficial ou armazenamento indisponível. Consulte o recibo original antes de enviar outra operação.');}
+  }
   let busy = false;
   let lastRejection = null;
   function pending() {
@@ -30,12 +35,16 @@ export function createPOSOperations(client, storage, scope, lock) {
       return parsed;
     } catch { throw new Error('Pendência local inválida. Preserve os dados e solicite conferência antes de vender novamente.'); }
   }
-  function save(value) {
-    try { storage.setItem(key, JSON.stringify(value)); }
+  function current(token){client.assertCurrent?.(token);}
+  function save(value,token) {
+    current(token);
+    try { const raw=JSON.stringify(value);storage.setItem(key,raw);if(storage.getItem(key)!==raw)throw Error(); }
     catch { throw new Error('Não foi possível preservar a operação neste navegador. Confira seu resultado antes de iniciar outra.'); }
   }
-  function clear() {
-    try { storage.removeItem(key); }
+  function clear(value,token) {
+    current(token);
+    if(JSON.stringify(pending())!==JSON.stringify(value))throw new Error('A pendência mudou. Preserve os dados e confira a operação original.');
+    try { storage.removeItem(key);if(storage.getItem(key)!==null)throw Error(); }
     catch { throw new Error('Operação confirmada, mas a pendência não pôde ser removida. Consulte-a novamente antes de iniciar outra.'); }
   }
   async function exclusive(action) {
@@ -52,45 +61,49 @@ export function createPOSOperations(client, storage, scope, lock) {
       return receipt;
     } catch (error) { if (error?.status === 404) return null; throw error; }
   }
-  async function execute(token, value, retry) {
-    lastRejection = null;
-    try {
+  async function execute(token,value,retry){
+    current(token);lastRejection=null;
+    const wasUncertain=value.uncertain||retry;let submitted=false,pendingPost=false;
+    function beforePost(){
+      current(token);noCartPending();
+      if(JSON.stringify(pending())!==JSON.stringify(value))throw new Error('A pendência mudou antes do envio. Preserve a operação.');
+      value.uncertain=true;save(value,token);submitted=true;pendingPost=true;
+    }
+    try{
       let result;
-      if (value.kind === 'sale') {
-        result = retry ? await readExisting(token, value) : null;
-        if (!result) {
-          await client.completeSale(token, value.input);
-          value.uncertain = true;
-          save(value);
-          result = await readExisting(token, value);
-          if (!result) throw new Error('Venda enviada, mas ainda não foi possível consultar o comprovante. Verifique a mesma operação.');
-        }
-      } else if (value.kind === 'open') {
-        // The same ID is retried: never create a new turn because a reply was lost.
-        result = await client.openCash(token, value.input);
-      } else { result = await client.closeCash(token, value.input); }
-      clear();
-      return { kind: value.kind, result };
-    } catch (error) {
-      lastRejection = !value.uncertain && rejects.includes(error?.status) ? JSON.stringify(value) : null;
-      if (!lastRejection) { value.uncertain = true; save(value); }
+      if(value.kind==='sale'){
+        result=retry?await readExisting(token,value):null;
+        if(!result){beforePost();await client.completeSale(token,value.input);pendingPost=false;result=await readExisting(token,value);if(!result)throw new Error('Venda enviada, mas ainda não foi possível consultar o comprovante. Verifique a mesma operação.');}
+      }else if(value.kind==='open'){beforePost();result=await client.openCash(token,value.input);}
+      else{beforePost();result=await client.closeCash(token,value.input);}
+      pendingPost=false;clear(value,token);return {kind:value.kind,result};
+    }catch(error){
+      // Only the first actual HTTP refusal can prove no write. A local guard
+      // error or a refusal after prior uncertainty never permits deletion.
+      if(submitted&&pendingPost&&!wasUncertain&&error?.serverRefusal===true&&rejects.includes(error?.status)){
+        current(token);value.uncertain=false;save(value,token);lastRejection=JSON.stringify(value);
+      }
       throw error;
     }
   }
+
   return {
     pending,
     canDiscard: () => lastRejection !== null && lastRejection === JSON.stringify(pending()),
     start(token, kind, input) {
       return exclusive(async () => {
+        current(token);
+        noCartPending();
         if (pending()) throw new Error('Resolva a operação pendente antes de iniciar outra.');
         const value = { version: 1, kind, input: JSON.parse(JSON.stringify(input)), uncertain: false };
         if (!validPending(value)) throw new Error('Operação inválida.');
-        save(value);
+        save(value,token);
         return execute(token, value, false);
       });
     },
     retry(token) {
       return exclusive(async () => {
+        current(token);
         const value = pending();
         if (!value) throw new Error('Nenhuma operação pendente.');
         return execute(token, value, true);
@@ -98,11 +111,12 @@ export function createPOSOperations(client, storage, scope, lock) {
     },
     discardRejected(token) {
       return exclusive(async () => {
+        current(token);
         const value = pending();
         if (!value || value.uncertain || lastRejection !== JSON.stringify(value)) throw new Error('Resultado incerto: consulte ou repita a mesma operação.');
         // A previous receipt wins over a later refusal (e.g. license expired).
         if (value.kind === 'sale' && await readExisting(token, value)) throw new Error('Esta venda já tem comprovante. Use Verificar operação.');
-        clear(); lastRejection = null;
+        clear(value,token); lastRejection = null;
       });
     },
   };

@@ -1,0 +1,5 @@
+import type {LocalSession,LocalCapabilities} from '../local/localClient.mjs';
+import type {Identity,Peer,Page,TradeRecord,Recovery,Kind,Command,Result} from './model.mjs';
+export interface Resolution{state:'confirmed'|'missing'|'discarded';receipt?:Result}
+export interface CompanyTradeAPI{scope:string;key:string;canWrite:boolean;owner:boolean;pending():Command|null;dispose():void;identity():Promise<Identity>;peers(offset?:number):Promise<Page<Peer>>;messages(offset?:number,direction?:string,kind?:string):Promise<Page<TradeRecord>>;message(id:string):Promise<TradeRecord>;recovery():Promise<Recovery>;prepare(kind:Kind,target:string,body:Record<string,unknown>&{operation_id:string}):Promise<Command>;submit(c:Command):Promise<Resolution>;recover(send?:boolean):Promise<Resolution|null>;discard():Promise<Resolution|null>}
+export function createCompanyTrade(options:{token:string;session:LocalSession;capabilities:LocalCapabilities;isCurrent:()=>boolean;storage:Storage;locks:LockManager;fetcher?:typeof fetch}):CompanyTradeAPI;

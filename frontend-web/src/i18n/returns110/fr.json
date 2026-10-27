@@ -1,0 +1,16 @@
+{
+ "reviewTitle110":"Vérifiez avant d’enregistrer",
+ "reviewHelp110":"Vérifiez le produit, la quantité, le montant et la solution demandée.",
+ "reviewEffect110":"Une demande sera créée pour examen. Aucun remboursement, crédit, stock ou document fiscal ne sera modifié maintenant.",
+ "ack110":"J’ai vérifié les données et je comprends que cette demande exige encore un examen et une exécution autorisée.",
+ "back110":"Revenir aux champs",
+ "confirm110":"Confirmer l’enregistrement de la demande",
+ "saving110":"Vérification et enregistrement…",
+ "changed110":"Les données ont changé. Vérifiez-les avant de confirmer.",
+ "saveFailed110":"Impossible d’enregistrer la demande. Les champs sont conservés ; vérifiez et réessayez.",
+ "queueTitle110":"Suivi des demandes",
+ "queueScope110":"Ces chiffres suivent les filtres ci-dessous et comprennent uniquement les données de cet ordinateur.",
+ "pendingValue110":"Montant demandé en attente d’examen",
+ "pendingNote110":"Le montant demandé n’est ni une perte réalisée ni un remboursement effectué. Une approbation locale n’exécute aucun paiement ou mouvement de stock.",
+ "prepare110":"Vérifier avant d’enregistrer"
+}

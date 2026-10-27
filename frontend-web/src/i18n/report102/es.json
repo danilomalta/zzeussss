@@ -1,0 +1,13 @@
+{
+  "details": "Ver composición del cierre",
+  "balanced": "Sin diferencia de caja",
+  "shortage": "Falta en el efectivo contado",
+  "surplus": "Sobra en el efectivo contado",
+  "localPrint": "Imprimir revisión local",
+  "localExport": "Descargar revisión local CSV",
+  "previous": "Registros anteriores del cierre",
+  "previousNote": "Registro guardado anteriormente; puede no reflejar el estado actual del servidor.",
+  "localTitle": "Revisión en este equipo",
+  "localNote": "Los comprobantes y las bolsas ayudan a revisar. No cambian el resultado oficial ni confirman pagos bancarios.",
+  "paymentDetails": "Ver revisión de pagos"
+}

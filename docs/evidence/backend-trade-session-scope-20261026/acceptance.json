@@ -1,0 +1,209 @@
+{
+  "source_commit": "327002939a517a314864cb2d42cfb984ca09f79e",
+  "ci_url": "https://github.com/danilomalta/zzeussss/actions/runs/40360560172",
+  "installed_at_utc": "2026-10-26T16:53:50.992371+00:00",
+  "release": "/home/danillo-malta/.local/opt/titansystem/backend/327002939a517a314864cb2d42cfb984ca09f79e",
+  "previous_release": "/home/danillo-malta/.local/opt/titansystem/backend/a43af76e22b06d2f153e46f99f330b4ddc95dd0a",
+  "current": "/home/danillo-malta/.local/opt/titansystem/backend/current",
+  "files_sha256": {
+    "titan-local": "b0893e1fc9024b123146f4e4134a8acfcc4d4ecb6d40c98b5150c979c34a90f2",
+    "titan-backup": "3015fc59efcd28de4e7fc3c04abc11312a0a8b04795798642f97d50c688185ff",
+    "titan-access": "16ee00eb78f84e81e3939e6fb10e4f540b092f7877796a3f98d323765be3558f",
+    "titan-peer": "3e9ae44a2e581e8d3cd5edd88eba673af3b60452bb61ed6731bf3ce9287d1c24",
+    "titan-receive": "bdef76f8860682f2ac0af1f30467d84d1950dda5ea8afd8c0b0948245a5a5707",
+    "titan-sync": "434452e5aca0a72580bdefebf66308ad886657f6fe00a9fb7b7bd7ee5aed3dee",
+    "titan-trade": "f792eb45b08db05f46920d30ae749b1c56f7435585a308e5f531634ed8d7835f"
+  },
+  "services_restarted": false,
+  "commercial_database_or_keys_read": false,
+  "schema_version": 66,
+  "routes": 529,
+  "files_changed": 11,
+  "historical_sql_unchanged": 66,
+  "local_acceptance": {
+    "status": "PASS",
+    "required_integrations": 5,
+    "top_level_passed": 1347,
+    "passed_including_subtests": 2858,
+    "skipped": 3,
+    "skipped_tests": [
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "ci_acceptance": {
+    "status": "PASS",
+    "required_integrations": 5,
+    "top_level_passed": 1347,
+    "passed_including_subtests": 2858,
+    "skipped": 3,
+    "skipped_tests": [
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "local_session_race": {
+    "result": "PASS",
+    "seconds": 41.369,
+    "sha256": "492d0fb2d361f338143c9e5c04056d1458cebc123505fff43a67e5f7eec25c6d"
+  },
+  "ci_trade_and_cash_race": {
+    "result": "PASS",
+    "seconds": 567.397,
+    "sha256": "a533001795fd4a5f2b7fdbae991982ca927aee991b61b4b98921305d13e27d92"
+  },
+  "installed_native_scope": {
+    "result": "PASS",
+    "seconds": 6.283,
+    "sha256": "0515dca4caaec62927dd9f45af0c6e22a55364acb9f6ef3217891343ce948a61",
+    "harness": "external test-only Go overlay launches installed titan-local for every API and stops actual native source in offline scenario; product sources unchanged",
+    "compiled_cli": "installed titan-trade from CI artifact",
+    "source_dimensions": [
+      "api_url",
+      "tenant",
+      "store",
+      "device",
+      "actor",
+      "station_fingerprint"
+    ],
+    "context_changes": [
+      "before_POST",
+      "after_confirmed_POST",
+      "after_committed_POST_with_response_lost"
+    ],
+    "no_automatic_resend": true,
+    "other_context_records_preserved": true,
+    "restored_receipt_only_barrier_preserved_with_source_offline": true
+  },
+  "installed_native_cash": {
+    "result": "PASS",
+    "seconds": 2.129,
+    "sha256": "352ab95ed4efd2a5ece7d59c4267a165db2f5a4bfa6511fec3ee196b13437cf4",
+    "asserted_http_calls": 200,
+    "native_api_lifecycles": 9,
+    "remaining_cash_cents": 1574,
+    "payable_outstanding_cents": 0
+  },
+  "installed_smoke": {
+    "result": "PASS",
+    "compiled_binary_api_lifecycles": 3,
+    "http_assertions": 12,
+    "schema_version": 66,
+    "restart_identity_preserved": true,
+    "restored_identity_preserved": true,
+    "backup_executable_roundtrip": true,
+    "unlicensed_writes_refused": true,
+    "commercial_data": false,
+    "old_schema65_binary_refuses_schema66_without_data_change": true
+  },
+  "preservation": {
+    "services": [
+      {
+        "port": 8182,
+        "pid": 1362657,
+        "executable": "/home/danillo-malta/.local/share/titansystem-tests/pdv-zt69por7/bin/titan-local",
+        "health_status": 200,
+        "original_pid_and_executable_preserved": true
+      },
+      {
+        "port": 8282,
+        "pid": 3855147,
+        "executable": "/home/danillo-malta/.local/share/titansystem-tests/pdv-023hym2n/bin/titan-local",
+        "health_status": 200,
+        "original_pid_and_executable_preserved": true
+      }
+    ],
+    "paused_frontend_original_hashes_preserved": 8,
+    "commercial_database_or_keys_opened": false
+  },
+  "log_privacy_review": {
+    "backend-full.jsonl": {
+      "sha256": "81fee3cb4287721b24059c9ab74dfba70b1145972eb325df530b8589376d9520",
+      "sensitive_value_patterns_found": false
+    },
+    "backend-integrations.json": {
+      "sha256": "ec877c0e6edffb17e4dcca53b8e1e779fb358273499108add6b4770c4dbaadf1",
+      "sensitive_value_patterns_found": false
+    },
+    "pilot-cli-race.log": {
+      "sha256": "a533001795fd4a5f2b7fdbae991982ca927aee991b61b4b98921305d13e27d92",
+      "sensitive_value_patterns_found": false
+    },
+    "installed-native-scope.log": {
+      "sha256": "0515dca4caaec62927dd9f45af0c6e22a55364acb9f6ef3217891343ce948a61",
+      "sensitive_value_patterns_found": false
+    },
+    "installed-native-session.log": {
+      "sha256": "a8ed01a19694789ab9e0e486f33eb8dac3dc27ec68855cc1025a2f7a3266c917",
+      "sensitive_value_patterns_found": false
+    },
+    "installed-native-tls.log": {
+      "sha256": "2aa23984b8266c7df690f437ec52b3a31f796bfe81c9b0c0a3265b95c7e207eb",
+      "sensitive_value_patterns_found": false
+    },
+    "installed-native-cash.log": {
+      "sha256": "352ab95ed4efd2a5ece7d59c4267a165db2f5a4bfa6511fec3ee196b13437cf4",
+      "sensitive_value_patterns_found": false
+    },
+    "session-real-race.log": {
+      "sha256": "492d0fb2d361f338143c9e5c04056d1458cebc123505fff43a67e5f7eec25c6d",
+      "sensitive_value_patterns_found": false
+    },
+    "unit-race.log": {
+      "sha256": "d4a566c074e3fc53dc0b0b073d2d4f51efb1d50b726a609356908e31510d9721",
+      "sensitive_value_patterns_found": false
+    }
+  },
+  "desktop_files_changed": false,
+  "frontend_files_changed": false,
+  "existing_services_updated": false,
+  "remaining_integration": [
+    "Electron worker host must derive scope from verified active session/API identity",
+    "stop worker on logout/profile switch",
+    "fiscal and electronic payment providers",
+    "Windows transport still explicitly refuses execution without a durable lock and private-file implementation; hardware acceptance pending"
+  ],
+  "whole_backend_complete": false,
+  "installed_native_session_context": {
+    "result": "PASS",
+    "seconds": 4.013,
+    "sha256": "a8ed01a19694789ab9e0e486f33eb8dac3dc27ec68855cc1025a2f7a3266c917",
+    "verified_context_creation": true,
+    "new_same_actor_login_never_resumes_old_session": true,
+    "uncertain_proof_and_original_ids_preserved": true,
+    "context_file_replacement_during_verification_refused": true,
+    "existing_context_never_overwritten": true,
+    "tokens_not_in_context_or_cli_output": true
+  },
+  "installed_native_https": {
+    "result": "PASS",
+    "seconds": 0.832,
+    "sha256": "2aa23984b8266c7df690f437ec52b3a31f796bfe81c9b0c0a3265b95c7e207eb",
+    "native_business_apis": 2,
+    "tls_termination": "ephemeral loopback HTTPS proxies forwarding to actual native APIs",
+    "explicit_synthetic_trust_root": true,
+    "untrusted_tls_refused_before_http": true,
+    "signed_delivery_remote_effects": 1,
+    "offline_source_receipt_recovery_posts": 0,
+    "public_internet_or_commercial_deployment_proved": false,
+    "external_test_source_sha256": "89cc777343d1abfbf2bf119aee77317dbdb31897b60f21ed7b77ee0443226b2a"
+  },
+  "source_session_scope_versions": {
+    "1": "explicit administrative identity filter only",
+    "2": "identity plus exact original source session binding"
+  },
+  "independent_review": {
+    "source_commit": "327002939a517a314864cb2d42cfb984ca09f79e",
+    "base_commit": "a43af76e22b06d2f153e46f99f330b4ddc95dd0a",
+    "reviewer": "independent general code agent; specialized security-review tool unavailable",
+    "mode": "read-only",
+    "files_reviewed": 11,
+    "result": "no concrete introduced security finding",
+    "selected_unit_tests": "traderelay and titan-trade session tests PASS",
+    "full_http_suite_rerun_by_reviewer": false,
+    "actual_services_or_commercial_data_accessed": false,
+    "limitation": "Host must invalidate scoped worker context on logout/profile switch; no whole-system security certification."
+  }
+}

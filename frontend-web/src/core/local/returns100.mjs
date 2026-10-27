@@ -1,0 +1,24 @@
+import {isCents,isID,parseQuantity} from './posModel.mjs';
+const methods=['cash','debit','credit','pix','creditAccount'];
+const quantity=v=>Number.isSafeInteger(v)&&v>0;
+const sum=values=>{let n=0n;for(const v of values){if(!isCents(v))throw Error('invalidReply100');n+=BigInt(v);}if(n>BigInt(Number.MAX_SAFE_INTEGER))throw Error('invalidReply100');return Number(n);};
+export function validateReceipt100(r,id){
+ if(!r||r.sale_id!==id||!isID(r.sale_id)||!isID(r.operation_id)||!isID(r.cash_session_id)||!['committed','cancelled'].includes(r.status)||typeof r.fiscal_authorized!=='boolean'||!isCents(r.total_cents)||!Array.isArray(r.items)||!r.items.length||r.items.length>500||!Array.isArray(r.payments)||!r.payments.length||r.payments.length>100)throw Error('invalidReply100');
+ const ids=new Set();for(const i of r.items){if(!i||!isID(i.item_id)||ids.has(i.item_id)||!isID(i.product_id)||!isID(i.location_id)||!quantity(i.quantity_milli)||!isCents(i.unit_price_cents)||!isCents(i.total_cents))throw Error('invalidReply100');ids.add(i.item_id);}
+ ids.clear();for(const p of r.payments){if(!p||!isID(p.payment_id)||ids.has(p.payment_id)||!methods.includes(p.method)||p.status!=='confirmed'||!isCents(p.amount_cents))throw Error('invalidReply100');ids.add(p.payment_id);}
+ if(sum(r.items.map(i=>i.total_cents))!==r.total_cents||sum(r.payments.map(p=>p.amount_cents))!==r.total_cents)throw Error('invalidReply100');return r;
+}
+export function availability100(receipt,requests){
+ if(!receipt||!Array.isArray(receipt.items)||!Array.isArray(requests))throw Error('invalidReply100');
+ const relevant=requests.filter(r=>r.reference===receipt.sale_id&&['return','cancel'].includes(r.kind)&&!['denied','withdrawn'].includes(r.state));
+ const cancel=relevant.some(r=>r.kind==='cancel'),items=new Set(receipt.items.map(i=>i.item_id)),groups=new Map();
+ for(const r of relevant.filter(r=>r.kind==='return')){if(!items.has(r.item)||!quantity(r.quantity)||!isCents(r.amount))throw Error('invalidReply100');const group=groups.get(r.item)||{used:0n,amount:0n};group.used+=BigInt(r.quantity);group.amount+=BigInt(r.amount);groups.set(r.item,group);}
+ return receipt.items.map(item=>{if(!item||!isID(item.item_id)||!quantity(item.quantity_milli)||!isCents(item.total_cents))throw Error('invalidReply100');const group=groups.get(item.item_id)||{used:0n,amount:0n};if(group.used>BigInt(item.quantity_milli)||group.amount>BigInt(item.total_cents))throw Error('returnExceeded');return {...item,used:Number(group.used),requested:Number(group.amount),remaining:cancel?0:item.quantity_milli-Number(group.used),availableCents:cancel?0:item.total_cents-Number(group.amount),blocked:cancel};});
+}
+export function estimateReturn100(receipt,itemID,qty,requests){
+ if(receipt.status!=='committed'||!quantity(qty))throw Error('invalid');const row=availability100(receipt,requests).find(i=>i.item_id===itemID);if(!row||qty>row.remaining)throw Error('returnExceeded');const q=BigInt(row.remaining),amount=Number((BigInt(row.availableCents)*BigInt(qty)+q/2n)/q);if(!amount)throw Error('noValue100');return {amount,remaining:row.remaining,availableCents:row.availableCents};
+}
+export function quantityText100(n){if(!Number.isSafeInteger(n)||n<0)throw Error('invalid');const value=BigInt(n),fraction=String(value%1000n).padStart(3,'0').replace(/0+$/,'');return String(value/1000n)+(fraction?'.'+fraction:'');}
+export function receiptFingerprint100(r){validateReceipt100(r,r.sale_id);return JSON.stringify([r.sale_id,r.operation_id,r.cash_session_id,r.status,r.total_cents,r.fiscal_authorized,[...r.items].sort((a,b)=>a.item_id.localeCompare(b.item_id)).map(i=>[i.item_id,i.product_id,i.location_id,i.quantity_milli,i.unit_price_cents,i.total_cents]),[...r.payments].sort((a,b)=>a.payment_id.localeCompare(b.payment_id)).map(p=>[p.payment_id,p.method,p.status,p.amount_cents])]);}
+export function parseReturnQuantity100(value,unit){return parseQuantity(value,unit==='unit'?'unit':'kg');}
+export function filterRequests100(requests,{query='',state='all'}={}){if(!Array.isArray(requests)||requests.length>1500)throw Error('invalid');for(const r of requests.filter(r=>['return','cancel'].includes(r.kind))){if(!isID(r.id)||typeof r.reference!=='string'||typeof r.reason!=='string'||!Number.isFinite(Date.parse(r.at))||!isCents(r.amount)||!['requested','approved','denied','withdrawn'].includes(r.state)||r.kind==='return'&&(!quantity(r.quantity)||!['refund','exchange','credit'].includes(r.outcome)))throw Error('invalid');}const q=query.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();return requests.filter(r=>['return','cancel'].includes(r.kind)&&(state==='all'||r.state===state)&&(!q||[r.reference,r.reason,String(r.amount)].some(v=>String(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(q)))).map((r,n)=>({...r,display:n+1})).sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)||a.id.localeCompare(b.id));}
