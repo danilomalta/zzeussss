@@ -104,7 +104,7 @@ func TestFiscalIssuanceMTLSJournalProtocolAndOfflineRecovery(t *testing.T) {
 					w.Write([]byte(`<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><soap:Fault/></soap:Body></soap:Envelope>`))
 					return
 				}
-				fmt.Fprintf(w, `<retEnviNFe xmlns="%s" versao="4.00"><tpAmb>2</tpAmb><cStat>104</cStat><protNFe versao="4.00"><infProt><tpAmb>2</tpAmb><chNFe>%s</chNFe><dhRecbto>2026-10-27T12:00:00-03:00</dhRecbto><nProt>135260000000001</nProt><digVal>%s</digVal><cStat>%s</cStat></infProt></protNFe></retEnviNFe>`, NFeNS, key, digest, status)
+				fmt.Fprintf(w, `<retEnviNFe xmlns="%s" versao="4.00"><tpAmb>2</tpAmb><cStat>104</cStat><protNFe versao="4.00"><infProt><tpAmb>2</tpAmb><verAplic>SYNTHETIC1</verAplic><chNFe>%s</chNFe><dhRecbto>2026-10-27T12:00:00-03:00</dhRecbto><nProt>135260000000001</nProt><digVal>%s</digVal><cStat>%s</cStat><xMotivo>Synthetic protocol only</xMotivo></infProt></protNFe></retEnviNFe>`, NFeNS, key, digest, status)
 			}))
 			clientRoots := x509.NewCertPool()
 			clientRoots.AddCert(credential.certificate)

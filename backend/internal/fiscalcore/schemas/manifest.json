@@ -111,6 +111,17 @@
         "pedRegEvento_v1.01.xsd": "e90b6816d29cca0bd5ed8f86ad98d3b7b0d8bbfc11a7583e6ff8f98170fd4009",
         "tiposEventos_v1.01.xsd": "1b32bea21089dc232d78b62d805e9c07382f440d4e0ea2cb3fb6b82ebde68c11"
       }
+    },
+    "svrs-query-process-20261027": {
+      "source": "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/",
+      "retrieved": "2026-10-27",
+      "files": {
+        "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/consSitNFe_v4.00.xsd": "ec103f360d2193f56a18630ec2b9676a1d09d1dbf2d98123f8c42ad0497e3db5",
+        "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/retConsSitNFe_v4.00.xsd": "b1f23b66a55356ecf1207a833ec4d57093a54d7a58f8d6d237db0694ccb4393d",
+        "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/leiauteConsSitNFe_v4.00.xsd": "5d8826f29ff1b0f2fd3c1ccda808fdc2ebac73f6d4abf716cb9049eb5169c535",
+        "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/procNFe_v4.00.xsd": "d61d15303f8ccf77e6e5d77a8153255a6906e0d00385dc5000db19ed3bfa96e0"
+      },
+      "note": "Official SVRS root/layout files; existing pinned NF-e 4.00 basic/signature types unchanged."
     }
   },
   "embedded": {
@@ -245,6 +256,22 @@
     "nfseHomolog20261020/tiposEventos_v1.01.xsd": {
       "original": "official/nfse-homolog-20261020/tiposEventos_v1.01.xsd",
       "sha256": "1b32bea21089dc232d78b62d805e9c07382f440d4e0ea2cb3fb6b82ebde68c11"
+    },
+    "nfe400/consSitNFe_v4.00.xsd": {
+      "original": "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/consSitNFe_v4.00.xsd",
+      "sha256": "ec103f360d2193f56a18630ec2b9676a1d09d1dbf2d98123f8c42ad0497e3db5"
+    },
+    "nfe400/retConsSitNFe_v4.00.xsd": {
+      "original": "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/retConsSitNFe_v4.00.xsd",
+      "sha256": "b1f23b66a55356ecf1207a833ec4d57093a54d7a58f8d6d237db0694ccb4393d"
+    },
+    "nfe400/leiauteConsSitNFe_v4.00.xsd": {
+      "original": "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/leiauteConsSitNFe_v4.00.xsd",
+      "sha256": "5d8826f29ff1b0f2fd3c1ccda808fdc2ebac73f6d4abf716cb9049eb5169c535"
+    },
+    "nfe400/procNFe_v4.00.xsd": {
+      "original": "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/procNFe_v4.00.xsd",
+      "sha256": "d61d15303f8ccf77e6e5d77a8153255a6906e0d00385dc5000db19ed3bfa96e0"
     }
   },
   "generated_root_bindings": {

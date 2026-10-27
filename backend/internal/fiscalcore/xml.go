@@ -12,6 +12,7 @@ import (
 	"encoding/base64"
 	"encoding/xml"
 	"io"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -104,6 +105,12 @@ func schemaPath(kind string) string {
 	switch kind {
 	case "nfe":
 		return "schemas/nfe400/nfe_v4.00.xsd"
+	case "nfe_query":
+		return "schemas/nfe400/consSitNFe_v4.00.xsd"
+	case "nfe_query_response":
+		return "schemas/nfe400/retConsSitNFe_v4.00.xsd"
+	case "nfe_process":
+		return "schemas/nfe400/procNFe_v4.00.xsd"
 	case "nfe_event":
 		return "schemas/events100/evento_root.xsd"
 	case "nfe_cancel_detail":
@@ -123,7 +130,11 @@ func schemaPath(kind string) string {
 // ValidateXML uses only embedded, hashed official schema files. It never follows
 // a schemaLocation from the document, opens host files or fetches remote schemas.
 func ValidateXML(kind string, raw []byte) error {
-	parsed, err := parseXML(raw)
+	byteLimit, nodeLimit := MaxXML, 8192
+	if kind == "nfe_process" {
+		byteLimit, nodeLimit = 2*MaxXML, 8200
+	}
+	parsed, err := parseXMLLimits(raw, byteLimit, nodeLimit)
 	if err != nil {
 		return err
 	}
@@ -526,5 +537,17 @@ func compileSchema(kind string) (*xsd.Schema, error) {
 	if root == "" {
 		return nil, ErrUnsupported
 	}
-	return xsd.NewCompiler().FS(schemaFiles).CompileFile(context.Background(), root)
+	// Helium CompileFile opens its initial path through os.ReadFile even when
+	// FS is set. Read the embedded root explicitly; FS resolves only its trusted
+	// includes/imports. Installed executables must never depend on repository CWD.
+	raw, err := schemaFiles.ReadFile(root)
+	if err != nil {
+		return nil, ErrSchema
+	}
+	doc, err := helium.NewParser().Parse(context.Background(), raw)
+	if err != nil {
+		return nil, ErrSchema
+	}
+	defer doc.Free()
+	return xsd.NewCompiler().FS(schemaFiles).BaseDir(path.Dir(root)).Compile(context.Background(), doc)
 }

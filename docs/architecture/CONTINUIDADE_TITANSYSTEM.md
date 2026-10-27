@@ -2329,3 +2329,34 @@ explicitados no registro. Fiscal -race:31 funções/80 resultados,44 comandos
 de backup real, zero falhas/zero skips. Vet completo, quatro builds técnicos,
 17 testes dos validadores e537rotas aprovados. Nada instalado. CI do commit
 novo continua obrigatório antes de aceitar essa unidade; não há merge.
+
+
+## Fiscal70 — consulta, reconciliação e schemas incorporados
+
+Base0910400. Consulta `consSitNFe` em homologação com journal próprio imutável,
+sessão atual e permissão contábil; consulta nova não retoma emissão antiga.
+Conferência estrita de resposta/protocolo e composição de `nfeProc` validado.
+217/eventos não liberam número ou reenviam documento. Respostas ficam por
+consulta; uma resposta atrasada não substitui outra. Reinício/Restore preservam
+IDs/bytes e barreiras de emissão. Backup aceita25–70.
+
+Corrigido defeito de XSD inicial dependente do diretório atual em CompileFile: raiz
+e dependências passam a vir do FS incorporado. Regressões fora do repositório
+cobrem núcleo e CLI. Identidade da consulta usa memberships, preservando acesso
+de contador criado no cadastro central sem depender da tabela legada users.
+
+Detalhes, fontes oficiais e limites em
+[FISCAL_CONSULTA_RECONCILIACAO_20261027.md](FISCAL_CONSULTA_RECONCILIACAO_20261027.md).
+Não foi habilitada rota comercial, emissão em produção, homologação real, DANFE,
+SPED/PVA, motor tributário nacional completo ou NFS-e produção. Pastas originais
+e serviços preservados. Resultados finais no registro de evidência desta unidade.
+Sem merge: credenciais antigas continuam pendentes de troca pelo proprietário.
+
+
+Resultado local final fiscal70:58pacotes/1416 funções principais/
+3026 resultados aprovados, zero falhas, oito skips listados na evidência.
+Núcleo/CLI -race:29 funções/64 resultados em três pacotes, zero falhas/skips.
+Fiscal SQLite -race:41 funções/102 resultados,55 comandos de backup real,
+zero falhas/skips. Vet completo, quatro builds,17 testes dos validadores e
+537rotas aprovados. Nenhum binário instalado. Os sete checks da base0910400
+passaram; esta revisão precisa de CI próprio. Nenhum merge realizado.
