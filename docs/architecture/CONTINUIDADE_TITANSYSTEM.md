@@ -2199,3 +2199,35 @@ em PR próprio e não autoriza merge ou implantação em banco real. Proteção 
 main exige CI e aprovação independente. Ensaios de instalador devem registrar
 SO, pacote, perfil descartável, imagem e tempo; não substituir validação em
 equipamento do piloto nem anunciar cliente real sem implantação autorizada.
+
+### Integração: validação de instalação e correções de CI
+
+PR conjunto: https://github.com/danilomalta/zzeussss/pull/4. Os PRs2/3 foram
+fechados em favor dele, sem merge nem exclusão das branches. A main tem sete
+checks obrigatórios vinculados ao aplicativo GitHub Actions, atualização estrita
+da base e aprovação independente, inclusive para administradores. Mudar a
+política de aprovação de mantenedor único exige decisão explícita do dono;
+revisão automática não é alegada como aprovação formal.
+
+Regressões locais atuais:61 testes desktop aprovados, incluindo encerramento
+de processo descartável que ignora SIGTERM. A limpeza encerra apenas a árvore
+criada pelo ensaio, por grupo POSIX separado ou PID específico no Windows.
+Não altera processos8182/8282 nem a instalação do usuário.
+
+No CI e57d483:2465 testes frontend, TypeScript e build aprovados;85 testes de
+ferramentas aprovados. Instalação Linux do backend com binários reais, banco
+sintético e reabertura por segundo processo aprovada. Instalador DEB teve suas
+dependências resolvidas pelo gerenciador e a janela instalada exibiu5controles
+em584ms. Esse job foi cancelado após ficar preso na limpeza; não é registrado
+como check aprovado. O ensaio foi corrigido para encerrar a própria árvore.
+O NSIS gerado retornou zero sem executável no destino esperado; parâmetros
+do ensaio agora usam caminho Windows nativo e escopo explícito de usuário.
+A revisão final deve comprovar os dois instaladores e os pilotos no seu próprio
+commit antes do merge. Os números acima são resultados identificados, não
+uma alegação de CI integral verde da revisão final.
+
+Correções adicionais desta integração: caminhos Windows no build/manifesto,
+colisão de nomes FormGuard.tsx/formGuard.mjs corrigida com componente
+ProductionFormGuard.tsx, homepage do pacote e nome explícito do executável
+Windows. Sandbox preservado em ambos os sistemas. Artefatos de avaliação
+ainda não equivalem a instalação comercial assinada nem cliente real operando.
