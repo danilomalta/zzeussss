@@ -69,7 +69,7 @@ func TestHTTPCustomerReturnMaintenanceCoexistenceAndBackup(t *testing.T) {
 		t.Fatal(report, e)
 	}
 	var versions int
-	if e := db.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&versions); e != nil || versions != 70 {
+	if e := db.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&versions); e != nil || versions != 71 {
 		t.Fatal(versions, e)
 	}
 }

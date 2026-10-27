@@ -2360,3 +2360,36 @@ Fiscal SQLite -race:41 funções/102 resultados,55 comandos de backup real,
 zero falhas/skips. Vet completo, quatro builds,17 testes dos validadores e
 537rotas aprovados. Nenhum binário instalado. Os sete checks da base0910400
 passaram; esta revisão precisa de CI próprio. Nenhum merge realizado.
+
+
+## Fiscal71 — cancelamento vinculado e preservado
+
+Base4d99c54. Evento110111/sequência1 ligado ao protocolo de autorização e
+consulta mais recente da intenção. Exige dono/gerente, contrato e sessão atuais;
+journal imutável antes de rede e guard antes do POST. Protocolo135/155 pode
+compor procEventoNFe validado; HTTP200,136/573 e Fault não bastam. Recuperação
+conserva bytes/IDs originais, inclusive após nova tentativa com outro ID. Não
+movimenta caixa, pagamentos, venda ou estoque. Backup aceita25–71; Restore
+conserva o processo e bloqueia novo envio. Migrações anteriores preservadas.
+
+CI4d99c54: seis checks aprovados e falha no teste de sigilo do ciclo de compras.
+Causa comprovada: substring31500 presente por acaso nos microssegundos da data.
+Corrigidas as duas assertivas para conferir campos JSON, sem mudar autorização;
+regressão específica repetida20vezes. Nova revisão exige CI próprio.
+
+Detalhes/fontes/limites em
+[FISCAL_CANCELAMENTO_HOMOLOGACAO_20261027.md](FISCAL_CANCELAMENTO_HOMOLOGACAO_20261027.md).
+Não declarar emissão/cancelamento real, DANFE, SPED/PVA, NFS-e produção, motor
+tributário nacional completo ou homologação oficial. Regras de elegibilidade
+jurídica e demais eventos permanecem pendentes. Sem alteração dos serviços ou
+pastas originais; nenhum merge. Credenciais antigas ainda não trocadas.
+
+
+Resultado local final fiscal71:58pacotes/1430 funções principais/
+3084 resultados incluindo subtestes aprovados, zero falhas; oito skips
+explicitados na evidência. Núcleo/CLI -race:32 funções/89 resultados
+em três pacotes; SQLite fiscal -race:51 funções/133 resultados e
+66comandos de backup real, ambos sem falhas/skips. Regressão de CI:dois testes
+repetidos20vezes,40aprovações. Vet completo, quatro builds,17 testes dos
+validadores e537rotas passaram. Fontes conferidos por hash antes/depois dos
+testes. Nenhum binário instalado. Novo CI obrigatório; nenhum merge.

@@ -175,6 +175,10 @@ func ReconcileHomologationNFe(originalRequest, queryRequest RecordedRequest, res
 
 // Only one exact SOAP body/result shape is accepted; Fault/detail is not data.
 func fiscalResponseRoot(raw []byte, namespace, rootName string) (*etree.Element, error) {
+	return versionedFiscalResponseRoot(raw, namespace, rootName, "4.00")
+}
+
+func versionedFiscalResponseRoot(raw []byte, namespace, rootName, version string) (*etree.Element, error) {
 	d, err := parseXML(raw)
 	if err != nil {
 		return nil, ErrUncertain
@@ -195,7 +199,7 @@ func fiscalResponseRoot(raw []byte, namespace, rootName string) (*etree.Element,
 		}
 		root = children[0]
 	}
-	if root.Tag != rootName || root.NamespaceURI() != NFeNS || root.SelectAttrValue("versao", "") != "4.00" {
+	if root.Tag != rootName || root.NamespaceURI() != NFeNS || root.SelectAttrValue("versao", "") != version {
 		return nil, ErrUncertain
 	}
 	return root, nil

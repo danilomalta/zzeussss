@@ -113,6 +113,12 @@ func schemaPath(kind string) string {
 		return "schemas/nfe400/procNFe_v4.00.xsd"
 	case "nfe_event":
 		return "schemas/events100/evento_root.xsd"
+	case "nfe_event_batch":
+		return "schemas/events100/envEvento_v1.00.xsd"
+	case "nfe_event_response":
+		return "schemas/events100/retEnvEvento_v1.00.xsd"
+	case "nfe_event_process":
+		return "schemas/events100/procEventoNFe_v1.00.xsd"
 	case "nfe_cancel_detail":
 		return "schemas/events100/e110111_v1.00.xsd"
 	case "nfse_dps":
@@ -131,7 +137,7 @@ func schemaPath(kind string) string {
 // a schemaLocation from the document, opens host files or fetches remote schemas.
 func ValidateXML(kind string, raw []byte) error {
 	byteLimit, nodeLimit := MaxXML, 8192
-	if kind == "nfe_process" {
+	if kind == "nfe_process" || kind == "nfe_event_process" {
 		byteLimit, nodeLimit = 2*MaxXML, 8200
 	}
 	parsed, err := parseXMLLimits(raw, byteLimit, nodeLimit)
