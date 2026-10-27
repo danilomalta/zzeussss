@@ -63,9 +63,9 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $installer = @(Get-ChildItem "$env:RUNNER_TEMP/titan-release" -Filter *.exe)
           if ($installer.Count -ne 1) { throw 'Expected one NSIS installer' }
-          $destination = "$env:RUNNER_TEMP/titan-clean-install"
+          $destination = Join-Path $env:RUNNER_TEMP 'titan-clean-install'
           if (Test-Path $destination) { throw 'Install path already exists' }
-          $installed = Start-Process -FilePath $installer[0].FullName -ArgumentList @('/S', "/D=$destination") -Wait -PassThru
+          $installed = Start-Process -FilePath $installer[0].FullName -ArgumentList "/S /currentuser /D=$destination" -Wait -PassThru
           if ($installed.ExitCode -ne 0) { throw "Installer exit $($installed.ExitCode)" }
           $binary = Join-Path $destination 'TitanSystem.exe'
           if (!(Test-Path $binary)) {
