@@ -45,6 +45,12 @@ type Recorder interface {
 	Complete(context.Context, ExchangeResult) error
 }
 
+// SendGuard revalidates mutable session/context authority after the durable
+// journal commit. A refusal preserves the original request and prevents I/O.
+type SendGuard interface {
+	BeforeSend(context.Context, string) error
+}
+
 type Client struct {
 	endpoint   *url.URL
 	http       *http.Client
@@ -99,6 +105,11 @@ func (c *Client) exchange(ctx context.Context, id, key, environment, contentType
 	}
 	request.Header.Set("Content-Type", contentType)
 	request.Header.Set("Accept-Encoding", "identity")
+	if guard, ok := c.recorder.(SendGuard); ok {
+		if err := guard.BeforeSend(ctx, id); err != nil {
+			return out, err
+		}
+	}
 	response, err := c.http.Do(request)
 	if err != nil {
 		_ = c.recorder.Complete(context.WithoutCancel(ctx), out)

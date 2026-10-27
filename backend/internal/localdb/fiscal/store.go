@@ -275,6 +275,10 @@ func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 	if err != nil {
 		return Intent{}, err
 	}
+	sessionDigest := sha256.Sum256([]byte(token))
+	if _, err = tx.ExecContext(ctx, `INSERT INTO fiscal_intent_session_bindings VALUES(?,?,?,?)`, a.TenantID, a.StoreID, out.ID, sessionDigest[:]); err != nil {
+		return Intent{}, err
+	}
 	return out, tx.Commit()
 }
 

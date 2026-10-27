@@ -5,7 +5,7 @@ on:
     branches: [feat/backend-b02a-compat]
     paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py', 'tools/check_api_contracts.py', 'tools/tests/test_api_contracts.py', 'docs/api/**']
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, integration/piloto-main-20261027]
   workflow_dispatch:
 
 permissions:
@@ -70,6 +70,10 @@ jobs:
           set -euo pipefail
           go test ./... -count=1 -json > "$RUNNER_TEMP/backend-full.jsonl"
           python3 ../tools/verify_backend_acceptance.py "$RUNNER_TEMP/backend-full.jsonl" | tee "$RUNNER_TEMP/backend-integrations.json"
+      - name: Fiscal journal, session boundary and mTLS regressions with race detector
+        run: |
+          go test -race ./internal/fiscalcore -run '^TestFiscalTransportRechecks|^TestFiscalMTLS' -count=1 -timeout=5m -json > "$RUNNER_TEMP/fiscal-journal-core-race.jsonl"
+          go test -race ./internal/localapi -run '^TestFiscalTransmission' -count=1 -timeout=5m -json -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" > "$RUNNER_TEMP/fiscal-journal-local-race.jsonl"
       - name: Company trade and cash pilots with real CLI and race detector
         run: |
           set -euo pipefail
@@ -86,6 +90,8 @@ jobs:
           name: backend-pilot-${{ github.sha }}
           retention-days: 14
           path: |
+            ${{ runner.temp }}/fiscal-journal-core-race.jsonl
+            ${{ runner.temp }}/fiscal-journal-local-race.jsonl
             ${{ runner.temp }}/backend-integrations.json
             ${{ runner.temp }}/backend-full.jsonl
             ${{ runner.temp }}/pilot-cli-race.log

@@ -2254,3 +2254,27 @@ imagens e relatórios conferidos, hashes dos artefatos validados. O check
 HTTP integral ainda executava os pilotos com detector de corridas na hora
 deste registro. Não é declarado aprovado antes de sua conclusão. A alteração
 de política/documentação também precisa dos checks de sua própria revisão.
+
+## Fiscal68 — journal de homologação e barreira de restauração
+
+Trabalho separado em `feat/fiscal-homolog-journal-20261027`, base exata f492db7.
+Migração incremental68, intenção ligada à sessão original, tentativa persistida
+antes da rede, nova conferência imediatamente antes do POST, recuperação sem
+reenvio e bloqueio durável após Restore, inclusive para nova sessão/venda.
+Índice de emitente/modelo/série/número impede reutilizar registro mudando cNF.
+Produção, alocação nacional de numeração e homologação oficial não habilitadas.
+
+O escopo e os limites estão em [FISCAL_JOURNAL_20261027.md](FISCAL_JOURNAL_20261027.md).
+Esse componente não conclui motor tributário nacional, DANFE, SPED/PVA,
+NFS-e produção ou a integração completa do emissor. Nenhum serviço real foi
+selecionado; certificados e dados de teste são descartáveis. A base PR4 chegou
+a sete checks verdes, mas isso não substitui os testes desta revisão nem libera
+o merge com as credenciais antigas ainda pendentes de troca.
+
+Verificação local final fiscal68: suíte geral58pacotes/2911 resultados de
+teste e subteste, zero falhas; oito skips explícitos sem comprovação das
+integrações ausentes. -race do journal com CLI de backup real:12 funções/27
+resultados,33 comandos de backup, zero falhas. Dois testes mTLS/guard com
+-race aprovados. Vet, contratos e compilação passaram. Primeira rodada geral
+registrou oito falhas de carimbo VCS; repetição integral com carimbo omitido
+e titan-trade real passou, sem retirar testes. CI da branch própria pendente.

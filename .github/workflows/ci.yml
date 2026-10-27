@@ -7,7 +7,7 @@ on:
   push:
     branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ "main", "develop", "integration/piloto-main-20261027" ]
 
 jobs:
   backend-checks:
