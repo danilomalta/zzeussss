@@ -1,0 +1,17 @@
+﻿format_version;row_type;scope;from;to;as_of;currency;metric;metric_value;payable_id;supplier_id;supplier_name;document_reference;state;installment_id;due_on;amount_cents;timing;cash_applied_cents;outstanding_cents
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_cents;31500;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_future_cents;11900;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_cents;27500;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_future_cents;11900;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_overdue_cents;6000;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_today_cents;9600;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_overdue_cents;10000;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_today_cents;9600;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;cancelled_cents;0;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;cash_applied_cents;4000;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;installment_count;3;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;pending_cents;0;;;;;;;;;;;
+2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;rejected_cents;0;;;;;;;;;;;
+2;installment;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;;;invoice-one;supplier;Padaria;NFe-123;approved;part-one;2026-10-10;10000;overdue;4000;6000
+2;installment;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;;;invoice-one;supplier;Padaria;NFe-123;approved;part-two;2026-10-20;9600;today;0;9600
+2;installment;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;;;invoice-one;supplier;Padaria;NFe-123;approved;part-three;2026-11-20;11900;future;0;11900

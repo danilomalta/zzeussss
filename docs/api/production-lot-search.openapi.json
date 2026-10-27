@@ -1,0 +1,621 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P13 — consulta de lotes por validade",
+    "version": "P13",
+    "description": "Somente leitura; sem migracao nova; SQLite 35. Lotes sao classificacoes historicas do produto acabado, nao saldo fisico ou disponibilidade. Datas explicitamente informadas, sem relogio implicito. Sem somar quantidades de produtos/unidades diferentes."
+  },
+  "paths": {
+    "/local/v1/production/lot-search": {
+      "get": {
+        "operationId": "searchProductionLots",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "recorded",
+                "voided"
+              ]
+            },
+            "description": "Estado atual do lote; omitir inclui recorded e voided. Proibido valor vazio ou repetido."
+          },
+          {
+            "name": "quality",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "not_assessed",
+                "passed",
+                "failed"
+              ]
+            },
+            "description": "Ultimo parecer humano por revisao; not_assessed quando nenhum existe. Nao aprova venda. Proibido valor vazio ou repetido."
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+            },
+            "description": "Produto historico do lote, filtro exato. Proibido valor vazio ou repetido."
+          },
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+            },
+            "description": "Local do resultado historico, filtro exato. Proibido valor vazio ou repetido."
+          },
+          {
+            "name": "expiry",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "dated",
+                "undated"
+              ]
+            },
+            "description": "dated exige validade declarada; undated exige validade desconhecida e nao permite faixas de datas. Proibido valor vazio ou repetido."
+          },
+          {
+            "name": "expires_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "minLength": 10,
+              "maxLength": 10,
+              "description": "Data canonica YYYY-MM-DD, ano 0001..9999; validar calendario."
+            },
+            "description": "Inicio inclusivo da validade declarada; exclui lotes sem data. Proibido valor vazio ou repetido."
+          },
+          {
+            "name": "expires_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "minLength": 10,
+              "maxLength": 10,
+              "description": "Data canonica YYYY-MM-DD, ano 0001..9999; validar calendario."
+            },
+            "description": "Fim inclusivo; deve ser >= expires_from quando ambos fornecidos; exclui lotes sem data. Proibido valor vazio ou repetido."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "description": "Posicao na lista filtrada, digitos decimais, padrao 0, limite inteiro seguro. Proibido valor vazio ou repetido."
+          }
+        ],
+        "description": "Filtros combinados com AND. Empresa/loja vem da sessao; IDs ausentes no escopo resultam em pagina vazia. Ordena validade crescente, depois created_at,id; sem validade declarada ficam ao final. total_count e pagina com parecer atual sao lidos na mesma transacao. Paginas em requisicoes distintas podem mudar com novas gravacoes. Nao reserva estoque, presume validade, libera venda ou reativa lote anulado.",
+        "responses": {
+          "200": {
+            "description": "Pagina filtrada em snapshot unico; items [] em pagina vazia.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query invalida, desconhecida, repetida ou combinacao de datas invalida."
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida."
+          },
+          "403": {
+            "description": "Sem autorizacao atual ou aparelho autorizado."
+          },
+          "409": {
+            "description": "Metadados, relacao com resultado ou historico de qualidade inconsistentes nas validacoes."
+          },
+          "500": {
+            "description": "Erro interno de armazenamento."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Lots_Lot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Trimmed code, at most 64 UTF-8 bytes, no control characters. Case-sensitive and unique across all lots in this tenant/store, including voided lots."
+          },
+          "manufactured_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Explicit valid calendar date YYYY-MM-DD, year 0001..9999. No automatic source or shelf-life calculation."
+          },
+          "expires_on": {
+            "type": "string",
+            "description": "Required field: empty string means unknown; otherwise valid YYYY-MM-DD calendar date >= manufactured_on. A declaration, not proof of shelf life or availability."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "result_id",
+          "product_id",
+          "unit",
+          "quantity_milli",
+          "code",
+          "manufactured_on",
+          "expires_on",
+          "reason",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Quality_Current": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lot_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "lot_status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ],
+            "description": "Current P09 lot state. A historical passed verdict does not reactivate a voided lot."
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_assessed",
+              "passed",
+              "failed"
+            ]
+          },
+          "latest": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lot_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "revision": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              "operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "device_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "actor_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "passed",
+                  "failed"
+                ],
+                "description": "Human-declared verdict for the entire lot. No automatic inspection or stock release."
+              },
+              "criterion": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Trimmed text, at most 255 UTF-8 bytes."
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Trimmed text, at most 255 UTF-8 bytes."
+              },
+              "lot_snapshot": {
+                "$ref": "#/components/schemas/Quality_LotSnapshot"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "lot_id",
+              "revision",
+              "operation_id",
+              "device_id",
+              "actor_id",
+              "status",
+              "criterion",
+              "reason",
+              "lot_snapshot",
+              "created_at"
+            ],
+            "nullable": true,
+            "description": "Null when not_assessed revision 0; otherwise the latest persisted assessment and original lot snapshot."
+          }
+        },
+        "required": [
+          "lot_id",
+          "lot_status",
+          "revision",
+          "status",
+          "latest"
+        ]
+      },
+      "Quality_LotSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Trimmed code, at most 64 UTF-8 bytes, no control characters. Case-sensitive and unique across all lots in this tenant/store, including voided lots."
+          },
+          "manufactured_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Explicit valid calendar date YYYY-MM-DD, year 0001..9999. No automatic source or shelf-life calculation."
+          },
+          "expires_on": {
+            "type": "string",
+            "description": "Required field: empty string means unknown; otherwise valid YYYY-MM-DD calendar date >= manufactured_on. A declaration, not proof of shelf life or availability."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "result_id",
+          "product_id",
+          "unit",
+          "quantity_milli",
+          "code",
+          "manufactured_on",
+          "expires_on",
+          "reason",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Filters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "not_assessed",
+              "passed",
+              "failed"
+            ]
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "expiry": {
+            "type": "string",
+            "enum": [
+              "dated",
+              "undated"
+            ]
+          },
+          "expires_from": {
+            "type": "string",
+            "format": "date",
+            "minLength": 10,
+            "maxLength": 10,
+            "description": "Data canonica YYYY-MM-DD, ano 0001..9999; validar calendario."
+          },
+          "expires_to": {
+            "type": "string",
+            "format": "date",
+            "minLength": 10,
+            "maxLength": 10,
+            "description": "Data canonica YYYY-MM-DD, ano 0001..9999; validar calendario."
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "offset"
+        ]
+      },
+      "Item": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lot": {
+            "$ref": "#/components/schemas/Lots_Lot"
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato, ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "quality": {
+            "$ref": "#/components/schemas/Quality_Current"
+          }
+        },
+        "required": [
+          "lot",
+          "order_id",
+          "location_id",
+          "quality"
+        ]
+      },
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/Filters"
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "enum": [
+              50
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        },
+        "required": [
+          "filters",
+          "total_count",
+          "limit",
+          "has_more",
+          "items"
+        ]
+      }
+    }
+  }
+}

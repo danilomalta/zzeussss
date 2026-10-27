@@ -1,0 +1,256 @@
+{
+  "official_packages": {
+    "nfe-010g-1.03": {
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=EQhOQMgipXY%3D",
+      "zip_sha256": "b329ecbe7e4c05a41bfbc1527f105defb7047328acfeada7c77e1666da485eaf",
+      "files": {
+        "PL_010g_v1.03/Evento/e110001_v1.00.xsd": "3a46fcc6db6c673ae7bbf9767df5fa99d1f4e5b7fbec6bb9575ae358c95b1616",
+        "PL_010g_v1.03/Evento/e110300_v1.00.xsd": "3def9bd3e19dfb3e78688afc540c049dc77f6fb11ae2603d85b6e759a7908fa6",
+        "PL_010g_v1.03/Evento/tiposBasico_v1.03.xsd": "88bae738184e4af32286a4825392adf7da458dc1fa763e2feca3b90708aa7fff",
+        "PL_010g_v1.03/NFe/DFeTiposBasicos_v1.00.xsd": "2da0785a6c70db4f93571187a28514dde715cfd0b0f41e746176fbf3444549f2",
+        "PL_010g_v1.03/NFe/leiauteNFe_v4.00.xsd": "e8470f5d85ded3d99010676087907214aef71c9626140b672abbafa72656c0f5",
+        "PL_010g_v1.03/NFe/nfe_v4.00.xsd": "adce3646c13ceb54922ec3142fc1dc45bd4fb839ac35ad583e86c733c07d27df",
+        "PL_010g_v1.03/NFe/tiposBasico_v4.00.xsd": "772619c85723e598840667ca66e7298a250442df47eeb94b397d2a333ce62047",
+        "PL_010g_v1.03/NFe/xmldsig-core-schema_v1.01.xsd": "f56744a5f51c03f027de13f39f869307091781a9ef1d91b1ebe14719ce28e1ac"
+      }
+    },
+    "nfse-1.01-20260209": {
+      "url": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/documentacao-atual/nfse-esquemas_xsd-v1-01-20260209.zip",
+      "zip_sha256": "e7935cbd9470527c6cc32984c1b2263e614183bf0139ce2733eaaed2de9a8072",
+      "files": {
+        "Schemas/1.00/CNC_v1.00.xsd": "9aa2f8bff12530e3fc3ee839c2768c3f78990ca33557e20e0416ed4e40b291ec",
+        "Schemas/1.00/DPS_v1.00.xsd": "35b1efecd3a1a7eeea218f62a65becc3d27522ded22b7614e676bbf222cae651",
+        "Schemas/1.00/evento_v1.00.xsd": "3c34425d9b46b58628ecde8818f65b8c11bac958c3fc71ee1af4e9980e8bc08c",
+        "Schemas/1.00/NFSe_v1.00.xsd": "2c78fa25f38345209f2dbd0b5f2bd1be224fd92404f6c86af219c1294af455ba",
+        "Schemas/1.00/pedRegEvento_v1.00.xsd": "ded678013de82b489f19d340824e07a45b2a01995af15ef56f7d2cdd27a5b317",
+        "Schemas/1.00/tiposCnc_v1.00.xsd": "9632fde4654d17ba5f130e9163155e44085799e8147e584effd2de8632efb36b",
+        "Schemas/1.00/tiposComplexos_v1.00.xsd": "52ecf2a78ffea4cb7f35c30d5c4b6dab8a8e7e84aa4565074eef22b2ab3669e1",
+        "Schemas/1.00/tiposEventos_v1.00.xsd": "6743a30763b087f1a5da036ea2864c8798ba4d3c48a293d00ecafefe31770bdf",
+        "Schemas/1.00/tiposSimples_v1.00.xsd": "9e35101b2a29b7b09f656ee4d83ed3752bd84d4b7ae370823f24efac744d0f04",
+        "Schemas/1.00/xmldsig-core-schema.xsd": "d87432c5f6ebb2bd61a1de357797401c203f14daefde834b73946f25f926a216",
+        "Schemas/1.01/CNC_v1.00.xsd": "7032188bb6f137d52b16512583b739a361e6b1434c42cb539a29b8efa32f8321",
+        "Schemas/1.01/DPS_v1.01.xsd": "fe45e5250a48e519aba89fc6a472863b8e602ed957778fb64692804933a00d0c",
+        "Schemas/1.01/evento_v1.01.xsd": "986d0a1c4d27454f712169849aa7c2380aaa4560bd9c920e0ff03ba6599ae28b",
+        "Schemas/1.01/NFSe_v1.01.xsd": "af0bd2d8c50acba3d9c3f3f515426eca083b3f66e3211ce8dd48a7cf101818b8",
+        "Schemas/1.01/pedRegEvento_v1.01.xsd": "e90b6816d29cca0bd5ed8f86ad98d3b7b0d8bbfc11a7583e6ff8f98170fd4009",
+        "Schemas/1.01/tiposCnc_v1.00.xsd": "af606b7317824fa8fa7ad8e44bac2ad8530cd5d162ebcdec647205473c41d525",
+        "Schemas/1.01/tiposComplexos_v1.01.xsd": "e8e09d525574cc224ca6d1f8d8eb0366043ab2a3aa8d0d234058e6244d60e371",
+        "Schemas/1.01/tiposEventos_v1.01.xsd": "1b32bea21089dc232d78b62d805e9c07382f440d4e0ea2cb3fb6b82ebde68c11",
+        "Schemas/1.01/tiposSimples_v1.01.xsd": "830ea116c34d7310699e34b214b7214a65f7e5d3b1f09aeaa702f7e3f4283b17",
+        "Schemas/1.01/xmldsig-core-schema.xsd": "49848f732663aecb618d72ad6130c5c3240f0a10f3a1a8544b7d48a6c726046f"
+      }
+    },
+    "nfe-010f": {
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=8ITFuBLltXs%3D",
+      "zip_sha256": "b8589490a58a09a993a80e6ac4d7ed10f20892061ecfc56719337098d4b95998",
+      "files": {
+        "PL_010f_v1.04/DFeTiposBasicos_v1.00.xsd": "173577a4e3a9dc1d0deced85b89b955b6064bb5a4ae5a96f6727d2da8a694d09",
+        "PL_010f_v1.04/leiauteNFe_v4.00.xsd": "2bace939973916d54184ff3e2740041a932de5d79772f3363504504160f22542",
+        "PL_010f_v1.04/nfe_v4.00.xsd": "adce3646c13ceb54922ec3142fc1dc45bd4fb839ac35ad583e86c733c07d27df",
+        "PL_010f_v1.04/tiposBasico_v4.00.xsd": "772619c85723e598840667ca66e7298a250442df47eeb94b397d2a333ce62047",
+        "PL_010f_v1.04/xmldsig-core-schema_v1.01.xsd": "f56744a5f51c03f027de13f39f869307091781a9ef1d91b1ebe14719ce28e1ac"
+      }
+    },
+    "nfe-base-010b": {
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=zaSePUxCMcs%3D",
+      "zip_sha256": "2deaa8d430d0acb47deae06b9b6d1202dbb436baf3d2d3aa834a534a3d6fa1b8",
+      "files": {
+        "PL_010b_NT2025_002_v1.30/DFeTiposBasicos_v1.00.xsd": "c1c1f700de03da50c82f3fbf23db7e98929b5d1ee1bdedb4d546e33efa498ee6",
+        "PL_010b_NT2025_002_v1.30/leiauteNFe_v4.00.xsd": "160abaa6c7c18e37b8f77a8b4bc1b24ec7ec0654ad27267ad5856d14bc6fb135",
+        "PL_010b_NT2025_002_v1.30/nfe_v4.00.xsd": "66a117aaa78687fdb1355fc32a380ec859f3a98e850d7c4de5a07935eb1a6030",
+        "PL_010b_NT2025_002_v1.30/tiposBasico_v4.00.xsd": "63d393d69fb63568e39277d9794348fbe107e1c15d2dbce32fb63b6e41472c6d",
+        "PL_010b_NT2025_002_v1.30/xmldsig-core-schema_v1.01.xsd": "f56744a5f51c03f027de13f39f869307091781a9ef1d91b1ebe14719ce28e1ac"
+      }
+    },
+    "nfe-events-010d": {
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=FOEnx2KAsCk%3D",
+      "zip_sha256": "cc50170b276c23bdab88650e1c68a46fdc707c8e810664452bba974cf744e7db",
+      "files": {}
+    },
+    "nfe-cancel": {
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=0Yynu2Ck%2BbM%3D",
+      "zip_sha256": "71ccd5fcc48f9604a2a8965146df45e3b73e96e87942ab3391be0d55cc0df718",
+      "files": {
+        "Evento_Canc_PL_v1.01/e110111_v1.00.xsd": "56fcdad336b281a9de5e7aae27850bc2c5bd7714e267c891e1b4d0dc227c65da",
+        "Evento_Canc_PL_v1.01/envEventoCancNFe_v1.00.xsd": "d3f1550b1c3fa6974690cc27e5b74a55fbec3dd11ecdd2992fbcd248b015d534",
+        "Evento_Canc_PL_v1.01/eventoCancNFe_v1.00.xsd": "3e5a2840a42f1f66bbbcb21066dcde6aa90407c1ef05456ad9ac38456d96982d",
+        "Evento_Canc_PL_v1.01/leiauteEventoCancNFe_v1.00.xsd": "9426ec0d8e3ce441c78d61cf2bd8b6910b7b1cc377a0b337a5a1a9dbe438a66f",
+        "Evento_Canc_PL_v1.01/procEventoCancNFe_v1.00.xsd": "7e85da1583df86aee753400286d4aad48160846090cd6ecd2c1400fed4afaa69",
+        "Evento_Canc_PL_v1.01/retEnvEventoCancNFe_v1.00.xsd": "a0a81bf59c9c166f4061f52f8d74cd7aa21bdc1bd8c9b0e0b8bc44d0df34e665",
+        "Evento_Canc_PL_v1.01/tiposBasico_v1.03.xsd": "486f7b7e2ac053eddf87661858fbeb171f8dce2e805d501d388665269c95dbf3",
+        "Evento_Canc_PL_v1.01/xmldsig-core-schema_v1.01.xsd": "8ce2a385b593c85acf09cb03521f9e730dad2b2e6a5d02cc6f5b688ca94ce230"
+      }
+    },
+    "nfe-events-alpha": {
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=FOEnx2KAsCk%3D",
+      "zip_sha256": "cc50170b276c23bdab88650e1c68a46fdc707c8e810664452bba974cf744e7db",
+      "nested_zip": "PL_Evento.zip",
+      "nested_sha256": "7995ad7865cf3710655ee5e3162ff10bd9725358e3f67523256667e9cca6cb1a",
+      "files": {
+        "PL_Evento/envEvento_v1.00.xsd": "e4d61ba81582b5f1f9a2a4b135d33f4c1ec1c8f9138a2343a9abfffa02bb2777",
+        "PL_Evento/leiauteEvento_v1.00.xsd": "9a48df8603f685653dfde27dbda72e0f47b5d3c13be0090952f1e82f8d2bc476",
+        "PL_Evento/procEventoNFe_v1.00.xsd": "4263ee5d12e7a731efab126310aba4edb25612e5986a1c5dde0c87e6c6173798",
+        "PL_Evento/retEnvEvento_v1.00.xsd": "5eb93a244c5b26c983c08f725f8eafaa1923664a992181b9d78f60cc8523fa72",
+        "PL_Evento/tiposBasico_v1.03.xsd": "eccea0733717db3108c79f8efc7cc7ffeeba8b6c46a5948410ff012c1636b0ba",
+        "PL_Evento/tiposBasico_v4.00.xsd": "e73476a037832fa1b8aea8323de5385d8a6ac4e73f98ac5d0805735a77ec36c2",
+        "PL_Evento/xmldsig-core-schema_v1.01.xsd": "f56744a5f51c03f027de13f39f869307091781a9ef1d91b1ebe14719ce28e1ac"
+      }
+    },
+    "nfse-homolog-20261020": {
+      "url": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/producao-restrita/esquemas_prod_restrita_20261020.zip",
+      "zip_sha256": "25fdcecc651a67a216496ab10d7566631e6ed10f721e37d62c7845dadb0ea267",
+      "files": {
+        "xmldsig-core-schema.xsd": "8c9792a056aedcadfc95bf16f2d7448a35da40df71533e20aea37d0329980c48",
+        "evento_v1.01.xsd": "986d0a1c4d27454f712169849aa7c2380aaa4560bd9c920e0ff03ba6599ae28b",
+        "CNC_v1.00.xsd": "7032188bb6f137d52b16512583b739a361e6b1434c42cb539a29b8efa32f8321",
+        "NFSe_v1.01.xsd": "af0bd2d8c50acba3d9c3f3f515426eca083b3f66e3211ce8dd48a7cf101818b8",
+        "tiposSimples_v1.01.xsd": "562e326724f85cd7c41176d35e67c542376784d4c950ec1719704d480a8af226",
+        "tiposComplexos_v1.01.xsd": "4f66f7c15bd3b05b3a16cbe5fa671b90c10e4c9c74276038730be1c8c794b721",
+        "DPS_v1.01.xsd": "fe45e5250a48e519aba89fc6a472863b8e602ed957778fb64692804933a00d0c",
+        "tiposCnc_v1.00.xsd": "af606b7317824fa8fa7ad8e44bac2ad8530cd5d162ebcdec647205473c41d525",
+        "pedRegEvento_v1.01.xsd": "e90b6816d29cca0bd5ed8f86ad98d3b7b0d8bbfc11a7583e6ff8f98170fd4009",
+        "tiposEventos_v1.01.xsd": "1b32bea21089dc232d78b62d805e9c07382f440d4e0ea2cb3fb6b82ebde68c11"
+      }
+    }
+  },
+  "embedded": {
+    "nfe400/nfe_v4.00.xsd": {
+      "original": "official/nfe-010g-1.03/PL_010g_v1.03/NFe/nfe_v4.00.xsd",
+      "sha256": "adce3646c13ceb54922ec3142fc1dc45bd4fb839ac35ad583e86c733c07d27df"
+    },
+    "nfe400/DFeTiposBasicos_v1.00.xsd": {
+      "original": "official/nfe-010g-1.03/PL_010g_v1.03/NFe/DFeTiposBasicos_v1.00.xsd",
+      "sha256": "2da0785a6c70db4f93571187a28514dde715cfd0b0f41e746176fbf3444549f2"
+    },
+    "nfe400/leiauteNFe_v4.00.xsd": {
+      "original": "official/nfe-010g-1.03/PL_010g_v1.03/NFe/leiauteNFe_v4.00.xsd",
+      "sha256": "e8470f5d85ded3d99010676087907214aef71c9626140b672abbafa72656c0f5"
+    },
+    "nfe400/tiposBasico_v4.00.xsd": {
+      "original": "official/nfe-010g-1.03/PL_010g_v1.03/NFe/tiposBasico_v4.00.xsd",
+      "sha256": "772619c85723e598840667ca66e7298a250442df47eeb94b397d2a333ce62047"
+    },
+    "nfe400/xmldsig-core-schema_v1.01.xsd": {
+      "original": "official/nfe-010g-1.03/PL_010g_v1.03/NFe/xmldsig-core-schema_v1.01.xsd",
+      "sha256": "f56744a5f51c03f027de13f39f869307091781a9ef1d91b1ebe14719ce28e1ac"
+    },
+    "nfse101/xmldsig-core-schema.xsd": {
+      "original": "official/nfse-1.01-20260209/Schemas/1.01/xmldsig-core-schema.xsd",
+      "sha256": "49848f732663aecb618d72ad6130c5c3240f0a10f3a1a8544b7d48a6c726046f"
+    },
+    "nfse101/evento_v1.01.xsd": {
+      "original": "official/nfse-1.01-20260209/Schemas/1.01/evento_v1.01.xsd",
+      "sha256": "986d0a1c4d27454f712169849aa7c2380aaa4560bd9c920e0ff03ba6599ae28b"
+    },
+    "nfse101/CNC_v1.00.xsd": {
+      "original": "official/nfse-1.01-20260209/Schemas/1.01/CNC_v1.00.xsd",
+      "sha256": "7032188bb6f137d52b16512583b739a361e6b1434c42cb539a29b8efa32f8321"
+    },
+    "nfse101/NFSe_v1.01.xsd": {
+      "original": "official/nfse-1.01-20260209/Schemas/1.01/NFSe_v1.01.xsd",
+      "sha256": "af0bd2d8c50acba3d9c3f3f515426eca083b3f66e3211ce8dd48a7cf101818b8"
+    },
+    "nfse101/tiposSimples_v1.01.xsd": {
+      "original": "official/nfse-1.01-20260209/Schemas/1.01/tiposSimples_v1.01.xsd",
+      "sha256": "830ea116c34d7310699e34b214b7214a65f7e5d3b1f09aeaa702f7e3f4283b17"
+    },
+    "nfse101/tiposComplexos_v1.01.xsd": {
+      "original": "official/nfse-1.01-20260209/Schemas/1.01/tiposComplexos_v1.01.xsd",
+      "sha256": "e8e09d525574cc224ca6d1f8d8eb0366043ab2a3aa8d0d234058e6244d60e371"
+    },
+    "nfse101/DPS_v1.01.xsd": {
+      "original": "official/nfse-1.01-20260209/Schemas/1.01/DPS_v1.01.xsd",
+      "sha256": "fe45e5250a48e519aba89fc6a472863b8e602ed957778fb64692804933a00d0c"
+    },
+    "nfse101/tiposCnc_v1.00.xsd": {
+      "original": "official/nfse-1.01-20260209/Schemas/1.01/tiposCnc_v1.00.xsd",
+      "sha256": "af606b7317824fa8fa7ad8e44bac2ad8530cd5d162ebcdec647205473c41d525"
+    },
+    "nfse101/pedRegEvento_v1.01.xsd": {
+      "original": "official/nfse-1.01-20260209/Schemas/1.01/pedRegEvento_v1.01.xsd",
+      "sha256": "e90b6816d29cca0bd5ed8f86ad98d3b7b0d8bbfc11a7583e6ff8f98170fd4009"
+    },
+    "nfse101/tiposEventos_v1.01.xsd": {
+      "original": "official/nfse-1.01-20260209/Schemas/1.01/tiposEventos_v1.01.xsd",
+      "sha256": "1b32bea21089dc232d78b62d805e9c07382f440d4e0ea2cb3fb6b82ebde68c11"
+    },
+    "events100/procEventoNFe_v1.00.xsd": {
+      "original": "official/nfe-events-alpha/PL_Evento/procEventoNFe_v1.00.xsd",
+      "sha256": "4263ee5d12e7a731efab126310aba4edb25612e5986a1c5dde0c87e6c6173798"
+    },
+    "events100/tiposBasico_v1.03.xsd": {
+      "original": "official/nfe-events-alpha/PL_Evento/tiposBasico_v1.03.xsd",
+      "sha256": "eccea0733717db3108c79f8efc7cc7ffeeba8b6c46a5948410ff012c1636b0ba"
+    },
+    "events100/envEvento_v1.00.xsd": {
+      "original": "official/nfe-events-alpha/PL_Evento/envEvento_v1.00.xsd",
+      "sha256": "e4d61ba81582b5f1f9a2a4b135d33f4c1ec1c8f9138a2343a9abfffa02bb2777"
+    },
+    "events100/retEnvEvento_v1.00.xsd": {
+      "original": "official/nfe-events-alpha/PL_Evento/retEnvEvento_v1.00.xsd",
+      "sha256": "5eb93a244c5b26c983c08f725f8eafaa1923664a992181b9d78f60cc8523fa72"
+    },
+    "events100/leiauteEvento_v1.00.xsd": {
+      "original": "official/nfe-events-alpha/PL_Evento/leiauteEvento_v1.00.xsd",
+      "sha256": "9a48df8603f685653dfde27dbda72e0f47b5d3c13be0090952f1e82f8d2bc476"
+    },
+    "events100/tiposBasico_v4.00.xsd": {
+      "original": "official/nfe-events-alpha/PL_Evento/tiposBasico_v4.00.xsd",
+      "sha256": "e73476a037832fa1b8aea8323de5385d8a6ac4e73f98ac5d0805735a77ec36c2"
+    },
+    "events100/xmldsig-core-schema_v1.01.xsd": {
+      "original": "official/nfe-events-alpha/PL_Evento/xmldsig-core-schema_v1.01.xsd",
+      "sha256": "f56744a5f51c03f027de13f39f869307091781a9ef1d91b1ebe14719ce28e1ac"
+    },
+    "events100/e110111_v1.00.xsd": {
+      "original": "official/nfe-cancel/Evento_Canc_PL_v1.01/e110111_v1.00.xsd",
+      "sha256": "56fcdad336b281a9de5e7aae27850bc2c5bd7714e267c891e1b4d0dc227c65da"
+    },
+    "nfseHomolog20261020/xmldsig-core-schema.xsd": {
+      "original": "official/nfse-homolog-20261020/xmldsig-core-schema.xsd",
+      "sha256": "8c9792a056aedcadfc95bf16f2d7448a35da40df71533e20aea37d0329980c48"
+    },
+    "nfseHomolog20261020/evento_v1.01.xsd": {
+      "original": "official/nfse-homolog-20261020/evento_v1.01.xsd",
+      "sha256": "986d0a1c4d27454f712169849aa7c2380aaa4560bd9c920e0ff03ba6599ae28b"
+    },
+    "nfseHomolog20261020/CNC_v1.00.xsd": {
+      "original": "official/nfse-homolog-20261020/CNC_v1.00.xsd",
+      "sha256": "7032188bb6f137d52b16512583b739a361e6b1434c42cb539a29b8efa32f8321"
+    },
+    "nfseHomolog20261020/NFSe_v1.01.xsd": {
+      "original": "official/nfse-homolog-20261020/NFSe_v1.01.xsd",
+      "sha256": "af0bd2d8c50acba3d9c3f3f515426eca083b3f66e3211ce8dd48a7cf101818b8"
+    },
+    "nfseHomolog20261020/tiposSimples_v1.01.xsd": {
+      "original": "official/nfse-homolog-20261020/tiposSimples_v1.01.xsd",
+      "sha256": "562e326724f85cd7c41176d35e67c542376784d4c950ec1719704d480a8af226"
+    },
+    "nfseHomolog20261020/tiposComplexos_v1.01.xsd": {
+      "original": "official/nfse-homolog-20261020/tiposComplexos_v1.01.xsd",
+      "sha256": "4f66f7c15bd3b05b3a16cbe5fa671b90c10e4c9c74276038730be1c8c794b721"
+    },
+    "nfseHomolog20261020/DPS_v1.01.xsd": {
+      "original": "official/nfse-homolog-20261020/DPS_v1.01.xsd",
+      "sha256": "fe45e5250a48e519aba89fc6a472863b8e602ed957778fb64692804933a00d0c"
+    },
+    "nfseHomolog20261020/tiposCnc_v1.00.xsd": {
+      "original": "official/nfse-homolog-20261020/tiposCnc_v1.00.xsd",
+      "sha256": "af606b7317824fa8fa7ad8e44bac2ad8530cd5d162ebcdec647205473c41d525"
+    },
+    "nfseHomolog20261020/pedRegEvento_v1.01.xsd": {
+      "original": "official/nfse-homolog-20261020/pedRegEvento_v1.01.xsd",
+      "sha256": "e90b6816d29cca0bd5ed8f86ad98d3b7b0d8bbfc11a7583e6ff8f98170fd4009"
+    },
+    "nfseHomolog20261020/tiposEventos_v1.01.xsd": {
+      "original": "official/nfse-homolog-20261020/tiposEventos_v1.01.xsd",
+      "sha256": "1b32bea21089dc232d78b62d805e9c07382f440d4e0ea2cb3fb6b82ebde68c11"
+    }
+  },
+  "generated_root_bindings": {
+    "events100/evento_root.xsd": {
+      "purpose": "Root evento bound to the unmodified official TEvento type; does not remove/add fields or constraints.",
+      "sha256": "5829a578c254655afde0ddeaf5764e18d26cfbca151d59688fd47ee5de87b4a7"
+    }
+  }
+}

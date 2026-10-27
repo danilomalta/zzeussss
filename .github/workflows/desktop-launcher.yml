@@ -1,0 +1,36 @@
+name: Desktop launcher and runtime checks
+
+on:
+  push:
+    branches: [feat/backend-checkout-authority]
+    paths: ['desktop/**', '.github/workflows/desktop-launcher.yml']
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    name: Desktop runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Runtime boundaries, compiled integrity and no automatic build
+        run: |
+          set -euo pipefail
+          node --test --test-isolation=none desktop/tests/*.test.cjs | tee "$RUNNER_TEMP/desktop-runtime.log"
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: desktop-runtime-${{ github.sha }}
+          retention-days: 14
+          path: ${{ runner.temp }}/desktop-runtime.log

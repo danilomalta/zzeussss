@@ -36,3 +36,7 @@ docker-compose.override.yml
 # Helpers de demonstracao Python
 __pycache__/
 *.pyc
+
+# Compiled desktop stages and installer output are CI artifacts, not source.
+/desktop/.build/
+/desktop/release/

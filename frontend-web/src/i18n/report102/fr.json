@@ -1,0 +1,13 @@
+{
+  "details": "Voir le détail de clôture",
+  "balanced": "Aucun écart de caisse",
+  "shortage": "Manque dans les espèces comptées",
+  "surplus": "Excédent dans les espèces comptées",
+  "localPrint": "Imprimer la vérification locale",
+  "localExport": "Télécharger la vérification locale CSV",
+  "previous": "Anciens enregistrements de clôture",
+  "previousNote": "Enregistrement sauvegardé précédemment ; il peut différer de la situation actuelle du serveur.",
+  "localTitle": "Vérification sur cet ordinateur",
+  "localNote": "Les reçus et les sacs aident à vérifier. Ils ne modifient pas le résultat officiel et ne confirment pas les paiements bancaires.",
+  "paymentDetails": "Voir la vérification des paiements"
+}

@@ -1,0 +1,103 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem closed cash journal CSV export",
+    "version": "B02B5",
+    "description": "Read-only local cash-operational export, original operator/store/device and Sell permission. History does not require active POS license. Source validation, summary and ALL entries share one SQLite snapshot; the response is buffered before attachment headers are set. No bank/provider confirmation, statutory accounting, fiscal document or frontend button. Text fields are unchanged: nonempty cells must start with a Unicode letter/digit or underscore, contain no controls, be valid UTF-8 and at most4096 bytes; otherwise422, not apostrophe escaping or silently changing IDs. Canonical JSON history remains available. Spreadsheet opening/save/reopen has not been tested on real Excel/LibreOffice. IDs/dates should be imported as text; CSV does not declare spreadsheet cell types."
+  },
+  "paths": {
+    "/local/v1/cash/sessions/{id}/journal.csv": {
+      "get": {
+        "operationId": "exportClosedCashJournalCSV",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete UTF-8 CSV, semicolon delimiter, BOM, CRLF; fixed attachment filename. One summary row then one row per entry. All monetary columns are exact INTEGER CENTS, not currency decimals. Empty optional actor/operation means unknown. Summary-only columns are empty in entry rows. format_version=1, scope=cash_operational. No pagination or partial file.",
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "attachment; filename=\"titan-caixa-lancamentos.csv\""
+                  ]
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "nosniff"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "description": "Columns in order: format_version;row_type;scope;session_id;entry_id;source_kind;source_id;category;operation_id;actor_id;occurred_at;cash_delta_cents;debit_account;credit_account;amount_cents;total_entries;expected_cents;declared_cents;difference_cents;total_debit_cents;total_credit_cents;unclassified_count"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID, any query parameter or GET body"
+          },
+          "401": {
+            "description": "Invalid/revoked session or device"
+          },
+          "403": {
+            "description": "Sell permission denied"
+          },
+          "404": {
+            "description": "Not found or outside original operator/store/device scope"
+          },
+          "409": {
+            "description": "Open session or inconsistent cash/source/closure history"
+          },
+          "413": {
+            "description": "More than 10000 journal entries or more than 16 MiB encoded CSV; no truncation"
+          },
+          "422": {
+            "description": "Exact integer range exceeded, or text cannot round-trip safely in CSV"
+          },
+          "500": {
+            "description": "Storage unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

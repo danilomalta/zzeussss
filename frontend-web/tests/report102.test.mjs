@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
+test('report102 has matching nonempty keys in five languages',()=>{let base;for(const lang of ['pt-BR','en','es','fr','zh-CN']){const v=JSON.parse(fs.readFileSync(new URL('../src/i18n/report102/'+lang+'.json',import.meta.url)));if(base)assert.deepEqual(Object.keys(v).sort(),base);base=Object.keys(v).sort();assert.ok(Object.values(v).every(x=>typeof x==='string'&&x.trim().length));}});

@@ -1,0 +1,284 @@
+{
+  "description": "Requests executed by TestSupplyCyclePublishedExamplesMatchRealHandlers. Disposable preconditions: approved order order for 5000 unit-milli, active supplier, local receiving authorization, receiving-room, owner and independent manager, licensed modules. No external supplier/fiscal/payment provider. expected_subset intentionally omits generated IDs/timestamps; it is not a complete response.",
+  "steps": [
+    {
+      "name": "manual_supplier_evidence",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/order/supplier-decisions",
+      "body": {
+        "operation_id": "decision-example",
+        "expected_revision": 0,
+        "decision": "confirmed",
+        "accepted_milli": 5000,
+        "promised_at": "2026-11-01T12:00:00Z",
+        "contact": "Fornecedor externo por telefone",
+        "evidence_reference": "protocolo-manual-123",
+        "observed_at": "2026-10-22T12:00:00Z",
+        "reason": "Resposta registrada pelo responsavel"
+      },
+      "status": 200,
+      "expected_subset": {
+        "decision": {
+          "revision": 1,
+          "evidence_mode": "manual_external",
+          "external_verified": false
+        }
+      }
+    },
+    {
+      "name": "plan_named_partial_delivery",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/purchase-orders/order/deliveries",
+      "body": {
+        "operation_id": "plan-example",
+        "delivery_id": "example-trip",
+        "decision_revision": 1,
+        "delivery_reference": "delivery-example",
+        "planned_milli": 3000,
+        "appointment_id": "",
+        "window_evidence_reference": "",
+        "receiving_case_id": "",
+        "reason": "Entrega parcial aprovada"
+      },
+      "status": 200,
+      "expected_subset": {
+        "delivery": {
+          "state": "planned",
+          "revision": 1,
+          "planned_milli": 3000
+        }
+      }
+    },
+    {
+      "name": "load",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/purchase-deliveries/example-trip/actions",
+      "body": {
+        "operation_id": "example-load",
+        "expected_revision": 1,
+        "action": "load",
+        "evidence_reference": "manual-check-load",
+        "observed_at": "2026-10-22T12:00:00Z",
+        "reason": "Conferencia manual registrada"
+      },
+      "status": 200,
+      "expected_subset": {
+        "delivery": {
+          "state": "loaded",
+          "revision": 2
+        },
+        "action_evidence": {
+          "evidence_reference": "manual-check-load"
+        }
+      }
+    },
+    {
+      "name": "arrive",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/purchase-deliveries/example-trip/actions",
+      "body": {
+        "operation_id": "example-arrive",
+        "expected_revision": 2,
+        "action": "arrive",
+        "evidence_reference": "manual-check-arrive",
+        "observed_at": "2026-10-22T12:00:00Z",
+        "reason": "Conferencia manual registrada"
+      },
+      "status": 200,
+      "expected_subset": {
+        "delivery": {
+          "state": "arrived",
+          "revision": 3
+        },
+        "action_evidence": {
+          "evidence_reference": "manual-check-arrive"
+        }
+      }
+    },
+    {
+      "name": "atomic_checked_receiving",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/purchase-deliveries/example-trip/receive",
+      "body": {
+        "operation_id": "receive-example",
+        "expected_revision": 3,
+        "location_id": "receiving-room",
+        "delivered_milli": 3000,
+        "accepted_milli": 2500,
+        "reason": "500 recusados na conferencia"
+      },
+      "status": 200,
+      "expected_subset": {
+        "receipt": {
+          "accepted_milli": 2500,
+          "delivered_milli": 3000
+        },
+        "delivery": {
+          "state": "received",
+          "revision": 4
+        }
+      }
+    },
+    {
+      "name": "original_receiving_receipt",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/purchase-cycle-operations/receive-example",
+      "body": null,
+      "status": 200,
+      "expected_subset": {
+        "operation_id": "receive-example",
+        "repeated": false,
+        "delivery": {
+          "revision": 4
+        }
+      }
+    },
+    {
+      "name": "exact_receiving_retry",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/purchase-deliveries/example-trip/receive",
+      "body": {
+        "operation_id": "receive-example",
+        "expected_revision": 3,
+        "location_id": "receiving-room",
+        "delivered_milli": 3000,
+        "accepted_milli": 2500,
+        "reason": "500 recusados na conferencia"
+      },
+      "status": 200,
+      "expected_subset": {
+        "operation_id": "receive-example",
+        "repeated": true,
+        "receipt": {
+          "accepted_milli": 2500
+        }
+      }
+    },
+    {
+      "name": "atomic_pending_obligation",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/purchase-deliveries/example-trip/payable",
+      "body": {
+        "operation_id": "finance-example",
+        "expected_revision": 4,
+        "payable_id": "example-payable",
+        "document_reference": "document-example",
+        "source_reference": "Documento recebido e conferido manualmente",
+        "description": "Obrigacao pela mercadoria aceita",
+        "issued_on": "2026-10-01",
+        "currency": "BRL",
+        "total_cents": 31500,
+        "installments": [
+          {
+            "id": "part-one",
+            "due_on": "2026-10-10",
+            "amount_cents": 10000
+          },
+          {
+            "id": "part-two",
+            "due_on": "2026-10-20",
+            "amount_cents": 9600
+          },
+          {
+            "id": "part-three",
+            "due_on": "2026-11-20",
+            "amount_cents": 11900
+          }
+        ]
+      },
+      "status": 200,
+      "expected_subset": {
+        "payable": {
+          "state": "pending",
+          "total_cents": 31500
+        },
+        "origin": {
+          "payable_id": "example-payable",
+          "review_required": false,
+          "fiscal_authorization_verified": false
+        }
+      }
+    },
+    {
+      "name": "independent_financial_approval",
+      "actor": "reviewer",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/example-payable/approve",
+      "body": {
+        "operation_id": "example-approve",
+        "reason": "Conferencia independente do documento e parcelas"
+      },
+      "status": 200,
+      "expected_subset": {
+        "payable": {
+          "state": "approved",
+          "total_cents": 31500
+        }
+      }
+    },
+    {
+      "name": "original_finance_receipt_preserved",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/purchase-cycle-operations/finance-example",
+      "body": null,
+      "status": 200,
+      "expected_subset": {
+        "payable": {
+          "state": "pending",
+          "total_cents": 31500
+        }
+      }
+    },
+    {
+      "name": "protected_financial_origin",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/finance/receiving-origins/example-payable",
+      "body": null,
+      "status": 200,
+      "expected_subset": {
+        "amount_cents": 31500,
+        "review_required": false,
+        "fiscal_authorization_verified": false
+      }
+    },
+    {
+      "name": "physical_history_page",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/purchase-deliveries/example-trip/history?limit=2&offset=2",
+      "body": null,
+      "status": 200,
+      "expected_subset": {
+        "total": 4,
+        "limit": 2,
+        "offset": 2,
+        "has_more": false
+      }
+    },
+    {
+      "name": "complete_physical_totals_paged_deliveries",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/purchase-orders/order/supply-cycle?limit=1",
+      "body": null,
+      "status": 200,
+      "expected_subset": {
+        "total": 1,
+        "planned_milli": 5000,
+        "effective_accepted_milli": 2500,
+        "remaining_order_milli": 2500,
+        "allocated_milli": 2500
+      }
+    }
+  ]
+}

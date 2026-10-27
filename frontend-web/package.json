@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "test:local": "node --test tests/localClient.test.mjs tests/localPOS.test.mjs tests/localManagement.test.mjs tests/localAccess.test.mjs tests/localPurchases.test.mjs tests/localReplenishment.test.mjs tests/localCartEditing.test.mjs tests/localCatalogSearch.test.mjs tests/localComparison.test.mjs",
+    "test:local": "node --test tests/localClient.test.mjs tests/localPOS.test.mjs tests/localManagement.test.mjs tests/localAccess.test.mjs tests/localPurchases.test.mjs tests/localReplenishment.test.mjs tests/localCartEditing.test.mjs tests/localCatalogSearch.test.mjs tests/localComparison.test.mjs tests/localQuote.test.mjs tests/checkout96.test.mjs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:all": "node --test tests/*.test.mjs",
+    "test:returns65": "node --test tests/customerReturns65.test.mjs tests/officialReturns65.test.mjs tests/official101.test.mjs"
   },
   "dependencies": {
     "axios": "^1.16.1",

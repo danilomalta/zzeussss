@@ -1,0 +1,2279 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan local — management and production supplement",
+    "version": "2026-10-22.1"
+  },
+  "paths": {
+    "/local/v1/management/sales/products": {
+      "get": {
+        "operationId": "management_sales_products",
+        "description": "view_accounting; half-open periods <=366d each; automatic previous equal-duration period unless BOTH compare bounds supplied. CSV is current page. ABC: same-store revenue, descending stable ID tie-break, previous cumulative <80% A/<95% B/otherwise C. Not profit, bank receipt, cross-business ranking or automatic seasonal model. Different durations suppress percent change. Maximum100000 source rows; invalid stored dates fail explicitly.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot read-only; not a write authorization",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown fields or unsafe bounds"
+          },
+          "401": {
+            "description": "Session missing or no longer valid"
+          },
+          "403": {
+            "description": "Permission/device denied"
+          },
+          "404": {
+            "description": "Reference absent in current scope"
+          },
+          "409": {
+            "description": "Source integrity/unit inconsistency"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "422": {
+            "description": "Sales source over 100000 rows; narrow period"
+          },
+          "500": {
+            "description": "Internal failure; no synthetic success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "compare_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "compare_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/management/stock/positions": {
+      "get": {
+        "operationId": "management_stock_positions",
+        "description": "manage_stock; valuation additionally view_accounting. One location; physical/reserved/free in one snapshot. Current catalog material valuation, PAGE totals only; no historical/financial posting. Costs zero require review. Non-financial route does not query costs.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot read-only; not a write authorization",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown fields or unsafe bounds"
+          },
+          "401": {
+            "description": "Session missing or no longer valid"
+          },
+          "403": {
+            "description": "Permission/device denied"
+          },
+          "404": {
+            "description": "Reference absent in current scope"
+          },
+          "409": {
+            "description": "Source integrity/unit inconsistency"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "422": {
+            "description": "Sales source over 100000 rows; narrow period"
+          },
+          "500": {
+            "description": "Internal failure; no synthetic success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/management/stock/valuation": {
+      "get": {
+        "operationId": "management_stock_valuation",
+        "description": "manage_stock; valuation additionally view_accounting. One location; physical/reserved/free in one snapshot. Current catalog material valuation, PAGE totals only; no historical/financial posting. Costs zero require review. Non-financial route does not query costs.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot read-only; not a write authorization",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown fields or unsafe bounds"
+          },
+          "401": {
+            "description": "Session missing or no longer valid"
+          },
+          "403": {
+            "description": "Permission/device denied"
+          },
+          "404": {
+            "description": "Reference absent in current scope"
+          },
+          "409": {
+            "description": "Source integrity/unit inconsistency"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "422": {
+            "description": "Sales source over 100000 rows; narrow period"
+          },
+          "500": {
+            "description": "Internal failure; no synthetic success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/management/sales/products.csv": {
+      "get": {
+        "operationId": "management_sales_products_csv",
+        "description": "view_accounting; half-open periods <=366d each; automatic previous equal-duration period unless BOTH compare bounds supplied. CSV is current page. ABC: same-store revenue, descending stable ID tie-break, previous cumulative <80% A/<95% B/otherwise C. Not profit, bank receipt, cross-business ranking or automatic seasonal model. Different durations suppress percent change. Maximum100000 source rows; invalid stored dates fail explicitly.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot read-only; not a write authorization",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown fields or unsafe bounds"
+          },
+          "401": {
+            "description": "Session missing or no longer valid"
+          },
+          "403": {
+            "description": "Permission/device denied"
+          },
+          "404": {
+            "description": "Reference absent in current scope"
+          },
+          "409": {
+            "description": "Source integrity/unit inconsistency"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "422": {
+            "description": "Sales source over 100000 rows; narrow period"
+          },
+          "500": {
+            "description": "Internal failure; no synthetic success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "compare_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "compare_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/management/stock/positions.csv": {
+      "get": {
+        "operationId": "management_stock_positions_csv",
+        "description": "manage_stock; valuation additionally view_accounting. One location; physical/reserved/free in one snapshot. Current catalog material valuation, PAGE totals only; no historical/financial posting. Costs zero require review. Non-financial route does not query costs.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot read-only; not a write authorization",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown fields or unsafe bounds"
+          },
+          "401": {
+            "description": "Session missing or no longer valid"
+          },
+          "403": {
+            "description": "Permission/device denied"
+          },
+          "404": {
+            "description": "Reference absent in current scope"
+          },
+          "409": {
+            "description": "Source integrity/unit inconsistency"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "422": {
+            "description": "Sales source over 100000 rows; narrow period"
+          },
+          "500": {
+            "description": "Internal failure; no synthetic success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/management/stock/valuation.csv": {
+      "get": {
+        "operationId": "management_stock_valuation_csv",
+        "description": "manage_stock; valuation additionally view_accounting. One location; physical/reserved/free in one snapshot. Current catalog material valuation, PAGE totals only; no historical/financial posting. Costs zero require review. Non-financial route does not query costs.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot read-only; not a write authorization",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown fields or unsafe bounds"
+          },
+          "401": {
+            "description": "Session missing or no longer valid"
+          },
+          "403": {
+            "description": "Permission/device denied"
+          },
+          "404": {
+            "description": "Reference absent in current scope"
+          },
+          "409": {
+            "description": "Source integrity/unit inconsistency"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "422": {
+            "description": "Sales source over 100000 rows; narrow period"
+          },
+          "500": {
+            "description": "Internal failure; no synthetic success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/management/inventories/{id}/variance": {
+      "get": {
+        "operationId": "management_inventory_variance",
+        "description": "manage_stock + view_accounting. Recorded differences at current catalog costs; unknown counts null, uncounted/equal/shortage/surplus separate. Does not approve inventory, post loss or change physical stock.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot read-only; not a write authorization",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VarianceReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown fields or unsafe bounds"
+          },
+          "401": {
+            "description": "Session missing or no longer valid"
+          },
+          "403": {
+            "description": "Permission/device denied"
+          },
+          "404": {
+            "description": "Reference absent in current scope"
+          },
+          "409": {
+            "description": "Source integrity/unit inconsistency"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "422": {
+            "description": "Sales source over 100000 rows; narrow period"
+          },
+          "500": {
+            "description": "Internal failure; no synthetic success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/management/production/simultaneous-plan": {
+      "post": {
+        "operationId": "management_simultaneous_plan",
+        "description": "manage_production; 1..20 unique versions, positive exact batches. Sum shared ingredient requirements before comparing all against the same current free-stock snapshot. No order or reservation; caller must use existing official flow later.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot read-only; not a write authorization",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimultaneousPlan"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown fields or unsafe bounds"
+          },
+          "401": {
+            "description": "Session missing or no longer valid"
+          },
+          "403": {
+            "description": "Permission/device denied"
+          },
+          "404": {
+            "description": "Reference absent in current scope"
+          },
+          "409": {
+            "description": "Source integrity/unit inconsistency"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "422": {
+            "description": "Sales source over 100000 rows; narrow period"
+          },
+          "500": {
+            "description": "Internal failure; no synthetic success"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimultaneousInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/management/production/recipe-versions/{id}/cost-scenario": {
+      "post": {
+        "operationId": "management_cost_scenario",
+        "description": "manage_production + view_accounting. batches required. Other fields optional but supplied null invalid. Labor/overhead refer to ENTIRE RUN. minutes0..525600,workers1..10000,hourly cost nonnegative. Omitted components unknown. Contribution only when labor AND overhead supplied; price0 has no margin percent. Margin basis-points truncate toward zero. Current-material/user-assumption estimate, never actual historical cost or net profit.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot read-only; not a write authorization",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CostScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown fields or unsafe bounds"
+          },
+          "401": {
+            "description": "Session missing or no longer valid"
+          },
+          "403": {
+            "description": "Permission/device denied"
+          },
+          "404": {
+            "description": "Reference absent in current scope"
+          },
+          "409": {
+            "description": "Source integrity/unit inconsistency"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "422": {
+            "description": "Sales source over 100000 rows; narrow period"
+          },
+          "500": {
+            "description": "Internal failure; no synthetic success"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CostScenarioInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/management/replenishment/preview": {
+      "post": {
+        "operationId": "management_restock_preview",
+        "description": "manage_stock + manage_replenishment. All six fields required. Existing human restock policy required; no creation. 1h..366d demand window. lead0..365d,coverage1..365d,safety nonnegative. Current stock across up to500 local-store locations, less reservations; max100000 sale item rows. Unit products ceil to whole units. Suggested minimum=max(policy_min,ceil(daily*lead+safety));target=max(policy_target,ceil(daily*(lead+coverage)+safety)); suggestion=max(0,target-free) only at/below minimum. Human approval still mandatory; never sends order or changes policy.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot read-only; not a write authorization",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestockPreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown fields or unsafe bounds"
+          },
+          "401": {
+            "description": "Session missing or no longer valid"
+          },
+          "403": {
+            "description": "Permission/device denied"
+          },
+          "404": {
+            "description": "Reference absent in current scope"
+          },
+          "409": {
+            "description": "Source integrity/unit inconsistency"
+          },
+          "413": {
+            "description": "Body too large"
+          },
+          "422": {
+            "description": "Sales source over 100000 rows; narrow period"
+          },
+          "500": {
+            "description": "Internal failure; no synthetic success"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestockPreviewInput"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Availability": {
+        "additionalProperties": false,
+        "properties": {
+          "free_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "physical_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "reserved_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "location_id",
+          "unit",
+          "physical_milli",
+          "reserved_milli",
+          "free_milli"
+        ],
+        "type": "object"
+      },
+      "CostScenario": {
+        "additionalProperties": false,
+        "properties": {
+          "all_requested_components_provided": {
+            "type": "boolean"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "historical_cost": {
+            "type": "boolean"
+          },
+          "known_cost_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "known_cost_cents_exact": {
+            "$ref": "#/components/schemas/ExactCost"
+          },
+          "known_unit_cost_cents_exact": {
+            "$ref": "#/components/schemas/ExactCost"
+          },
+          "labor_cents_exact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExactCost"
+              }
+            ],
+            "nullable": true
+          },
+          "materials": {
+            "$ref": "#/components/schemas/MaterialCostEstimate"
+          },
+          "overhead_cents": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "profit": {
+            "type": "boolean"
+          },
+          "scenario_contribution_cents_exact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExactCost"
+              }
+            ],
+            "nullable": true
+          },
+          "scenario_margin_basis_points": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "scenario_revenue_cents_exact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExactCost"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "materials",
+          "basis",
+          "labor_cents_exact",
+          "overhead_cents",
+          "known_cost_cents_exact",
+          "known_cost_cents",
+          "known_unit_cost_cents_exact",
+          "scenario_revenue_cents_exact",
+          "scenario_contribution_cents_exact",
+          "scenario_margin_basis_points",
+          "all_requested_components_provided",
+          "historical_cost",
+          "profit"
+        ],
+        "type": "object"
+      },
+      "CostScenarioInput": {
+        "additionalProperties": false,
+        "properties": {
+          "batches": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "labor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LaborScenario"
+              }
+            ]
+          },
+          "overhead_cents": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ]
+          },
+          "sale_price_cents": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ]
+          }
+        },
+        "required": [
+          "batches"
+        ],
+        "type": "object"
+      },
+      "ExactCost": {
+        "additionalProperties": false,
+        "properties": {
+          "denominator": {
+            "type": "string"
+          },
+          "numerator": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "numerator",
+          "denominator"
+        ],
+        "type": "object"
+      },
+      "LaborScenario": {
+        "additionalProperties": false,
+        "properties": {
+          "hourly_cost_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "minutes": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "workers": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "minutes",
+          "workers",
+          "hourly_cost_cents"
+        ],
+        "type": "object"
+      },
+      "Line": {
+        "additionalProperties": false,
+        "properties": {
+          "counted_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "counted_by": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "counted_milli": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "difference_milli": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "movement_id": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "previous_milli": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "counted_milli",
+          "previous_milli",
+          "difference_milli",
+          "counted_by",
+          "counted_at",
+          "movement_id"
+        ],
+        "type": "object"
+      },
+      "MaterialCostEstimate": {
+        "additionalProperties": false,
+        "properties": {
+          "batches": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "is_complete": {
+            "type": "boolean"
+          },
+          "labor_cost_cents": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/MaterialCostLine"
+            },
+            "type": "array"
+          },
+          "material_cost_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "material_cost_cents_exact": {
+            "$ref": "#/components/schemas/ExactCost"
+          },
+          "material_unit_cost_cents_exact": {
+            "$ref": "#/components/schemas/ExactCost"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "output_quantity_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "output_unit": {
+            "type": "string"
+          },
+          "overhead_cost_cents": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "rounding": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "valued_at": {
+            "type": "string"
+          },
+          "version_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "valued_at",
+          "version_id",
+          "batches",
+          "output_unit",
+          "output_quantity_milli",
+          "lines",
+          "material_cost_cents_exact",
+          "material_cost_cents",
+          "material_unit_cost_cents_exact",
+          "rounding",
+          "labor_cost_cents",
+          "overhead_cost_cents",
+          "is_complete"
+        ],
+        "type": "object"
+      },
+      "MaterialCostLine": {
+        "additionalProperties": false,
+        "properties": {
+          "catalog_cost_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "cost_cents_exact": {
+            "$ref": "#/components/schemas/ExactCost"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "quantity_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "requires_cost_review": {
+            "type": "boolean"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "quantity_milli",
+          "catalog_cost_cents",
+          "cost_cents_exact",
+          "requires_cost_review"
+        ],
+        "type": "object"
+      },
+      "PlanRecipe": {
+        "additionalProperties": false,
+        "properties": {
+          "batches": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "version_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "version_id",
+          "batches"
+        ],
+        "type": "object"
+      },
+      "PlannedOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "batches": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "output_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "version_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "version_id",
+          "product_id",
+          "unit",
+          "batches",
+          "output_milli"
+        ],
+        "type": "object"
+      },
+      "PositionReport": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "type": "string"
+          },
+          "historical_cost": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StockPosition"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "page_value_cents_denominator": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "page_value_cents_numerator": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "total": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "measured_at",
+          "basis",
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "historical_cost"
+        ],
+        "type": "object"
+      },
+      "ProductSales": {
+        "additionalProperties": false,
+        "properties": {
+          "abc_category": {
+            "type": "string"
+          },
+          "change_basis": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "previous_quantity_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "previous_revenue_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "quantity_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "revenue_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "revenue_change_basis_points": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "revenue_delta_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "sku",
+          "name",
+          "unit",
+          "quantity_milli",
+          "revenue_cents",
+          "previous_quantity_milli",
+          "previous_revenue_cents",
+          "revenue_delta_cents",
+          "revenue_change_basis_points",
+          "change_basis",
+          "abc_category"
+        ],
+        "type": "object"
+      },
+      "RestockPreview": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "type": "string"
+          },
+          "daily_demand_milli_denominator": {
+            "type": "string"
+          },
+          "daily_demand_milli_numerator": {
+            "type": "string"
+          },
+          "demand_basis": {
+            "type": "string"
+          },
+          "free_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "from": {
+            "type": "string"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "order_created": {
+            "type": "boolean"
+          },
+          "physical_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "policy_minimum_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "policy_revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "policy_target_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "reserved_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "review_required": {
+            "type": "boolean"
+          },
+          "sold_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "suggested_minimum_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "suggested_order_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "suggested_target_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "to": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "from",
+          "to",
+          "measured_at",
+          "basis",
+          "demand_basis",
+          "sold_milli",
+          "daily_demand_milli_numerator",
+          "daily_demand_milli_denominator",
+          "physical_milli",
+          "reserved_milli",
+          "free_milli",
+          "policy_revision",
+          "policy_minimum_milli",
+          "policy_target_milli",
+          "suggested_minimum_milli",
+          "suggested_target_milli",
+          "suggested_order_milli",
+          "review_required",
+          "order_created"
+        ],
+        "type": "object"
+      },
+      "RestockPreviewInput": {
+        "additionalProperties": false,
+        "properties": {
+          "coverage_days": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "from": {
+            "type": "string"
+          },
+          "lead_days": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "safety_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "from",
+          "to",
+          "lead_days",
+          "coverage_days",
+          "safety_milli"
+        ],
+        "type": "object"
+      },
+      "SalesReport": {
+        "additionalProperties": false,
+        "properties": {
+          "abc_basis": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "compare_from": {
+            "type": "string"
+          },
+          "compare_to": {
+            "type": "string"
+          },
+          "current_seconds": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "equal_duration": {
+            "type": "boolean"
+          },
+          "from": {
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSales"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "payment_confirmed": {
+            "type": "boolean"
+          },
+          "previous_revenue_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "previous_seconds": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "profit": {
+            "type": "boolean"
+          },
+          "revenue_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "source_rows": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "to": {
+            "type": "string"
+          },
+          "total_products": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "compare_from",
+          "compare_to",
+          "current_seconds",
+          "previous_seconds",
+          "equal_duration",
+          "basis",
+          "abc_basis",
+          "payment_confirmed",
+          "profit",
+          "source_rows",
+          "items",
+          "total_products",
+          "limit",
+          "offset",
+          "revenue_cents",
+          "previous_revenue_cents"
+        ],
+        "type": "object"
+      },
+      "Session": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "inventory_id": {
+            "type": "string"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "inventory_id",
+          "location_id",
+          "title",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "SharedMaterial": {
+        "additionalProperties": false,
+        "properties": {
+          "free_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "physical_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "remaining_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "required_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "reserved_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "shortfall_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "required_milli",
+          "physical_milli",
+          "reserved_milli",
+          "free_milli",
+          "shortfall_milli",
+          "remaining_milli"
+        ],
+        "type": "object"
+      },
+      "SimultaneousInput": {
+        "additionalProperties": false,
+        "properties": {
+          "location_id": {
+            "type": "string"
+          },
+          "recipes": {
+            "items": {
+              "$ref": "#/components/schemas/PlanRecipe"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "location_id",
+          "recipes"
+        ],
+        "type": "object"
+      },
+      "SimultaneousPlan": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "type": "string"
+          },
+          "feasible": {
+            "type": "boolean"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "materials": {
+            "items": {
+              "$ref": "#/components/schemas/SharedMaterial"
+            },
+            "type": "array"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedOutput"
+            },
+            "type": "array"
+          },
+          "reserved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "location_id",
+          "measured_at",
+          "basis",
+          "feasible",
+          "reserved",
+          "outputs",
+          "materials"
+        ],
+        "type": "object"
+      },
+      "StockPosition": {
+        "additionalProperties": false,
+        "properties": {
+          "catalog_cost_cents": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "cost_requires_review": {
+            "allOf": [
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          },
+          "free_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "physical_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "reserved_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "value_cents_denominator": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "value_cents_numerator": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "product_id",
+          "location_id",
+          "unit",
+          "physical_milli",
+          "reserved_milli",
+          "free_milli",
+          "sku",
+          "name"
+        ],
+        "type": "object"
+      },
+      "VarianceLine": {
+        "additionalProperties": false,
+        "properties": {
+          "cost_requires_review": {
+            "type": "boolean"
+          },
+          "counted_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "counted_by": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "counted_milli": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "current_catalog_cost_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "difference_milli": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "difference_value_cents_denominator": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "difference_value_cents_numerator": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "movement_id": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "previous_milli": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "counted_milli",
+          "previous_milli",
+          "difference_milli",
+          "counted_by",
+          "counted_at",
+          "movement_id",
+          "current_catalog_cost_cents",
+          "cost_requires_review",
+          "difference_value_cents_numerator",
+          "difference_value_cents_denominator"
+        ],
+        "type": "object"
+      },
+      "VarianceReport": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "type": "string"
+          },
+          "counted_lines": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "equal_lines": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "inventory": {
+            "$ref": "#/components/schemas/Session"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/VarianceLine"
+            },
+            "type": "array"
+          },
+          "net_value_cents_denominator": {
+            "type": "string"
+          },
+          "net_value_cents_numerator": {
+            "type": "string"
+          },
+          "posted_to_finance": {
+            "type": "boolean"
+          },
+          "shortage_lines": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "shortage_value_cents_denominator": {
+            "type": "string"
+          },
+          "shortage_value_cents_numerator": {
+            "type": "string"
+          },
+          "surplus_lines": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "surplus_value_cents_denominator": {
+            "type": "string"
+          },
+          "surplus_value_cents_numerator": {
+            "type": "string"
+          },
+          "uncounted_lines": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "inventory",
+          "basis",
+          "lines",
+          "counted_lines",
+          "uncounted_lines",
+          "shortage_lines",
+          "surplus_lines",
+          "equal_lines",
+          "shortage_value_cents_numerator",
+          "shortage_value_cents_denominator",
+          "surplus_value_cents_numerator",
+          "surplus_value_cents_denominator",
+          "net_value_cents_numerator",
+          "net_value_cents_denominator",
+          "posted_to_finance"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

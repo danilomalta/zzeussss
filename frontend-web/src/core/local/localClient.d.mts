@@ -31,6 +31,12 @@ export interface SaleInput {
   payments: { method: 'cash'; amount_cents: number }[];
 }
 export interface SaleResult { sale_id: string; total_cents: number; repeated: boolean; }
+export interface SaleQuoteInput { cash_session_id: string; items: SaleInput['items']; }
+export interface SaleQuote {
+  cash_session_id: string; total_cents: number;
+  items: (SaleInput['items'][number] & {unit: string; unit_price_cents: number; total_cents: number; available_milli: number})[];
+  payment_methods: ['cash']; discounts_supported: false; loyalty_supported: false; reserved: false;
+}
 export interface SaleReceipt {
   sale_id: string; operation_id: string; cash_session_id: string; status: 'committed' | 'cancelled';
   total_cents: number; fiscal_authorized: false;
@@ -61,6 +67,7 @@ export function createLocalClient(fetcher?: typeof fetch): {
   currentCash(token: string): Promise<CashSession | null>;
   openCash(token: string, input: CashOpenInput): Promise<CashOpenResult>;
   closeCash(token: string, input: CashCloseInput): Promise<CashCloseResult>;
+  quoteSale(token: string, input: SaleQuoteInput): Promise<SaleQuote>;
   completeSale(token: string, input: SaleInput): Promise<SaleResult>;
   receipt(token: string, saleID: string): Promise<SaleReceipt>;
   logout(token: string): Promise<void>;

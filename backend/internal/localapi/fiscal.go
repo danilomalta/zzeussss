@@ -1,0 +1,213 @@
+package localapi
+
+import (
+	"errors"
+	"strconv"
+	"titansystem-backend/internal/core/modules"
+	"titansystem-backend/internal/localdb/entitlementstore"
+	"titansystem-backend/internal/localdb/fiscal"
+	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/localdb/localauth"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+func (s *Server) mountFiscal(r fiber.Router) {
+	r.Get("/fiscal/capabilities", s.fiscalCapabilities)
+	r.Get("/fiscal/requirements/:uf", s.fiscalRequirements)
+	r.Post("/fiscal/profiles", s.configureFiscal)
+	r.Get("/fiscal/profiles/:id", s.readFiscalProfile)
+	r.Post("/fiscal/intents", s.prepareFiscal)
+	r.Get("/fiscal/intents", s.listFiscalIntents)
+	r.Get("/fiscal/intents/:id", s.readFiscalIntent)
+	r.Get("/fiscal/operations/:id/receipt", s.readFiscalOperation)
+}
+
+func fiscalFailure(c *fiber.Ctx, err error) error {
+	code, kind := 500, "fiscal_storage_error"
+	switch {
+	case errors.Is(err, fiscal.ErrInvalid):
+		code, kind = 400, "invalid_fiscal_request"
+	case errors.Is(err, fiscal.ErrConflict):
+		code, kind = 409, "fiscal_conflict"
+	case errors.Is(err, fiscal.ErrNotFound):
+		code, kind = 404, "fiscal_not_found"
+	case errors.Is(err, localauth.ErrDenied):
+		code, kind = 401, "fiscal_session_invalid"
+	case errors.Is(err, identity.ErrDenied), errors.Is(err, modules.ErrUnavailable):
+		code, kind = 403, "fiscal_not_permitted"
+	case errors.Is(err, entitlementstore.ErrNotInstalled), errors.Is(err, entitlementstore.ErrClockRollback), errors.Is(err, entitlementstore.ErrCorrupt):
+		code, kind = 503, "fiscal_contract_unavailable"
+	case errors.Is(err, fiscal.ErrIntegrity):
+		code, kind = 409, "fiscal_integrity_failure"
+	}
+	return c.Status(code).JSON(fiber.Map{"error": kind})
+}
+func fiscalRead(c *fiber.Ctx) bool {
+	c.Set(fiber.HeaderCacheControl, "no-store")
+	return len(c.Body()) == 0
+}
+func fiscalWrite(c *fiber.Ctx) bool {
+	c.Set(fiber.HeaderCacheControl, "no-store")
+	return noBagQuery(c) && len(c.Body()) <= 8192
+}
+func (s *Server) fiscalCapabilities(c *fiber.Ctx) error {
+	if !fiscalRead(c) || !noBagQuery(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	err := identity.CanOperate(c.UserContext(), s.DB, ss.Actor, ss.Device, identity.ViewAccounting)
+	if errors.Is(err, identity.ErrDenied) {
+		err = identity.CanOperate(c.UserContext(), s.DB, ss.Actor, ss.Device, identity.Sell)
+	}
+	if err != nil {
+		return fiscalFailure(c, err)
+	}
+	return c.JSON(fiber.Map{"scope": "durable_preparation_only", "models": []string{"55", "65"}, "profile_configuration": "active_owner_and_fiscal_contract", "readiness": fiscal.Unavailable(), "nfse_available": false, "sped_generation_available": false, "transmission_available": false, "automatic_retry_available": false})
+}
+func (s *Server) configureFiscal(c *fiber.Ctx) error {
+	var in fiscal.ProfileInput
+	if !fiscalWrite(c) || decodeCash(c.Body(), &in, []string{"operation_id", "profile_id", "expected_revision", "cnpj", "legal_name", "state", "municipality_ibge", "state_registration", "crt", "model", "environment", "series"}) != nil {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	out, err := fiscal.Configure(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, in, ss.Token)
+	if err != nil {
+		return fiscalFailure(c, err)
+	}
+	if out.Repeated {
+		return c.JSON(out)
+	}
+	return c.Status(201).JSON(out)
+}
+func (s *Server) readFiscalProfile(c *fiber.Ctx) error {
+	if !fiscalRead(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	revision, valid := 0, true
+	seen := false
+	c.Context().QueryArgs().VisitAll(func(k, v []byte) {
+		if string(k) != "revision" || seen || len(v) == 0 {
+			valid = false
+			return
+		}
+		seen = true
+		for _, b := range v {
+			if b < '0' || b > '9' {
+				valid = false
+				return
+			}
+		}
+		var err error
+		revision, err = strconv.Atoi(string(v))
+		if err != nil || revision < 1 || revision > 1000000 {
+			valid = false
+		}
+	})
+	if !valid {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	out, err := fiscal.ReadProfile(c.UserContext(), s.DB, ss.Actor, ss.Device, c.Params("id"), revision)
+	if err != nil {
+		return fiscalFailure(c, err)
+	}
+	return c.JSON(out)
+}
+func (s *Server) prepareFiscal(c *fiber.Ctx) error {
+	var in fiscal.IntentInput
+	if !fiscalWrite(c) || decodeCash(c.Body(), &in, []string{"operation_id", "sale_id", "profile_id", "profile_revision"}) != nil {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	out, err := fiscal.Prepare(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, in, ss.Token)
+	if err != nil {
+		return fiscalFailure(c, err)
+	}
+	if out.Repeated {
+		return c.JSON(out)
+	}
+	return c.Status(201).JSON(out)
+}
+func (s *Server) readFiscalIntent(c *fiber.Ctx) error    { return s.fiscalReceipt(c, false) }
+func (s *Server) readFiscalOperation(c *fiber.Ctx) error { return s.fiscalReceipt(c, true) }
+func (s *Server) fiscalReceipt(c *fiber.Ctx, operation bool) error {
+	if !fiscalRead(c) || !noBagQuery(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	out, err := fiscal.ReadIntent(c.UserContext(), s.DB, ss.Actor, ss.Device, c.Params("id"), operation)
+	if err != nil {
+		return fiscalFailure(c, err)
+	}
+	return c.JSON(out)
+}
+func (s *Server) listFiscalIntents(c *fiber.Ctx) error {
+	if !fiscalRead(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	limit, offset := 50, 0
+	sale := ""
+	valid := true
+	seen := map[string]bool{}
+	c.Context().QueryArgs().VisitAll(func(k, v []byte) {
+		key := string(k)
+		if seen[key] || len(v) == 0 {
+			valid = false
+			return
+		}
+		seen[key] = true
+		if key == "sale_id" {
+			sale = string(v)
+			return
+		}
+		if key != "limit" && key != "offset" {
+			valid = false
+			return
+		}
+		for _, b := range v {
+			if b < '0' || b > '9' {
+				valid = false
+				return
+			}
+		}
+		n, err := strconv.Atoi(string(v))
+		if err != nil {
+			valid = false
+			return
+		}
+		if key == "limit" {
+			limit = n
+		} else {
+			offset = n
+		}
+	})
+	if !valid {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	out, err := fiscal.List(c.UserContext(), s.DB, ss.Actor, ss.Device, sale, limit, offset)
+	if err != nil {
+		return fiscalFailure(c, err)
+	}
+	return c.JSON(out)
+}
+
+func (s *Server) fiscalRequirements(c *fiber.Ctx) error {
+	if !fiscalRead(c) || !noBagQuery(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	err := identity.CanOperate(c.UserContext(), s.DB, ss.Actor, ss.Device, identity.ViewAccounting)
+	if errors.Is(err, identity.ErrDenied) {
+		err = identity.CanOperate(c.UserContext(), s.DB, ss.Actor, ss.Device, identity.Sell)
+	}
+	if err != nil {
+		return fiscalFailure(c, err)
+	}
+	out, err := fiscal.Requirements(c.Params("uf"))
+	if err != nil {
+		return fiscalFailure(c, err)
+	}
+	return c.JSON(out)
+}

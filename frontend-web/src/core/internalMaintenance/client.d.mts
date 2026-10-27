@@ -1,0 +1,9 @@
+import type {LocalSession,LocalCapabilities} from '../local/localClient.mjs';
+export type MaintenanceResource='specialties'|'technicians'|'assets'|'classifications';
+export interface MaintenanceRecord {operation_id:string;kind:string;id:string;revision:number;state:string;data:Record<string,unknown>;actor_id:string;device_id:string;recorded_at:string;repeated:boolean}
+export interface MaintenanceCommand {version:1;scope:string;resource:MaintenanceResource;body:{operation_id:string;id:string;expected_revision:number;action:string;reason:string;data:Record<string,unknown>};uncertain:boolean}
+export interface MaintenancePage {items:MaintenanceRecord[];total:number;limit:number;offset:number}
+export interface MaintenanceClient {scope:string;subscribe(listener:()=>void):()=>void;readonly canWrite:boolean;assertCurrent():void;dispose():void;pending():MaintenanceCommand|null;prepare(resource:MaintenanceResource,body:MaintenanceCommand['body']):MaintenanceCommand;submit(c:MaintenanceCommand):Promise<{state:string;record?:MaintenanceRecord}|null>;recover(send?:boolean,discard?:boolean):Promise<{state:string;record?:MaintenanceRecord}|null>;read(resource:string,filters?:Record<string,string|number>,channel?:string):Promise<MaintenancePage>;history(resource:MaintenanceResource,id:string,offset?:number):Promise<{items:{action:string;reason:string;result:MaintenanceRecord}[];total:number}>}
+export function createMaintenance(options:{token:string;session:LocalSession;capabilities:LocalCapabilities;isCurrent:()=>boolean;storage:Pick<Storage,'getItem'|'setItem'|'removeItem'>;locks:LockManager;fetcher?:typeof fetch}):MaintenanceClient;
+export function maintenanceData(resource:string,data:unknown):unknown;
+export function maintenanceRecord(value:unknown,resource:string):MaintenanceRecord;

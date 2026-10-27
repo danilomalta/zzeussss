@@ -1,0 +1,1421 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P11 consolidated production trace",
+    "version": "P11",
+    "description": "One authorized read transaction consolidates the frozen order and exact planned/reserved/consumed ingredients, material states, stages, actual result, global declared loss and lot totals, and one page of lots with latest human quality verdicts. No writes, reservations, consumption, stock publication, clock observation or production/quality decisions. Historical quantities are not current stock availability. Current manage_production and approved device required; authorized reads remain available after contract expiry."
+  },
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/local/v1/production/orders/{id}/trace": {
+      "get": {
+        "operationId": "getProductionOrderTrace",
+        "description": "Optional stages are null if not configured. Before completion: result, losses and lots are null; planned quantities remain explicit. Active reservation and consumed reservation are distinct; released reservations are counted but do not contribute quantities. Completed result requires real consumed-movement proof. Lot totals cover all recorded lots; voided rows remain in pages. Each quality includes current lot_status and its latest immutable assessment, or not_assessed revision 0/latest null. Do not sum quantities across different product units or interpret lot allocation as free stock. Entire report comes from the same SQLite snapshot.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "lot_offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid order ID or query: only one integer lot_offset in 0..9007199254740991 accepted"
+          },
+          "401": {
+            "description": "Verified human session required"
+          },
+          "403": {
+            "description": "Current human/device permission denied"
+          },
+          "404": {
+            "description": "Order not found in tenant/store scope"
+          },
+          "409": {
+            "description": "Inconsistent frozen recipe, reservation/consumption proof, stage definition, result, lot/loss aggregate or quality history"
+          },
+          "500": {
+            "description": "Internal read failure"
+          },
+          "200": {
+            "description": "Consistent scoped historical trace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Trace"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Recipe_Version": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "recipe_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "version_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "output_product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "output_unit": {
+            "$ref": "#/components/schemas/Recipe_Unit"
+          },
+          "yield_milli": {
+            "$ref": "#/components/schemas/Recipe_Quantity"
+          },
+          "ingredients": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Recipe_Ingredient"
+            }
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "recipe_id",
+          "version_id",
+          "expected_revision",
+          "name",
+          "output_product_id",
+          "output_unit",
+          "yield_milli",
+          "ingredients",
+          "revision",
+          "created_at",
+          "created_by"
+        ],
+        "additionalProperties": false
+      },
+      "Recipe_Unit": {
+        "type": "string",
+        "enum": [
+          "unit",
+          "kg",
+          "g",
+          "liter",
+          "ml",
+          "meter"
+        ]
+      },
+      "Recipe_Quantity": {
+        "type": "integer",
+        "format": "int64",
+        "minimum": 1,
+        "maximum": 9007199254740991,
+        "description": "Integer thousandths of stated unit; no implicit conversion."
+      },
+      "Recipe_Ingredient": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_id",
+          "unit",
+          "quantity_milli"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "$ref": "#/components/schemas/Recipe_Unit"
+          },
+          "quantity_milli": {
+            "$ref": "#/components/schemas/Recipe_Quantity"
+          }
+        }
+      },
+      "Materials_Reservation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "released",
+              "consumed"
+            ]
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Materials_Ingredient"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "order_id",
+          "location_id",
+          "status",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "items"
+        ]
+      },
+      "Materials_Ingredient": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "quantity_milli"
+        ]
+      },
+      "Stages_Plan": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/Stages_Stage"
+            }
+          }
+        },
+        "required": [
+          "order_id",
+          "created_by",
+          "created_at",
+          "items"
+        ]
+      },
+      "Stages_Stage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stage_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Trimmed name, at most 120 UTF-8 bytes."
+          },
+          "responsible_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "completed"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "stage_id",
+          "name",
+          "responsible_id",
+          "position",
+          "status",
+          "revision",
+          "updated_at"
+        ]
+      },
+      "Result_Record": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reservation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "planned_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "produced_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "shortfall_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed"
+            ]
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "movement_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "result_id",
+          "order_id",
+          "reservation_id",
+          "product_id",
+          "location_id",
+          "unit",
+          "planned_milli",
+          "produced_milli",
+          "shortfall_milli",
+          "revision",
+          "status",
+          "repeated",
+          "operation_id",
+          "device_id",
+          "actor_id",
+          "reason",
+          "created_at"
+        ]
+      },
+      "Quality_Current": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lot_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "lot_status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ],
+            "description": "Current P09 lot state. A historical passed verdict does not reactivate a voided lot."
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_assessed",
+              "passed",
+              "failed"
+            ]
+          },
+          "latest": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lot_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "revision": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              "operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "device_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "actor_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes, without surrounding whitespace."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "passed",
+                  "failed"
+                ],
+                "description": "Human-declared verdict for the entire lot. No automatic inspection or stock release."
+              },
+              "criterion": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Trimmed text, at most 255 UTF-8 bytes."
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Trimmed text, at most 255 UTF-8 bytes."
+              },
+              "lot_snapshot": {
+                "$ref": "#/components/schemas/Quality_LotSnapshot"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "lot_id",
+              "revision",
+              "operation_id",
+              "device_id",
+              "actor_id",
+              "status",
+              "criterion",
+              "reason",
+              "lot_snapshot",
+              "created_at"
+            ],
+            "nullable": true,
+            "description": "Null when not_assessed revision 0; otherwise the latest persisted assessment and original lot snapshot."
+          }
+        },
+        "required": [
+          "lot_id",
+          "lot_status",
+          "revision",
+          "status",
+          "latest"
+        ]
+      },
+      "Quality_LotSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Trimmed code, at most 64 UTF-8 bytes, no control characters. Case-sensitive and unique across all lots in this tenant/store, including voided lots."
+          },
+          "manufactured_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Explicit valid calendar date YYYY-MM-DD, year 0001..9999. No automatic source or shelf-life calculation."
+          },
+          "expires_on": {
+            "type": "string",
+            "description": "Required field: empty string means unknown; otherwise valid YYYY-MM-DD calendar date >= manufactured_on. A declaration, not proof of shelf life or availability."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "result_id",
+          "product_id",
+          "unit",
+          "quantity_milli",
+          "code",
+          "manufactured_on",
+          "expires_on",
+          "reason",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Lots_Lot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Trimmed code, at most 64 UTF-8 bytes, no control characters. Case-sensitive and unique across all lots in this tenant/store, including voided lots."
+          },
+          "manufactured_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Explicit valid calendar date YYYY-MM-DD, year 0001..9999. No automatic source or shelf-life calculation."
+          },
+          "expires_on": {
+            "type": "string",
+            "description": "Required field: empty string means unknown; otherwise valid YYYY-MM-DD calendar date >= manufactured_on. A declaration, not proof of shelf life or availability."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "result_id",
+          "product_id",
+          "unit",
+          "quantity_milli",
+          "code",
+          "manufactured_on",
+          "expires_on",
+          "reason",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Order": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "version_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "responsible_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "planned_batches": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "planned_output_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "recipe": {
+            "$ref": "#/components/schemas/Recipe_Version"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "approved",
+              "cancelled",
+              "completed"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completion_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "id",
+          "version_id",
+          "location_id",
+          "responsible_id",
+          "planned_batches",
+          "planned_output_milli",
+          "recipe",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Ingredient": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "planned_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reserved_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "consumed_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "planned_milli",
+          "reserved_milli",
+          "consumed_milli"
+        ]
+      },
+      "Materials": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "active_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "consumed_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "released_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "current": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "location_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "released",
+                  "consumed"
+                ]
+              },
+              "created_by": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "items": {
+                  "$ref": "#/components/schemas/Materials_Ingredient"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "order_id",
+              "location_id",
+              "status",
+              "created_by",
+              "created_at",
+              "updated_at",
+              "items"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "active_count",
+          "consumed_count",
+          "released_count",
+          "current"
+        ]
+      },
+      "Losses": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "recorded_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "unclassified_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "recorded_milli",
+          "unclassified_milli"
+        ]
+      },
+      "TraceLot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lot": {
+            "$ref": "#/components/schemas/Lots_Lot"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/Quality_Current"
+          }
+        },
+        "required": [
+          "lot",
+          "quality"
+        ]
+      },
+      "Lots": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "produced_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "assigned_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "unassigned_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/TraceLot"
+            }
+          }
+        },
+        "required": [
+          "produced_milli",
+          "assigned_milli",
+          "unassigned_milli",
+          "total_count",
+          "offset",
+          "has_more",
+          "items"
+        ]
+      },
+      "Trace": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          },
+          "ingredients": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Ingredient"
+            }
+          },
+          "materials": {
+            "$ref": "#/components/schemas/Materials"
+          },
+          "stages": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+              },
+              "created_by": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "1..128 UTF-8 bytes; no surrounding whitespace."
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "items": {
+                  "$ref": "#/components/schemas/Stages_Stage"
+                }
+              }
+            },
+            "required": [
+              "order_id",
+              "created_by",
+              "created_at",
+              "items"
+            ],
+            "nullable": true
+          },
+          "result": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "result_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "reservation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "product_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "location_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "unit",
+                  "kg",
+                  "g",
+                  "liter",
+                  "ml",
+                  "meter"
+                ]
+              },
+              "planned_milli": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "produced_milli": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "shortfall_milli": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "revision": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "completed"
+                ]
+              },
+              "repeated": {
+                "type": "boolean"
+              },
+              "operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "device_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "actor_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255
+              },
+              "movement_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "result_id",
+              "order_id",
+              "reservation_id",
+              "product_id",
+              "location_id",
+              "unit",
+              "planned_milli",
+              "produced_milli",
+              "shortfall_milli",
+              "revision",
+              "status",
+              "repeated",
+              "operation_id",
+              "device_id",
+              "actor_id",
+              "reason",
+              "created_at"
+            ],
+            "nullable": true
+          },
+          "losses": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "recorded_milli": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "unclassified_milli": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "recorded_milli",
+              "unclassified_milli"
+            ],
+            "nullable": true
+          },
+          "lots": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "produced_milli": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "assigned_milli": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "unassigned_milli": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "total_count": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "offset": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "has_more": {
+                "type": "boolean"
+              },
+              "items": {
+                "type": "array",
+                "maxItems": 50,
+                "items": {
+                  "$ref": "#/components/schemas/TraceLot"
+                }
+              }
+            },
+            "required": [
+              "produced_milli",
+              "assigned_milli",
+              "unassigned_milli",
+              "total_count",
+              "offset",
+              "has_more",
+              "items"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "order",
+          "ingredients",
+          "materials",
+          "stages",
+          "result",
+          "losses",
+          "lots"
+        ]
+      }
+    }
+  }
+}

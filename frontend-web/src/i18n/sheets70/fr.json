@@ -129,5 +129,6 @@
   "wholeSheet": "Feuille entière",
   "row": "Ligne",
   "column": "Colonne",
-  "discard": "Enregistrement impossible. Abandonner les modifications de cet écran et ouvrir la version enregistrée ?"
+  "discard": "Enregistrement impossible. Abandonner les modifications de cet écran et ouvrir la version enregistrée ?",
+  "linkedUnverified": "Certains blocs liés ne sont pas vérifiés dans cette session. Les cellules vides et les zéros des formules ne prouvent pas un solde nul ; les anciennes valeurs peuvent être obsolètes. Vérifiez les sources et alertes avant d’utiliser les totaux."
 }

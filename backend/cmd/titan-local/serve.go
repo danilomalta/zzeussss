@@ -90,7 +90,7 @@ func serveStationContext(ctx context.Context, args []string, out io.Writer) erro
 	}
 	defer db.Close()
 	defer clear(key)
-	app, err := localapi.NewWithVerifierAndGate(db, device, verifier, networkGate(profile))
+	app, err := localapi.NewWithTradeSignerAndGate(db, device, verifier, networkGate(profile), key)
 	if err != nil {
 		return err
 	}

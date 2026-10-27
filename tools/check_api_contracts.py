@@ -36,15 +36,44 @@ def check(root):
     expected = {(x['method'].lower(), re.sub(r':([a-z_]+)', r'{\1}', x['path'])) for x in inventory}
     actual = set()
     identifiers = set()
-    for path, methods in documents['routes.openapi.json']['paths'].items():
-        for method, operation in methods.items():
+    def resolve(value, name):
+        visited = set()
+        while isinstance(value, dict) and '$ref' in value:
+            reference = value['$ref']
+            key = (name, reference)
+            if key in visited:
+                raise ValueError('cyclic repository reference: ' + name)
+            visited.add(key)
+            file, separator, pointer = reference.partition('#')
+            name = file.removeprefix('./') if file else name
+            if not separator or name not in documents:
+                raise ValueError('unresolved repository reference: ' + name)
+            value = documents[name]
+            for part in pointer.lstrip('/').split('/'):
+                if part:
+                    value = value[part.replace('~1', '/').replace('~0', '~')]
+        return value, name
+
+    for path, item in documents['routes.openapi.json']['paths'].items():
+        methods, item_document = resolve(item, 'routes.openapi.json')
+        for method, raw_operation in methods.items():
+            if method not in ('get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'):
+                continue
+            operation, operation_document = resolve(raw_operation, item_document)
             actual.add((method, path))
-            identifier = operation['operationId']
-            if identifier in identifiers or not operation.get('responses'):
+            identifier = operation.get('operationId')
+            if (identifier is not None and (not isinstance(identifier, str) or not identifier or identifier in identifiers)) or not operation.get('responses'):
                 raise ValueError('invalid operation: ' + path)
-            identifiers.add(identifier)
-            parameters = {p['name'] for p in operation['parameters'] if p.get('in') == 'path' and p.get('required')}
-            if parameters != set(re.findall(r'\{([^}]+)\}', path)):
+            if identifier is not None:
+                identifiers.add(identifier)
+            # OpenAPI allows reusable operation/parameter references and path
+            # parameters inherited from the enclosing Path Item Object.
+            combined = [resolve(p, item_document)[0] for p in methods.get('parameters', [])]
+            combined += [resolve(p, operation_document)[0] for p in operation.get('parameters', [])]
+            parameters = {(p.get('in'), p.get('name')): p for p in combined}
+            names = {name for (location, name), p in parameters.items()
+                     if location == 'path' and p.get('required') is True}
+            if names != set(re.findall(r'\{([^}]+)\}', path)):
                 raise ValueError('invalid path parameters: ' + path)
     if expected != actual or len(expected) != len(inventory):
         raise ValueError('route map differs from inventory')

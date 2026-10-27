@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import CatalogManagement,{DraftLeaveDialog} from './CatalogManagement';
+import {createCatalogCreator} from '../../../core/catalogManagement/creation.mjs';
+import {catalogCents} from '../../../core/catalogManagement/model.mjs';
+import {catalogWords} from '../../../core/catalogManagement/words.mjs';
+import {lazy,Suspense,useEffect,useMemo,useRef,useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {stockWords} from '../../../core/stockWorkspace/words';
 import { createCatalogSearch } from '../../../core/local/catalogSearch.mjs';
 import type { CatalogSearchProduct } from '../../../core/local/catalogSearch.mjs';
 import './catalogManagement.css';
@@ -6,20 +12,29 @@ import { useLocation } from 'react-router-dom';
 import { useLocalAccess } from '../../../core/local/LocalAccess';
 import { LocalAPIError, formatLocalCents } from '../../../core/local/localClient.mjs';
 import type { LocalProduct, LocalLocation, StockEntry } from '../../../core/local/localClient.mjs';
-import { parseMoney, parseQuantity } from '../../../core/local/posModel.mjs';
+import { parseQuantity } from '../../../core/local/posModel.mjs';
 import { localClient, localErrorMessage, useLocalSession } from '../../../core/local/useLocalSession';
 
 const searchCatalog = createCatalogSearch();
 const units = [['unit','Unidade'],['kg','Quilograma'],['g','Grama'],['liter','Litro'],['ml','Mililitro'],['meter','Metro']];
 
-export default function LocalCatalog() {
+const LocalStock=lazy(()=>import('./LocalStock'));
+export default function LocalCatalog(){const location=useLocation(),{i18n}=useTranslation(),token=useLocalSession(s=>s.token),session=useLocalSession(s=>s.session);return location.pathname==='/local/stock'?<Suspense fallback={<p role="status">{stockWords(i18n.resolvedLanguage||i18n.language).loading}</p>}><LocalStock/></Suspense>:<CatalogContent key={JSON.stringify([token,session?.tenant_id,session?.store_id,session?.identity_id,session?.device_id])}/>;}
+function CatalogContent() {
+ const {i18n}=useTranslation(),locale=i18n.resolvedLanguage||i18n.language,managementWords=catalogWords(locale);
+ const [managedProduct,setManagedProduct]=useState<{id:string;name:string}|null>(null),[managementDirty,setManagementDirty]=useState(false),[managementBusy,setManagementBusy]=useState(false);
+ const [leaveProduct,setLeaveProduct]=useState<{product:{id:string;name:string}|null}|null>(null);
+ const chooseProduct=(product:{id:string;name:string}|null)=>{if(managementBusy||product?.id===managedProduct?.id)return;if(managementDirty){setLeaveProduct({product});return;}setManagedProduct(product);};
  const token = useLocalSession(s => s.token);
  const session = useLocalSession(s => s.session);
  const invalidate = useLocalSession(s => s.invalidate);
  const location = useLocation();
  const tab = location.pathname === '/local/stock' ? 'stock' : 'products';
  const {capabilities}=useLocalAccess();
- const canWrite = capabilities?.permissions.includes('manage_stock') && capabilities.license.state==='active';
+ const currentCapabilities=useRef(capabilities);currentCapabilities.current=capabilities;
+ const stillCurrent=()=>{const state=useLocalSession.getState();return state.token===token&&state.session===session&&currentCapabilities.current===capabilities;};
+ const creator=useMemo(()=>{try{return token&&session&&capabilities?createCatalogCreator({token,session,capabilities,isCurrent:stillCurrent,send:localClient.createProduct}):null;}catch{return null;}},[token,session,capabilities]);
+ const canWrite = capabilities&&['view_catalog','manage_stock'].every(p=>capabilities.permissions.includes(p))&&capabilities.license.state==='active'&&['core','inventory'].every(m=>capabilities.license.modules.includes(m));
  const [items,setItems] = useState<LocalProduct[]>([]);
  const [results,setResults] = useState<CatalogSearchProduct[]>([]);
  const [total,setTotal] = useState(0);
@@ -56,14 +71,14 @@ export default function LocalCatalog() {
  useEffect(() => {
   if(!token || tab!=='products') return;
   const controller=new AbortController();setLoading(true);setResults([]);setTotal(0);setError('');
-  searchCatalog(token,search,controller.signal).then(value=>{if(!controller.signal.aborted){setResults(value.items);setTotal(value.total);setCostVisible(value.cost_visible);}}).catch(e=>{if(!controller.signal.aborted){setError(localErrorMessage(e));if(e instanceof LocalAPIError && e.status===401)invalidate();}}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});
+  searchCatalog(token,search,controller.signal).then(value=>{if(!controller.signal.aborted){setResults(value.items);setTotal(value.total);setCostVisible(value.cost_visible);}}).catch(e=>{if(!controller.signal.aborted){setError(e instanceof LocalAPIError&&[401,403].includes(e.status)?'denied':'unavailable');if(e instanceof LocalAPIError && e.status===401)invalidate();}}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});
   return ()=>controller.abort();
  },[token,search,reload,invalidate,tab]);
  async function save(action:()=>Promise<void>) {
   if(latch.current || !token || !canWrite) return;
   latch.current=true; setBusy(true);setError('');setMessage('');
-  try { await action();setReload(v=>v+1); }
-  catch(e){setError(e instanceof Error ? e.message : localErrorMessage(e));if(e instanceof LocalAPIError && e.status===401)invalidate();}
+  try { await action();if(stillCurrent())setReload(v=>v+1); }
+  catch(e){if(!stillCurrent())return;setError(tab==='products'?(e instanceof Error&&e.message==='catalogInvalid'?'invalid':e instanceof LocalAPIError&&[401,403].includes(e.status)?'denied':'unavailable'):(e instanceof Error ? e.message : localErrorMessage(e)));if(e instanceof LocalAPIError && e.status===401)invalidate();}
   finally {latch.current=false;setBusy(false);}
  }
  async function sendEntry(input: StockEntry) {
@@ -78,35 +93,37 @@ export default function LocalCatalog() {
   });
  }
  return <main className="brand-app-content">
-  <div className="brand-app-heading"><div><p className="brand-eyebrow">GESTÃO LOCAL</p><h1>{tab==='stock'?'Estoque e locais':'Catálogo de produtos'}</h1><p className="brand-subtitle">Cadastros da empresa · As permissões e o plano são conferidos pelo servidor.</p></div><button className="brand-secondary" disabled={busy || loading} onClick={()=>{setError('');setReload(v=>v+1);}}>Atualizar</button></div>
+  <div className="brand-app-heading"><div><p className="brand-eyebrow">{managementWords.local}</p><h1>{tab==='stock'?'Estoque e locais':managementWords.catalog}</h1><p className="brand-subtitle">{managementWords.subtitle}</p></div><button className="brand-secondary" disabled={busy || loading} onClick={()=>{setError('');setReload(v=>v+1);}}>{managementWords.refresh}</button></div>
 
-  {error && <p role="alert" className="brand-message error">{error}</p>}{message && <p role="status" className="brand-message">{message}</p>}
+  {error && <p role="alert" className="brand-message error">{managementWords[error]||error}</p>}{message && <p role="status" className="brand-message">{message}</p>}
   {tab==='products' ? <>
-   {canWrite && <details className="brand-panel catalog-create"><summary>Cadastrar produto</summary><p className="brand-state">Cadastro real na API. Para vender, registre também a quantidade em uma gôndola na aba de estoque.</p>
-    <form className="catalog-form" onSubmit={e=>{e.preventDefault();void save(async()=>{await localClient.createProduct(token!,{sku:sku.trim(),name:name.trim(),barcode:barcode.trim(),unit,price_cents:parseMoney(price),cost_cents:parseMoney(cost)});setSKU('');setName('');setBarcode('');setPrice('');setMessage('Produto cadastrado. Registre o estoque antes de vender.');setSearch(v=>({...v,offset:0}));});}}>
-     <label>Nome<input required maxLength={255} disabled={busy || !canWrite} value={name} onChange={e=>setName(e.target.value)}/></label><label>SKU / referência<input required maxLength={100} disabled={busy || !canWrite} value={sku} onChange={e=>setSKU(e.target.value)}/></label>
-     <label>Código de barras (opcional)<input disabled={busy || !canWrite} value={barcode} onChange={e=>setBarcode(e.target.value)}/></label><label>Unidade<select disabled={busy || !canWrite} value={unit} onChange={e=>setUnit(e.target.value)}>{[['unit','Unidade'],['kg','Quilograma'],['g','Grama'],['liter','Litro'],['ml','Mililitro'],['meter','Metro']].map(([v,n])=><option key={v} value={v}>{n}</option>)}</select></label>
-     <label>Preço de venda (R$ por unidade selecionada)<input required inputMode="decimal" disabled={busy || !canWrite} value={price} onChange={e=>setPrice(e.target.value)}/></label><label>Custo (R$)<input required inputMode="decimal" disabled={busy || !canWrite} value={cost} onChange={e=>setCost(e.target.value)}/></label>
-     <button className="brand-small-primary catalog-wide" disabled={busy || !canWrite}>{busy?'Registrando…':'Cadastrar produto'}</button>
-    </form><p className="pos-note">Se a resposta se perder, consulte o SKU no catálogo antes de repetir o cadastro. Cadastro da empresa e planos continuam em preparação.</p>
+   {canWrite && <details className="brand-panel catalog-create"><summary>{managementWords.create}</summary><p className="brand-state">{managementWords.createHelp}</p>
+    <form className="catalog-form" onSubmit={e=>{e.preventDefault();void save(async()=>{if(!creator)return;await creator.create({sku:sku.trim(),name:name.trim(),barcode:barcode.trim(),unit,price_cents:catalogCents(price),cost_cents:catalogCents(cost)});if(!stillCurrent())return;setSKU('');setName('');setBarcode('');setPrice('');setCost('0');setUnit('unit');setMessage(managementWords.created);setSearch(v=>({...v,offset:0}));});}}>
+     <label>{managementWords.name}<input required maxLength={255} disabled={busy || !canWrite} value={name} onChange={e=>setName(e.target.value)}/></label><label>{managementWords.sku}<input required maxLength={100} disabled={busy || !canWrite} value={sku} onChange={e=>setSKU(e.target.value)}/></label>
+     <label>{managementWords.barcode}<input disabled={busy || !canWrite} value={barcode} onChange={e=>setBarcode(e.target.value)}/></label><label>{managementWords.unit}<select disabled={busy || !canWrite} value={unit} onChange={e=>setUnit(e.target.value)}>{[['unit','Unidade'],['kg','Quilograma'],['g','Grama'],['liter','Litro'],['ml','Mililitro'],['meter','Metro']].map(([v])=><option key={v} value={v}>{managementWords['unit_'+v]}</option>)}</select></label>
+     <label>{managementWords.price}<input required inputMode="decimal" disabled={busy || !canWrite} value={price} onChange={e=>setPrice(e.target.value)}/></label><label>{managementWords.cost}<input required inputMode="decimal" disabled={busy || !canWrite} value={cost} onChange={e=>setCost(e.target.value)}/></label>
+     <button className="brand-small-primary catalog-wide" disabled={busy || !canWrite}>{busy?managementWords.creating:managementWords.create}</button>
+    </form><p className="pos-note">{managementWords.creationHelp}</p>
    </details>}
-   {!canWrite && <p className="brand-message">Consulta autorizada. Cadastro e alterações exigem permissão de estoque e licença vigente.</p>}
+   {!canWrite && <p className="brand-message">{managementWords.readOnly}</p>}
    <section className="brand-panel catalog-search-panel">
     <form className="catalog-search-form" onSubmit={e=>{e.preventDefault();setSearch({q:query.trim(),unit:filterUnit,pending:filterPending,offset:0});}}>
-     <label className="catalog-search-query">Buscar no catálogo da empresa<input type="search" value={query} maxLength={240} placeholder="Nome, SKU ou código de barras" onChange={e=>setQuery(e.target.value)}/></label>
-     <label>Unidade<select value={filterUnit} onChange={e=>setFilterUnit(e.target.value)}><option value="">Todas</option>{units.map(([v,n])=><option key={v} value={v}>{n}</option>)}</select></label>
-     <label>Conferência<select value={filterPending} onChange={e=>setFilterPending(e.target.value)}><option value="">Todos os produtos</option><option value="barcode">Sem código de barras</option><option value="minimum">Sem política de reposição nesta loja</option>{costVisible && <option value="cost">Custo zerado</option>}</select></label>
-     <button className="brand-small-primary">Buscar</button>
+     <label className="catalog-search-query">{managementWords.searchLabel}<input type="search" value={query} maxLength={240} placeholder={managementWords.searchPlaceholder} onChange={e=>setQuery(e.target.value)}/></label>
+     <label>{managementWords.unit}<select value={filterUnit} onChange={e=>setFilterUnit(e.target.value)}><option value="">{managementWords.allUnits}</option>{units.map(([v])=><option key={v} value={v}>{managementWords['unit_'+v]}</option>)}</select></label>
+     <label>{managementWords.check}<select value={filterPending} onChange={e=>setFilterPending(e.target.value)}><option value="">{managementWords.allProducts}</option><option value="barcode">{managementWords.noBarcode}</option><option value="minimum">{managementWords.noPolicy}</option>{costVisible && <option value="cost">{managementWords.zeroCost}</option>}</select></label>
+     <button className="brand-small-primary">{managementWords.search}</button>
     </form>
-    <p className="brand-state">Busca por nome e referência sem distinguir acentos. Aproximações de palavras são identificadas; códigos numéricos não recebem correção automática.</p>
+    <p className="brand-state">{managementWords.searchHelp}</p>
    </section>
    <section className="brand-panel catalog-results">
-    <div className="catalog-table-heading"><div><h2>Produtos cadastrados</h2><p role="status">{loading?'Consultando catálogo…':`${total} resultado(s)${search.q?' para “'+search.q+'”':''}`}</p></div>
-     <details className="catalog-columns"><summary>Colunas</summary><fieldset><legend>Informações na tabela</legend>{([['barcode','Código de barras'],['unit','Unidade'],['cost','Custo'],['minimum','Reposição']] as const).filter(([key])=>key!=='cost'||costVisible).map(([key,label])=><label key={key}><input type="checkbox" checked={columns[key]} onChange={e=>setColumns(v=>({...v,[key]:e.target.checked}))}/>{label}</label>)}</fieldset></details>
+    <div className="catalog-table-heading"><div><h2>{managementWords.registered}</h2><p role="status">{loading?managementWords.loading:`${total} ${managementWords.results}${search.q?' · “'+search.q+'”':''}`}</p></div>
+     <details className="catalog-columns"><summary>{managementWords.columns}</summary><fieldset><legend>{managementWords.tableInfo}</legend>{([['barcode',managementWords.barcodeShort],['unit',managementWords.unit],['cost',managementWords.costShort],['minimum',managementWords.restock]] as const).filter(([key])=>key!=='cost'||costVisible).map(([key,label])=><label key={key}><input type="checkbox" checked={columns[key]} onChange={e=>setColumns(v=>({...v,[key]:e.target.checked}))}/>{label}</label>)}</fieldset></details>
     </div>
-    {!loading && <div className="brand-table-scroll"><table className="brand-table catalog-data-table"><thead><tr><th scope="col">SKU</th><th scope="col">Produto</th>{columns.barcode && <th scope="col">Código de barras</th>}{columns.unit && <th scope="col">Unidade</th>}<th scope="col" className="catalog-money">Preço de venda</th>{columns.cost && costVisible && <th scope="col" className="catalog-money">Custo</th>}{columns.minimum && <th scope="col">Reposição nesta loja</th>}</tr></thead><tbody>{results.map(p=><tr key={p.id}><td>{p.sku}</td><td><strong>{p.name}</strong>{p.approximate && <span className="catalog-approximate">Correspondência aproximada</span>}</td>{columns.barcode && <td>{p.barcode||'Não informado'}</td>}{columns.unit && <td>{units.find(([v])=>v===p.unit)?.[1]||p.unit}</td>}<td className="catalog-money">{formatLocalCents(p.price_cents)}</td>{columns.cost && costVisible && <td className="catalog-money">{formatLocalCents(p.cost_cents!)}</td>}{columns.minimum && <td>{p.minimum_configured?'Política cadastrada':'Sem política cadastrada'}</td>}</tr>)}</tbody></table>{!results.length && !error && <p className="catalog-empty">{total===0?'Nenhum produto corresponde à consulta. Confira os filtros ou cadastre um produto.':'Esta página não tem produtos. Volte à página anterior.'}</p>}</div>}
-    <nav className="brand-pagination" aria-label="Páginas dos resultados"><button className="brand-secondary" disabled={loading || busy || search.offset===0} onClick={()=>setSearch(v=>({...v,offset:Math.max(0,v.offset-50)}))}>Anterior</button><span>Página {search.offset/50+1} · até 50 produtos por página</span><button className="brand-secondary" disabled={loading || busy || search.offset+50>=total} onClick={()=>setSearch(v=>({...v,offset:v.offset+50}))}>Próxima</button></nav>
+    {!loading && <div className="brand-table-scroll"><table className="brand-table catalog-data-table"><thead><tr><th scope="col">SKU</th><th scope="col">{managementWords.product}</th>{columns.barcode && <th scope="col">{managementWords.barcodeShort}</th>}{columns.unit && <th scope="col">{managementWords.unit}</th>}<th scope="col" className="catalog-money">{managementWords.priceShort}</th>{columns.cost && costVisible && <th scope="col" className="catalog-money">{managementWords.costShort}</th>}{columns.minimum && <th scope="col">{managementWords.storePolicy}</th>}<th scope="col">{managementWords.title}</th></tr></thead><tbody>{results.map(p=><tr key={p.id}><td>{p.sku}</td><td><strong>{p.name}</strong>{p.approximate && <span className="catalog-approximate">{managementWords.approximate}</span>}</td>{columns.barcode && <td>{p.barcode||managementWords.notProvided}</td>}{columns.unit && <td>{managementWords['unit_'+p.unit]||p.unit}</td>}<td className="catalog-money">{formatLocalCents(p.price_cents)}</td>{columns.cost && costVisible && <td className="catalog-money">{formatLocalCents(p.cost_cents!)}</td>}{columns.minimum && <td>{p.minimum_configured?managementWords.policyYes:managementWords.policyNo}</td>}<td><button className="brand-secondary" disabled={managementBusy||busy} aria-label={`${managementWords.details}: ${p.name}`} onClick={()=>chooseProduct(p)}>{managementWords.details}</button></td></tr>)}</tbody></table>{!results.length && !error && <p className="catalog-empty">{total===0?managementWords.emptySearch:managementWords.emptyPage}</p>}</div>}
+    <nav className="brand-pagination" aria-label={managementWords.pages}><button className="brand-secondary" disabled={loading || busy || search.offset===0} onClick={()=>setSearch(v=>({...v,offset:Math.max(0,v.offset-50)}))}>{managementWords.previous}</button><span>{managementWords.page} {search.offset/50+1} · {managementWords.pageSize}</span><button className="brand-secondary" disabled={loading || busy || search.offset+50>=total} onClick={()=>setSearch(v=>({...v,offset:v.offset+50}))}>{managementWords.next}</button></nav>
    </section>
+   <DraftLeaveDialog open={leaveProduct!==null} locale={locale} onCancel={()=>setLeaveProduct(null)} onLeave={()=>{if(leaveProduct)setManagedProduct(leaveProduct.product);setLeaveProduct(null);}}/>
+   <CatalogManagement externalDirty={!!(sku||name||barcode||price)||cost!=='0'} selected={managedProduct} locale={locale} onClose={()=>chooseProduct(null)} onChanged={()=>setReload(value=>value+1)} onDirty={setManagementDirty} onBusy={setManagementBusy}/>
   </> : <>
    <section className="brand-panel"><h2>Cadastrar local de estoque</h2><form className="catalog-form" onSubmit={e=>{e.preventDefault();void save(async()=>{await localClient.createLocation(token!,{kind,name:placeName.trim()});setPlaceName('');setMessage('Local cadastrado.');});}}><label>Nome do local<input required maxLength={255} disabled={busy || !canWrite} value={placeName} onChange={e=>setPlaceName(e.target.value)}/></label><label>Tipo<select value={kind} disabled={busy || !canWrite} onChange={e=>setKind(e.target.value)}><option value="shelf">Gôndola / saída de venda</option><option value="backroom">Depósito</option><option value="receiving">Recebimento</option><option value="production">Produção</option></select></label><button className="brand-small-primary catalog-wide" disabled={busy || !canWrite}>Cadastrar local</button></form><p className="brand-state">{places.length} local(is) cadastrado(s). Se houver perda de resposta, confira a lista antes de repetir.</p></section>
    <section className="brand-panel" style={{marginTop:20}}><h2>Entrada de estoque</h2>{pending ? <div className="brand-message"><p>Entrada pendente de confirmação. Reenvie a mesma operação para evitar duplicar estoque.</p><button className="brand-secondary" disabled={busy || !pending.operation_id} onClick={()=>void save(()=>sendEntry(pending))}>Conferir / reenviar entrada original</button></div>:<form className="catalog-form" onSubmit={e=>{e.preventDefault();void save(async()=>{const p=items.find(p=>p.id===productID);if(!p)throw new Error('Selecione o produto desta página.');await sendEntry({operation_id:crypto.randomUUID(),kind:'entry',product_id:productID,to_location_id:placeID,quantity_milli:parseQuantity(quantity,p.unit),reason:reason.trim()});});}}>

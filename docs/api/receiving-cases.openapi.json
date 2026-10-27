@@ -1,0 +1,826 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan local — human receiving follow-up",
+    "version": "2026-10-22.1"
+  },
+  "paths": {
+    "/local/v1/purchase-orders/{id}/receiving-cases": {
+      "post": {
+        "operationId": "receiving_case_open",
+        "description": "ViewOrders + ManageStock, active user and approved device in current tenant/store. Historical reads need no contract renewal. Writes require signed Orders module. Create durable local follow-up; order must have valid receiving evidence, max1000source rows. Opening product/unit/quantities/flags snapshot immutable; no external agreement, payment, stock or collection effects. Worker may leave unassigned or assign self; manager may assign another currently authorized user. Kind/outcome/reference are local request/notes, never approved compensation. Same operation+normalized payload returns original snapshot, repeated true; different payload409. Whole-second due_at canonical UTC, empty string means none; may be past. Required fields even when empty; max8192body bytes.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; all writes atomic, recorded operation recoverable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/missing/unknown/duplicate fields/query, null, GET body or invalid transition input"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device/manager/assignment/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; operation also bound to original actor/device"
+          },
+          "409": {
+            "description": "Stale revision, operation payload changed, case state or audit conflict"
+          },
+          "422": {
+            "description": "Opening source order exceeds1000 evidence rows; no case recorded"
+          },
+          "500": {
+            "description": "Atomic storage failure, no partial write"
+          },
+          "503": {
+            "description": "Write verifier not configured"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseOpenInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-receiving-cases": {
+      "get": {
+        "operationId": "receiving_case_list",
+        "description": "ViewOrders + ManageStock, active user and approved device in current tenant/store. Historical reads need no contract renewal. Stable ID order, optional filters, count whole matching set. Current/audit integrity checked for returned page; not a full audit of every off-page case. Overdue is derived for open/in_progress only, never mutates status or sends a notification.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "order_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "in_progress",
+                "resolved",
+                "cancelled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; all writes atomic, recorded operation recoverable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/missing/unknown/duplicate fields/query, null, GET body or invalid transition input"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device/manager/assignment/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; operation also bound to original actor/device"
+          },
+          "409": {
+            "description": "Stale revision, operation payload changed, case state or audit conflict"
+          },
+          "422": {
+            "description": "Opening source order exceeds1000 evidence rows; no case recorded"
+          },
+          "500": {
+            "description": "Atomic storage failure, no partial write"
+          },
+          "503": {
+            "description": "Write verifier not configured"
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-receiving-cases/{id}": {
+      "get": {
+        "operationId": "receiving_case_get",
+        "description": "ViewOrders + ManageStock, active user and approved device in current tenant/store. Historical reads need no contract renewal. Current local case, immutable opening snapshot, latest receipt proof and contiguous event revision check. Overdue at read time only, not settlement.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; all writes atomic, recorded operation recoverable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/missing/unknown/duplicate fields/query, null, GET body or invalid transition input"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device/manager/assignment/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; operation also bound to original actor/device"
+          },
+          "409": {
+            "description": "Stale revision, operation payload changed, case state or audit conflict"
+          },
+          "422": {
+            "description": "Opening source order exceeds1000 evidence rows; no case recorded"
+          },
+          "500": {
+            "description": "Atomic storage failure, no partial write"
+          },
+          "503": {
+            "description": "Write verifier not configured"
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-receiving-cases/{id}/actions": {
+      "post": {
+        "operationId": "receiving_case_action",
+        "description": "ViewOrders + ManageStock, active user and approved device in current tenant/store. Historical reads need no contract renewal. Signed Orders module for all writes. Exact expected_revision. start from open; note while active: assigned worker or creator when unassigned, or manager. start assigns current user if unassigned. resolve/cancel active, reopen closed, assign/set_due active: owner/manager only. Empty assigned_to unassigns; empty due_at clears. All irrelevant assigned_to/due_at MUST be empty. Reason mandatory. Each action advances revision, receipt+event+outbox in same transaction. Resolved means local administrative closure, NOT supplier acceptance/refund/stock correction. Same op retries original result, no duplicate.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; all writes atomic, recorded operation recoverable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/missing/unknown/duplicate fields/query, null, GET body or invalid transition input"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device/manager/assignment/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; operation also bound to original actor/device"
+          },
+          "409": {
+            "description": "Stale revision, operation payload changed, case state or audit conflict"
+          },
+          "422": {
+            "description": "Opening source order exceeds1000 evidence rows; no case recorded"
+          },
+          "500": {
+            "description": "Atomic storage failure, no partial write"
+          },
+          "503": {
+            "description": "Write verifier not configured"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseActionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-receiving-cases/{id}/history": {
+      "get": {
+        "operationId": "receiving_case_history",
+        "description": "ViewOrders + ManageStock, active user and approved device in current tenant/store. Historical reads need no contract renewal. Immutable result snapshots, action/actor/device in revision order. Current case and revision continuity verified, returned event receipts validated. No sensitive payment data or file attachments.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; all writes atomic, recorded operation recoverable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/missing/unknown/duplicate fields/query, null, GET body or invalid transition input"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device/manager/assignment/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; operation also bound to original actor/device"
+          },
+          "409": {
+            "description": "Stale revision, operation payload changed, case state or audit conflict"
+          },
+          "422": {
+            "description": "Opening source order exceeds1000 evidence rows; no case recorded"
+          },
+          "500": {
+            "description": "Atomic storage failure, no partial write"
+          },
+          "503": {
+            "description": "Write verifier not configured"
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-receiving-case-operations/{id}": {
+      "get": {
+        "operationId": "receiving_case_operation",
+        "description": "ViewOrders + ManageStock, active user and approved device in current tenant/store. Historical reads need no contract renewal. Original operation result, bound to original actor/device; never replace its operation_id after uncertain response. Historical snapshot may differ from current case state.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; all writes atomic, recorded operation recoverable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/missing/unknown/duplicate fields/query, null, GET body or invalid transition input"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device/manager/assignment/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; operation also bound to original actor/device"
+          },
+          "409": {
+            "description": "Stale revision, operation payload changed, case state or audit conflict"
+          },
+          "422": {
+            "description": "Opening source order exceeds1000 evidence rows; no case recorded"
+          },
+          "500": {
+            "description": "Atomic storage failure, no partial write"
+          },
+          "503": {
+            "description": "Write verifier not configured"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "CaseActionInput": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "start",
+              "note",
+              "resolve",
+              "cancel",
+              "reopen",
+              "assign",
+              "set_due"
+            ]
+          },
+          "assigned_to": {
+            "type": "string"
+          },
+          "due_at": {
+            "type": "string",
+            "description": "Empty for none/clear; otherwise whole-second RFC3339, UTC-normalized, year2000..2200"
+          },
+          "expected_revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "description": "UTF8 max1000bytes, trimmed; newline/tab permitted, other controls rejected"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "action",
+          "reason",
+          "assigned_to",
+          "due_at"
+        ],
+        "type": "object"
+      },
+      "CaseDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "case": {
+            "$ref": "#/components/schemas/ReceivingCase"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "overdue": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "case",
+          "overdue",
+          "measured_at"
+        ],
+        "type": "object"
+      },
+      "CaseEvidence": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "planned_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "remaining_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "review_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "planned_milli",
+          "accepted_milli",
+          "remaining_milli",
+          "review_flags",
+          "measured_at"
+        ],
+        "type": "object"
+      },
+      "CaseHistory": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CaseHistoryItem"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "CaseHistoryItem": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "result": {
+            "$ref": "#/components/schemas/CaseResult"
+          }
+        },
+        "required": [
+          "action",
+          "actor_id",
+          "device_id",
+          "result"
+        ],
+        "type": "object"
+      },
+      "CaseList": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CaseDetail"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "measured_at"
+        ],
+        "type": "object"
+      },
+      "CaseOpenInput": {
+        "additionalProperties": false,
+        "properties": {
+          "assigned_to": {
+            "type": "string"
+          },
+          "case_id": {
+            "type": "string"
+          },
+          "due_at": {
+            "type": "string",
+            "description": "Empty for none/clear; otherwise whole-second RFC3339, UTC-normalized, year2000..2200"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "shortage",
+              "damage",
+              "wrong_product",
+              "other"
+            ]
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "description": "UTF8 max1000bytes, trimmed; newline/tab permitted, other controls rejected"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "requested_outcome": {
+            "type": "string",
+            "enum": [
+              "review",
+              "replacement",
+              "credit",
+              "refund",
+              "collection",
+              "other"
+            ]
+          }
+        },
+        "required": [
+          "operation_id",
+          "case_id",
+          "kind",
+          "requested_outcome",
+          "reference",
+          "assigned_to",
+          "due_at",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "CaseResult": {
+        "additionalProperties": false,
+        "properties": {
+          "case": {
+            "$ref": "#/components/schemas/ReceivingCase"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation_id",
+          "case",
+          "repeated"
+        ],
+        "type": "object"
+      },
+      "ReceivingCase": {
+        "additionalProperties": false,
+        "properties": {
+          "assigned_to": {
+            "type": "string"
+          },
+          "case_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "due_at": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "last_reason": {
+            "type": "string"
+          },
+          "opening_evidence": {
+            "$ref": "#/components/schemas/CaseEvidence"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "requested_outcome": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "case_id",
+          "order_id",
+          "supplier_id",
+          "kind",
+          "requested_outcome",
+          "reference",
+          "status",
+          "assigned_to",
+          "due_at",
+          "revision",
+          "opening_evidence",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "last_reason"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

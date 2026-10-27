@@ -44,5 +44,5 @@ export function receiptMatches(receipt, input) {
   return receipt.sale_id === input.sale_id && receipt.operation_id === input.operation_id && receipt.cash_session_id === input.cash_session_id &&
     ['committed', 'cancelled'].includes(receipt.status) && receipt.total_cents === input.payments[0].amount_cents &&
     JSON.stringify(keys(receipt.items)) === JSON.stringify(keys(input.items)) && receipt.payments.length === 1 &&
-    receipt.payments[0].method === 'cash' && receipt.payments[0].status === 'confirmed' && receipt.payments[0].amount_cents === receipt.total_cents;
+    receipt.payments[0].method === 'cash' && (receipt.payments[0].status === 'confirmed' || receipt.status === 'cancelled' && receipt.payments[0].status === 'reversed') && receipt.payments[0].amount_cents === receipt.total_cents;
 }

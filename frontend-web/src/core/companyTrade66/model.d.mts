@@ -1,0 +1,16 @@
+export interface Party{tenant_id:string;store_id:string;device_id:string}
+export interface Identity{version:1;party:Party;public_key:string;fingerprint_sha256:string;business_identity_verified:false}
+export interface Peer{id:string;remote:Party;public_key:string;fingerprint_sha256:string;role:'supplier'|'customer';supplier_id:string;verification_reference:string;status:'active'|'revoked';revision:number;approved_by:string}
+export interface Envelope{payload:string;signature:string}
+export interface Message{version:1;kind:'order'|'decision';id:string;source:Party;target:Party;actor_id:string;created_at:string;expires_at:string;order_id:string;offer_sha256:string;product_id:string;sku:string;product_name:string;unit:string;quantity_milli:number;decision:''|'confirmed'|'declined';accepted_milli:number;promised_at:string;reason:string}
+export interface TradeRecord{peer_id:string;direction:'sent'|'received';message:Message;envelope:Envelope}
+export interface Recovery{generation:string;required:boolean;approved_by:string;verification_reference:string}
+export interface Page<T>{items:T[];total:number;limit:number;offset:number;has_more:boolean}
+export type Kind='trust'|'revoke'|'export'|'import'|'decide'|'apply'|'review';
+export interface Command{version:1;scope:string;kind:Kind;target:string;body:Record<string,unknown>&{operation_id:string};uncertain:boolean}
+export interface Result{operation_id:string;repeated:boolean;peer?:Peer;message?:Message;envelope?:Envelope;recovery?:Recovery;cycle?:unknown}
+export function milli(value:string):number;
+export function quantity(value:number):string;
+export function verifiedIdentity(value:unknown):Promise<Identity>;
+export function envelope(value:unknown):Envelope;
+export function decoded(value:Envelope):Message;

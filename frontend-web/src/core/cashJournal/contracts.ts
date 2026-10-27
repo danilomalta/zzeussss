@@ -1,0 +1,4 @@
+export interface JournalLeg {account:'cash_drawer'|'opening_control'|'cash_sales_control'|'supply_control'|'withdrawal_control'|'unclassified_control';side:'debit'|'credit';amount_cents:number}
+export interface JournalEntry {id:string;source_kind:'opening'|'movement';source_id:string;category:'opening'|'sale'|'sale_reversal'|'supply'|'withdrawal'|'unclassified';operation_id:string|null;actor_id:string|null;occurred_at:string;cash_delta_cents:number;legs:JournalLeg[]}
+export interface JournalSummary {cash_balance_cents:number;expected_cents:number;declared_cents:number;difference_cents:number;debit_cents:number;credit_cents:number;unclassified_count:number}
+export interface JournalPage {session_id:string;scope:'cash_operational';source_complete:true;offset:number;limit:number;total_count:number;has_more:boolean;next_offset:number|null;summary:JournalSummary;items:JournalEntry[]}

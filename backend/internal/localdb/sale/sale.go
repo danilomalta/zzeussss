@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"titansystem-backend/internal/localdb"
+	"titansystem-backend/internal/localdb/cashjournal"
 	"titansystem-backend/internal/localdb/identity"
 )
 
@@ -69,22 +70,53 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	if !valid(in) {
 		return Result{}, ErrInvalid
 	}
-	encoded, err := json.Marshal(in)
-	if err != nil {
-		return Result{}, err
-	}
-	hash := fmt.Sprintf("%x", sha256.Sum256(encoded))
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return Result{}, err
 	}
 	defer tx.Rollback()
+	result, err := completeTx(ctx, tx, actor, device, in, authorize, nil)
+	if err != nil {
+		return Result{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return Result{}, err
+	}
+	return result, nil
+}
+
+// completeTx permits checkout metadata and the existing cash sale effects to
+// commit together. Legacy callers keep random payment IDs and the same v1 hash
+// and event payload. Only the private checkout path supplies stable payment IDs.
+func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, in Input, authorize authorization, paymentIDs []string) (Result, error) {
+	limit := 8
+	if paymentIDs != nil {
+		limit = 20
+		if len(paymentIDs) != len(in.Payments) {
+			return Result{}, ErrInvalid
+		}
+	}
+	if !validWithPaymentLimit(in, limit) {
+		return Result{}, ErrInvalid
+	}
+	encoded, err := json.Marshal(in)
+	if err != nil {
+		return Result{}, err
+	}
+	hash := fmt.Sprintf("%x", sha256.Sum256(encoded))
 	if err = authorize(ctx, tx, actor, device); err != nil {
 		return Result{}, err
 	}
 	var cancelledOperation int
 	if err = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM sale_cancellations WHERE tenant_id=? AND device_id=? AND operation_id=?`, actor.TenantID, device.DeviceID, in.OperationID).Scan(&cancelledOperation); err != nil {
 		return Result{}, err
+	}
+	var refundOperations int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM customer_returns WHERE tenant_id=? AND device_id=? AND operation_id=?`, actor.TenantID, device.DeviceID, in.OperationID).Scan(&refundOperations); err != nil {
+		return Result{}, err
+	}
+	if refundOperations != 0 {
+		return Result{}, ErrConflict
 	}
 	if cancelledOperation != 0 {
 		return Result{}, ErrConflict
@@ -94,6 +126,11 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 		WHERE tenant_id = ? AND device_id = ? AND operation_id = ?`, actor.TenantID, device.DeviceID, in.OperationID).
 		Scan(&priorSale, &priorHash, &priorStore, &priorActor)
 	if err == nil {
+		// A checkout replay is resolved through its atomic completion record.
+		// Never adopt an unrelated sale that happens to reuse checkout IDs.
+		if paymentIDs != nil {
+			return Result{}, ErrConflict
+		}
 		if priorSale != in.SaleID || priorHash != hash || priorStore != actor.StoreID || priorActor != actor.IdentityID {
 			return Result{}, ErrConflict
 		}
@@ -104,9 +141,6 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 		}
 		if saleStatus != "committed" {
 			return Result{}, ErrConflict
-		}
-		if err = tx.Commit(); err != nil {
-			return Result{}, err
 		}
 		return Result{SaleID: priorSale, TotalCents: total, Repeated: true}, nil
 	}
@@ -120,19 +154,12 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	if existingSale != 0 {
 		return Result{}, ErrConflict
 	}
-	var operator, sessionDevice string
-	err = tx.QueryRowContext(ctx, `SELECT b.identity_id, c.device_id FROM cash_sessions c
-		JOIN cash_session_operators b ON b.tenant_id = c.tenant_id AND b.session_id = c.id
-		WHERE c.tenant_id = ? AND c.store_id = ? AND c.id = ? AND c.closed_at IS NULL`,
-		actor.TenantID, actor.StoreID, in.CashSessionID).Scan(&operator, &sessionDevice)
-	if errors.Is(err, sql.ErrNoRows) {
-		return Result{}, ErrCashClosed
-	}
-	if err != nil {
+	if err = checkShiftTx(ctx, tx, actor, device, in.CashSessionID); err != nil {
 		return Result{}, err
 	}
-	if operator != actor.IdentityID || sessionDevice != device.DeviceID {
-		return Result{}, identity.ErrDenied
+	quotedItems, total, err := priceItemsTx(ctx, tx, actor, in.Items)
+	if err != nil {
+		return Result{}, err
 	}
 	prices := make([]int64, len(in.Items))
 	lineTotals := make([]int64, len(in.Items))
@@ -142,51 +169,9 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 		TotalCents     int64 `json:"total_cents"`
 	}
 	pricedItems := make([]pricedItem, 0, len(in.Items))
-	consumed := make(map[string]int64)
-	var total int64
-	for i, item := range in.Items {
-		var price int64
-		var unit, kind string
-		err = tx.QueryRowContext(ctx, `SELECT p.price_cents, p.unit, l.kind FROM products p
-			JOIN stock_locations l ON l.tenant_id = p.tenant_id
-			WHERE p.tenant_id = ? AND p.id = ? AND l.store_id = ? AND l.id = ?`,
-			actor.TenantID, item.ProductID, actor.StoreID, item.LocationID).Scan(&price, &unit, &kind)
-		if errors.Is(err, sql.ErrNoRows) {
-			return Result{}, ErrInvalid
-		}
-		if err != nil {
-			return Result{}, err
-		}
-		if kind != "shelf" {
-			return Result{}, ErrInvalid
-		}
-		if unit == "unit" && item.QuantityMilli%1000 != 0 {
-			return Result{}, ErrInvalid
-		}
-		line, err := roundedCents(price, item.QuantityMilli)
-		if err != nil || line > math.MaxInt64-total {
-			return Result{}, ErrInvalid
-		}
-		prices[i], lineTotals[i] = price, line
-		pricedItems = append(pricedItems, pricedItem{item, price, line})
-		total += line
-		key := item.ProductID + "\x00" + item.LocationID
-		if consumed[key] > math.MaxInt64-item.QuantityMilli {
-			return Result{}, ErrInvalid
-		}
-		consumed[key] += item.QuantityMilli
-		var balance int64
-		if err := tx.QueryRowContext(ctx, `SELECT COALESCE(SUM(quantity_milli),0) FROM stock_movements
-			WHERE tenant_id=? AND store_id=? AND product_id=? AND location_id=?`,
-			actor.TenantID, actor.StoreID, item.ProductID, item.LocationID).Scan(&balance); err != nil {
-			return Result{}, err
-		}
-		if balance < consumed[key] {
-			return Result{}, ErrNoStock
-		}
-	}
-	if total <= 0 {
-		return Result{}, ErrInvalid
+	for i, item := range quotedItems {
+		prices[i], lineTotals[i] = item.UnitPriceCents, item.TotalCents
+		pricedItems = append(pricedItems, pricedItem{item.Item, item.UnitPriceCents, item.TotalCents})
 	}
 	var paid int64
 	for _, payment := range in.Payments {
@@ -243,10 +228,18 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 			return Result{}, err
 		}
 	}
-	for _, payment := range in.Payments {
-		id, err := localdb.NewID()
-		if err != nil {
-			return Result{}, err
+	for i, payment := range in.Payments {
+		var id string
+		if paymentIDs == nil {
+			id, err = localdb.NewID()
+			if err != nil {
+				return Result{}, err
+			}
+		} else {
+			id = paymentIDs[i]
+			if !planID(id) {
+				return Result{}, ErrInvalid
+			}
 		}
 		_, err = tx.ExecContext(ctx, `INSERT INTO sale_payments VALUES (?,?,?,'cash','confirmed',?)`, actor.TenantID, in.SaleID, id, payment.AmountCents)
 		if err != nil {
@@ -263,6 +256,9 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO sale_operations VALUES (?,?,?,?,?,?,?)`, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, actor.IdentityID, in.SaleID, hash)
 	if err != nil {
+		return Result{}, err
+	}
+	if err = cashjournal.CaptureTx(ctx, tx, actor, device, "movement", cashID); err != nil {
 		return Result{}, err
 	}
 	payload, err := json.Marshal(struct {
@@ -288,14 +284,15 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	if err != nil {
 		return Result{}, err
 	}
-	if err = tx.Commit(); err != nil {
-		return Result{}, err
-	}
 	return Result{SaleID: in.SaleID, TotalCents: total}, nil
 }
 
 func valid(in Input) bool {
-	if strings.TrimSpace(in.OperationID) == "" || strings.TrimSpace(in.SaleID) == "" || strings.TrimSpace(in.CashSessionID) == "" || len(in.Items) == 0 || len(in.Items) > 500 || len(in.Payments) == 0 || len(in.Payments) > 8 || len(in.OperationID) > 128 || len(in.SaleID) > 128 || len(in.CashSessionID) > 128 {
+	return validWithPaymentLimit(in, 8)
+}
+
+func validWithPaymentLimit(in Input, maxPayments int) bool {
+	if strings.TrimSpace(in.OperationID) == "" || strings.TrimSpace(in.SaleID) == "" || strings.TrimSpace(in.CashSessionID) == "" || len(in.Items) == 0 || len(in.Items) > 500 || len(in.Payments) == 0 || len(in.Payments) > maxPayments || len(in.OperationID) > 128 || len(in.SaleID) > 128 || len(in.CashSessionID) > 128 {
 		return false
 	}
 	for _, item := range in.Items {

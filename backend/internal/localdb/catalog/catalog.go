@@ -23,13 +23,15 @@ type ProductInput struct {
 }
 
 type Product struct {
-	ID         string `json:"id"`
-	SKU        string `json:"sku"`
-	Barcode    string `json:"barcode,omitempty"`
-	Name       string `json:"name"`
-	Unit       string `json:"unit"`
-	PriceCents int64  `json:"price_cents"`
-	CostCents  *int64 `json:"cost_cents,omitempty"`
+	Status        string `json:"status"`
+	StateRevision int64  `json:"state_revision"`
+	ID            string `json:"id"`
+	SKU           string `json:"sku"`
+	Barcode       string `json:"barcode,omitempty"`
+	Name          string `json:"name"`
+	Unit          string `json:"unit"`
+	PriceCents    int64  `json:"price_cents"`
+	CostCents     *int64 `json:"cost_cents,omitempty"`
 }
 
 type LocationInput struct {
@@ -147,8 +149,7 @@ func ListProducts(ctx context.Context, db *sql.DB, actor identity.Scope, device 
 		actor.TenantID, actor.IdentityID).Scan(&role); err != nil {
 		return nil, err
 	}
-	rows, err := tx.QueryContext(ctx, `SELECT id, sku, barcode, name, unit, price_cents, cost_cents
-		FROM products WHERE tenant_id = ? ORDER BY sku, id LIMIT ? OFFSET ?`, actor.TenantID, limit, offset)
+	rows, err := tx.QueryContext(ctx, `SELECT p.id,p.sku,p.barcode,p.name,p.unit,p.price_cents,p.cost_cents,COALESCE(s.status,'active'),COALESCE(s.revision,0) FROM products p LEFT JOIN catalog_product_states s ON s.tenant_id=p.tenant_id AND s.product_id=p.id WHERE p.tenant_id=? ORDER BY p.sku,p.id LIMIT ? OFFSET ?`, actor.TenantID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +158,7 @@ func ListProducts(ctx context.Context, db *sql.DB, actor identity.Scope, device 
 		var item Product
 		var barcode sql.NullString
 		var cost int64
-		if err := rows.Scan(&item.ID, &item.SKU, &barcode, &item.Name, &item.Unit, &item.PriceCents, &cost); err != nil {
+		if err := rows.Scan(&item.ID, &item.SKU, &barcode, &item.Name, &item.Unit, &item.PriceCents, &cost, &item.Status, &item.StateRevision); err != nil {
 			rows.Close()
 			return nil, err
 		}

@@ -1,0 +1,5 @@
+import type {LocalSession,LocalCapabilities} from '../local/localClient.mjs';
+import type {ProductState,Details,CatalogCommand,EditInput,StateInput,CatalogReceipt,StateHistory} from './model.mjs';
+export type CatalogOutcome={state:'confirmed';receipt:CatalogReceipt;command:CatalogCommand}|{state:'discarded'|'missing';command:CatalogCommand};
+export interface CatalogManagementSource{scope:string;canManage:boolean;canWrite:boolean;canLock:boolean;assertCurrent():void;pending():CatalogCommand|null;details(id:string,signal?:AbortSignal):Promise<Details>;state(id:string,signal?:AbortSignal):Promise<ProductState>;history(id:string,offset?:number,signal?:AbortSignal):Promise<StateHistory>;prepare(kind:'edit'|'state',id:string,before:Details|ProductState,body:EditInput|StateInput):CatalogCommand;submit(command:CatalogCommand):Promise<CatalogOutcome|null>;recover(send?:boolean,discard?:boolean):Promise<CatalogOutcome|null>}
+export function createCatalogManagement(options:{token:string;session:LocalSession;capabilities:LocalCapabilities;isCurrent:()=>boolean;storage:Storage;locks?:LockManager;fetcher?:typeof fetch}):CatalogManagementSource;

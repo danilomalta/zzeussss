@@ -1,0 +1,11 @@
+import {useRef,useState} from 'react';
+import {createRoot} from 'react-dom/client';
+import i18n from 'i18next';
+import {initReactI18next} from 'react-i18next';
+import OCR96 from '../src/modules/pos/pages/OCR96';
+import '../src/shared/brand/brand.css';
+void i18n.use(initReactI18next).init({lng:'pt-BR',fallbackLng:'pt-BR',resources:{'pt-BR':{translation:{}}},interpolation:{escapeValue:false}});
+function Demo(){const [value,setValue]=useState(''),[count,setCount]=useState(0),[disabled,setDisabled]=useState(false),[fail,setFail]=useState(false),[camera,setCamera]=useState(false),v=useRef<HTMLVideoElement>(null),stream=useRef<MediaStream|null>(null);
+ return <main style={{maxWidth:900,margin:'auto',padding:16}}><h1>DEMONSTRAÇÃO106 · dados fictícios</h1><p>Não registra venda nem comprova pagamento. Câmera real somente ao clicar.</p><div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:16}}><select aria-label="Language" defaultValue="pt-BR" onChange={e=>void i18n.changeLanguage(e.target.value)}>{['pt-BR','en','es','fr','zh-CN'].map(l=><option key={l}>{l}</option>)}</select><button onClick={()=>document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'}>Tema</button><button onClick={()=>setDisabled(p=>!p)}>Bloquear/desbloquear teste</button><label><input type="checkbox" checked={fail} onChange={e=>setFail(e.target.checked)}/>Simular falha do formulário</label><button onClick={()=>{if(camera){stream.current?.getTracks().forEach(t=>t.stop());setCamera(false);return;}void navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(s=>{stream.current=s;if(v.current){v.current.srcObject=s;void v.current.play();}setCamera(true);}).catch(()=>alert('Câmera indisponível'));}}>Câmera de teste</button></div><video ref={v} muted playsInline style={{display:camera?'block':'none',maxWidth:'100%',maxHeight:240}}/><OCR96 video={v} disabled={disabled} onRead={text=>{if(fail)throw Error('demo');setValue(text);setCount(p=>p+1);}}/><h2>Destino de teste · não salvo</h2><output aria-label="Demo count">{count}</output><pre aria-label="Demo fields" style={{whiteSpace:'pre-wrap'}}>{value}</pre></main>;
+}
+createRoot(document.getElementById('root')!).render(<Demo/>);

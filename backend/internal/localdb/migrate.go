@@ -145,22 +145,11 @@ func applyMigration(ctx context.Context, db *sql.DB, version int, checksum, scri
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
-	// Os arquivos deste pacote usam instruções simples terminadas por ';'.
-	// Não incluir triggers nem ponto e vírgula dentro de strings nesta rotina.
-	var lines []string
-	for _, line := range strings.Split(script, "\n") {
-		if !strings.HasPrefix(strings.TrimSpace(line), "--") {
-			lines = append(lines, line)
-		}
-	}
-	for _, statement := range strings.Split(strings.Join(lines, "\n"), ";") {
-		statement = strings.TrimSpace(statement)
-		if statement == "" {
-			continue
-		}
-		if _, err := tx.ExecContext(ctx, statement); err != nil {
-			return err
-		}
+	// Let the SQLite driver parse the complete script, including quoted
+	// semicolons and trigger bodies. It runs on this same transaction;
+	// any statement failure rolls back DDL and the history row together.
+	if _, err := tx.ExecContext(ctx, script); err != nil {
+		return err
 	}
 	if _, err := tx.ExecContext(ctx,
 		"INSERT INTO schema_migrations (version, checksum, applied_at) VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))",

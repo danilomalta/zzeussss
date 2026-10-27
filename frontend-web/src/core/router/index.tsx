@@ -13,9 +13,13 @@ consumo de memória RAM (importante para hardwares limitados do PDV varejista).
 
 // Carregamento assíncrono e sob demanda de cada página/módulo
 import {LocalAccessProvider} from '../local/LocalAccess';
+const CompanyTrade66 = React.lazy(() => import('../../modules/catalog/pages/CompanyTrade66'));
+const CustomerReturns65 = React.lazy(() => import('../../modules/pos/pages/CustomerReturns65'));
+const LocalMaintenance = React.lazy(() => import('../../modules/maintenance/pages/LocalMaintenance'));
 const LocalComparison = React.lazy(() => import('../../modules/catalog/pages/LocalComparison'));
 const LocalOrders = React.lazy(() => import("../../modules/catalog/pages/LocalOrders"));
 const LocalDistributionMap = React.lazy(() => import('../../modules/tenant/pages/LocalDistributionMap'));
+const LocalSalesAnalysis = React.lazy(() => import('../../modules/tenant/pages/LocalSalesAnalysis'));
 const LocalOwnerDashboard = React.lazy(() => import('../../modules/tenant/pages/LocalOwnerDashboard'));
 const LocalHumanResources = React.lazy(() => import('../../modules/tenant/pages/LocalHumanResources'));
 const LocalSpreadsheet = React.lazy(() => import('../../modules/tenant/pages/LocalSpreadsheet'));
@@ -38,6 +42,8 @@ const LocalPointOfSale = React.lazy(() => import('../../modules/pos/pages/LocalP
 const Login = React.lazy(() => import('../../modules/auth/pages/Login'));
 const PointOfSale = React.lazy(() => import('../../modules/pos/pages/PointOfSale'));
 const Checkout = React.lazy(() => import('../../modules/financial/pages/Checkout'));
+const LocalPayables113 = React.lazy(() => import('../../modules/financial/pages/LocalPayables113'));
+const LocalPayablesAgenda114 = React.lazy(() => import('../../modules/financial/pages/LocalPayablesAgenda114'));
 const SupplyChain = React.lazy(() => import('../../modules/catalog/pages/SupplyChain'));
 const AdminDashboard = React.lazy(() => import('../../modules/tenant/pages/AdminDashboard'));
 
@@ -54,6 +60,8 @@ export const router = createBrowserRouter([
   { path: '/register', element: <SuspenseWrapper><Registration /></SuspenseWrapper> },
   { path: '/local/login', element: <SuspenseWrapper><LocalLogin /></SuspenseWrapper> },
   { path: '/local', element: <LocalSessionGuard><LocalAccessProvider><SuspenseWrapper><AppearanceProvider80><LocalWorkspace /></AppearanceProvider80></SuspenseWrapper></LocalAccessProvider></LocalSessionGuard>, children: [
+    { path: 'company-trade', element: <SuspenseWrapper><CompanyTrade66 /></SuspenseWrapper> },
+    { path: 'customer-returns', element: <SuspenseWrapper><CustomerReturns65 /></SuspenseWrapper> },
     { path: 'prices', element: <SuspenseWrapper><LocalComparison /></SuspenseWrapper> },
     { path: "orders", element: <SuspenseWrapper><LocalOrders /></SuspenseWrapper> },
     { index: true, element: <SuspenseWrapper><LocalHome /></SuspenseWrapper> },
@@ -61,6 +69,7 @@ export const router = createBrowserRouter([
     { path: 'losses', element: <SuspenseWrapper><LocalLossPrevention76 /></SuspenseWrapper> },
     { path: 'integrations', element: <SuspenseWrapper><LocalEnterprise89 initialArea="connections" /></SuspenseWrapper> },
     { path: 'workbench', element: <SuspenseWrapper><LocalWorkbench73 /></SuspenseWrapper> },
+    { path: 'reports', element: <SuspenseWrapper><LocalSalesAnalysis /></SuspenseWrapper> },
     { path: 'overview', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'owner', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'map', element: <SuspenseWrapper><LocalDistributionMap /></SuspenseWrapper> },
@@ -68,10 +77,13 @@ export const router = createBrowserRouter([
     { path: 'operation', element: <SuspenseWrapper><LocalOperation90 /></SuspenseWrapper> },
     { path: 'integrations/diagnostics', element: <SuspenseWrapper><LocalIntegrations74 /></SuspenseWrapper> },
     { path: 'enterprise', element: <SuspenseWrapper><LocalEnterprise89 /></SuspenseWrapper> },
+    { path: 'payables', element: <SuspenseWrapper><LocalPayables113 /></SuspenseWrapper> },
+    { path: 'payables/agenda', element: <SuspenseWrapper><LocalPayablesAgenda114 /></SuspenseWrapper> },
     { path: 'delivery', element: <SuspenseWrapper><LocalSectors86 initialArea="delivery" /></SuspenseWrapper> },
     { path: 'recipes', element: <SuspenseWrapper><LocalSectors86 initialArea="recipes" /></SuspenseWrapper> },
     { path: 'sectors', element: <SuspenseWrapper><LocalSectors86 initialArea="sectors" /></SuspenseWrapper> },
     { path: 'food/previous', element: <SuspenseWrapper><LocalBusiness85 initialArea="food" /></SuspenseWrapper> },
+    { path: 'maintenance', element: <SuspenseWrapper><LocalMaintenance /></SuspenseWrapper> },
     { path: 'fleet', element: <SuspenseWrapper><LocalBusiness85 initialArea="fleet" /></SuspenseWrapper> },
     { path: 'food', element: <SuspenseWrapper><LocalSectors86 initialArea="food" /></SuspenseWrapper> },
     { path: 'documents', element: <SuspenseWrapper><LocalBusiness85 initialArea="documents" /></SuspenseWrapper> },

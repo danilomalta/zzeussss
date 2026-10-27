@@ -1,0 +1,23 @@
+{
+ "company112":"About the company",
+ "companyHelp112":"Set up the profile and how your team will access the system.",
+ "activity112":"Activity and departments",
+ "activityHelp112":"Choose the main activity and select the departments your company has.",
+ "features112":"Features",
+ "mei112":"An individual operation or a small team.",
+ "micro112":"A compact structure to organize the team’s daily work.",
+ "small112":"A growing operation with clearly defined functions.",
+ "medium112":"Several departments with shared responsibilities.",
+ "large112":"A broad operation with distributed teams and processes.",
+ "less112":"Decrease users",
+ "more112":"Increase users",
+ "menuHelp112":"Organize the food products offered to customers.",
+ "kitchenHelp112":"Track the order preparation queue.",
+ "tablesHelp112":"Identify orders and service by table.",
+ "productionHelp112":"Use recipes and technical sheets to plan production.",
+ "summary112":"Proposal summary",
+ "estimate112":"Estimated monthly module cost",
+ "none112":"None selected",
+ "noModules112":"No modules selected.",
+ "priceRule112":"The amount adds up the selected modules. Users, company size and storage do not add automatic charges in this proposal."
+}

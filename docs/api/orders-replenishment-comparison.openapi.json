@@ -4489,7 +4489,8 @@
           "status": {
             "type": "string",
             "enum": [
-              "local_not_sent"
+              "local_not_sent",
+              "cancelled"
             ]
           },
           "created_at": {
@@ -4506,6 +4507,15 @@
             "items": {
               "$ref": "#/components/schemas/PurchaseItem"
             }
+          },
+          "receiving_status": {
+            "type": "string",
+            "enum": [
+              "not_authorized",
+              "authorized",
+              "partially_received",
+              "received"
+            ]
           }
         },
         "required": [
@@ -4518,7 +4528,8 @@
           "created_at",
           "approved_by",
           "approved_at",
-          "items"
+          "items",
+          "receiving_status"
         ],
         "additionalProperties": false,
         "description": "Consulta individual contém os itens persistidos. Na lista, cada pedido retorna items vazio; consultar /purchase-orders/{id} para as linhas."

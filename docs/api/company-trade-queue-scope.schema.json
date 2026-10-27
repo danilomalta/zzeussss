@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:titansystem:trade-queue-scope:1",
+  "title": "Explicit private source context for a company trade queue worker",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "source"
+  ],
+  "properties": {
+    "version": {
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "party",
+        "actor_id",
+        "fingerprint_sha256"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 4096,
+          "description": "Exact original source API URL, HTTPS or literal HTTP loopback; /local/v1 without query, fragment or user credentials. CLI validates URL semantics."
+        },
+        "party": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tenant_id",
+            "store_id",
+            "device_id"
+          ],
+          "properties": {
+            "tenant_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            },
+            "store_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            },
+            "device_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
+          }
+        },
+        "actor_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "fingerprint_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Approved station Ed25519 key fingerprint; this is not a TLS certificate fingerprint."
+        }
+      }
+    },
+    "source_session_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Version2 only. Exact original source_session_sha256 binding recorded in queue metadata (SHA-256 of JSON-encoded source session token). Never the bearer token. Not a credential or authorization; keep this correlation value private."
+    }
+  },
+  "description": "Additional filtering only; never a credential or authorization. UTF-8 JSON file must be absolute, regular0600, max4096 bytes. Duplicate keys are rejected. Existing queue/token/session/peer/recovery checks still apply.",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "version": {
+            "const": 2
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "source_session_sha256"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "source_session_sha256"
+          ]
+        }
+      }
+    }
+  ]
+}

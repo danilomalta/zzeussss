@@ -1,19 +1,12 @@
-# `backend/` (Raiz do Backend)
+# Serviços do TitanSystem
 
-Esta pasta representa a **raiz do backend** no monorepo.
+A fonte oficial dos serviços Go está em backend/ na raiz do monorepo. TitanSystem/backend/ é uma cópia histórica preservada; não mover nem substituir a fonte atual com ela.
 
-## Atenção (estado atual do repositório)
+O backend não executa dentro de página HTML. Ele aplica autorização, contratos, regras comerciais, transações e persistência, recebendo requisições do aplicativo desktop e de outros clientes autorizados.
 
-No estado atual, o código do backend está em `TitanSystem/backend/`.
+- Núcleo operacional SQLite: cmd/titan-local, contrato /local/v1, em serviço local ou servidor da loja conforme perfil suportado.
+- API online PostgreSQL: cmd/api, contrato /api/v1, autenticação e escopo próprios. Não assumir equivalência de funções, licença ou dados com o núcleo local.
+- O desktop em ../desktop/ usa a UI compilada de ../frontend-web/ e endereços explícitos; não inicia banco/estação/chaves automaticamente.
+- Conexão HTTPS não libera modo cloud/hybrid bloqueado no executável, não replica dados e não implementa cotas offline.
 
-Esta pasta existe para cumprir a separação **na raiz** (`backend/`, `frontend/`, `desktop/`, `mobile/`) e deixar a arquitetura óbvia para qualquer pessoa que abrir o monorepo.
-
-## Como isso se conecta ao sistema
-
-- O backend expõe a API HTTP e é consumido pelo Web, Computador e Mobile.
-- A implementação atual (Go + Fiber + GORM + SQLite) está dentro de `TitanSystem/backend/`.
-
-## O que deve morar aqui (próximo passo de organização)
-
-- Em uma limpeza de repositório, o conteúdo de `TitanSystem/backend/` deve ser movido para `backend/` preservando histórico de versão.
-
+A referência de backend em desenvolvimento pode estar numa worktree separada. Verifique branch, HEAD, contratos e versão de serviço no registro único ../docs/architecture/CONTINUIDADE_TITANSYSTEM.md. Esta organização não altera fonte Go, migrações ou banco comercial.
