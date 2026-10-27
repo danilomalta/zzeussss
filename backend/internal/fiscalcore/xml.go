@@ -33,7 +33,13 @@ var schemaCache sync.Map
 var schemaMu sync.Mutex
 
 func parseXML(raw []byte) (*etree.Document, error) {
-	if len(raw) == 0 || len(raw) > MaxXML {
+	return parseXMLLimits(raw, MaxXML, 8192)
+}
+
+// Only the trusted SOAP journal envelope needs extra wrapper space/nodes.
+// Extracted fiscal documents still go through the original strict bounds.
+func parseXMLLimits(raw []byte, byteLimit, nodeLimit int) (*etree.Document, error) {
+	if len(raw) == 0 || len(raw) > byteLimit {
 		return nil, ErrXML
 	}
 	dec := xml.NewDecoder(bytes.NewReader(raw))
@@ -60,7 +66,7 @@ func parseXML(raw []byte) (*etree.Document, error) {
 			}
 			depth++
 			nodes++
-			if depth > 64 || nodes > 8192 || len(t.Attr) > 64 {
+			if depth > 64 || nodes > nodeLimit || len(t.Attr) > 64 {
 				return nil, ErrXML
 			}
 			attrs := map[xml.Name]bool{}
@@ -388,6 +394,14 @@ func (c *Credential) VerifyXML(kind string, raw []byte, now time.Time) error {
 	if !c.current(now) {
 		return ErrCredential
 	}
+	return c.verifySignedXML(kind, raw)
+}
+
+// verifySignedXML checks integrity using an already selected public certificate.
+// Live operations must use VerifyXML, which also requires current trusted
+// credentials. Archive recovery selects its certificate only from the original
+// trusted journal, never as a new source of authorization or certificate trust.
+func (c *Credential) verifySignedXML(kind string, raw []byte) error {
 	if err := ValidateXML(kind, raw); err != nil {
 		return err
 	}

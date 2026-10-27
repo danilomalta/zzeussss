@@ -2278,3 +2278,27 @@ resultados,33 comandos de backup, zero falhas. Dois testes mTLS/guard com
 -race aprovados. Vet, contratos e compilação passaram. Primeira rodada geral
 registrou oito falhas de carimbo VCS; repetição integral com carimbo omitido
 e titan-trade real passou, sem retirar testes. CI da branch própria pendente.
+
+
+## Continuidade fiscal — vínculo econômico e orquestração técnica
+
+Base2b75dfc do PR5: os sete checks dessa revisão passaram (job de integrações
+https://github.com/danilomalta/zzeussss/actions/runs/40457584324/job/122034408179).
+Isso atualiza a anotação anterior de CI pendente; não certifica alterações futuras.
+
+Nova unidade: `IssueHomologationNFe`, conferência da venda congelada antes de
+assinar, journal/guard/mTLS e leitura de protocolo estritamente associado;
+recuperação sem rede/chave privada vigente e repetição preservando os bytes/IDs
+originais. Fontes, testes e limites em
+[FISCAL_ORQUESTRADOR_HOMOLOGACAO_20261027.md](FISCAL_ORQUESTRADOR_HOMOLOGACAO_20261027.md).
+Não há novo endpoint, emissão comercial ou homologação oficial. Numeração
+automática, política tributária aprovada, DANFE, SPED/PVA e NFS-e produção
+continuam pendentes. Não alterar as pastas originais para simular essa conclusão.
+Resultados locais e hashes ficam no registro de evidência dessa unidade;
+CI novo deve ser conferido separadamente. Credenciais ainda não trocadas:
+sem merge, sem remoção de chaves antigas de backup ou reinício dos serviços.
+
+Verificação local da nova unidade:42 funções principais/98 resultados incluindo
+subtestes com -race, zero falhas/zero skips;33 comandos de backup real. Vet dos
+pacotes afetados, compilação e537rotas conferidos. Suíte geral do repositório
+não repetida localmente neste delta; CI deve executá-la na revisão publicada.
