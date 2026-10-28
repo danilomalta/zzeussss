@@ -1,0 +1,40 @@
+{
+  "release": "frontend-consolidado68-20261026-1",
+  "head": "3aaa54574ef25c5387509c63db713f2b40a09a06",
+  "verified_candidate": true,
+  "logs": "/home/danillo-malta/Downloads/Titan_Frontend68_Validacao_a5s3zhjb",
+  "backup": "/home/danillo-malta/Downloads/Titan_Frontend68_Backup_baxl_g77",
+  "applied_unix": 1793032633,
+  "before": {
+    "docs/frontend/ENTREGA_CONSOLIDADA68.md": null,
+    "docs/frontend/PENDENCIAS_FRONTEND68.json": null,
+    "docs/frontend/PENDENCIAS_FRONTEND68.md": null,
+    "frontend-web/src/App.tsx": "82830f76117ca8d8597accb0477fefefed72174f1c0e2a0785a30fe1c8bdcbcb",
+    "frontend-web/src/core/recovery68/Navigation68.tsx": null,
+    "frontend-web/src/core/recovery68/Recovery68.tsx": null,
+    "frontend-web/src/core/recovery68/model.d.mts": null,
+    "frontend-web/src/core/recovery68/model.mjs": null,
+    "frontend-web/src/core/recovery68/recovery68.css": null,
+    "frontend-web/src/core/recovery68/words.d.mts": null,
+    "frontend-web/src/core/recovery68/words.mjs": null,
+    "frontend-web/src/core/router/index.tsx": "5a0ab068e139bc3f172374dd59b42d2734384875db013217abbfb20e00d392c9",
+    "frontend-web/src/shared/brand/LocalWorkspace.tsx": "39b0dfc637bce1520674c79b96d525c569487efc13921796d52abf51a76a467d",
+    "frontend-web/tests/recovery68.test.mjs": null
+  },
+  "after": {
+    "docs/frontend/ENTREGA_CONSOLIDADA68.md": "99b5f96b3f79cbffc0c704c278fb44c499eba25e1ce6b432aedbe3b58d49aae5",
+    "docs/frontend/PENDENCIAS_FRONTEND68.json": "5aa89b42a49c5b855b4be05f133bd44204c97835745d42d2a61cc27294e4252f",
+    "docs/frontend/PENDENCIAS_FRONTEND68.md": "df332eeb438adf8df9018a9026378d4e4a8acea004064bd83000806910d08a2e",
+    "frontend-web/src/App.tsx": "18e68fc2062a74af750d1f2ff470fb66587435bd7d1c2d9e443625e46ab7659c",
+    "frontend-web/src/core/recovery68/Navigation68.tsx": "b964583df69bae6ac8a23b44d1ecc04bc2ad6bfe4bdb9e19ab28f359ef04fea0",
+    "frontend-web/src/core/recovery68/Recovery68.tsx": "406ff7dce26184dfc742fa1bfd5a968366aa30477badffa6ea9d982feed9c739",
+    "frontend-web/src/core/recovery68/model.d.mts": "2a71d8492f51c0e2f4bcd41eed099a7d16cfda10c34362a624ff0a17dd698dc7",
+    "frontend-web/src/core/recovery68/model.mjs": "b0d337f6554256c09e25d059504ef4453598c53abd15d585ff067a001826b65f",
+    "frontend-web/src/core/recovery68/recovery68.css": "593aa963ad4960963bfb8989ef362f09ebf087d2dd77e85cff3e7f7140d57d79",
+    "frontend-web/src/core/recovery68/words.d.mts": "2101c7f58202302d7514dc940c733eccc0df1ec348c506c3912e20a2c6fbcf6b",
+    "frontend-web/src/core/recovery68/words.mjs": "e09672ac510a1bcf1b5824a27cac01404b2fca3ceae52b66840c3acc06a28776",
+    "frontend-web/src/core/router/index.tsx": "013e916e619ca2231baf005fdfec7dadff17c123c862a1de818e8072d39c27eb",
+    "frontend-web/src/shared/brand/LocalWorkspace.tsx": "3fecb1f7204c9a30b57f4524809e2790b3a3b7bcdb0b28bf45702c74de8937ac",
+    "frontend-web/tests/recovery68.test.mjs": "cc955c375c9a58e8d2bcf6ac87c754996d2c17f4d01e0c07ad820ffe1cd0c430"
+  }
+}

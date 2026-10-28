@@ -1,0 +1,14 @@
+{
+  "release": "frontend-producao69-20261028-1",
+  "verified_candidate": true,
+  "after": {
+    "frontend-web/src/modules/tenant/pages/sectors86/ProductionCommands.tsx": "6163086222d86fdd1ce152c5b719b6bb673904638d318de5ba0f8c5b33964bd2",
+    "frontend-web/src/core/productionRead/queueWatch.mjs": "aaa9b450f86fb2d041d4b8550afa2f3d4bf22af3366441db3b61534b2dc86b71",
+    "frontend-web/src/core/productionRead/queueWatch.d.mts": "253006f72ecbcff90196ec2babeba1a27688a49cd4bcbae6acebf585f93ebf34",
+    "frontend-web/tests/productionQueue69.test.mjs": "42832c55dffd2a06e4cfe93be760fdc295310ea4bffc5a2ea9e6f62069dd273c",
+    "docs/frontend/ENTREGA_PRODUCAO69.md": "794da2051b88a589c0bf2950a13bfc9db53da939101598365e48370d514ac53b",
+    "docs/frontend/PENDENCIAS_FRONTEND69.md": "81e6b5d88a83bfda68511772c117f275b89a3c04859d49a5a6fcb379a3f63ce9",
+    "docs/frontend/PENDENCIAS_FRONTEND69.json": "e9ee8d381b429352278b21bb8d17193c1a26ae5132f99543cfe59cfb216b34ed"
+  },
+  "included_by": "frontend-recuperacao70-20261028-1"
+}

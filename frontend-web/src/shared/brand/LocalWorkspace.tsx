@@ -9,6 +9,7 @@ import {BrandLogo,ThemeToggle} from './BrandShell';
 import ContactDrawer from './ContactDrawer';
 import './workspace.css';
 import LogoutButton82 from './LogoutButton82';
+import Navigation68 from '../../core/recovery68/Navigation68';
 export default function LocalWorkspace(){
  const {t}=useTranslation();const location=useLocation();const {capabilities}=useLocalAccess();
  if(!allowedAreas(capabilities).includes(areaForRoute(location.pathname)))return <Navigate to="/local/home" replace/>;
@@ -18,7 +19,7 @@ export default function LocalWorkspace(){
    {!home&&<Link className="brand-secondary workspace-back-menu" to="/local/home">← {t('navigation.backToMenu')}</Link>}
    <OpenInSheets70/><ThemeToggle/><ContactDrawer/><LogoutButton82/>
   </div></header>
-  <ContextBar74/>
-  <div className="workspace-scroll"><ContextGate75><Outlet/></ContextGate75></div>
+  <Navigation68/><ContextBar74/>
+  <div id="titan-content68" tabIndex={-1} className="workspace-scroll"><ContextGate75><Outlet/></ContextGate75></div>
  </section></div>;
 }

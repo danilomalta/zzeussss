@@ -3,6 +3,8 @@ import {AppearanceProvider80} from '../settings80/runtime';
 import {useTranslation} from 'react-i18next';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 import { OnlineSessionGuard, LocalSessionGuard } from '../local/SessionGuards';
+import { RouteRecovery68 } from '../recovery68/Recovery68';
+import { protectRoutes68 } from '../recovery68/model.mjs';
 
 /*
 ROTEAMENTO MODULAR COM DIVISÃO DE CÓDIGO (LAZY LOADING)
@@ -56,7 +58,7 @@ const SuspenseWrapper = ({children}:{children:React.ReactNode}) => {
 const LocalLossPrevention76 = React.lazy(() => import('../../modules/tenant/pages/LocalLossPrevention76'));
 
 // Definição da árvore de rotas modularizada do TitanSystem
-export const router = createBrowserRouter([
+export const router = createBrowserRouter(protectRoutes68([
   { path: '/register', element: <SuspenseWrapper><Registration /></SuspenseWrapper> },
   { path: '/local/login', element: <SuspenseWrapper><LocalLogin /></SuspenseWrapper> },
   { path: '/local', element: <LocalSessionGuard><LocalAccessProvider><SuspenseWrapper><AppearanceProvider80><LocalWorkspace /></AppearanceProvider80></SuspenseWrapper></LocalAccessProvider></LocalSessionGuard>, children: [
@@ -146,4 +148,4 @@ export const router = createBrowserRouter([
       },
     ]
   }
-]);
+], <RouteRecovery68 />));

@@ -1,0 +1,10 @@
+.recovery68{box-sizing:border-box;max-width:52rem;max-height:100dvh;overflow:auto;margin:auto;padding:clamp(1rem,4vw,2rem);background:var(--surface,var(--bg,#fff));color:var(--text,#15202b);overflow-wrap:anywhere}
+.recovery68-actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-block:1rem}
+.recovery68-actions a,.recovery68-actions button{min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-align:center;padding:.7rem 1rem;white-space:normal}
+.recovery68 :focus-visible,.skip68:focus-visible{outline:3px solid var(--accent,#1668d4);outline-offset:3px}
+.skip68{position:fixed;top:.5rem;left:.5rem;z-index:10000;transform:translateY(-200%);background:var(--bg,#fff);color:var(--text,#111);padding:.8rem;border:2px solid currentColor;border-radius:.4rem}
+.skip68:focus{transform:translateY(0)}
+.sr-only68{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.network68{flex:none;max-height:6rem;overflow:auto;margin:0;padding:.6rem 1rem;border-bottom:1px solid currentColor;background:var(--bg,#fff);color:var(--text,#111);font-size:.875rem}
+@media(prefers-reduced-motion:no-preference){.skip68{transition:transform .12s}}
+@media print{.skip68,.network68,.recovery68-actions{display:none}}

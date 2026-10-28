@@ -1,0 +1,13 @@
+{
+  "release": "frontend-recuperacao70-20261028-1",
+  "scope": "recuperacao financeira116 e aplicacao cumulativa69",
+  "inventory_reference": "PENDENCIAS_FRONTEND69.json",
+  "new_backend_browser_acceptance": false,
+  "open": [
+    "Aceite visual/login na instalação do usuário",
+    "Ciclo compras/recebimento/financeiro completo no navegador não repetido nesta reconstrução",
+    "Homologação fiscal e PSP/bancos",
+    "Operação móvel independente e hardware",
+    "Demais96 itens do inventário69 permanecem com seus critérios de aceite"
+  ]
+}
