@@ -21,6 +21,12 @@ func (s *Server) mountFiscal(r fiber.Router) {
 	r.Get("/fiscal/intents", s.listFiscalIntents)
 	r.Get("/fiscal/intents/:id", s.readFiscalIntent)
 	r.Get("/fiscal/intents/:id/danfe", s.readFiscalDANFE)
+	r.Post("/fiscal/intents/:id/production/prepare", s.prepareProduction)
+	r.Post("/fiscal/intents/:id/production/approve", s.approveProduction)
+	r.Post("/fiscal/intents/:id/production/emit", s.emitProduction)
+	r.Post("/fiscal/intents/:id/production/query", s.queryProduction)
+	r.Get("/fiscal/intents/:id/production", s.readProduction)
+	r.Get("/fiscal/intents/:id/production/xml", s.readProductionXML)
 	r.Get("/fiscal/operations/:id/receipt", s.readFiscalOperation)
 }
 
@@ -66,7 +72,18 @@ func (s *Server) fiscalCapabilities(c *fiber.Ctx) error {
 	if err != nil {
 		return fiscalFailure(c, err)
 	}
-	return c.JSON(fiber.Map{"scope": "durable_preparation_and_homologation_archive_print", "homologation_archive_print_available": true, "models": []string{"55", "65"}, "profile_configuration": "active_owner_and_fiscal_contract", "readiness": fiscal.Unavailable(), "nfse_available": false, "sped_generation_available": false, "transmission_available": false, "automatic_retry_available": false})
+	out := fiber.Map{"scope": "durable_preparation_and_homologation_archive_print", "homologation_archive_print_available": true, "models": []string{"55", "65"}, "profile_configuration": "active_owner_and_fiscal_contract", "readiness": fiscal.Unavailable(), "nfse_available": false, "sped_generation_available": false, "transmission_available": false, "automatic_retry_available": false}
+	if s.production != nil && s.production.Validate() == nil {
+		b := s.production.Binding()
+		if b.TenantID == ss.Actor.TenantID && b.StoreID == ss.Actor.StoreID && b.DeviceID == ss.Device.DeviceID {
+			out["scope"] = "synchronous_production_emitter"
+			out["transmission_available"] = true
+			out["readiness"] = fiscal.Readiness{Blockers: []string{"reviewed_production_document_and_approval_required"}}
+			out["production_model"] = b.Model
+			out["production_configuration_sha256"] = b.SHA256()
+		}
+	}
+	return c.JSON(out)
 }
 func (s *Server) configureFiscal(c *fiber.Ctx) error {
 	var in fiscal.ProfileInput

@@ -62,7 +62,7 @@ func TestFiscalSchemaManifestCoversUnmodifiedEmbeddedFiles(t *testing.T) {
 		seen++
 		return nil
 	})
-	if err != nil || seen != 42 {
+	if err != nil || seen != 43 {
 		t.Fatal(seen, err)
 	}
 }

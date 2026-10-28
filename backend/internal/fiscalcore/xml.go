@@ -105,6 +105,8 @@ func schemaPath(kind string) string {
 	switch kind {
 	case "nfe":
 		return "schemas/nfe400/nfe_v4.00.xsd"
+	case "nfe_authorization_response":
+		return "schemas/nfe400/authorization_response_root.xsd"
 	case "nfe_query":
 		return "schemas/nfe400/consSitNFe_v4.00.xsd"
 	case "nfe_query_response":

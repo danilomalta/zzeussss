@@ -1365,7 +1365,8 @@
           "scope": {
             "type": "string",
             "enum": [
-              "durable_preparation_and_homologation_archive_print"
+              "durable_preparation_and_homologation_archive_print",
+              "synchronous_production_emitter"
             ]
           },
           "models": {
@@ -1394,9 +1395,7 @@
           },
           "transmission_available": {
             "type": "boolean",
-            "enum": [
-              false
-            ]
+            "description": "True somente com configuração privada de produção vigente; não substitui revisão/aprovação por documento."
           },
           "automatic_retry_available": {
             "type": "boolean",
@@ -1410,6 +1409,17 @@
               true
             ],
             "description": "Rota de leitura/impressão técnica do modelo65/ambiente2. Exige documento arquivado, protocolo correspondente e sessão autorizada. Não significa emissão ou homologação oficial."
+          },
+          "production_model": {
+            "type": "string",
+            "enum": [
+              "55",
+              "65"
+            ]
+          },
+          "production_configuration_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
           }
         }
       },

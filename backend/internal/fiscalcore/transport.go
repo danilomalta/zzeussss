@@ -70,6 +70,28 @@ func NewClient(endpoint, scope string, credential *Credential, recorder Recorder
 	}
 	return newClient(endpoint, scope, credential, recorder, roots, false)
 }
+
+// NewClientWithServerTrust is for trusted host PKI/network policy, never HTTP
+// input. TLS hostname verification, mTLS, redirect refusal and no proxy remain
+// enforced. An optional dialer can route an approved hostname without changing
+// its TLS ServerName (also used by isolated real-mTLS acceptance tests).
+func NewClientWithServerTrust(endpoint, scope string, credential *Credential, recorder Recorder, roots *x509.CertPool, dial func(context.Context, string, string) (net.Conn, error)) (*Client, error) {
+	if roots == nil {
+		var err error
+		roots, err = x509.SystemCertPool()
+		if err != nil {
+			return nil, ErrCredential
+		}
+	}
+	c, err := newClient(endpoint, scope, credential, recorder, roots, false)
+	if err != nil {
+		return nil, err
+	}
+	if dial != nil {
+		c.http.Transport.(*http.Transport).DialContext = dial
+	}
+	return c, nil
+}
 func newClient(endpoint, scope string, c *Credential, recorder Recorder, serverRoots *x509.CertPool, loopbackTest bool) (*Client, error) {
 	u, err := url.Parse(endpoint)
 	if err != nil || u.Scheme != "https" || u.User != nil || u.Fragment != "" || u.RawQuery != "" || u.Host == "" || scope == "" || len(scope) > 128 || recorder == nil || serverRoots == nil || !c.current(time.Now()) {

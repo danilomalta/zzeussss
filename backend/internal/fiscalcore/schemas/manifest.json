@@ -319,6 +319,10 @@
     "events100/evento_root.xsd": {
       "purpose": "Root evento bound to the unmodified official TEvento type; does not remove/add fields or constraints.",
       "sha256": "5829a578c254655afde0ddeaf5764e18d26cfbca151d59688fd47ee5de87b4a7"
+    },
+    "nfe400/authorization_response_root.xsd": {
+      "purpose": "Root retEnviNFe bound to unchanged official TRetEnviNFe type; all constraints retained.",
+      "sha256": "6916ec14755d249dec642e3c2e0278bc8ad0b59f326e15913915d286884319bc"
     }
   }
 }

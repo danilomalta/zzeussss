@@ -111,8 +111,12 @@ type OriginalNFe struct {
 }
 
 func OriginalNFeFromRequest(req RecordedRequest) (OriginalNFe, error) {
+	return originalNFeFromRequest(req, "2")
+}
+
+func originalNFeFromRequest(req RecordedRequest, environment string) (OriginalNFe, error) {
 	digest := sha256.Sum256(req.Body)
-	if req.OperationID == "" || len(req.OperationID) > 128 || req.Scope == "" || req.URL == "" || len(req.Body) > 2*MaxXML || req.Environment != "2" || !ValidAccessKey(req.Key) || req.Issuer != req.Key[6:20] || req.RequestSHA256 != hex.EncodeToString(digest[:]) {
+	if (environment != "1" && environment != "2") || req.OperationID == "" || len(req.OperationID) > 128 || req.Scope == "" || req.URL == "" || len(req.Body) > 2*MaxXML || req.Environment != environment || !ValidAccessKey(req.Key) || req.Issuer != req.Key[6:20] || req.RequestSHA256 != hex.EncodeToString(digest[:]) {
 		return OriginalNFe{}, ErrUncertain
 	}
 	d, err := parseXMLLimits(req.Body, 2*MaxXML, 8200)
@@ -143,7 +147,7 @@ func OriginalNFeFromRequest(req RecordedRequest) (OriginalNFe, error) {
 		return OriginalNFe{}, ErrXML
 	}
 
-	original, _, err := inspectArchivedNFe(signed)
+	original, _, err := inspectArchivedNFeEnvironment(signed, environment)
 	if err != nil {
 		return OriginalNFe{}, err
 	}
@@ -188,6 +192,10 @@ func interpretHomologationNFe(signed []byte, result ExchangeResult) (IssuanceEvi
 }
 
 func inspectArchivedNFe(signed []byte) (OriginalNFe, *etree.Document, error) {
+	return inspectArchivedNFeEnvironment(signed, "2")
+}
+
+func inspectArchivedNFeEnvironment(signed []byte, expectedEnvironment string) (OriginalNFe, *etree.Document, error) {
 	var out OriginalNFe
 	if err := ValidateXML("nfe", signed); err != nil {
 		return out, nil, err
@@ -202,7 +210,7 @@ func inspectArchivedNFe(signed []byte) (OriginalNFe, *etree.Document, error) {
 	}
 	key := strings.TrimPrefix(info.SelectAttrValue("Id", ""), "NFe")
 	environment := info.FindElement("ide/tpAmb")
-	if !ValidAccessKey(key) || environment == nil || environment.Text() != "2" || invoiceIdentity(info, key) != nil {
+	if (expectedEnvironment != "1" && expectedEnvironment != "2") || !ValidAccessKey(key) || environment == nil || environment.Text() != expectedEnvironment || invoiceIdentity(info, key) != nil {
 		return out, nil, ErrInput
 	}
 	certNode := d.Root().FindElement("Signature/KeyInfo/X509Data/X509Certificate")
@@ -228,5 +236,5 @@ func inspectArchivedNFe(signed []byte) (OriginalNFe, *etree.Document, error) {
 	if signature == nil {
 		return out, nil, ErrXML
 	}
-	return OriginalNFe{Key: key, Issuer: key[6:20], Environment: "2", Digest: signature.Text(), SignedXML: append([]byte(nil), signed...)}, d, nil
+	return OriginalNFe{Key: key, Issuer: key[6:20], Environment: expectedEnvironment, Digest: signature.Text(), SignedXML: append([]byte(nil), signed...)}, d, nil
 }

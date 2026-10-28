@@ -32,10 +32,16 @@ func (r *HomologationRecorder) ValidateInvoice(ctx context.Context, in fiscalcor
 	if err != nil || !in.Key.IssuedAt.Equal(issued) || assignment.AccessKey != r.key || assignment.ActorID != r.actor.IdentityID || assignment.DeviceID != r.device.DeviceID {
 		return ErrInvalid
 	}
-	s := intent.Snapshot
+	if err = validateInvoiceSnapshot(in, intent.Snapshot, r.key, 2); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func validateInvoiceSnapshot(in fiscalcore.Invoice, s Snapshot, key string, environment int) error {
 	p := s.Profile
-	key, err := fiscalcore.AccessKey(in.Key)
-	if err != nil || key != r.key || in.Environment != 2 || in.Key.Emission != 1 || in.CRT != p.CRT || in.Issuer.CNPJ != p.CNPJ || in.Issuer.Name != p.LegalName || in.Issuer.IE != p.StateRegistration || in.Issuer.Address.CityCode != p.Municipality || in.Issuer.Address.UF != p.State || in.Direction != "1" || in.Nature == "" || len(in.Lines) != len(s.Items) || len(in.Payments) != len(s.Payments) {
+	computed, err := fiscalcore.AccessKey(in.Key)
+	if err != nil || computed != key || in.Environment != environment || in.Key.Emission != 1 || in.CRT != p.CRT || in.Issuer.CNPJ != p.CNPJ || in.Issuer.Name != p.LegalName || in.Issuer.IE != p.StateRegistration || in.Issuer.Address.CityCode != p.Municipality || in.Issuer.Address.UF != p.State || in.Direction != "1" || in.Nature == "" || len(in.Lines) != len(s.Items) || len(in.Payments) != len(s.Payments) {
 		return ErrInvalid
 	}
 	// Same positional ordering as the immutable snapshot (sale_item ID order),
@@ -78,7 +84,7 @@ func (r *HomologationRecorder) ValidateInvoice(ctx context.Context, in fiscalcor
 			return fiscalcore.ErrUnsupported
 		}
 	}
-	return tx.Commit()
+	return nil
 }
 
 func equalScaled(text string, value, scale int64) bool {

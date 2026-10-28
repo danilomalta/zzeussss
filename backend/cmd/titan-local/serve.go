@@ -15,6 +15,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"titansystem-backend/internal/deployment"
+	"titansystem-backend/internal/fiscalproduction"
 	"titansystem-backend/internal/localapi"
 	"titansystem-backend/internal/localdb/stationfile"
 )
@@ -47,6 +48,7 @@ func serveStationContext(ctx context.Context, args []string, out io.Writer) erro
 	stationPath := options.String("station", "", "arquivo privado do aparelho")
 	issuerKeys := options.String("issuer-keys", "", "chaves públicas emissoras confiáveis")
 	port := options.Int("port", 8181, "porta loopback sem perfil de operação")
+	fiscalPath := options.String("fiscal-production", "", "configuração fiscal privada; desativada por padrão")
 	profilePath := options.String("deployment", "", "perfil privado de operação local ou servidor")
 	if options.Parse(args) != nil || options.NArg() != 0 || *dbPath == "" || *stationPath == "" {
 		return errors.New("informe banco e aparelho")
@@ -79,6 +81,16 @@ func serveStationContext(ctx context.Context, args []string, out io.Writer) erro
 	if err != nil {
 		return err
 	}
+	var fiscalRuntime *fiscalproduction.Runtime
+	if *fiscalPath != "" {
+		if verifier == nil {
+			return fiscalproduction.ErrUnavailable
+		}
+		fiscalRuntime, err = fiscalproduction.Load(*fiscalPath)
+		if err != nil {
+			return fiscalproduction.ErrUnavailable
+		}
+	}
 	// Unsupported profiles, bad certificate, network and flags are rejected
 	// before opening/migrating the existing database.
 	if err = ctx.Err(); err != nil {
@@ -90,7 +102,7 @@ func serveStationContext(ctx context.Context, args []string, out io.Writer) erro
 	}
 	defer db.Close()
 	defer clear(key)
-	app, err := localapi.NewWithTradeSignerAndGate(db, device, verifier, networkGate(profile), key)
+	app, err := localapi.NewWithProductionAndGate(db, device, verifier, networkGate(profile), key, fiscalRuntime)
 	if err != nil {
 		return err
 	}
@@ -113,6 +125,9 @@ func serveStationContext(ctx context.Context, args []string, out io.Writer) erro
 		if _, err = fmt.Fprintln(out, "Cadastros indisponiveis: configure --issuer-keys e instale um contrato valido. Login e consultas continuam disponiveis."); err != nil {
 			return err
 		}
+	}
+	if fiscalRuntime != nil {
+		return runLocalListenerWithDrain(ctx, app, listener, 45*time.Second)
 	}
 	return runLocalListener(ctx, app, listener)
 }
@@ -157,6 +172,10 @@ func (l *closeOnceListener) Close() error {
 }
 
 func runLocalListener(ctx context.Context, app *fiber.App, listener net.Listener) error {
+	return runLocalListenerWithDrain(ctx, app, listener, 5*time.Second)
+}
+
+func runLocalListenerWithDrain(ctx context.Context, app *fiber.App, listener net.Listener, drain time.Duration) error {
 	managed := &closeOnceListener{Listener: listener}
 	done := make(chan error, 1)
 	go func() { done <- app.Listener(managed) }()
@@ -167,7 +186,7 @@ func runLocalListener(ctx context.Context, app *fiber.App, listener net.Listener
 		// Stop accepting before draining, including cancellation just before Fiber
 		// starts serving. Do not close the DB until the listener goroutine finishes.
 		_ = managed.Close()
-		err := app.ShutdownWithTimeout(5 * time.Second)
+		err := app.ShutdownWithTimeout(drain)
 		serveErr := <-done
 		if err != nil && !errors.Is(err, net.ErrClosed) {
 			return err

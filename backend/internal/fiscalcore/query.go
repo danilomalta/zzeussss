@@ -15,7 +15,7 @@ const consultationNS = NFeNS + "/wsdl/NFeConsultaProtocolo4"
 // BuildNFeConsultation builds ONLY consSitNFe. It never carries an NFe, event,
 // signature or fresh number. Endpoints remain controlled by the trusted host.
 func BuildNFeConsultation(key, environment string) ([]byte, error) {
-	if !ValidAccessKey(key) || environment != "2" {
+	if !ValidAccessKey(key) || (environment != "2" && environment != "1") {
 		return nil, ErrInput
 	}
 	d := etree.NewDocument()
@@ -66,19 +66,27 @@ type ConsultationEvidence struct {
 // emission/query journals, not XML uploaded by a renderer. It never modifies
 // either record, releases numbers, reemits, cancels money or adjusts stock.
 func ReconcileHomologationNFe(originalRequest, queryRequest RecordedRequest, result ExchangeResult) (ConsultationEvidence, error) {
+	return reconcileNFe(originalRequest, queryRequest, result, "2")
+}
+
+func ReconcileProductionNFe(originalRequest, queryRequest RecordedRequest, result ExchangeResult) (ConsultationEvidence, error) {
+	return reconcileNFe(originalRequest, queryRequest, result, "1")
+}
+
+func reconcileNFe(originalRequest, queryRequest RecordedRequest, result ExchangeResult, environment string) (ConsultationEvidence, error) {
 	out := ConsultationEvidence{ParserVersion: "nfe-query-v1", OriginalOperationID: originalRequest.OperationID, QueryOperationID: queryRequest.OperationID, Disposition: "uncertain"}
-	original, err := OriginalNFeFromRequest(originalRequest)
+	original, err := originalNFeFromRequest(originalRequest, environment)
 	if err != nil {
 		return out, err
 	}
 	out.Key = original.Key
 	out.Environment = original.Environment
-	expected, err := BuildNFeConsultation(original.Key, "2")
+	expected, err := BuildNFeConsultation(original.Key, environment)
 	if err != nil {
 		return out, err
 	}
 	hash := sha256.Sum256(queryRequest.Body)
-	if queryRequest.OperationID == "" || queryRequest.OperationID == originalRequest.OperationID || queryRequest.OperationID != result.OperationID || queryRequest.Key != original.Key || queryRequest.Issuer != original.Issuer || queryRequest.Environment != "2" || !bytes.Equal(queryRequest.Body, expected) || queryRequest.RequestSHA256 != hex.EncodeToString(hash[:]) {
+	if queryRequest.OperationID == "" || queryRequest.OperationID == originalRequest.OperationID || queryRequest.OperationID != result.OperationID || queryRequest.Key != original.Key || queryRequest.Issuer != original.Issuer || queryRequest.Environment != environment || !bytes.Equal(queryRequest.Body, expected) || queryRequest.RequestSHA256 != hex.EncodeToString(hash[:]) {
 		return out, ErrUncertain
 	}
 	if result.State != "response_received" || result.HTTPStatus != 200 || len(result.Body) > MaxXML {
@@ -108,7 +116,7 @@ func ReconcileHomologationNFe(originalRequest, queryRequest RecordedRequest, res
 		}
 		return e.Text()
 	}
-	if get("tpAmb") != "2" || get("chNFe") != original.Key {
+	if get("tpAmb") != environment || get("chNFe") != original.Key {
 		return out, ErrUncertain
 	}
 	// Event/cancellation children must not smuggle another document/environment.
@@ -118,7 +126,7 @@ func ReconcileHomologationNFe(originalRequest, queryRequest RecordedRequest, res
 		}
 	}
 	for _, e := range root.FindElements(".//tpAmb") {
-		if e.NamespaceURI() != NFeNS || e.Text() != "2" {
+		if e.NamespaceURI() != NFeNS || e.Text() != environment {
 			return out, ErrUncertain
 		}
 	}
@@ -143,11 +151,11 @@ func ReconcileHomologationNFe(originalRequest, queryRequest RecordedRequest, res
 		ret := auth.CreateElement("retEnviNFe")
 		ret.CreateAttr("xmlns", NFeNS)
 		ret.CreateAttr("versao", "4.00")
-		field(ret, "tpAmb", "2")
+		field(ret, "tpAmb", environment)
 		field(ret, "cStat", "104")
 		ret.AddChild(proto.Copy())
 		authRaw, _ := auth.WriteToBytes()
-		protocol, err := ParseProtocol(authRaw, original.Key, "2", original.Digest)
+		protocol, err := ParseProtocol(authRaw, original.Key, environment, original.Digest)
 		if err != nil {
 			return out, err
 		}
@@ -159,12 +167,21 @@ func ReconcileHomologationNFe(originalRequest, queryRequest RecordedRequest, res
 			return out, err
 		}
 		out.Disposition = "authorized_indicated_homologation"
+		if environment == "1" {
+			out.Disposition = "authorized_indicated_production"
+		}
 		out.Protocol = &protocol
 		out.ProcessedXML = processed
 	case "101":
 		out.Disposition = "canceled_indicated_homologation"
+		if environment == "1" {
+			out.Disposition = "canceled_indicated_production"
+		}
 	case "110", "301", "302":
 		out.Disposition = "denied_indicated_homologation"
+		if environment == "1" {
+			out.Disposition = "denied_indicated_production"
+		}
 	case "217":
 		out.Disposition = "not_found_indicated"
 	default:

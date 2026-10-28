@@ -2461,3 +2461,43 @@ ensaio físico. Emissor de produção, motor nacional completo, SPED/PVA,
 NFS-e produção e homologação real continuam pendentes de código/validação.
 Frontend/Electron, originais e serviços8182/8282 preservados; nenhum executável
 instalado ou merge. O CI desta alteração ainda precisa rodar.
+
+
+## Emissor síncrono revisado de produção —28/10/2026
+
+Basef6115f9: sete checks aprovados, inclusive
+https://github.com/danilomalta/zzeussss/actions/runs/40654534681/job/122702263542 .
+Essa evidência é da base, não certifica o delta desta unidade.
+
+Produção normal55/65 ganha API de preparação/aprovação/emissão/consulta e
+leitura do XML processado. Venda em dinheiro congelada, quantidades/preços/
+pagamentos/total exatos, revisão/hash e aprovação do dono/contador. Certificado,
+CRLs, endpoint governamental e contexto atuais antes do envio único. Série e
+numeração têm autoridade própria, trava e histórico imutável; incerteza,
+duplicidade ou logout não apagam nem reenviam a operação. Correção explícita
+somente após rejeição certa, mantendo o número. Nenhuma nova movimentação de
+caixa/estoque/venda. Backup cifrado preserva journal e XML; restauração mantém
+a barreira de envio, com leitura/consulta autorizadas sem reiniciar a emissão.
+
+Configuração privada explícita no processo, desativada por padrão; nenhum
+endpoint/chave/CSC vindo do navegador. Certificados e autoridade dos testes
+são sintéticos com assinatura e mTLS reais em loopback. Sem emissão oficial,
+credenciamento ou homologação real. Não declarar fiscal integralmente pronto.
+
+Validação local: 59 pacotes, 1481 testes principais e 3251 resultados incluindo subtestes aprovados; zero falhas, 8 skips explícitos. Núcleo/runtime -race: 32 principais/156 resultados. API/SQLite -race: 78 principais/208 resultados e 120 comandos reais do titan-backup. Sem falhas/skips nas rodadas race. Vet completo, quatro builds,17 testes dos validadores e544rotas passaram. As72migrações e42XSDs anteriores permanecem idênticos; schema73 novo e wrapper de resposta adicional. Os33fontes/configurações/contratos foram conferidos por hash. Os8skips locais incluem PostgreSQL, três pontes frontend e auxiliares opt-in; as integrações relevantes continuam obrigatórias no CI.
+
+Detalhes e limites em
+[FISCAL_EMISSOR_PRODUCAO_20261028.md](FISCAL_EMISSOR_PRODUCAO_20261028.md);
+[evidência agregada e hashes](evidence/fiscal-production-20261028/verification.json).
+Continuam pendentes regras tributárias nacionais/RTC completas, operações
+econômicas adicionais, DANFE/eventos/contingência de produção integrados ao
+novo journal, SPED/PVA, NFS-e produção e aceite com emitente/certificado reais.
+O provisionamento atual usa PEM privado; PFX protegido e adaptadores A3/HSM/
+Windows precisam de implementação/aceite próprios. A série é exclusiva deste
+banco, não uma autoridade distribuída entre instalações. A interface de
+provisionamento/revisão não foi alterada nesta entrega de backend/API.
+
+Frontend/Electron, árvores originais e serviços8182/8282 preservados. Nenhum
+binário instalado, banco comercial acessado ou merge. Publicação somente na
+branch fiscal/PR5; CI deste novo delta deve concluir após o push. As credenciais
+históricas continuam pendentes de troca e não foram abertas nesta tarefa.

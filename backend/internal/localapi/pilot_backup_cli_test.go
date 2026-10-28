@@ -97,7 +97,7 @@ func pilotCLIBackupRoundTrip(t *testing.T, f *stockHTTPFixture, dbPath, station 
 	inspect := func(label, path string) backup.Inspection {
 		raw := pilotRunBackupCLI(t, label, true, args("inspect", path)...)
 		var report backup.Inspection
-		if e := json.Unmarshal(raw, &report); e != nil || report.Profile != "pilot_cash_v1" || report.SchemaVersion != 72 || len(report.Unavailable) != 0 {
+		if e := json.Unmarshal(raw, &report); e != nil || report.Profile != "pilot_cash_v1" || report.SchemaVersion != 73 || len(report.Unavailable) != 0 {
 			t.Fatal("invalid CLI inspection report", e)
 		}
 		// Aggregate counts and hashes only; never print keys, station or DB rows.
