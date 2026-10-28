@@ -56,7 +56,7 @@ func testInvoice() Invoice {
 }
 
 func TestFiscalOfficialSchemaCompilation(t *testing.T) {
-	for _, kind := range []string{"nfe", "nfse_dps", "nfse_document", "nfse_event", "nfe_event", "nfse_dps_homolog_20261020", "nfe_query", "nfe_query_response", "nfe_process", "nfe_event_batch", "nfe_event_response", "nfe_event_process"} {
+	for _, kind := range []string{"nfe", "nfse_dps", "nfse_document", "nfse_event", "nfe_event", "nfse_dps_homolog_20261020", "nfe_query", "nfe_query_response", "nfe_process", "nfe_event_batch", "nfe_event_response", "nfe_event_process", "nfe_invalidation", "nfe_invalidation_response", "nfe_invalidation_process"} {
 		_, err := compileSchema(kind)
 		if err != nil {
 			t.Fatalf("schema %s: %v", kind, err)

@@ -122,6 +122,31 @@
         "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/procNFe_v4.00.xsd": "d61d15303f8ccf77e6e5d77a8153255a6906e0d00385dc5000db19ed3bfa96e0"
       },
       "note": "Official SVRS root/layout files; existing pinned NF-e 4.00 basic/signature types unchanged."
+    },
+    "nfe-invalidation-alpha-20261028": {
+      "outer_url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=FOEnx2KAsCk%3D",
+      "outer_sha256": "cc50170b276c23bdab88650e1c68a46fdc707c8e810664452bba974cf744e7db",
+      "nested_zip": "PL_010d_NT2026.004.zip",
+      "nested_sha256": "c295706924ccba6044b53bca044c6069787db9a1b3bb8aa376266ef4fe4500d2",
+      "files": {
+        "PL_010d_NT2026.004/leiauteInutNFe_v4.00.xsd": "e6aa8f817d445cd7796f5bf448ee462598cc00393608ffa038f3a7539de4b184",
+        "PL_010d_NT2026.004/procInutNFe_v4.00.xsd": "c71ce9ed656e22161923d77af47839421fa41c63703a064655880fed76e20334"
+      }
+    },
+    "svrs-invalidation-roots-20261028": {
+      "files": {
+        "inutNFe_v4.00.xsd": {
+          "url": "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/inutNFe_v4.00.xsd",
+          "sha256": "bdb5b01bc77885756f4660bb14f120ae5f8853f962deb50fbf42c96df65b8f29",
+          "bytes": 606
+        },
+        "retInutNFe_v4.00.xsd": {
+          "url": "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/retInutNFe_v4.00.xsd",
+          "sha256": "f088a06df63d8b4e24a726b73ec3328cdb54a575a75351fbf4a9476934c9dafd",
+          "bytes": 623
+        }
+      },
+      "retrieved": "2026-10-28"
     }
   },
   "embedded": {
@@ -272,6 +297,22 @@
     "nfe400/procNFe_v4.00.xsd": {
       "original": "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/procNFe_v4.00.xsd",
       "sha256": "d61d15303f8ccf77e6e5d77a8153255a6906e0d00385dc5000db19ed3bfa96e0"
+    },
+    "nfe400/inutNFe_v4.00.xsd": {
+      "sha256": "bdb5b01bc77885756f4660bb14f120ae5f8853f962deb50fbf42c96df65b8f29",
+      "source": "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/inutNFe_v4.00.xsd"
+    },
+    "nfe400/retInutNFe_v4.00.xsd": {
+      "sha256": "f088a06df63d8b4e24a726b73ec3328cdb54a575a75351fbf4a9476934c9dafd",
+      "source": "https://dfe-portal.svrs.rs.gov.br/Schemas/PRNFE/retInutNFe_v4.00.xsd"
+    },
+    "nfe400/leiauteInutNFe_v4.00.xsd": {
+      "sha256": "e6aa8f817d445cd7796f5bf448ee462598cc00393608ffa038f3a7539de4b184",
+      "source": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=FOEnx2KAsCk%3D"
+    },
+    "nfe400/procInutNFe_v4.00.xsd": {
+      "sha256": "c71ce9ed656e22161923d77af47839421fa41c63703a064655880fed76e20334",
+      "source": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=FOEnx2KAsCk%3D"
     }
   },
   "generated_root_bindings": {

@@ -256,7 +256,7 @@ func TestFiscalQueryEmbeddedCancellationRequiresReview(t *testing.T) {
 
 func TestFiscalEmbeddedSchemaRootsWorkOutsideRepository(t *testing.T) {
 	t.Chdir(t.TempDir())
-	for _, kind := range []string{"nfe", "nfe_event", "nfse_dps", "nfse_dps_homolog_20261020", "nfe_query", "nfe_query_response", "nfe_process", "nfe_event_batch", "nfe_event_response", "nfe_event_process"} {
+	for _, kind := range []string{"nfe", "nfe_event", "nfse_dps", "nfse_dps_homolog_20261020", "nfe_query", "nfe_query_response", "nfe_process", "nfe_event_batch", "nfe_event_response", "nfe_event_process", "nfe_invalidation", "nfe_invalidation_response", "nfe_invalidation_process"} {
 		if _, err := compileSchema(kind); err != nil {
 			t.Fatalf("embedded schema %s outside repository: %v", kind, err)
 		}

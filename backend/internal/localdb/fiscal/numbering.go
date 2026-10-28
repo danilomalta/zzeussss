@@ -208,6 +208,12 @@ func AllocateHomologationNumber(ctx context.Context, db *sql.DB, license *entitl
 	if err != nil {
 		return NumberAssignment{}, err
 	}
+	// Pending/rejected/uncertain invalidation ranges remain exclusions. The
+	// sequence is not reset by fiscal year in this installation's authority.
+	err = tx.QueryRowContext(ctx, `WITH RECURSIVE candidate(n) AS (SELECT ? UNION ALL SELECT i.last_number+1 FROM candidate c JOIN fiscal_invalidation_requests i ON i.issuer=? AND i.model=? AND i.series=? AND i.first_number<=c.n AND i.last_number>=c.n) SELECT max(n) FROM candidate`, number, p.CNPJ, p.Model, p.Series).Scan(&number)
+	if err != nil {
+		return NumberAssignment{}, err
+	}
 	if number > 999999999 {
 		return NumberAssignment{}, ErrNumberExhausted
 	}

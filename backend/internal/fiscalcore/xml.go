@@ -111,6 +111,12 @@ func schemaPath(kind string) string {
 		return "schemas/nfe400/retConsSitNFe_v4.00.xsd"
 	case "nfe_process":
 		return "schemas/nfe400/procNFe_v4.00.xsd"
+	case "nfe_invalidation":
+		return "schemas/nfe400/inutNFe_v4.00.xsd"
+	case "nfe_invalidation_response":
+		return "schemas/nfe400/retInutNFe_v4.00.xsd"
+	case "nfe_invalidation_process":
+		return "schemas/nfe400/procInutNFe_v4.00.xsd"
 	case "nfe_event":
 		return "schemas/events100/evento_root.xsd"
 	case "nfe_event_batch":
@@ -137,7 +143,7 @@ func schemaPath(kind string) string {
 // a schemaLocation from the document, opens host files or fetches remote schemas.
 func ValidateXML(kind string, raw []byte) error {
 	byteLimit, nodeLimit := MaxXML, 8192
-	if kind == "nfe_process" || kind == "nfe_event_process" {
+	if kind == "nfe_process" || kind == "nfe_event_process" || kind == "nfe_invalidation_process" {
 		byteLimit, nodeLimit = 2*MaxXML, 8200
 	}
 	parsed, err := parseXMLLimits(raw, byteLimit, nodeLimit)
@@ -291,6 +297,8 @@ func payload(root *etree.Element, kind string) (*etree.Element, error) {
 	switch kind {
 	case "nfe":
 		rootTag, info, ns = "NFe", "infNFe", NFeNS
+	case "nfe_invalidation":
+		rootTag, info, ns = "inutNFe", "infInut", NFeNS
 	case "nfe_event":
 		rootTag, info, ns = "evento", "infEvento", NFeNS
 	case "nfse_dps", "nfse_dps_homolog_20261020":
@@ -343,7 +351,7 @@ func (c *Credential) SignXML(kind string, raw []byte, now time.Time) ([]byte, er
 		return nil, ErrCredential
 	}
 	// TNFe requires Signature: validate the complete schema after signing.
-	if kind != "nfe" && kind != "nfe_event" {
+	if kind != "nfe" && kind != "nfe_event" && kind != "nfe_invalidation" {
 		if err := ValidateXML(kind, raw); err != nil {
 			return nil, err
 		}
@@ -366,7 +374,7 @@ func (c *Credential) SignXML(kind string, raw []byte, now time.Time) ([]byte, er
 	if kind == "nfse_dps" || kind == "nfse_dps_homolog_20261020" {
 		path = "prest/CNPJ"
 	}
-	if kind == "nfe_event" {
+	if kind == "nfe_event" || kind == "nfe_invalidation" {
 		path = "CNPJ"
 	}
 	if kind != "nfse_event" {
@@ -434,7 +442,7 @@ func (c *Credential) verifySignedXML(kind string, raw []byte) error {
 	if kind == "nfse_dps" || kind == "nfse_dps_homolog_20261020" {
 		issuerPath = "prest/CNPJ"
 	}
-	if kind == "nfe_event" {
+	if kind == "nfe_event" || kind == "nfe_invalidation" {
 		issuerPath = "CNPJ"
 	}
 	if kind != "nfse_event" {
@@ -457,6 +465,11 @@ func (c *Credential) verifySignedXML(kind string, raw []byte) error {
 	}
 	if kind == "nfe_event" {
 		if err = cancellationIdentity(info, c.document); err != nil {
+			return err
+		}
+	}
+	if kind == "nfe_invalidation" {
+		if _, err = invalidationInput(info); err != nil {
 			return err
 		}
 	}

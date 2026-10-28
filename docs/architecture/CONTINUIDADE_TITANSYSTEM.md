@@ -2393,3 +2393,29 @@ em três pacotes; SQLite fiscal -race:51 funções/133 resultados e
 repetidos20vezes,40aprovações. Vet completo, quatro builds,17 testes dos
 validadores e537rotas passaram. Fontes conferidos por hash antes/depois dos
 testes. Nenhum binário instalado. Novo CI obrigatório; nenhum merge.
+
+
+## Fiscal72 — inutilização de faixas em homologação (28/10/2026)
+
+Basef532e39: sete checks aprovados, inclusive HTTP/PostgreSQL/SQLite/pontes
+frontend/recuperação em https://github.com/danilomalta/zzeussss/actions/runs/40490651352/job/122143445013 .
+Isso atualiza o CI pendente da unidade71, sem certificar alterações posteriores.
+
+Nova unidade: XML/assinatura/transporte e journal imutável de inutilização,
+protocolo102 associado exatamente e ProcInutNFe validado. Faixas pendentes ou
+incertas bloqueiam atribuição e emissão legada; não sobrepõem número já atribuído.
+Trava compartilhada com o alocador e guards SQL. Apenas dono com sessão/contrato
+atuais decide uma faixa; leitura contábil não concede envio. Nova sessão e Restore
+não retomam a tentativa. Nenhum efeito automático em caixa, venda ou estoque.
+Backup aceita25–72 e preserva exclusões. Schemas oficiais novos com suporte
+alfanumérico, sem alterar os38arquivos anteriores. Produção continua bloqueada.
+
+Detalhes/fontes/limites em
+[FISCAL_INUTILIZACAO_HOMOLOGACAO_20261028.md](FISCAL_INUTILIZACAO_HOMOLOGACAO_20261028.md).
+O limite10000é local de recursos, não regra jurídica nacional.563 não é sucesso.
+Não há liberação automática de faixas, regra de prazo por UF, DANFE, SPED/PVA,
+NFS-e produção ou motor tributário nacional completo. Pastas originais e serviços
+preservados. Sem merge; credenciais antigas continuam pendentes de troca.
+
+
+Resultado local final fiscal72: 58 pacotes, 1445 testes principais e 3139 resultados incluindo subtestes aprovados; zero falhas, 8 skips explícitos. Núcleo/CLI com -race: 36 principais/118 resultados em três pacotes. SQLite fiscal com -race: 62 principais/158 resultados e 77 comandos reais de backup/restauração, sem falhas ou skips nessas duas rodadas. Vet completo, quatro builds, 17 testes dos validadores e 537 rotas passaram. Os 25 fontes/configurações foram conferidos por hash antes e depois; as 71 migrações e os 38 XSDs anteriores permanecem idênticos. CI desta revisão deve rodar após publicação.

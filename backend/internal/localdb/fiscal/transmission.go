@@ -92,6 +92,12 @@ func (r *HomologationRecorder) Reserve(ctx context.Context, in fiscalcore.Record
 		return err
 	}
 	var n int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM fiscal_invalidation_requests WHERE issuer=? AND model=? AND series=? AND CAST(? AS INTEGER) BETWEEN first_number AND last_number`, r.key[6:20], r.key[20:22], r.key[22:25], r.key[25:34]).Scan(&n); err != nil {
+		return err
+	}
+	if n != 0 {
+		return fiscalcore.ErrRecorded
+	}
 	// Manual legacy technical requests must not steal an assigned number or
 	// change the key already reserved for this intent.
 	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM fiscal_number_allocations WHERE (issuer=? AND model=? AND series=? AND number=? AND NOT(tenant_id=? AND store_id=? AND intent_id=?)) OR (tenant_id=? AND store_id=? AND intent_id=? AND access_key<>?)`, r.key[6:20], r.key[20:22], r.key[22:25], r.key[25:34], r.actor.TenantID, r.actor.StoreID, r.intentID, r.actor.TenantID, r.actor.StoreID, r.intentID, r.key).Scan(&n); err != nil {
