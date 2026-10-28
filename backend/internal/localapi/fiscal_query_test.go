@@ -64,6 +64,10 @@ func querySyntheticCredential(t *testing.T) *fiscalcore.Credential {
 }
 
 func queryOriginalFixture(t *testing.T) (*stockHTTPFixture, fiscal.Intent, fiscal.NumberAssignment, fiscalcore.RecordedRequest) {
+	return queryOriginalFixtureWithPrint(t, false)
+}
+
+func queryOriginalFixtureWithPrint(t *testing.T, withPrint bool, direct ...bool) (*stockHTTPFixture, fiscal.Intent, fiscal.NumberAssignment, fiscalcore.RecordedRequest) {
 	t.Helper()
 	f := fiscalFixture(t)
 	intent := fiscalIntent(t, f, fiscalIntentBody, 201)
@@ -91,9 +95,16 @@ func queryOriginalFixture(t *testing.T) (*stockHTTPFixture, fiscal.Intent, fisca
 	if err != nil {
 		t.Fatal(err)
 	}
-	signed, err := querySyntheticCredential(t).SignXML("nfe", raw, time.Now())
+	credential := querySyntheticCredential(t)
+	signed, err := credential.SignXML("nfe", raw, time.Now())
 	if err != nil {
 		t.Fatal("sign synthetic fixture", err)
+	}
+	if withPrint {
+		signed, err = credential.CompleteNFCeXML(fiscalcore.QRConfiguration{BaseURL: "https://homologacao.example.gov.br/qrcode", Version: 3}, "https://homologacao.example.gov.br/consulta", signed, time.Now())
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 	invoice := etree.NewDocument()
 	if err = invoice.ReadFromBytes(signed); err != nil {
@@ -124,7 +135,28 @@ func queryOriginalFixture(t *testing.T) (*stockHTTPFixture, fiscal.Intent, fisca
 	if err = recorder.Reserve(context.Background(), req); err != nil {
 		t.Fatal(err)
 	}
-	if err = recorder.Complete(context.Background(), fiscalcore.ExchangeResult{OperationID: req.OperationID, State: "uncertain"}); err != nil {
+	result := fiscalcore.ExchangeResult{OperationID: req.OperationID, State: "uncertain"}
+	if len(direct) > 0 && direct[0] {
+		consultation := querySQLResult(t, req, req.OperationID, "100")
+		parsed := etree.NewDocument()
+		if err = parsed.ReadFromBytes(consultation.Body); err != nil {
+			t.Fatal(err)
+		}
+		auth := etree.NewDocument()
+		ret := auth.CreateElement("retEnviNFe")
+		ret.CreateAttr("xmlns", fiscalcore.NFeNS)
+		ret.CreateAttr("versao", "4.00")
+		ret.CreateElement("tpAmb").SetText("2")
+		ret.CreateElement("cStat").SetText("104")
+		ret.AddChild(parsed.Root().SelectElement("protNFe").Copy())
+		body, err := auth.WriteToBytes()
+		if err != nil {
+			t.Fatal(err)
+		}
+		digest := sha256.Sum256(body)
+		result = fiscalcore.ExchangeResult{OperationID: req.OperationID, State: "response_received", HTTPStatus: 200, Body: body, SHA256: hex.EncodeToString(digest[:])}
+	}
+	if err = recorder.Complete(context.Background(), result); err != nil {
 		t.Fatal(err)
 	}
 	return f, intent, number, req

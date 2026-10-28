@@ -20,12 +20,15 @@ func (s *Server) mountFiscal(r fiber.Router) {
 	r.Post("/fiscal/intents", s.prepareFiscal)
 	r.Get("/fiscal/intents", s.listFiscalIntents)
 	r.Get("/fiscal/intents/:id", s.readFiscalIntent)
+	r.Get("/fiscal/intents/:id/danfe", s.readFiscalDANFE)
 	r.Get("/fiscal/operations/:id/receipt", s.readFiscalOperation)
 }
 
 func fiscalFailure(c *fiber.Ctx, err error) error {
 	code, kind := 500, "fiscal_storage_error"
 	switch {
+	case errors.Is(err, fiscal.ErrDocumentUnavailable):
+		code, kind = 409, "fiscal_document_not_printable"
 	case errors.Is(err, fiscal.ErrInvalid):
 		code, kind = 400, "invalid_fiscal_request"
 	case errors.Is(err, fiscal.ErrConflict):
@@ -63,7 +66,7 @@ func (s *Server) fiscalCapabilities(c *fiber.Ctx) error {
 	if err != nil {
 		return fiscalFailure(c, err)
 	}
-	return c.JSON(fiber.Map{"scope": "durable_preparation_only", "models": []string{"55", "65"}, "profile_configuration": "active_owner_and_fiscal_contract", "readiness": fiscal.Unavailable(), "nfse_available": false, "sped_generation_available": false, "transmission_available": false, "automatic_retry_available": false})
+	return c.JSON(fiber.Map{"scope": "durable_preparation_and_homologation_archive_print", "homologation_archive_print_available": true, "models": []string{"55", "65"}, "profile_configuration": "active_owner_and_fiscal_contract", "readiness": fiscal.Unavailable(), "nfse_available": false, "sped_generation_available": false, "transmission_available": false, "automatic_retry_available": false})
 }
 func (s *Server) configureFiscal(c *fiber.Ctx) error {
 	var in fiscal.ProfileInput

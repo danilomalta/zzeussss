@@ -2419,3 +2419,15 @@ preservados. Sem merge; credenciais antigas continuam pendentes de troca.
 
 
 Resultado local final fiscal72: 58 pacotes, 1445 testes principais e 3139 resultados incluindo subtestes aprovados; zero falhas, 8 skips explícitos. Núcleo/CLI com -race: 36 principais/118 resultados em três pacotes. SQLite fiscal com -race: 62 principais/158 resultados e 77 comandos reais de backup/restauração, sem falhas ou skips nessas duas rodadas. Vet completo, quatro builds, 17 testes dos validadores e 537 rotas passaram. Os 25 fontes/configurações foram conferidos por hash antes e depois; as 71 migrações e os 38 XSDs anteriores permanecem idênticos. CI desta revisão deve rodar após publicação.
+
+
+## Impressão NFC-e homologação —28/10/2026
+
+A basebc21e6e passou os sete checks: https://github.com/danilomalta/zzeussss/actions/runs/40640900803/job/122658539869 . Esta confirmação não certifica o delta posterior.
+
+Nova rota de leitura/impressão autenticada, por intenção arquivada, modelo65/ambiente2/normal. Confere assinatura e protocolo, seleciona a consulta mais recente e bloqueia documento incerto ou com cancelamento iniciado. Não transmite nem modifica venda/caixa/estoque. Sessão revogada não imprime; nova sessão autorizada conserva a cópia. Restore mantém barreiras. Suplemento QR2/3 ligado ao documento e validado sem reassinar; corrigidos separadores que o XSD recusava. Fusos brasileiros explícitos e tzdata incorporada. HTML estático, sem scripts/fontes remotas, dados escapados, hashes e no-store.
+
+Leiaute58/80mm e100itens ensaiados em Chromium/Poppler. Papel é configuração do driver; PDFs são QA, não saída nativa. Sem impressora/câmera física, emissão oficial, modelo55, contingência, cópia cancelada ou homologação real. Schema72 sem migração. Detalhes e evidências em [FISCAL_DANFE_NFCE_HOMOLOGACAO_20261028.md](FISCAL_DANFE_NFCE_HOMOLOGACAO_20261028.md). Frontend/Electron, originais e serviços preservados; sem merge. Fiscal completo ainda pendente, com limites expressos no documento.
+
+
+Resultado local final: 58 pacotes, 1457 testes principais e 3173 resultados incluindo subtestes aprovados; zero falhas, 8 skips explícitos. Núcleo/CLI -race: 42/139 em três pacotes. SQLite/API fiscal -race: 68/171, com 88 comandos reais de backup/restauração; ambas as rodadas sem falhas/skips. Vet, quatro builds,17 testes dos validadores,538 rotas e QA visual passaram.15 fontes/configurações conferidos por hash;72 migrações e42XSDs anteriores intactos. Nenhum executável instalado. CI do novo commit deve rodar após publicação.

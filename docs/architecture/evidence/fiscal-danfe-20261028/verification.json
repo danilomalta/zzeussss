@@ -1,0 +1,396 @@
+{
+  "date": "2026-10-28",
+  "base": "bc21e6e972b190f081683fc17a58756fe0037301",
+  "schema": 72,
+  "historical_migrations": "1-72 byte-identical to base; no migration",
+  "schemas": "42 XSDs unchanged",
+  "checks": [
+    {
+      "log": "fiscal-danfe-full.jsonl",
+      "sha256": "a4774faf1aff5d6fadaf55be4ca37d3633eed3c6cd482f61b1529e10ce8dfbdf",
+      "top_pass": 1457,
+      "counts": {
+        "pass": 3173,
+        "skip": 8
+      },
+      "skip_names": [
+        "TestPostgresCatalogCreationAndDiscountAtomicity",
+        "TestPostgresDurableRotationConcurrencyAndRollback",
+        "TestMigrationCrashChild",
+        "TestCashJournalFrontendBridge",
+        "TestDeliveryFrontendBridge",
+        "TestMaintenanceFrontendBridge",
+        "TestPilotCashProcess",
+        "TestPilotCashScreenFlow"
+      ],
+      "packages": [
+        {
+          "package": "titansystem-backend/cmd/titan-fiscal",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-license",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/cmd/api",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-backup",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-access",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-online",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/apicontract",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/core/database",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/core/modules",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/core/entitlements",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-trade",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/core/security",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/deployment",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-receive",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/core/routes",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-sync",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-local",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/dockagenda",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/cashcount",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/fleet",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/fiscal",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/cashaccounting",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/cashjournal",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/localsetup",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/inventory",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/outgoing",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/payables",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/production",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/purchases",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/fiscalcore",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/register",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/catalog",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/entitlementstore",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/stationfile",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/stockreservation",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/stock",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/supplycycle",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/management",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/sale",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/modules/catalog/delivery",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/modules/financial/usecase",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/modules/auth/delivery",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/modules/pos/usecase",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/replenishment",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/modules/auth/usecase",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/onlinecatalog",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/pkg/middleware",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/tests/integration",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/traderelay",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-peer",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/onlinesessions",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/identity",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/stocktaking",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/localauth",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/incoming",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/backup",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "action": "pass"
+        }
+      ],
+      "backup_cli_commands": 0
+    },
+    {
+      "log": "fiscal-danfe-core-race-final.jsonl",
+      "sha256": "603b78e09a2ad20550acc1adacc7c24d19b937a38aefb41ba4403aaeac8b8e38",
+      "top_pass": 42,
+      "counts": {
+        "pass": 139
+      },
+      "skip_names": [],
+      "packages": [
+        {
+          "package": "titansystem-backend/cmd/titan-fiscal",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/fiscal",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/fiscalcore",
+          "action": "pass"
+        }
+      ],
+      "backup_cli_commands": 0
+    },
+    {
+      "log": "fiscal-danfe-native-race.jsonl",
+      "sha256": "9e5db68b66c2daf1326d14f12ae7713e21849d3c7f980ad3fe757b7936fef8d8",
+      "top_pass": 68,
+      "counts": {
+        "pass": 171
+      },
+      "skip_names": [],
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "action": "pass"
+        }
+      ],
+      "backup_cli_commands": 88
+    }
+  ],
+  "source_sha256": {
+    ".github/workflows/backend-pilot.yml": "688f2669a6ba919b90bb40a2736a1c073c4717d3ac974ed465fe505088c7c2ff",
+    "backend/internal/fiscalcore/capabilities.go": "20f55dedaeca8435a6074ca0a5328b0e79c2dda5a59b36e2f217ef96cf4b6031",
+    "backend/internal/fiscalcore/danfe.go": "86996c0c4652ebfcaadb0d68cd7bd67605fa4bb8af29e96ee7ad2bc944136fac",
+    "backend/internal/fiscalcore/danfe_test.go": "e7f555abebf04bbe14baa66e51988a11c330f41f5f1622220f7e8fc34d3aa4cb",
+    "backend/internal/fiscalcore/issuance.go": "20aa440cbda4d41f59d5607801f71a1e1907a1a38b23b43371e9bd684d080a6c",
+    "backend/internal/fiscalcore/qr.go": "cb001028b91a4ce0047b9ce5b6f324f6fd069464ababd58d630f99dcad628f9b",
+    "backend/internal/localapi/fiscal.go": "ea446f8a7d90182768e4aa6018ee42813c0f89e419744c91c190dfbe5d602f28",
+    "backend/internal/localapi/fiscal_danfe.go": "fad710324ee62579b205cf76e72dcf16bc51ae82c8cca45cd70d434d85d6554b",
+    "backend/internal/localapi/fiscal_danfe_test.go": "1e0c779274de143dbc540676001e69c54e4e88b755f0d3e470e63699a6767a3d",
+    "backend/internal/localapi/fiscal_query_test.go": "b13e69cd1242d03b7f6414de74a8f3d026b17b4618c3d81ad02176e031740565",
+    "backend/internal/localdb/fiscal/danfe.go": "987e16ff9188ccd8b7e2f539dac44ef8f9891e58c9b7778d24a90a0edd39d7f0",
+    "docs/api/fiscal-danfe.openapi.json": "a13940ffd29b42eefb0d652377e1d043adbe9e624decec7d754f197d4889785f",
+    "docs/api/fiscal-preparation.openapi.json": "3ffeddb0b7243b5d9725e403ec8322af48395e8264bbf2f08b277a94116acb12",
+    "docs/api/route-inventory.json": "072448f6779633980d83eb369a5c432506729ea7ec85d3065916d31b512ead1c",
+    "docs/api/routes.openapi.json": "c0b708bd05bc3f7889ccff7d14ac018f97d3405bd8fcf2f318032037a0160234"
+  },
+  "other_checks": {
+    "go_vet_all": "passed on final sources",
+    "builds": {
+      "titan-backup": "a0f35515363fe1483572b73deedc286d164375559a86abc63b269fe0add41c2b",
+      "titan-trade": "ffefc168ebb987623479f59f26e17eb35c533bfe84dc000b540c31e8d67a2fa8",
+      "titan-local": "379b43a76298f0f0764d3fdab62e28f3c9e2e5f66bec6b3dc7b7bba1c1e46da2",
+      "titan-fiscal": "bb96b45d97686885d82a63d5b2b3c6768091b213f64d037f749b69ef9f15fcb4"
+    },
+    "builds_installed": false,
+    "contract_checker_tests": 10,
+    "acceptance_gate_tests": 7,
+    "route_map": 538,
+    "git_diff_check": "passed"
+  },
+  "api": {
+    "route": "GET /local/v1/fiscal/intents/{id}/danfe",
+    "real_loopback_http_gets_in_dedicated_test": 4,
+    "other_handler_tests": "Fiber HTTP handlers and real SQLite; synthetic fiscal responses",
+    "latest_pending_query": "blocks older authorization fallback",
+    "pending_cancellation": "blocks active-looking copy",
+    "contract_test": "Fiscal contract revoked/removed, not clock advanced to expiry; historical read preserved",
+    "restore": "old session denied, exact HTML recovered after new login, send barrier retained"
+  },
+  "visual_qa": [
+    {
+      "file": "nfce-80.pdf",
+      "sha256": "258336dcfba7b5fa350fe43683bba6a6ea517e18922edce97701b8ac91900bb9",
+      "pages": 1,
+      "visual_inspection": "passed; all pages rasterized;100 item IDs preserved; no header-only first page",
+      "paper": "headless default Letter; HTML content column58/80mm; actual thermal driver not tested"
+    },
+    {
+      "file": "nfce-58.pdf",
+      "sha256": "c44af03cf39f2c0c80b4b89ec3b1c538cb71738a73cb588cda2bc10af83d5f92",
+      "pages": 1,
+      "visual_inspection": "passed; all pages rasterized;100 item IDs preserved; no header-only first page",
+      "paper": "headless default Letter; HTML content column58/80mm; actual thermal driver not tested"
+    },
+    {
+      "file": "nfce-large.pdf",
+      "sha256": "52dca9af2098875d3efd5eed2ccf8914d6af974a3e0f539bef5e4f2ea6ab4716",
+      "pages": 9,
+      "visual_inspection": "passed; all pages rasterized;100 item IDs preserved; no header-only first page",
+      "paper": "headless default Letter; HTML content column58/80mm; actual thermal driver not tested"
+    }
+  ],
+  "manual": {
+    "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=k%2FIuuaW4YiY%3D",
+    "sha256": "bf906cc212f1edd19b1df7d1cdf4fbf5e73c3fec77567b6e69fa74453c95db5e"
+  },
+  "ci_base": {
+    "head": "bc21e6e972b190f081683fc17a58756fe0037301",
+    "passed_checks": 7,
+    "integrated_run": 40640900803,
+    "integrated_job": 122658539869
+  },
+  "initial_failures_corrected": [
+    "QR percent-encoded pipe separators did not fit the XML schema; generator now preserves literal pipes and validates complete signed XML.",
+    "Synthetic process fixture used Z instead of explicit +00:00 timezone required by pinned XSD. Schema unchanged.",
+    "Logout test expected200 instead of actual204; corrected assertion.",
+    "Visual QA found omitted issuer address due to direct-child selector with a path; fixed selector and regression.",
+    "Visual QA found header-only first page for100items; removed avoid-break rule on entire product section. Final large preview has9pages, all100items.",
+    "An intermediate statistics script summed None for package events; corrected parser. No test result changed."
+  ],
+  "limits": [
+    "homologation model65 normal emission only; not model55, production or contingency",
+    "authenticated archive selected by API; uploaded XML/protocol is not accepted as official transport evidence",
+    "HTML output; PDF files are QA only; no native backend PDF output",
+    "no physical thermal printer or camera QR scan tested",
+    "no operational SEFAZ POST or official homologation",
+    "pending cancellation blocks active-looking copy; cancelled-copy and reconciliation not implemented",
+    "production emitter integration/outbox, approved national tax rules/RTC, other events/contingency, DANFE55, SPED/PVA and production NFSe remain pending"
+  ],
+  "services_8182_8282": "preserved",
+  "credentials": "unchanged; merge blocked",
+  "ci_new_revision": "requires own execution after publication; seven green checks refer only to base"
+}

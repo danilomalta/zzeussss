@@ -1358,13 +1358,14 @@
           "nfse_available",
           "sped_generation_available",
           "transmission_available",
-          "automatic_retry_available"
+          "automatic_retry_available",
+          "homologation_archive_print_available"
         ],
         "properties": {
           "scope": {
             "type": "string",
             "enum": [
-              "durable_preparation_only"
+              "durable_preparation_and_homologation_archive_print"
             ]
           },
           "models": {
@@ -1402,6 +1403,13 @@
             "enum": [
               false
             ]
+          },
+          "homologation_archive_print_available": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Rota de leitura/impressão técnica do modelo65/ambiente2. Exige documento arquivado, protocolo correspondente e sessão autorizada. Não significa emissão ou homologação oficial."
           }
         }
       },

@@ -83,6 +83,13 @@ func RecoverHomologationNFe(ctx context.Context, reader InvoiceRecorder) (Issuan
 	if err != nil {
 		return IssuanceEvidence{}, err
 	}
+	return ReconcileHomologationIssuance(req, result)
+}
+
+// ReconcileHomologationIssuance interprets records selected from a trusted
+// immutable journal. Caller must authenticate the reader, not accept uploaded
+// request/result JSON as proof of an official transport exchange.
+func ReconcileHomologationIssuance(req RecordedRequest, result ExchangeResult) (IssuanceEvidence, error) {
 	if req.OperationID != result.OperationID {
 		return IssuanceEvidence{}, ErrUncertain
 	}

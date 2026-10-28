@@ -21184,6 +21184,9 @@
     },
     "/local/v1/fiscal/operations/{id}/receipt": {
       "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1operations~1{id}~1receipt"
+    },
+    "/local/v1/fiscal/intents/{id}/danfe": {
+      "$ref": "./fiscal-danfe.openapi.json#/paths/~1fiscal~1intents~1{id}~1danfe"
     }
   },
   "components": {
