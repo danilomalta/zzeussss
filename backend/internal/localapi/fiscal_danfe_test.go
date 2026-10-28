@@ -25,8 +25,12 @@ import (
 )
 
 func danfeSQLFixture(t *testing.T) (*stockHTTPFixture, fiscal.Intent, fiscalcore.RecordedRequest) {
+	return danfeSQLFixtureModel(t, "65")
+}
+
+func danfeSQLFixtureModel(t *testing.T, model string) (*stockHTTPFixture, fiscal.Intent, fiscalcore.RecordedRequest) {
 	t.Helper()
-	f, intent, _, original := queryOriginalFixtureWithPrint(t, true)
+	f, intent, _, original := queryOriginalFixtureModel(t, model == "65", model)
 	r := querySQLRecorder(t, f, f.db, intent, "danfe-authorized", f.token)
 	if err := r.Reserve(context.Background(), querySQLRequest(t, r, "danfe-authorized")); err != nil {
 		t.Fatal(err)
@@ -38,13 +42,23 @@ func danfeSQLFixture(t *testing.T) (*stockHTTPFixture, fiscal.Intent, fiscalcore
 }
 
 func TestHTTPFiscalDANFERestartRestoreAndExpiredContractKeepExactCopy(t *testing.T) {
-	f, intent, _ := danfeSQLFixture(t)
-	code, before := request(t, f.app, "GET", danfePath(intent.ID), "", f.token)
+	for _, model := range []string{"55", "65"} {
+		t.Run(model, func(t *testing.T) { testDANFERestartRestore(t, model) })
+	}
+}
+
+func testDANFERestartRestore(t *testing.T, model string) {
+	f, intent, _ := danfeSQLFixtureModel(t, model)
+	pathToPrint := danfePath(intent.ID)
+	if model == "55" {
+		pathToPrint = strings.Replace(pathToPrint, "width_mm=80", "width_mm=210", 1)
+	}
+	code, before := request(t, f.app, "GET", pathToPrint, "", f.token)
 	if code != 200 {
 		t.Fatal(code)
 	}
 	f.install(t, signedTestContract(t, f.private, f.owner.TenantID, 4, []modules.ID{modules.Core, modules.Inventory, modules.POS, modules.Staff}), 200)
-	if code, body := request(t, f.app, "GET", danfePath(intent.ID), "", f.token); code != 200 || !bytes.Equal(body, before) {
+	if code, body := request(t, f.app, "GET", pathToPrint, "", f.token); code != 200 || !bytes.Equal(body, before) {
 		t.Fatal("contract loss removed historical copy", code)
 	}
 	var seq int
@@ -69,7 +83,7 @@ func TestHTTPFiscalDANFERestartRestoreAndExpiredContractKeepExactCopy(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	if code, body := request(t, f.app, "GET", danfePath(intent.ID), "", f.token); code != 200 || !bytes.Equal(body, before) {
+	if code, body := request(t, f.app, "GET", pathToPrint, "", f.token); code != 200 || !bytes.Equal(body, before) {
 		t.Fatal("restart changed copy", code)
 	}
 	var destination string
@@ -101,11 +115,11 @@ func TestHTTPFiscalDANFERestartRestoreAndExpiredContractKeepExactCopy(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	if code, _ := request(t, app, "GET", danfePath(intent.ID), "", f.token); code != 401 {
+	if code, _ := request(t, app, "GET", pathToPrint, "", f.token); code != 401 {
 		t.Fatal("restored old session printed", code)
 	}
 	token := loginToken(t, app, f.owner.OwnerID)
-	if code, body := request(t, app, "GET", danfePath(intent.ID), "", token); code != 200 || !bytes.Equal(body, before) {
+	if code, body := request(t, app, "GET", pathToPrint, "", token); code != 200 || !bytes.Equal(body, before) {
 		t.Fatal("restore changed copy", code)
 	}
 	var barriers int
@@ -118,7 +132,14 @@ func danfePath(id string) string {
 }
 
 func TestHTTPFiscalDANFERealHTTPExactArtifactAndReadonly(t *testing.T) {
-	f, intent, _ := danfeSQLFixture(t)
+	for _, model := range []string{"55", "65"} {
+		t.Run(model, func(t *testing.T) { testFiscalDANFERealHTTPExactArtifactAndReadonly(t, model) })
+	}
+}
+
+func testFiscalDANFERealHTTPExactArtifactAndReadonly(t *testing.T, model string) {
+	danfePath := func(id string) string { return danfeModelPath(id, model) }
+	f, intent, _ := danfeSQLFixtureModel(t, model)
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
@@ -190,7 +211,14 @@ func TestHTTPFiscalDANFERealHTTPExactArtifactAndReadonly(t *testing.T) {
 }
 
 func TestHTTPFiscalDANFERejectsAmbiguousRequestsAndOtherSellers(t *testing.T) {
-	f, intent, _ := danfeSQLFixture(t)
+	for _, model := range []string{"55", "65"} {
+		t.Run(model, func(t *testing.T) { testFiscalDANFERejectsAmbiguousRequestsAndOtherSellers(t, model) })
+	}
+}
+
+func testFiscalDANFERejectsAmbiguousRequestsAndOtherSellers(t *testing.T, model string) {
+	danfePath := func(id string) string { return danfeModelPath(id, model) }
+	f, intent, _ := danfeSQLFixtureModel(t, model)
 	for _, query := range []string{"", "?width_mm=80", "?width_mm=57&timezone=America/Sao_Paulo", "?width_mm=80&width_mm=58&timezone=America/Sao_Paulo", "?width_mm=80&timezone=UTC", "?width_mm=80&timezone=America/Missing", "?width_mm=80&timezone=America/Sao_Paulo&xml=anything"} {
 		t.Run(query, func(t *testing.T) {
 			code, _ := request(t, f.app, "GET", "/local/v1/fiscal/intents/"+intent.ID+"/danfe"+query, "", f.token)
@@ -232,7 +260,14 @@ func TestHTTPFiscalDANFERejectsAmbiguousRequestsAndOtherSellers(t *testing.T) {
 }
 
 func TestHTTPFiscalDANFENewPendingStatusNeverFallsBack(t *testing.T) {
-	f, intent, original := danfeSQLFixture(t)
+	for _, model := range []string{"55", "65"} {
+		t.Run(model, func(t *testing.T) { testFiscalDANFENewPendingStatusNeverFallsBack(t, model) })
+	}
+}
+
+func testFiscalDANFENewPendingStatusNeverFallsBack(t *testing.T, model string) {
+	danfePath := func(id string) string { return danfeModelPath(id, model) }
+	f, intent, original := danfeSQLFixtureModel(t, model)
 	if code, _ := request(t, f.app, "GET", danfePath(intent.ID), "", f.token); code != 200 {
 		t.Fatal(code)
 	}
@@ -252,7 +287,14 @@ func TestHTTPFiscalDANFENewPendingStatusNeverFallsBack(t *testing.T) {
 }
 
 func TestHTTPFiscalDANFEDirectIssuanceWithoutQuery(t *testing.T) {
-	f, intent, _, _ := queryOriginalFixtureWithPrint(t, true, true)
+	for _, model := range []string{"55", "65"} {
+		t.Run(model, func(t *testing.T) { testFiscalDANFEDirectIssuanceWithoutQuery(t, model) })
+	}
+}
+
+func testFiscalDANFEDirectIssuanceWithoutQuery(t *testing.T, model string) {
+	danfePath := func(id string) string { return danfeModelPath(id, model) }
+	f, intent, _, _ := queryOriginalFixtureModel(t, model == "65", model, true)
 	if code, body := request(t, f.app, "GET", danfePath(intent.ID), "", f.token); code != 200 || !bytes.Contains(body, []byte("31,98")) {
 		t.Fatal("direct archive", code)
 	}
@@ -274,14 +316,21 @@ func TestHTTPFiscalDANFEDirectIssuanceWithoutQuery(t *testing.T) {
 		case "device":
 			d.DeviceID = "foreign"
 		}
-		if _, err := fiscal.ReadHomologationDANFE(context.Background(), f.db, a, d, intent.ID, f.token, fiscalcore.PrintOptions{WidthMM: 80, Timezone: "America/Sao_Paulo"}); err == nil {
+		if _, err := fiscal.ReadHomologationDANFE(context.Background(), f.db, a, d, intent.ID, f.token, fiscalcore.PrintOptions{WidthMM: map[string]int{"55": 210, "65": 80}[model], Timezone: "America/Sao_Paulo"}); err == nil {
 			t.Fatal("wrong context printed", dimension)
 		}
 	}
 }
 
 func TestHTTPFiscalDANFEPendingCancellationBlocksActiveCopy(t *testing.T) {
-	f, intent, original := danfeSQLFixture(t)
+	for _, model := range []string{"55", "65"} {
+		t.Run(model, func(t *testing.T) { testFiscalDANFEPendingCancellationBlocksActiveCopy(t, model) })
+	}
+}
+
+func testFiscalDANFEPendingCancellationBlocksActiveCopy(t *testing.T, model string) {
+	danfePath := func(id string) string { return danfeModelPath(id, model) }
+	f, intent, original := danfeSQLFixtureModel(t, model)
 	query := querySQLRecorder(t, f, f.db, intent, "query-authorized", f.token)
 	if err := query.Reserve(context.Background(), querySQLRequest(t, query, "query-authorized")); err != nil {
 		t.Fatal(err)
@@ -297,4 +346,12 @@ func TestHTTPFiscalDANFEPendingCancellationBlocksActiveCopy(t *testing.T) {
 	if code, _ := request(t, f.app, "GET", danfePath(intent.ID), "", f.token); code != 409 {
 		t.Fatal("pending cancellation printed active copy", code)
 	}
+}
+
+func danfeModelPath(id, model string) string {
+	path := danfePath(id)
+	if model == "55" {
+		path = strings.Replace(path, "width_mm=80", "width_mm=210", 1)
+	}
+	return path
 }

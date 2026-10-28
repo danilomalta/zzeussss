@@ -72,7 +72,11 @@ func ReadHomologationDANFE(ctx context.Context, db *sql.DB, a identity.Scope, d 
 		}
 		process = evidence.ProcessedXML
 	}
-	out, err = fiscalcore.RenderHomologationNFCe(process, opts)
+	if opts.WidthMM == 210 {
+		out, err = fiscalcore.RenderHomologationNFe55(process, opts)
+	} else {
+		out, err = fiscalcore.RenderHomologationNFCe(process, opts)
+	}
 	if err != nil {
 		return fiscalcore.DANFEArtifact{}, ErrDocumentUnavailable
 	}

@@ -93,6 +93,9 @@ type nfcePrint struct {
 // Production/contingency/model55 are deliberately not silently approximated.
 func RenderHomologationNFCe(process []byte, opts PrintOptions) (DANFEArtifact, error) {
 	var out DANFEArtifact
+	if opts.WidthMM != 58 && opts.WidthMM != 80 {
+		return out, ErrInput
+	}
 	zone, err := printLocation(opts)
 	if err != nil {
 		return out, ErrInput
@@ -328,7 +331,7 @@ var nfceTemplate = template.Must(template.New("nfce").Parse(`<!doctype html>
 // Print timezones follow the Brazilian zones in IANA zone.tab. Selection remains
 // explicit; no state-wide inference is made for multi-zone UFs.
 func printLocation(opts PrintOptions) (*time.Location, error) {
-	if opts.WidthMM != 58 && opts.WidthMM != 80 {
+	if opts.WidthMM != 58 && opts.WidthMM != 80 && opts.WidthMM != 210 {
 		return nil, ErrInput
 	}
 	switch opts.Timezone {

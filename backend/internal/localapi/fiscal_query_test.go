@@ -68,8 +68,12 @@ func queryOriginalFixture(t *testing.T) (*stockHTTPFixture, fiscal.Intent, fisca
 }
 
 func queryOriginalFixtureWithPrint(t *testing.T, withPrint bool, direct ...bool) (*stockHTTPFixture, fiscal.Intent, fiscal.NumberAssignment, fiscalcore.RecordedRequest) {
+	return queryOriginalFixtureModel(t, withPrint, "65", direct...)
+}
+
+func queryOriginalFixtureModel(t *testing.T, withPrint bool, model string, direct ...bool) (*stockHTTPFixture, fiscal.Intent, fiscal.NumberAssignment, fiscalcore.RecordedRequest) {
 	t.Helper()
-	f := fiscalFixture(t)
+	f := fiscalFixture(t, model)
 	intent := fiscalIntent(t, f, fiscalIntentBody, 201)
 	number := numberingPrepare(t, f, intent, 1)
 	recorder := numberedFiscalJournal(t, f, f.db, intent, f.token, number)
@@ -81,6 +85,9 @@ func queryOriginalFixtureWithPrint(t *testing.T, withPrint bool, direct ...bool)
 	in.Issuer.Address.District = "Centro"
 	in.Issuer.Address.City = "Sao Paulo"
 	in.Issuer.Address.PostalCode = "01001000"
+	if model == "55" {
+		in.Recipient = &fiscalcore.Party{CNPJ: "11222333000181", Name: "Synthetic recipient", IEDestination: "9", Address: in.Issuer.Address}
+	}
 	for i := range in.Lines {
 		in.Lines[i].Description = "Synthetic item only"
 		in.Lines[i].Unit = "UN"

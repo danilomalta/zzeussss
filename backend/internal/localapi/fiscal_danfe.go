@@ -28,6 +28,8 @@ func (s *Server) readFiscalDANFE(c *fiber.Ctx) error {
 				opts.WidthMM = 58
 			case "80":
 				opts.WidthMM = 80
+			case "210":
+				opts.WidthMM = 210
 			default:
 				valid = false
 			}

@@ -2431,3 +2431,33 @@ Leiaute58/80mm e100itens ensaiados em Chromium/Poppler. Papel é configuração 
 
 
 Resultado local final: 58 pacotes, 1457 testes principais e 3173 resultados incluindo subtestes aprovados; zero falhas, 8 skips explícitos. Núcleo/CLI -race: 42/139 em três pacotes. SQLite/API fiscal -race: 68/171, com 88 comandos reais de backup/restauração; ambas as rodadas sem falhas/skips. Vet, quatro builds,17 testes dos validadores,538 rotas e QA visual passaram.15 fontes/configurações conferidos por hash;72 migrações e42XSDs anteriores intactos. Nenhum executável instalado. CI do novo commit deve rodar após publicação.
+
+
+## DANFE NF-e55 A4 de homologação — 28/10/2026
+
+Basea790b66. A rota autenticada de cópia fiscal passa a aceitar210mm para
+NF-e55 normal/retrato; NFC-e65 conserva58/80mm. Arquivo original do journal,
+assinatura/protocolo/chave/ambiente/digest conferidos, folhas numeradas,
+código128 C/A com CNPJ alfanumérico, paginação de produtos e textos longos.
+Nova consulta pendente/negativa e cancelamento iniciado bloqueiam cópia ativa.
+Permissões e sessão atuais, reinício/Restore e barreira de reenvio preservados.
+Nenhuma operação comercial é produzida pela leitura.
+
+Resultado local: 58 pacotes, 1461 testes principais e
+3206 resultados incluindo subtestes aprovados, zero falhas;
+8 skips explícitos. Núcleo -race: 10 principais/35 resultados.
+API -race: 6 principais/32 resultados, com 22 comandos reais de titan-backup;
+sem falhas ou skips nessas duas rodadas. Vet, três builds,17 testes dos
+validadores,538rotas e QA A4 tela/impressão passaram.100itens preservados em
+9folhas sem transbordamento. Os9arquivos fonte/contrato mantiveram seus hashes.
+Schema72 e42XSDs anteriores inalterados. A primeira suíte falhou em8testes que
+compilam transporte, por metadadosVCS do ambiente; repetição integral aprovada
+com GOFLAGS=-buildvcs=false, inclusive nos subprocessos. Cache isolado em/tmp.
+
+Detalhes: [FISCAL_DANFE_NFE55_HOMOLOGACAO_20261028.md](FISCAL_DANFE_NFE55_HOMOLOGACAO_20261028.md).
+Evidências: [verification.json](evidence/fiscal-danfe55-20261028/verification.json).
+Não é DANFE55 de produção homologado, PDF nativo, paisagem, contingência ou
+ensaio físico. Emissor de produção, motor nacional completo, SPED/PVA,
+NFS-e produção e homologação real continuam pendentes de código/validação.
+Frontend/Electron, originais e serviços8182/8282 preservados; nenhum executável
+instalado ou merge. O CI desta alteração ainda precisa rodar.
