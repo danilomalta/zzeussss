@@ -66,9 +66,10 @@ jobs:
           TITAN_CASH_JOURNAL_BRIDGE: ${{ github.workspace }}/frontend-web/tests/cashJournal.bridge.mjs
           TITAN_DELIVERY_BRIDGE: ${{ github.workspace }}/frontend-web/tests/deliveryCycle.bridge.mjs
           TITAN_MAINTENANCE_BRIDGE: ${{ github.workspace }}/frontend-web/tests/internalMaintenance.bridge.mjs
+          TITAN_FISCAL_CUSTOMER_BRIDGE: ${{ github.workspace }}/frontend-web/tests/fiscalCustomer.bridge.mjs
         run: |
           set -euo pipefail
-          go test ./... -count=1 -json > "$RUNNER_TEMP/backend-full.jsonl"
+          go test ./... -count=1 -timeout=30m -json > "$RUNNER_TEMP/backend-full.jsonl"
           python3 ../tools/verify_backend_acceptance.py "$RUNNER_TEMP/backend-full.jsonl" | tee "$RUNNER_TEMP/backend-integrations.json"
       - name: Fiscal journal, session boundary and mTLS regressions with race detector
         run: |
@@ -78,7 +79,7 @@ jobs:
         run: |
           set -euo pipefail
           env -u TITAN_SESSION_TEST_DATABASE_URL -u TITAN_CATALOG_TEST_DATABASE_URL \
-            -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE \
+            -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE -u TITAN_FISCAL_CUSTOMER_BRIDGE \
             go test -race ./internal/localapi \
             -run '^TestTrade|^TestHTTPCustomerReturn|^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore|CustomerReturnRestartAndRestore)$' \
             -count=1 -v -timeout=20m -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" -pilot-trade-cli="$RUNNER_TEMP/titan-trade" -pilot-trade-queue \

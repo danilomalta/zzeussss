@@ -8,7 +8,7 @@ REQUIRED = {
     ('titansystem-backend/internal/core/routes', 'TestPostgresCatalogCreationAndDiscountAtomicity'),
     *{('titansystem-backend/internal/localapi', name) for name in (
         'TestCashJournalFrontendBridge', 'TestDeliveryFrontendBridge',
-        'TestMaintenanceFrontendBridge')},
+        'TestMaintenanceFrontendBridge', 'TestFiscalCustomerFrontendBridge')},
 }
 ALLOWED_SKIPS = {
     ('titansystem-backend/internal/localapi', 'TestPilotCashProcess'),

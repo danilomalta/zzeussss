@@ -2547,3 +2547,74 @@ Nenhuma instalação, reinício de8182/8282, alteração de banco comercial, fro
 Electron ou merge. Árvores originais preservadas; publicação apenas na branch
 fiscal/PR5. Credenciais históricas permanecem pendentes de troca. CI deste
 novo commit deve concluir após a publicação.
+
+## Configuração fiscal por cliente —29/10/2026
+
+Base `aae03e97b34b599c9883998c72c94bcad809afcf`, branch
+`feat/fiscal-homolog-journal-20261027`, PR5. O emitente é o cliente do ERP,
+vinculado à empresa/loja/aparelho da sessão. O proprietário do TitanSystem
+não precisa cadastrar uma empresa própria para representar todos os clientes.
+O software continua responsável pela implementação, segurança e compatibilidade;
+os requisitos particulares do emitente não substituem os testes do produto.
+O credenciamento depende da UF/modelo: referência oficial consultada em29/10,
+[Portal NF-e, perguntas frequentes](https://www.nfe.fazenda.gov.br/pOrtal/perguntasFrequentes.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=4figqHYhYho%3D).
+
+**Entregue nesta unidade:** em `/local/enterprise?area=fiscal`, nova aba
+“Configuração fiscal do cliente”. Cria/consulta revisões de cadastro para55/65
+usando exclusivamente as APIs existentes `/local/v1/fiscal/profiles`,
+`profiles/:id`, `capabilities` e `requirements/:uf`. Somente proprietário pode
+gravar; a API continua validando contrato, identidade e autorização. CNPJ, razão
+social, IE, município IBGE, CRT, modelo, ambiente e série são dados do emitente.
+UF e CRT exigem escolha explícita, sem presumir regime tributário. As capacidades
+da instalação ficam separadas das pendências do cadastro. Salvar revisão ou
+selecionar produção não declara homologação, autorização de nota ou emissão.
+
+O arquivo local de XML anterior permanece em aba própria, sem substituir dados
+ou documentos. Cinco idiomas completos; referências oficiais retornadas pela
+API permanecem em português e explicitamente datadas. Sem certificado, senha,
+CSC, chave, URL arbitrária de transmissão ou segredos em formulário/exportação.
+Somente links HTTPS governamentais são exibidos nas referências. Não há mock de
+sucesso na interface entregue. Tema, teclado, foco e controles touch reutilizam
+o padrão existente, com correção de contraste no painel novo.
+
+**Conflitos e recuperação:** revisão esperada impede sobrescrita concorrente.
+O cliente recusa POST de consulta/contexto antigo e descarta resposta tardia.
+Resposta ausente/inválida preserva a tentativa em memória e bloqueia outro POST;
+a recuperação consulta a revisão exata e compara todos os campos, inclusive
+operation_id. Não há reenvio automático. A navegação avisa sobre alterações;
+se a página for fechada/recarregada, é preciso consultar manualmente o cadastro
+e a revisão pelo identificador. Ainda não há listagem de cadastros na API nem
+journal durável desta tentativa no navegador. Esses limites não são ocultados.
+
+**Provas:**2.505 testes de frontend em117 arquivos, zero falhas/skips;
+40 específicos da nova aba/cliente/traduções. TypeScript e build passaram,
+Vite20,48s, mantendo o aviso preexistente dos chunks da planilha. Seis regressões
+da API fiscal passaram, incluindo sessão/permissão, revisão, HTTP real,
+reinício e restauração criptografada. Novo `TestFiscalCustomerFrontendBridge`
+passou com `-race`:35 requisições HTTP reais, três POSTs (um conflito recusado),
+três revisões SQLite,27 referências UF e recuperação da resposta perdida por GET
+sem repetir gravação. Sete testes do validador de aceite passaram; inventário
+de547 rotas permanece válido. O ensaio visual assistido usou respostas fictícias
+com aviso explícito: não é prova SEFAZ nem cliente comercial em operação.
+
+O CI do commit-base terminou com seis checks verdes e BackendCI reprovado por
+atingir o timeout padrão de10min; o teste interrompido tinha somente19s de
+execução. Prazo por pacote agora explícito de30min, job principal limitado a45min,
+sem remover testes/assertivas. O bridge fiscal novo é a sexta integração
+obrigatória do aceite do backend; ausência/skip reprova o validador.
+O resultado do CI do novo commit deve ser consultado após publicar; os checks
+antigos não são apresentados como prova desse commit.
+
+**Ainda não entregue por esta unidade:** assistente de instalação de credenciais,
+ensaio oficial automático, ativação de produção, listagem de emitentes, novas
+regras tributárias, NFS-e produção ou SPED/PVA. A aba é configuração revisionada,
+não homologação fiscal completa. Permanecem os limites da entrega anterior de
+DANFE/contingência/eventos de produção e demais cenários econômicos. Não houve
+transmissão SEFAZ, alteração da API comercial, banco real, serviço8182/8282,
+Electron, instalação do aplicativo ou merge na main. Backend recebeu somente
+um teste de integração descartável, sem alteração de lógica ou contrato fiscal.
+
+Arquivos/testes, hashes e resultados:
+[verification.json](evidence/fiscal-customer-20261029/verification.json),
+[frontend-tests.json](evidence/fiscal-customer-20261029/frontend-tests.json),
+[real-client-bridge.txt](evidence/fiscal-customer-20261029/real-client-bridge.txt).
