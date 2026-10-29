@@ -27,13 +27,13 @@ func validateSimpleCredit(r TaxRule) error {
 	}
 	g := r.Goods
 	if g.SimpleCredit == nil {
-		if g.ICMS == "101" {
+		if oneOf(g.ICMS, "101", "201") {
 			return ErrRule
 		}
 		return nil
 	}
 	c := g.SimpleCredit
-	if g.ICMS != "101" || r.CRT != "1" || r.Model != "55" || g.FCPScope != "not_applicable" || g.Destination != nil || c.BaseMethod != "approved_net_operation" || c.RecipientRegime != "normal" || !cleanTaxText(c.LegalReference, 2000) {
+	if !oneOf(g.ICMS, "101", "201") || r.CRT != "1" || r.Model != "55" || (!oneOf(g.FCPScope, "not_applicable", "substitution") || g.ICMS == "101" && g.FCPScope != "not_applicable") || g.Destination != nil || c.BaseMethod != "approved_net_operation" || c.RecipientRegime != "normal" || !cleanTaxText(c.LegalReference, 2000) {
 		return ErrUnsupported
 	}
 	percent, e := decimal(c.Percent)

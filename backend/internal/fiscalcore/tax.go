@@ -75,17 +75,18 @@ type TaxRule struct {
 	Goods             *GoodsTaxClassification `json:"goods,omitempty"`
 }
 type TaxComponent struct {
-	Deferment        *ICMSDefermentInput `json:"deferment,omitempty"`
-	AdjustedMVA      *AdjustedMVAInput   `json:"adjusted_mva,omitempty"`
-	Code             string              `json:"code"`
-	Method           string              `json:"method"` // percentage, gross_up, per_unit, exempt
-	Rate             string              `json:"rate"`
-	ReductionPercent string              `json:"reduction_percent"`
-	MVA              percentString       `json:"mva_percent"`
-	AddApplied       []string            `json:"add_applied"`
-	SubtractApplied  []string            `json:"subtract_applied"`
-	DeductApplied    []string            `json:"deduct_applied"`
-	AddsToTotal      bool                `json:"adds_to_total"`
+	OwnOperationDeduction *STOwnDeductionInput `json:"own_operation_deduction,omitempty"`
+	Deferment             *ICMSDefermentInput  `json:"deferment,omitempty"`
+	AdjustedMVA           *AdjustedMVAInput    `json:"adjusted_mva,omitempty"`
+	Code                  string               `json:"code"`
+	Method                string               `json:"method"` // percentage, gross_up, per_unit, exempt
+	Rate                  string               `json:"rate"`
+	ReductionPercent      string               `json:"reduction_percent"`
+	MVA                   percentString        `json:"mva_percent"`
+	AddApplied            []string             `json:"add_applied"`
+	SubtractApplied       []string             `json:"subtract_applied"`
+	DeductApplied         []string             `json:"deduct_applied"`
+	AddsToTotal           bool                 `json:"adds_to_total"`
 }
 
 // A string alias keeps JSON monetary/rate inputs exact; never accept float64.
@@ -100,14 +101,15 @@ type TaxItem struct {
 	Other     string `json:"other"`
 }
 type AppliedTax struct {
-	Deferment     *ICMSDefermentResult `json:"deferment,omitempty"`
-	MVAAdjustment *AdjustedMVAResult   `json:"mva_adjustment,omitempty"`
-	Code          string               `json:"code"`
-	Method        string               `json:"method"`
-	Base          string               `json:"base"`
-	Rate          string               `json:"rate"`
-	Amount        string               `json:"amount"`
-	UnroundedBase string               `json:"unrounded_base,omitempty"` // exact rational, not float
+	OwnOperationDeduction *STOwnDeductionResult `json:"own_operation_deduction,omitempty"`
+	Deferment             *ICMSDefermentResult  `json:"deferment,omitempty"`
+	MVAAdjustment         *AdjustedMVAResult    `json:"mva_adjustment,omitempty"`
+	Code                  string                `json:"code"`
+	Method                string                `json:"method"`
+	Base                  string                `json:"base"`
+	Rate                  string                `json:"rate"`
+	Amount                string                `json:"amount"`
+	UnroundedBase         string                `json:"unrounded_base,omitempty"` // exact rational, not float
 }
 type TaxResult struct {
 	RuleID                string           `json:"rule_id"`
@@ -170,6 +172,9 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		return out, ErrRule
 	}
 	r := selected
+	if err = validateSTOwnDeduction(*r); err != nil {
+		return out, err
+	}
 	if err = validateICMSDeferment(*r); err != nil {
 		return out, err
 	}
@@ -309,6 +314,16 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		if err != nil {
 			return TaxResult{}, ErrInput
 		}
+		var ownDeduction *STOwnDeductionResult
+		if t.OwnOperationDeduction != nil {
+			v, e := CalculateSTOwnDeduction(money(net), *t.OwnOperationDeduction)
+			if e != nil {
+				return TaxResult{}, e
+			}
+			ownDeduction = &v
+			deduction, _ := decimal(v.Amount)
+			amount.Sub(amount, deduction)
+		}
 		var deferred *ICMSDefermentResult
 		if t.Deferment != nil {
 			v, e := CalculateICMSDeferment(money(amount), *t.Deferment)
@@ -339,6 +354,7 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 			baseValue = item.Quantity
 		}
 		value := AppliedTax{Code: t.Code, Method: t.Method, Base: baseValue, Rate: t.Rate, Amount: money(amount)}
+		value.OwnOperationDeduction = ownDeduction
 		value.Deferment = deferred
 		value.MVAAdjustment = adjustment
 		if r.BaseRounding == "tax_final" {

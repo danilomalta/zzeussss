@@ -15,7 +15,9 @@ REQUIRED = {
         'TestHTTPFiscalProductionTaxDestinationDIFALAndFCP',
         'TestHTTPFiscalProductionTaxNativeLoopback',
         'TestHTTPFiscalProductionTaxDeferment',
-        'TestHTTPFiscalProductionTaxSimpleCredit')},
+        'TestHTTPFiscalProductionTaxSimpleCredit',
+        'TestHTTPFiscalProductionTaxSimpleSTQuoteAndSaleGuard',
+        'TestHTTPFiscalProductionTaxSimpleSTZeroAdditionalAmount')},
 }
 ALLOWED_SKIPS = {
     ('titansystem-backend/internal/localapi', 'TestPilotCashProcess'),

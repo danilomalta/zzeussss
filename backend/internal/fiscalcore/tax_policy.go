@@ -60,6 +60,9 @@ func ValidateTaxPolicy(r TaxRule, c TaxCase, sources []string) error {
 		}
 		seenSources[raw] = true
 	}
+	if err := validateSTOwnDeduction(r); err != nil {
+		return err
+	}
 	if err := validateICMSDeferment(r); err != nil {
 		return err
 	}
@@ -112,6 +115,9 @@ func ValidateTaxPolicy(r TaxRule, c TaxCase, sources []string) error {
 		seen[t.Code] = true
 	}
 	if r.Goods != nil {
+		if oneOf(r.Goods.ICMS, "201", "202", "203") && (c.RecipientStatus != "contributor" || c.FinalConsumer != "no" || c.Purpose != "resale") {
+			return ErrUnsupported
+		}
 		if r.Goods.SimpleCredit != nil && (c.RecipientStatus != "contributor" || c.FinalConsumer != "no" || !oneOf(c.Purpose, "resale", "industrialization")) {
 			return ErrRule
 		}

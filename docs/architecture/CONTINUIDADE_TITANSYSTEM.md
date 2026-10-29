@@ -2824,3 +2824,14 @@ CI:13integrações obrigatórias. O aceite anterior cancelou pelo limite agregad
 Fontes, recortes, comandos lógicos e limites: `FISCAL_DIFERIMENTO_CREDITO_20261029.md`. Evidências/hashes: `evidence/fiscal-deferment-credit-20261029/verification.json`. Sem migração nova, instalação, mudança de serviços, frontend, backend original ou banco comercial. Sem merge automático.
 
 **Não está concluída a cobertura tributária nacional.** Continuam RTC IBS/CBS/IS, retenções anteriores, créditos/diferimentos e regimes especiais adicionais, catálogo de benefícios/enquadramentos, apuração Simples/DAS, demais ST/DIFAL, NFS-e e obrigações acessórias. Novos testes usam autoridade descartável; não são homologação oficial.
+
+
+## Ampliação tributária — Simples e ST, 29/10/2026
+
+Base `0b91281ab2055b46e7d0532ab0ef21af3ad1aed2`, branch fiscal atual. Acrescentados CSOSN201/202/203 para NF-e55/CRT1, contribuinte não consumidor final/revenda: dedução teórica própria separada do crédito do destinatário, ST e FCP-ST. Dedução, alíquota, redução, base e referência precisam de aprovação explícita; sem inferir MVA/acordos/enquadramento. Crédito201 conserva a competência e os limites da política mensal existente.
+
+Validação completa:59pacotes, 1533testes principais/3549resultados incluindo subtestes aprovados, zero falhas. Os quatro bridges e o CLI estavam habilitados nessa rodada. Cinco skips explícitos: duas integrações PostgreSQL não configuradas localmente e três auxiliares de processo/tela. Race núcleo20principais/191resultados; API10principais/35resultados, sem falhas/skips.85testes Python, vet,551rotas/contratos e builds Linux passaram. Compatibilidade byte a byte da cotação legada e de sete grupos/cotações anteriores comprovada. Gate do CI ampliado para15integrações obrigatórias; verificar checks do novo HEAD.
+
+A cotação com ST foi preservada após reabertura/restauração criptografada. O ensaio de emissão dos grupos novos cobriu o caso sem acréscimo tributário à venda; acréscimos positivos continuam recusados antes de número/envio. **O contrato comercial ainda precisa vincular a cotação tributária ao preço/pagamento antes de concluir a venda. Não foi contornada essa pendência.**
+
+Detalhes/fontes: `FISCAL_SIMPLES_ST_20261029.md`; evidências/hashes: `evidence/fiscal-simple-st-20261029/verification.json`. Sem migração, mudança de XSD, frontend/Electron, instalação ou dados comerciais. Sem merge automático. Permanecem lacunas nacionais e de apuração, RTC, retenções anteriores, benefícios/regimes especiais, outros ST/DIFAL, DAS/ISS/NFS-e e obrigações acessórias. Nenhuma homologação oficial nesta entrega.

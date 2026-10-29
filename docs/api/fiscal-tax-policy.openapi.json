@@ -587,6 +587,9 @@
           },
           "deferment": {
             "$ref": "#/components/schemas/ICMSDefermentInput"
+          },
+          "own_operation_deduction": {
+            "$ref": "#/components/schemas/STOwnDeductionInput"
           }
         }
       },
@@ -823,6 +826,9 @@
           },
           "deferment": {
             "$ref": "#/components/schemas/ICMSDefermentResult"
+          },
+          "own_operation_deduction": {
+            "$ref": "#/components/schemas/STOwnDeductionResult"
           }
         }
       },
@@ -1039,6 +1045,9 @@
               "101",
               "102",
               "103",
+              "201",
+              "202",
+              "203",
               "300",
               "400"
             ]
@@ -1317,7 +1326,7 @@
             "maxLength": 2000
           }
         },
-        "description": "Approved effective ICMS credit percentage for CSOSN101. Validity must stay in one operation month and revenue_period must be the previous month. No automatic DAS bracket or initial-activity method. Recipient contributor, nonfinal, resale/industrialization only, CRT1/NF-e55."
+        "description": "Approved effective ICMS credit percentage for CSOSN101/201. Validity must stay in one operation month and revenue_period must be the previous month. No automatic DAS bracket or initial-activity method. Recipient contributor, nonfinal, resale/industrialization only, CRT1/NF-e55."
       },
       "SimpleCreditResult": {
         "type": "object",
@@ -1346,6 +1355,61 @@
           }
         },
         "description": "Credit evidence only; does not add to vICMS, vNF, payments or stock."
+      },
+      "STOwnDeductionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rate",
+          "reduction_percent",
+          "base_method",
+          "legal_reference"
+        ],
+        "properties": {
+          "rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "reduction_percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "base_method": {
+            "type": "string",
+            "enum": [
+              "approved_net_operation"
+            ]
+          },
+          "legal_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "description": "Approved theoretical own-operation deduction for SN-ST201/202/203, not own ICMS highlight, recipient credit or DAS. NF-e55, contributor/nonfinal/resale only. No automatic legal applicability, rate, MVA or agreement selection."
+      },
+      "STOwnDeductionResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "base",
+          "rate",
+          "amount"
+        ],
+        "properties": {
+          "base": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          }
+        }
       }
     }
   }

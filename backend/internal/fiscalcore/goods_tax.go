@@ -110,7 +110,7 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 		return ErrRule
 	}
 	if simple {
-		if !oneOf(g.ICMS, "101", "102", "103", "300", "400") {
+		if !oneOf(g.ICMS, "101", "102", "103", "201", "202", "203", "300", "400") {
 			return ErrUnsupported
 		}
 	} else if (r.CRT != "2" && r.CRT != "3") || !oneOf(g.ICMS, "00", "10", "20", "40", "41", "50", "51", "70") {
@@ -159,10 +159,10 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 		}
 	}
 	st, hasST := components["ICMSST"]
-	if hasST != oneOf(g.ICMS, "10", "70") {
+	if hasST != oneOf(g.ICMS, "10", "70", "201", "202", "203") {
 		return ErrRule
 	}
-	if hasST && (st.Method != "percentage" || !st.AddsToTotal || len(st.DeductApplied) != 1 || st.DeductApplied[0] != "ICMS") {
+	if hasST && (st.Method != "percentage" || !st.AddsToTotal || (!simple && (len(st.DeductApplied) != 1 || st.DeductApplied[0] != "ICMS")) || (simple && (len(st.DeductApplied) != 0 || st.OwnOperationDeduction == nil))) {
 		return ErrRule
 	}
 	for _, code := range []string{"FCP", "FCPST"} {
@@ -170,7 +170,7 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 		if !ok {
 			continue
 		}
-		if exempt || t.Method != "percentage" || code == "FCP" && !decimalZero(t.MVA) || len(t.DeductApplied) != 0 || t.AddsToTotal != (code == "FCPST") || code == "FCPST" && !hasST {
+		if exempt && code != "FCPST" || t.Method != "percentage" || code == "FCP" && !decimalZero(t.MVA) || len(t.DeductApplied) != 0 || t.AddsToTotal != (code == "FCPST") || code == "FCPST" && !hasST {
 			return ErrRule
 		}
 	}
@@ -230,6 +230,9 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 	if err := validateDestinationTax(r, components); err != nil {
 		return err
 	}
+	if err := validateSTOwnDeduction(r); err != nil {
+		return err
+	}
 	if err := validateSimpleCredit(r); err != nil {
 		return err
 	}
@@ -261,7 +264,7 @@ func MapGoodsTaxes(r TaxRule, result TaxResult) (*GoodsTaxMapping, error) {
 	components := map[string]TaxComponent{}
 	for i, t := range r.Components {
 		a := result.Taxes[i]
-		if a.Code != t.Code || a.Method != t.Method || a.Rate != t.Rate {
+		if a.Code != t.Code || a.Method != t.Method || a.Rate != t.Rate || (a.OwnOperationDeduction == nil) != (t.OwnOperationDeduction == nil) {
 			return nil, ErrRule
 		}
 		if _, err := xmlTaxNumber(a.Amount, 13, 2); err != nil {
@@ -294,6 +297,14 @@ func MapGoodsTaxes(r TaxRule, result TaxResult) (*GoodsTaxMapping, error) {
 			calculated, _ = decimal(money(calculated))
 			if calculated == nil {
 				return nil, ErrUnsupported
+			}
+			if t.OwnOperationDeduction != nil {
+				expected, e := CalculateSTOwnDeduction(result.Net, *t.OwnOperationDeduction)
+				if e != nil || a.OwnOperationDeduction == nil || *a.OwnOperationDeduction != expected {
+					return nil, ErrRule
+				}
+				deduction, _ := decimal(expected.Amount)
+				calculated.Sub(calculated, deduction)
 			}
 			if t.Deferment != nil {
 				expected, e := CalculateICMSDeferment(money(calculated), *t.Deferment)
@@ -334,13 +345,21 @@ func MapGoodsTaxes(r TaxRule, result TaxResult) (*GoodsTaxMapping, error) {
 	if len(g.ICMS) == 3 {
 		tag = "ICMSSN102"
 		own = append(own, taxLeaf("CSOSN", g.ICMS))
-		if g.ICMS == "101" {
+		if oneOf(g.ICMS, "201", "202", "203") {
+			tag = "ICMSSN202"
+			var err error
+			own, err = appendGoodsST(own, out, values, components, true)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if oneOf(g.ICMS, "101", "201") {
 			credit, err := mapSimpleCredit(r, result.Net)
 			if err != nil {
 				return nil, err
 			}
 			out.SimpleCredit = credit
-			tag = "ICMSSN101"
+			tag = "ICMSSN" + g.ICMS
 			percent, _ := exactScale(credit.Percent, 4)
 			own = append(own, taxLeaf("pCredSN", percent), taxLeaf("vCredICMSSN", credit.Amount))
 		}
@@ -373,26 +392,10 @@ func MapGoodsTaxes(r TaxRule, result TaxResult) (*GoodsTaxMapping, error) {
 				own = append(own, taxLeaf("pFCP", rate("FCP")), taxLeaf("vFCP", fcp.Amount))
 				out.Totals["vFCP"] = fcp.Amount
 			}
-			if st, ok := values["ICMSST"]; ok {
-				mva, _ := exactScale(components["ICMSST"].MVA, 4)
-				if st.MVAAdjustment != nil {
-					var err error
-					mva, err = xmlTaxNumber(st.MVAAdjustment.AppliedPercent, 3, 4)
-					if err != nil {
-						return nil, err
-					}
-				}
-				reduction, _ := exactScale(components["ICMSST"].ReductionPercent, 4)
-				own = append(own, taxLeaf("modBCST", "4"), taxLeaf("pMVAST", mva), taxLeaf("pRedBCST", reduction), taxLeaf("vBCST", st.Base), taxLeaf("pICMSST", rate("ICMSST")), taxLeaf("vICMSST", st.Amount))
-				out.Totals["vBCST"] = st.Base
-				out.Totals["vST"] = st.Amount
-				if fcp, ok := values["FCPST"]; ok {
-					if fcp.Base != st.Base {
-						return nil, ErrUnsupported
-					}
-					own = append(own, taxLeaf("vBCFCPST", fcp.Base), taxLeaf("pFCPST", rate("FCPST")), taxLeaf("vFCPST", fcp.Amount))
-					out.Totals["vFCPST"] = fcp.Amount
-				}
+			var err error
+			own, err = appendGoodsST(own, out, values, components, false)
+			if err != nil {
+				return nil, err
 			}
 		}
 	}
