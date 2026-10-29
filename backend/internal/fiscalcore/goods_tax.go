@@ -9,6 +9,7 @@ import (
 // guessed from an NCM or UF. Optional IPI means outside this invoice's IPI scope,
 // not a fabricated zero-rate IPI group.
 type GoodsTaxClassification struct {
+	SimpleCredit          *SimpleCreditInput            `json:"simple_credit,omitempty"`
 	Destination           *DestinationTaxClassification `json:"destination,omitempty"`
 	Origin                string                        `json:"origin"`
 	ICMS                  string                        `json:"icms"`
@@ -24,6 +25,7 @@ type GoodsTaxClassification struct {
 	IPIEnquadramento      string                        `json:"ipi_enquadramento,omitempty"`
 }
 type GoodsTaxMapping struct {
+	SimpleCredit        *SimpleCreditResult      `json:"simple_credit,omitempty"`
 	Version             int                      `json:"version"`
 	Classification      GoodsTaxClassification   `json:"classification"`
 	Taxes               []TaxNode                `json:"taxes"`
@@ -108,10 +110,10 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 		return ErrRule
 	}
 	if simple {
-		if !oneOf(g.ICMS, "102", "103", "300", "400") {
+		if !oneOf(g.ICMS, "101", "102", "103", "300", "400") {
 			return ErrUnsupported
 		}
-	} else if (r.CRT != "2" && r.CRT != "3") || !oneOf(g.ICMS, "00", "10", "20", "40", "41", "50", "70") {
+	} else if (r.CRT != "2" && r.CRT != "3") || !oneOf(g.ICMS, "00", "10", "20", "40", "41", "50", "51", "70") {
 		return ErrUnsupported
 	}
 	components := map[string]TaxComponent{}
@@ -152,7 +154,7 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 			return ErrUnsupported
 		}
 		reduced := !decimalZero(icms.ReductionPercent)
-		if reduced != oneOf(g.ICMS, "20", "70") {
+		if g.ICMS != "51" && reduced != oneOf(g.ICMS, "20", "70") {
 			return ErrRule
 		}
 	}
@@ -228,6 +230,12 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 	if err := validateDestinationTax(r, components); err != nil {
 		return err
 	}
+	if err := validateSimpleCredit(r); err != nil {
+		return err
+	}
+	if err := validateICMSDeferment(r); err != nil {
+		return err
+	}
 	if err := validateAdjustedMVA(r); err != nil {
 		return err
 	}
@@ -287,6 +295,15 @@ func MapGoodsTaxes(r TaxRule, result TaxResult) (*GoodsTaxMapping, error) {
 			if calculated == nil {
 				return nil, ErrUnsupported
 			}
+			if t.Deferment != nil {
+				expected, e := CalculateICMSDeferment(money(calculated), *t.Deferment)
+				if e != nil || a.Deferment == nil || *a.Deferment != expected {
+					return nil, ErrRule
+				}
+				calculated, _ = decimal(expected.DueAmount)
+			} else if a.Deferment != nil {
+				return nil, ErrRule
+			}
 			for _, code := range t.DeductApplied {
 				previous, ok := values[code]
 				if !ok {
@@ -317,17 +334,32 @@ func MapGoodsTaxes(r TaxRule, result TaxResult) (*GoodsTaxMapping, error) {
 	if len(g.ICMS) == 3 {
 		tag = "ICMSSN102"
 		own = append(own, taxLeaf("CSOSN", g.ICMS))
+		if g.ICMS == "101" {
+			credit, err := mapSimpleCredit(r, result.Net)
+			if err != nil {
+				return nil, err
+			}
+			out.SimpleCredit = credit
+			tag = "ICMSSN101"
+			percent, _ := exactScale(credit.Percent, 4)
+			own = append(own, taxLeaf("pCredSN", percent), taxLeaf("vCredICMSSN", credit.Amount))
+		}
 	} else {
 		own = append(own, taxLeaf("CST", g.ICMS))
 		if oneOf(g.ICMS, "40", "41", "50") {
 			tag = "ICMS40"
 		} else {
 			own = append(own, taxLeaf("modBC", "3"))
-			if oneOf(g.ICMS, "20", "70") {
+			if oneOf(g.ICMS, "20", "51", "70") {
 				v, _ := exactScale(components["ICMS"].ReductionPercent, 4)
 				own = append(own, taxLeaf("pRedBC", v))
 			}
-			own = append(own, taxLeaf("vBC", icms.Base), taxLeaf("pICMS", rate("ICMS")), taxLeaf("vICMS", icms.Amount))
+			own = append(own, taxLeaf("vBC", icms.Base), taxLeaf("pICMS", rate("ICMS")))
+			if icms.Deferment != nil {
+				p, _ := exactScale(icms.Deferment.Percent, 4)
+				own = append(own, taxLeaf("vICMSOp", icms.Deferment.OperationAmount), taxLeaf("pDif", p), taxLeaf("vICMSDif", icms.Deferment.DeferredAmount))
+			}
+			own = append(own, taxLeaf("vICMS", icms.Amount))
 			out.Totals["vBC"] = icms.Base
 			out.Totals["vICMS"] = icms.Amount
 			if fcp, ok := values["FCP"]; ok {

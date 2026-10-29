@@ -584,6 +584,9 @@
           },
           "adjusted_mva": {
             "$ref": "#/components/schemas/AdjustedMVAInput"
+          },
+          "deferment": {
+            "$ref": "#/components/schemas/ICMSDefermentInput"
           }
         }
       },
@@ -817,6 +820,9 @@
           },
           "mva_adjustment": {
             "$ref": "#/components/schemas/AdjustedMVAResult"
+          },
+          "deferment": {
+            "$ref": "#/components/schemas/ICMSDefermentResult"
           }
         }
       },
@@ -1028,7 +1034,9 @@
               "40",
               "41",
               "50",
+              "51",
               "70",
+              "101",
               "102",
               "103",
               "300",
@@ -1121,6 +1129,9 @@
           },
           "destination": {
             "$ref": "#/components/schemas/DestinationTaxClassification"
+          },
+          "simple_credit": {
+            "$ref": "#/components/schemas/SimpleCreditInput"
           }
         },
         "required": [
@@ -1208,6 +1219,9 @@
           },
           "interstate_reference": {
             "$ref": "#/components/schemas/InterstateRateSelection"
+          },
+          "simple_credit": {
+            "$ref": "#/components/schemas/SimpleCreditResult"
           }
         },
         "required": [
@@ -1216,6 +1230,122 @@
           "taxes",
           "totals"
         ]
+      },
+      "ICMSDefermentInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "percent",
+          "legal_reference"
+        ],
+        "properties": {
+          "percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "legal_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "description": "Approved CST51 incidence, domestic NF-e55 CRT2/3 only; full/partial deferment, no reduced-base or FCP deferment in this version."
+      },
+      "ICMSDefermentResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "percent",
+          "operation_amount",
+          "deferred_amount",
+          "due_amount"
+        ],
+        "properties": {
+          "percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "operation_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "deferred_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "due_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          }
+        },
+        "description": "Operation rounded to cents, deferred portion rounded half-up, due = operation - deferred. Not an exemption or automatic legal eligibility."
+      },
+      "SimpleCreditInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "percent",
+          "revenue_period",
+          "recipient_regime",
+          "base_method",
+          "legal_reference"
+        ],
+        "properties": {
+          "percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "revenue_period": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}$"
+          },
+          "recipient_regime": {
+            "type": "string",
+            "enum": [
+              "normal"
+            ]
+          },
+          "base_method": {
+            "type": "string",
+            "enum": [
+              "approved_net_operation"
+            ]
+          },
+          "legal_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "description": "Approved effective ICMS credit percentage for CSOSN101. Validity must stay in one operation month and revenue_period must be the previous month. No automatic DAS bracket or initial-activity method. Recipient contributor, nonfinal, resale/industrialization only, CRT1/NF-e55."
+      },
+      "SimpleCreditResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "base",
+          "percent",
+          "amount",
+          "revenue_period"
+        ],
+        "properties": {
+          "base": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "revenue_period": {
+            "type": "string"
+          }
+        },
+        "description": "Credit evidence only; does not add to vICMS, vNF, payments or stock."
       }
     }
   }

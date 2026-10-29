@@ -60,6 +60,9 @@ func ValidateTaxPolicy(r TaxRule, c TaxCase, sources []string) error {
 		}
 		seenSources[raw] = true
 	}
+	if err := validateICMSDeferment(r); err != nil {
+		return err
+	}
 	seen := map[string]bool{}
 	for _, t := range r.Components {
 		if !codeRE.MatchString(t.Code) || seen[t.Code] {
@@ -109,6 +112,9 @@ func ValidateTaxPolicy(r TaxRule, c TaxCase, sources []string) error {
 		seen[t.Code] = true
 	}
 	if r.Goods != nil {
+		if r.Goods.SimpleCredit != nil && (c.RecipientStatus != "contributor" || c.FinalConsumer != "no" || !oneOf(c.Purpose, "resale", "industrialization")) {
+			return ErrRule
+		}
 		if c.Operation != "sale" {
 			return ErrUnsupported
 		}

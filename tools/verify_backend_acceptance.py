@@ -13,7 +13,9 @@ REQUIRED = {
         'TestFiscalTaxRealHTTPRestartAndRestore',
         'TestHTTPFiscalProductionTaxQuotesBuildSignTransmitAndRecover',
         'TestHTTPFiscalProductionTaxDestinationDIFALAndFCP',
-        'TestHTTPFiscalProductionTaxNativeLoopback')},
+        'TestHTTPFiscalProductionTaxNativeLoopback',
+        'TestHTTPFiscalProductionTaxDeferment',
+        'TestHTTPFiscalProductionTaxSimpleCredit')},
 }
 ALLOWED_SKIPS = {
     ('titansystem-backend/internal/localapi', 'TestPilotCashProcess'),

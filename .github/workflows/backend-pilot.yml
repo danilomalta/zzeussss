@@ -15,7 +15,8 @@ jobs:
   backend-pilot:
     name: Real HTTP, PostgreSQL, SQLite, frontend bridges and recovery
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    # Full suite (30m), fiscal race (5m + 20m), trade/cash race (20m), builds and evidence.
+    timeout-minutes: 90
     services:
       postgres:
         image: postgres:17

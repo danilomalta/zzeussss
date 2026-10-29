@@ -2811,3 +2811,16 @@ não apenas de certificado. Não anunciar fiscal completo.
 Detalhes/fontes: [FISCAL_TRIBUTACAO_APLICADA_20261029.md](FISCAL_TRIBUTACAO_APLICADA_20261029.md).
 Contratos: `docs/api/fiscal-tax-policy.openapi.json` e `docs/api/fiscal-production.openapi.json`.
 Evidências: [verification.json](evidence/fiscal-tax-classification-20261029/verification.json).
+
+
+## Ampliação tributária — diferimento e crédito, 29/10/2026
+
+Base: `3b745541cfc232bde78ec7020ce9dd8334c64c3f`, branch `feat/fiscal-homolog-journal-20261027`. Acrescentados CST51 interno NF-e55 CRT2/3 (operação/diferido/devido, sem redução/FCP diferido) e CSOSN101 CRT1/NF-e55 (crédito aprovado, competência anterior, vigência mensal, destinatário contribuinte normal declarado, revenda/industrialização). Ambos vinculados às cotações persistidas, XSD e assinatura, sem inferir enquadramento legal, percentual ou faixas do cliente.
+
+Regressão completa: 59pacotes, 1523testes principais/3500resultados incluindo subtestes, zero falhas. A primeira rodada não habilitou cinco opt-ins (quatro bridges e CLI); foram executados separadamente, todos os cinco passaram. Permanecem cinco skips identificados (duas integrações PostgreSQL sem ambiente e três auxiliares de processo/tela). Race do núcleo:17principais/155resultados; race da API tributária:8principais/27resultados, sem falhas ou skips.85testes Python passaram após repetir fora da restrição de sockets/compilação do sandbox; o código dos testes não foi relaxado. Vet,551rotas/contratos e builds Linux passaram. CLI anterior conserva saída byte a byte no caso de compatibilidade.
+
+CI:13integrações obrigatórias. O aceite anterior cancelou pelo limite agregado de40minutos durante os pilotos finais; suíte completa e race fiscal haviam passado. Corrigido o orçamento para90minutos, sem remover testes ou aumentar limites individuais. Novo HEAD exige seus próprios checks.
+
+Fontes, recortes, comandos lógicos e limites: `FISCAL_DIFERIMENTO_CREDITO_20261029.md`. Evidências/hashes: `evidence/fiscal-deferment-credit-20261029/verification.json`. Sem migração nova, instalação, mudança de serviços, frontend, backend original ou banco comercial. Sem merge automático.
+
+**Não está concluída a cobertura tributária nacional.** Continuam RTC IBS/CBS/IS, retenções anteriores, créditos/diferimentos e regimes especiais adicionais, catálogo de benefícios/enquadramentos, apuração Simples/DAS, demais ST/DIFAL, NFS-e e obrigações acessórias. Novos testes usam autoridade descartável; não são homologação oficial.
