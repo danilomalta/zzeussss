@@ -23,7 +23,11 @@ REQUIRED = {
         'TestHTTPFiscalTaxPricedSaleNativeLoopback',
         'TestHTTPFiscalTaxPricedSaleIPIIncludedBeforePayment',
         'TestHTTPFiscalTaxPricedSaleRequiredAcrossWriters',
-        'TestHTTPFiscalTaxPricedSaleModeRequiresExplicitOwnerDecision')},
+        'TestHTTPFiscalTaxPricedSaleModeRequiresExplicitOwnerDecision',
+        'TestHTTPFiscalRetainedSTSaleSignedXMLAndRecovery',
+        'TestHTTPFiscalRetainedSTOwnerAndUnitGuard',
+        'TestHTTPFiscalRetainedSTRejectsMissingAndTamperedSource',
+        'TestHTTPFiscalRetainedSTNativeLoopback')},
 }
 ALLOWED_SKIPS = {
     ('titansystem-backend/internal/localapi', 'TestPilotCashProcess'),

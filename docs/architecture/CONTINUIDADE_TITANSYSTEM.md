@@ -2852,3 +2852,16 @@ Exemplos comprovados: mercadoria3198 + ST230 + FCP-ST90 = pagamento3518, nos tr�
 Detalhes: `FISCAL_VENDA_TRIBUTADA_20261029.md`; evidências/hashes: `evidence/fiscal-tax-priced-sale-20261029/verification.json`. CI exige21integrações; a base0506eaa teve7checks verdes, mas o novo HEAD precisa dos próprios resultados. Sem instalação, mudança de serviços/banco comercial, frontend ou merge na main.
 
 **Não concluído:** integração do checkout visual ao caminho opt-in, cobertura tributária nacional e obrigações adicionais (RTC, retenções, benefícios/regimes especiais/apurações, outros ST/DIFAL, Simples/DAS, ISS/NFS-e, SPED/PVA), homologação oficial e sincronização comercial do evento v2. As pendências anteriores de ST adicional no contrato da venda estão superadas somente no novo caminho documentado.
+
+
+## Retenção anterior CST 60 / CSOSN 500 — 29/10/2026
+
+Base `bf1ac5b4e6e9944c1cf49bfb8ce9c64ac735ac99`, branch fiscal existente. Os sete checks da base passaram. Acrescentados CST 60 (CRT 2/3) e CSOSN 500 (CRT 1), NF-e 55 interna, CFOP 5405, contribuinte/revenda não consumidor final, CEST explícito. Retenção anterior é evidência, sem nova cobrança: mercadoria/pagamento 3198, ST anterior 230 e FCP anterior 90, acréscimo zero.
+
+A declaração exige proprietário ativo e sessão/contrato dentro da transação. Preserva chave/item/quantidade/unidade/referência e valores; rejeita origem incompleta, mês futuro, quantidade/unidade divergentes e FCP que não fecha. Não consulta/autentica XML de compra nem faz rateio, vínculo automático com lote ou controle cumulativo de alocação da origem. Não anuncia recolhimento/crédito.
+
+Assinatura/XSD, memória persistida, venda, recibo, emissão/replay, reinício e backup criptografado foram ensaiados. Dez chamadas HTTP TCP reais e um POST mTLS por emissão, com autoridade descartável. Não é homologação oficial. Nenhuma migração nova; as 76 existentes permanecem intactas. CLI legado no caso comparado conserva os bytes.
+
+Validação final: 59 pacotes, 1552 testes principais/3625 resultados incluindo subtestes, zero falhas. Cinco skips: duas integrações PostgreSQL locais sem ambiente e três auxiliares opt-in de processo/tela. Núcleo com race: 70 principais/431 resultados; API com race: 31 principais/78 resultados, sem falhas/skips. 85 testes Python, vet, 551 rotas/contratos e builds Linux passaram. CI exige 25 integrações; conferir os checks do novo HEAD.
+
+Detalhes/fontes/limites: `FISCAL_RETENCAO_ANTERIOR_20261029.md`; evidências/hashes: `evidence/fiscal-retained-st-20261029/verification.json`. Sem instalação, alteração de frontend/Electron, serviços, banco comercial ou merge na main. A cobertura tributária nacional, integração visual e demais obrigações fiscais continuam pendentes; não anunciar fiscal completo.

@@ -114,6 +114,9 @@ func ValidateTaxPolicy(r TaxRule, c TaxCase, sources []string) error {
 		}
 		seen[t.Code] = true
 	}
+	if isRetainedST(r) && (c.RecipientStatus != "contributor" || c.FinalConsumer != "no" || c.Purpose != "resale" || c.CEST == "") {
+		return ErrUnsupported
+	}
 	if r.Goods != nil {
 		if oneOf(r.Goods.ICMS, "201", "202", "203") && (c.RecipientStatus != "contributor" || c.FinalConsumer != "no" || c.Purpose != "resale") {
 			return ErrUnsupported

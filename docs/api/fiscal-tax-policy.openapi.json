@@ -515,6 +515,9 @@
           "other": {
             "type": "string",
             "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "retained_st": {
+            "$ref": "#/components/schemas/RetainedSTInput"
           }
         }
       },
@@ -886,6 +889,9 @@
           },
           "goods_xml": {
             "$ref": "#/components/schemas/GoodsTaxMapping"
+          },
+          "retained_st": {
+            "$ref": "#/components/schemas/RetainedSTInput"
           }
         }
       },
@@ -1053,7 +1059,9 @@
               "202",
               "203",
               "300",
-              "400"
+              "400",
+              "60",
+              "500"
             ]
           },
           "pis": {
@@ -1101,7 +1109,8 @@
               "not_applicable",
               "own",
               "substitution",
-              "own_and_substitution"
+              "own_and_substitution",
+              "retained"
             ]
           },
           "ipi": {
@@ -1155,7 +1164,7 @@
           "ipi_scope",
           "fcp_scope"
         ],
-        "description": "Enquadramento declarado/revisado pelo cliente; não é classificação legal automática. IPI/FCP precisam de escopo explícito. RTC, monofásicos, diferimento, créditos e retenção anterior não são representados. Venda interestadual com consumidor final não contribuinte exige destination e base única sem benefícios; demais cenários não cobertos são recusados."
+        "description": "Enquadramento aprovado pelo cliente, sem classificação legal automática. CST60/CSOSN500 restritos a NF-e55 interna CFOP5405, contribuinte/revenda não consumidor final e CEST explícito; exigem item.retained_st com declaração do proprietário. Grupos adicionais preservam os recortes documentados; cobertura nacional/RTC não é presumida."
       },
       "InterstateRateSelection": {
         "type": "object",
@@ -1412,6 +1421,91 @@
           "amount": {
             "type": "string",
             "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          }
+        }
+      },
+      "RetainedSTInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_key",
+          "source_item",
+          "approval_reference",
+          "quantity",
+          "unit",
+          "base",
+          "supported_rate",
+          "substitute_amount",
+          "retained_amount"
+        ],
+        "properties": {
+          "source_key": {
+            "type": "string",
+            "minLength": 44,
+            "maxLength": 44,
+            "description": "Chave NF-e55 com dígito verificado. Sua existência/autorização não é consultada automaticamente."
+          },
+          "source_item": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 990
+          },
+          "approval_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,4})?$"
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
+          },
+          "supported_rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,4})?$"
+          },
+          "substitute_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
+          },
+          "retained_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
+          },
+          "fcp": {
+            "$ref": "#/components/schemas/RetainedFCPInput"
+          }
+        },
+        "description": "Valores históricos já atribuídos exatamente à quantidade/unidade desta linha, declarados pelo proprietário. Não é apuração nova, alocação automática de lotes, prova de recolhimento, importação/autenticação do XML de compra ou crédito. Não aumenta vNF. Reutilizar uma cotação não confirma disponibilidade histórica da origem."
+      },
+      "RetainedFCPInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "base",
+          "rate",
+          "amount"
+        ],
+        "properties": {
+          "base": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
+          },
+          "rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,4})?$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
           }
         }
       }

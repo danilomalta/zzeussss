@@ -262,6 +262,15 @@ func CreateTaxQuote(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	if err = license.RequireTx(ctx, tx, a, d, identity.ViewAccounting, modules.Fiscal); err != nil {
 		return out, err
 	}
+	if in.Item.RetainedST != nil {
+		var role string
+		if err = tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=? AND status='active'`, a.TenantID, a.IdentityID).Scan(&role); err != nil {
+			return out, err
+		}
+		if role != "owner" {
+			return out, identity.ErrDenied
+		}
+	}
 	old, err := taxQuoteTx(ctx, tx, a, d, in.OperationID)
 	body, _ := json.Marshal(in)
 	if err == nil {
@@ -301,6 +310,9 @@ func CreateTaxQuote(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	err = tx.QueryRowContext(ctx, `SELECT unit FROM products WHERE tenant_id=? AND id=?`, a.TenantID, in.Item.ProductID).Scan(&out.CatalogUnit)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return TaxQuote{}, err
+	}
+	if in.Item.RetainedST != nil && (out.CatalogUnit == "" || in.Item.RetainedST.Unit != out.CatalogUnit) {
+		return out, ErrInvalid
 	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_tax_quotes(tenant_id,store_id,operation_id,device_id,actor_id,policy_id,policy_revision,request_json,request_sha256,policy_sha256,result_json,result_sha256,created_at,catalog_unit) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, in.OperationID, d.DeviceID, a.IdentityID, in.PolicyID, in.PolicyRevision, string(body), taxHash(body), p.SHA256, string(encoded), out.ResultSHA256, out.CreatedAt, out.CatalogUnit)
 	if err != nil {

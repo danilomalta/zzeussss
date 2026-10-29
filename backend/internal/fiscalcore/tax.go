@@ -92,13 +92,14 @@ type TaxComponent struct {
 // A string alias keeps JSON monetary/rate inputs exact; never accept float64.
 type percentString = string
 type TaxItem struct {
-	ProductID string `json:"product_id"`
-	Quantity  string `json:"quantity"`
-	UnitPrice string `json:"unit_price"`
-	Discount  string `json:"discount"`
-	Freight   string `json:"freight"`
-	Insurance string `json:"insurance"`
-	Other     string `json:"other"`
+	RetainedST *RetainedSTInput `json:"retained_st,omitempty"`
+	ProductID  string           `json:"product_id"`
+	Quantity   string           `json:"quantity"`
+	UnitPrice  string           `json:"unit_price"`
+	Discount   string           `json:"discount"`
+	Freight    string           `json:"freight"`
+	Insurance  string           `json:"insurance"`
+	Other      string           `json:"other"`
 }
 type AppliedTax struct {
 	OwnOperationDeduction *STOwnDeductionResult `json:"own_operation_deduction,omitempty"`
@@ -112,6 +113,7 @@ type AppliedTax struct {
 	UnroundedBase         string                `json:"unrounded_base,omitempty"` // exact rational, not float
 }
 type TaxResult struct {
+	RetainedST            *RetainedSTInput `json:"retained_st,omitempty"`
 	RuleID                string           `json:"rule_id"`
 	CFOP                  string           `json:"cfop"`
 	NCM                   string           `json:"ncm"`
@@ -366,6 +368,10 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 	if len(out.Total) > 18 {
 		return TaxResult{}, fmt.Errorf("%w: total limit", ErrInput)
 	}
+	if err = validateRetainedSTItem(c, item, *r); err != nil {
+		return TaxResult{}, err
+	}
+	out.RetainedST = item.RetainedST
 	if r.Goods != nil {
 		out.GoodsXML, err = MapGoodsTaxes(*r, out)
 		if err != nil {

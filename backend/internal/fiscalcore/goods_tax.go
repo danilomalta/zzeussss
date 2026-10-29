@@ -90,7 +90,7 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 	if len(g.Origin) != 1 || g.Origin[0] < '0' || g.Origin[0] > '8' {
 		return ErrRule
 	}
-	if !oneOf(g.IPIScope, "classified", "not_applicable") || !oneOf(g.FCPScope, "not_applicable", "own", "substitution", "own_and_substitution") {
+	if !oneOf(g.IPIScope, "classified", "not_applicable") || !oneOf(g.FCPScope, "not_applicable", "own", "substitution", "own_and_substitution", "retained") {
 		return ErrRule
 	}
 	if g.BenefitCode != "" && (len(g.BenefitCode) < 8 || !cleanTaxText(g.BenefitCode, 10)) {
@@ -110,10 +110,10 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 		return ErrRule
 	}
 	if simple {
-		if !oneOf(g.ICMS, "101", "102", "103", "201", "202", "203", "300", "400") {
+		if !oneOf(g.ICMS, "101", "102", "103", "201", "202", "203", "300", "400", "500") {
 			return ErrUnsupported
 		}
-	} else if (r.CRT != "2" && r.CRT != "3") || !oneOf(g.ICMS, "00", "10", "20", "40", "41", "50", "51", "70") {
+	} else if (r.CRT != "2" && r.CRT != "3") || !oneOf(g.ICMS, "00", "10", "20", "40", "41", "50", "51", "60", "70") {
 		return ErrUnsupported
 	}
 	components := map[string]TaxComponent{}
@@ -144,7 +144,7 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 	if !ok || icms.AddsToTotal || len(icms.DeductApplied) != 0 || !decimalZero(icms.MVA) {
 		return ErrRule
 	}
-	exempt := simple || oneOf(g.ICMS, "40", "41", "50")
+	exempt := simple || oneOf(g.ICMS, "40", "41", "50", "60")
 	if exempt {
 		if !pureExempt(icms) {
 			return ErrRule
@@ -226,6 +226,9 @@ func ValidateGoodsTaxClassification(r TaxRule) error {
 		}
 	} else if g.IPIEnquadramento != "" {
 		return ErrRule
+	}
+	if err := validateRetainedSTClassification(r); err != nil {
+		return err
 	}
 	if err := validateDestinationTax(r, components); err != nil {
 		return err
@@ -365,7 +368,9 @@ func MapGoodsTaxes(r TaxRule, result TaxResult) (*GoodsTaxMapping, error) {
 		}
 	} else {
 		own = append(own, taxLeaf("CST", g.ICMS))
-		if oneOf(g.ICMS, "40", "41", "50") {
+		if g.ICMS == "60" {
+			// Prior retention is mapped below; no new own-operation ICMS.
+		} else if oneOf(g.ICMS, "40", "41", "50") {
 			tag = "ICMS40"
 		} else {
 			own = append(own, taxLeaf("modBC", "3"))
@@ -398,6 +403,19 @@ func MapGoodsTaxes(r TaxRule, result TaxResult) (*GoodsTaxMapping, error) {
 				return nil, err
 			}
 		}
+	}
+	if isRetainedST(r) {
+		var err error
+		own, err = appendRetainedST(own, out, r, result.RetainedST)
+		if err != nil {
+			return nil, err
+		}
+		tag = "ICMS60"
+		if g.ICMS == "500" {
+			tag = "ICMSSN500"
+		}
+	} else if result.RetainedST != nil {
+		return nil, ErrRule
 	}
 	out.Taxes = append(out.Taxes, taxGroup("ICMS", taxGroup(tag, own...)))
 	if g.IPI != "" {
