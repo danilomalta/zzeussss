@@ -2676,3 +2676,67 @@ Detalhes:
 [FISCAL_A1_BACKEND_20261029.md](FISCAL_A1_BACKEND_20261029.md).
 Resultados, limites e hashes:
 [verification.json](evidence/fiscal-a1-backend-20261029/verification.json).
+
+## Backend — políticas tributárias e memória de cálculo — 29/10/2026
+
+Base `d2773f3f12cc1e659d0bc13f2f753e41257523bb`, mesma branch fiscal/PR5.
+Responsável desta unidade: backend fiscal local. Frontend, Electron, serviços
+instalados, projetos originais e bancos comerciais não foram alterados.
+
+A calculadora agora tem políticas duráveis aprovadas pelo proprietário, com
+revisões, expectativa de versão, produto/perfil fiscal, fontes declaradas,
+vigência e classificação explícita da operação/destinatário/origem. Quatro rotas
+autenticadas publicam/leem políticas e criam/recuperam memórias de cálculo.
+Não há regra nacional pré-carregada, inferência de isenção nem escolha de
+alíquota por UF. O sistema valida o contexto e a estrutura representável;
+a classificação jurídica continua exigindo revisão responsável por cliente.
+
+Nova migração75 mantém políticas e cálculos imutáveis. Repetição idempotente
+preserva IDs/hashes; alteração de entrada ou revisão conflitante é recusada.
+Sobreposição ativa é conflito. Revogar sessão ou mudar empresa/loja/usuário/
+aparelho bloqueia tentativa antiga. Mudança de perfil exige revisão da política;
+regras inativas não produzem novos cálculos, mas o histórico continua legível.
+Backup aceita25–75, com teste de migração também dos snapshots72/73/74.
+
+O cálculo acrescenta gross-up explícito e escolha de arredondamento da base,
+preservando o modo antigo. Frações da base podem ser retidas até o cálculo do
+tributo; dinheiro da operação e dependências anteriores continuam em centavos.
+Valores excessivos são recusados sem panic. Percentuais de testes são vetores
+matemáticos descartáveis e não configurações fiscais distribuídas aos clientes.
+
+Regressões específicas com race: seis testes principais/43resultados, sem falhas
+ou skips, incluindo publicação, idempotência concorrente, contexto, vigência,
+perfil, histórico, permissão e cálculo. Rodada adicional da API com race e
+`titan-backup` compilado: quatro testes principais, sem falhas/skips. O ensaio
+tributário faz oito chamadas HTTP reais em três processos, preservando os
+hashes da política/resultado após reinício e restauração criptografada.
+Onze comandos do backup executam casos positivos e negativos; o relatório
+`pilot_cash_v1` mantém seu escopo financeiro, e a integridade tributária é
+conferida pela leitura da memória original via API.
+
+Suíte geral:59pacotes,1.498testes principais e3.355resultados incluindo subtestes,
+zero falhas. Dez skips nessa rodada: cinco opt-ins de bridge/CLI passaram nas
+rodadas explícitas; dois testes PostgreSQL não estavam configurados localmente;
+três eram auxiliares de processo/tela. Não foi declarado gate integrado local
+aprovado sem as duas integrações PostgreSQL exigidas no CI.
+
+Quatro bridges frontend/API e o diagnóstico fiscal nativo compilado passaram
+separadamente. Os17testes dos validadores, vet dos três pacotes afetados, builds
+Linux, integridade de módulos e mapa de551rotas passaram. O CI passa a exigir
+o ensaio tributário real como oitava integração obrigatória e inclui os testes
+novos no race. Resultado da suíte geral e hashes constam no arquivo de evidência
+desta unidade; não se deve inferir CI verde de resultados locais.
+
+Não foi entregue o motor tributário nacional completo. Permanecem sem cobertura
+integral as tabelas/enquadramentos CST/CSOSN/cClassTrib, benefícios, DIFAL/FCP,
+ST/protocolos, Simples/DAS, monofásicos, créditos/ajustes e serviços/importação/
+exportação. As memórias ainda não preenchem automaticamente os grupos de XML do
+emissor de produção. Não conclui DANFE/contingência de produção, SPED/PVA,
+NFS-e de produção nem homologação oficial de cada cliente. A pesquisa oficial
+RTC apontou respostas provisórias sinalizadas por `x-warning-dados-simulados`;
+elas não foram incorporadas como regras válidas nem usadas para alegar cobertura.
+
+Detalhes e fontes oficiais:
+[FISCAL_REGRAS_TRIBUTARIAS_20261029.md](FISCAL_REGRAS_TRIBUTARIAS_20261029.md).
+Contrato: [fiscal-tax-policy.openapi.json](../api/fiscal-tax-policy.openapi.json).
+Evidência: [verification.json](evidence/fiscal-tax-policy-20261029/verification.json).

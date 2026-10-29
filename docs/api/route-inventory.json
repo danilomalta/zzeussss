@@ -3850,6 +3850,34 @@
       "path": "/local/v1/fiscal/intents/:id/production/cancellation/xml",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/tax-policies",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fiscal/tax-policies/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/tax-quotes",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fiscal/tax-quotes/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
     }
   ]
 }

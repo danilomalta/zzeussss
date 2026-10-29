@@ -21214,6 +21214,18 @@
     },
     "/local/v1/fiscal/intents/{id}/production/cancellation/xml": {
       "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1cancellation~1xml"
+    },
+    "/local/v1/fiscal/tax-policies": {
+      "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-policies"
+    },
+    "/local/v1/fiscal/tax-policies/{id}": {
+      "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-policies~1{id}"
+    },
+    "/local/v1/fiscal/tax-quotes": {
+      "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-quotes"
+    },
+    "/local/v1/fiscal/tax-quotes/{id}": {
+      "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-quotes~1{id}"
     }
   },
   "components": {

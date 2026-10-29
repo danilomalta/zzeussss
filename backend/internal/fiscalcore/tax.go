@@ -70,11 +70,12 @@ type TaxRule struct {
 	ValidUntil        string         `json:"valid_until"`
 	LegalReference    string         `json:"legal_reference"`
 	ApprovalReference string         `json:"approval_reference"`
+	BaseRounding      string         `json:"base_rounding,omitempty"` // before_tax (legacy) or tax_final
 	Components        []TaxComponent `json:"components"`
 }
 type TaxComponent struct {
 	Code             string        `json:"code"`
-	Method           string        `json:"method"` // percentage, per_unit, exempt
+	Method           string        `json:"method"` // percentage, gross_up, per_unit, exempt
 	Rate             string        `json:"rate"`
 	ReductionPercent string        `json:"reduction_percent"`
 	MVA              percentString `json:"mva_percent"`
@@ -96,11 +97,12 @@ type TaxItem struct {
 	Other     string `json:"other"`
 }
 type AppliedTax struct {
-	Code   string `json:"code"`
-	Method string `json:"method"`
-	Base   string `json:"base"`
-	Rate   string `json:"rate"`
-	Amount string `json:"amount"`
+	Code          string `json:"code"`
+	Method        string `json:"method"`
+	Base          string `json:"base"`
+	Rate          string `json:"rate"`
+	Amount        string `json:"amount"`
+	UnroundedBase string `json:"unrounded_base,omitempty"` // exact rational, not float
 }
 type TaxResult struct {
 	RuleID                string       `json:"rule_id"`
@@ -162,6 +164,9 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		return out, ErrRule
 	}
 	r := selected
+	if r.BaseRounding != "" && r.BaseRounding != "before_tax" && r.BaseRounding != "tax_final" {
+		return out, ErrRule
+	}
 	if r.ID == "" || len(r.ID) > 128 || r.LegalReference == "" || r.ApprovalReference == "" || len(r.Components) == 0 || len(r.Components) > 16 {
 		return out, ErrRule
 	}
@@ -177,7 +182,10 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		return out, err
 	}
 	grossRaw := new(big.Rat).Mul(quantity, unit)
-	gross, _ := decimal(money(grossRaw))
+	gross, err := decimal(money(grossRaw))
+	if err != nil {
+		return out, ErrInput
+	}
 	discount, err := decimal(item.Discount)
 	if err != nil || discount.Cmp(gross) > 0 {
 		return out, ErrInput
@@ -191,7 +199,10 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		net.Add(net, a)
 	}
 	// The monetary operation base is rounded before percentage calculations.
-	net, _ = decimal(money(net))
+	net, err = decimal(money(net))
+	if err != nil {
+		return out, ErrInput
+	}
 	total := new(big.Rat).Set(net)
 	applied := map[string]*big.Rat{}
 	out = TaxResult{RuleID: r.ID, CFOP: r.CFOP, NCM: r.NCM, Gross: money(gross), Net: money(net), LegalReference: r.LegalReference, ApprovalReference: r.ApprovalReference, Taxes: []AppliedTax{}}
@@ -235,12 +246,29 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		if base.Sign() < 0 {
 			return TaxResult{}, ErrRule
 		}
-		base, _ = decimal(money(base))
+		if r.BaseRounding != "tax_final" {
+			base, err = decimal(money(base))
+			if err != nil {
+				return TaxResult{}, ErrInput
+			}
+		}
 		amount := zero()
 		switch t.Method {
 		case "percentage":
 			if rate.Cmp(big.NewRat(100, 1)) > 0 {
 				return TaxResult{}, ErrRule
+			}
+			amount.Mul(base, new(big.Rat).Quo(rate, big.NewRat(100, 1)))
+		case "gross_up":
+			if rate.Cmp(big.NewRat(100, 1)) >= 0 {
+				return TaxResult{}, ErrRule
+			}
+			base.Quo(base, new(big.Rat).Sub(big.NewRat(1, 1), new(big.Rat).Quo(rate, big.NewRat(100, 1))))
+			if r.BaseRounding != "tax_final" {
+				base, err = decimal(money(base))
+				if err != nil {
+					return TaxResult{}, ErrInput
+				}
 			}
 			amount.Mul(base, new(big.Rat).Quo(rate, big.NewRat(100, 1)))
 		case "per_unit":
@@ -256,7 +284,10 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		default:
 			return TaxResult{}, ErrUnsupported
 		}
-		amount, _ = decimal(money(amount))
+		amount, err = decimal(money(amount))
+		if err != nil {
+			return TaxResult{}, ErrInput
+		}
 		seen := map[string]bool{}
 		for _, code := range t.DeductApplied {
 			a, ok := applied[code]
@@ -277,7 +308,11 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		if t.Method == "per_unit" {
 			baseValue = item.Quantity
 		}
-		out.Taxes = append(out.Taxes, AppliedTax{Code: t.Code, Method: t.Method, Base: baseValue, Rate: t.Rate, Amount: money(amount)})
+		value := AppliedTax{Code: t.Code, Method: t.Method, Base: baseValue, Rate: t.Rate, Amount: money(amount)}
+		if r.BaseRounding == "tax_final" {
+			value.UnroundedBase = base.RatString()
+		}
+		out.Taxes = append(out.Taxes, value)
 	}
 	out.Total = money(total)
 	if len(out.Total) > 18 {

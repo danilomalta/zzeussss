@@ -13,6 +13,10 @@ import (
 )
 
 func (s *Server) mountFiscal(r fiber.Router) {
+	r.Post("/fiscal/tax-policies", s.publishTaxPolicy)
+	r.Get("/fiscal/tax-policies/:id", s.readTaxPolicy)
+	r.Post("/fiscal/tax-quotes", s.createTaxQuote)
+	r.Get("/fiscal/tax-quotes/:id", s.readTaxQuote)
 	r.Get("/fiscal/capabilities", s.fiscalCapabilities)
 	r.Get("/fiscal/requirements/:uf", s.fiscalRequirements)
 	r.Post("/fiscal/profiles", s.configureFiscal)
