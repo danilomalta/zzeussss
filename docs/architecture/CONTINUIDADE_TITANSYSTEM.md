@@ -2618,3 +2618,61 @@ Arquivos/testes, hashes e resultados:
 [verification.json](evidence/fiscal-customer-20261029/verification.json),
 [frontend-tests.json](evidence/fiscal-customer-20261029/frontend-tests.json),
 [real-client-bridge.txt](evidence/fiscal-customer-20261029/real-client-bridge.txt).
+
+## Backend fiscal — A1 protegido e diagnóstico nativo —29/10/2026
+
+Pedido retomado no backend, base `7223bac548f9c621f15f3964d82f2efc8edfb5ff`,
+mesma branch fiscal/PR5. Nenhuma tela ou simulação foi acrescentada ao produto.
+O carregador real usado por `titan-local serve --fiscal-production` agora aceita
+A1 PFX/P12 DER com senha em arquivo privado, mantendo PEM. Não exporta chave,
+não aceita senha inline, não promove raiz embutida a confiança nem armazena segredo no
+journal/SQLite. CNPJ, fingerprint, cadeia, vigência e CRL continuam obrigatórios.
+Origens incompletas/misturadas, senha errada e arquivos inseguros são recusados;
+revogação posterior continua bloqueando envio. Dependência fixada em0.7.4,
+incluindo a correção PBMAC1 do fornecedor. Nenhuma outra dependência atualizada.
+
+`titan-fiscal check-production-config --in ...` lê a configuração privada
+existente e devolve JSON limitado sem CNPJ, senha, chave, caminho privado ou URL.
+Erro produz saída não zero. O check não abre banco, escreve arquivo, transmite
+nem afirma homologação; sessão/contrato da instalação e credenciamento oficial
+não são verificados por esse comando offline. O emitente será cada cliente,
+sem usar uma empresa do proprietário do ERP para representar todos.
+
+**Validação final:**59pacotes,1.498testes principais e3.315resultados incluindo
+subtestes aprovados; zero falhas. Cinco skips de testes locais identificados:
+PostgreSQL catálogo/sessão e três auxiliares de processo/tela. Quatro bridges de
+frontend e o novo executável nativo foram habilitados na rodada completa.
+Carregador/CLI com `-race`:10testes principais/53resultados, zero falhas/skips;
+API de produção com `-race`:5principais/7resultados, zero falhas/skips. Assinatura
+XML, checagem criptográfica, mTLS, HTTP, reinício e backup/restauração executam
+código real; as identidades/autoridade dos testes são exclusivamente descartáveis,
+sem envio SEFAZ ou uso de dados/certificados comerciais. Não confundir os testes
+com uma configuração distribuída para cliente ou uma aprovação fiscal oficial.
+
+Vet de três pacotes,17testes dos validadores, mapa de547rotas e verificação de
+integridade de todos os módulos passaram. Builds Linux de titan-local/titan-fiscal
+e cross-build Windows de titan-local passaram. O executável Linux compilado foi
+executado no teste obrigatório de sucesso/erro do diagnóstico. Os11fontes e
+configurações testados preservaram seus hashes. Migrações, schemas oficiais,
+frontend e Electron permanecem sem alterações nesta unidade.
+
+O CI de7223bac terminou com seis checks verdes. O aceite integrado reprovou no
+limite de10min da rodada de API fiscal com `-race`; o teste interrompido tinha
+11s. A causa foi conferida no artefato JSON do run40810819619, não inferida do
+código de saída. O limite agora é20min, mantendo o job em40min e todas as
+assertivas. `TestFiscalProductionConfigNativeCLI` é a sétima integração
+obrigatória do aceite, com binário compilado pelo workflow; skip/ausência reprova
+o gate. O resultado do novo head deve ser conferido após a publicação.
+
+**Pendente:** provisionamento seguro por ACL/cofre Windows, A3/HSM, rotação,
+certificado matriz/filiais e ensaio oficial. O cross-build Windows não comprova
+provisionamento nessa plataforma. Continuam pendentes motor tributário nacional,
+DANFE e contingência de produção, SPED/PVA e NFS-e de produção. A1 funcional não
+conclui essas áreas. Nenhum serviço8182/8282, instalação, banco comercial ou árvore
+original foi alterado, e não houve merge na main. Os binários/logs ficam fora do
+Git em `/tmp/titan-backend-pfx-20261029/`; não foi criado novo ZIP de distribuição.
+
+Detalhes:
+[FISCAL_A1_BACKEND_20261029.md](FISCAL_A1_BACKEND_20261029.md).
+Resultados, limites e hashes:
+[verification.json](evidence/fiscal-a1-backend-20261029/verification.json).

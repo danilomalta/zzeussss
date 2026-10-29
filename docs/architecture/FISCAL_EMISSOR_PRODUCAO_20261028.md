@@ -1,5 +1,10 @@
 # Emissor síncrono de produção NF-e55 / NFC-e65
 
+Atualização de29/10: o backend também lê A1 PFX/P12 protegido, sem exportar
+chave PEM, e oferece diagnóstico offline da configuração. Ver
+[FISCAL_A1_BACKEND_20261029.md](FISCAL_A1_BACKEND_20261029.md).
+Os limites de formatos abaixo descrevem a entrega original de28/10.
+
 Base de implementação: `f6115f972cb75f04c0cfdc6179976c330d756be1`, branch
 `feat/fiscal-homolog-journal-20261027`. Código na worktree fiscal isolada;
 nenhum executável instalado e nenhum serviço existente reiniciado nesta entrega.

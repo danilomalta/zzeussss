@@ -67,6 +67,7 @@ jobs:
           TITAN_DELIVERY_BRIDGE: ${{ github.workspace }}/frontend-web/tests/deliveryCycle.bridge.mjs
           TITAN_MAINTENANCE_BRIDGE: ${{ github.workspace }}/frontend-web/tests/internalMaintenance.bridge.mjs
           TITAN_FISCAL_CUSTOMER_BRIDGE: ${{ github.workspace }}/frontend-web/tests/fiscalCustomer.bridge.mjs
+          TITAN_FISCAL_CLI: ${{ runner.temp }}/titan-fiscal
         run: |
           set -euo pipefail
           go test ./... -count=1 -timeout=30m -json > "$RUNNER_TEMP/backend-full.jsonl"
@@ -74,7 +75,7 @@ jobs:
       - name: Fiscal journal, session boundary and mTLS regressions with race detector
         run: |
           go test -race ./internal/fiscalcore ./internal/fiscalproduction -run '^TestFiscalTransportRechecks|^TestFiscalMTLS|^TestFiscalIssuance|^TestFiscalQuery|^TestFiscalEmbeddedSchema|^TestFiscalCancellation|^TestFiscalInvalidation|^TestFiscalDANFE|^TestProduction' -count=1 -timeout=5m -json > "$RUNNER_TEMP/fiscal-journal-core-race.jsonl"
-          go test -race ./internal/localapi -run '^TestFiscalTransmission|^TestFiscalInvoiceBinding|^TestFiscalNumbering|^TestFiscalQuerySQL|^TestFiscalCancellationSQL|^TestFiscalInvalidationSQL|^TestHTTPFiscalDANFE|^TestHTTPFiscalProduction' -count=1 -timeout=10m -json -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" > "$RUNNER_TEMP/fiscal-journal-local-race.jsonl"
+          go test -race ./internal/localapi -run '^TestFiscalTransmission|^TestFiscalInvoiceBinding|^TestFiscalNumbering|^TestFiscalQuerySQL|^TestFiscalCancellationSQL|^TestFiscalInvalidationSQL|^TestHTTPFiscalDANFE|^TestHTTPFiscalProduction' -count=1 -timeout=20m -json -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" > "$RUNNER_TEMP/fiscal-journal-local-race.jsonl"
       - name: Company trade and cash pilots with real CLI and race detector
         run: |
           set -euo pipefail

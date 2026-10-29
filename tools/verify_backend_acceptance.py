@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 REQUIRED = {
+    ('titansystem-backend/cmd/titan-fiscal', 'TestFiscalProductionConfigNativeCLI'),
     ('titansystem-backend/internal/onlinesessions', 'TestPostgresDurableRotationConcurrencyAndRollback'),
     ('titansystem-backend/internal/core/routes', 'TestPostgresCatalogCreationAndDiscountAtomicity'),
     *{('titansystem-backend/internal/localapi', name) for name in (

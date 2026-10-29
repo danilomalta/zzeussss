@@ -1,8 +1,6 @@
 package fiscalproduction
 
 import (
-	"crypto"
-	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"io"
@@ -18,6 +16,8 @@ type FileConfiguration struct {
 	Binding         fiscalcore.ProductionBinding `json:"binding"`
 	CertificatePath string                       `json:"certificate_path"`
 	PrivateKeyPath  string                       `json:"private_key_path"`
+	PKCS12Path      string                       `json:"pkcs12_path,omitempty"`
+	PasswordPath    string                       `json:"pkcs12_password_path,omitempty"`
 	IssuerRootsPath string                       `json:"issuer_roots_path"`
 	CRLPaths        []string                     `json:"crl_paths"`
 	QR              *QRFileConfiguration         `json:"qr,omitempty"`
@@ -55,8 +55,8 @@ func privateFile(path string) ([]byte, error) {
 }
 
 // Load never emits file contents or OS errors containing private paths. PEM
-// signing keys are PKCS8 or RSA PKCS1 in private0600 files. A native/HSM signer
-// can instead be injected via Provision; no browser upload/import is provided.
+// or password-protected PKCS12 signing material is read from private0600 files.
+// No browser upload/import, inline password or trust from the PFX is accepted.
 func Load(path string) (*Runtime, error) {
 	raw, err := privateFile(path)
 	if err != nil {
@@ -67,52 +67,8 @@ func Load(path string) (*Runtime, error) {
 	if fiscalcore.DecodeInput(raw, &cfg) != nil || cfg.Version != 1 || len(cfg.CRLPaths) == 0 || len(cfg.CRLPaths) > 16 {
 		return nil, ErrUnavailable
 	}
-	certRaw, err := privateFile(cfg.CertificatePath)
+	chain, signer, err := loadSigningMaterial(cfg)
 	if err != nil {
-		return nil, ErrUnavailable
-	}
-	var chain [][]byte
-	for len(certRaw) > 0 {
-		block, rest := pem.Decode(certRaw)
-		if block == nil || block.Type != "CERTIFICATE" {
-			return nil, ErrUnavailable
-		}
-		chain = append(chain, block.Bytes)
-		certRaw = rest
-	}
-	if len(chain) == 0 {
-		return nil, ErrUnavailable
-	}
-	keyRaw, err := privateFile(cfg.PrivateKeyPath)
-	if err != nil {
-		return nil, ErrUnavailable
-	}
-	defer clear(keyRaw)
-	block, rest := pem.Decode(keyRaw)
-	if block == nil || len(rest) != 0 {
-		return nil, ErrUnavailable
-	}
-	defer clear(block.Bytes)
-	var signer crypto.Signer
-	if block.Type == "PRIVATE KEY" {
-		value, e := x509.ParsePKCS8PrivateKey(block.Bytes)
-		if e != nil {
-			return nil, ErrUnavailable
-		}
-		var ok bool
-		signer, ok = value.(crypto.Signer)
-		if !ok {
-			return nil, ErrUnavailable
-		}
-	} else if block.Type == "RSA PRIVATE KEY" {
-		signer, err = x509.ParsePKCS1PrivateKey(block.Bytes)
-		if err != nil {
-			return nil, ErrUnavailable
-		}
-	} else {
-		return nil, ErrUnavailable
-	}
-	if _, ok := signer.(*rsa.PrivateKey); !ok {
 		return nil, ErrUnavailable
 	}
 	rootsRaw, err := privateFile(cfg.IssuerRootsPath)
