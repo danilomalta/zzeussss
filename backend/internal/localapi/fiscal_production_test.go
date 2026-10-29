@@ -35,22 +35,25 @@ import (
 const productionTestHost = "synthetic.fiscal.example.gov.br"
 
 type productionFixture struct {
-	f            *stockHTTPFixture
-	intent       fiscal.Intent
-	input        fiscalcore.Invoice
-	binding      fiscalcore.ProductionBinding
-	runtime      *fiscalproduction.Runtime
-	cert         *fiscalcert.Fixture
-	authority    *httptest.Server
-	mode         atomic.Value
-	issues       atomic.Int32
-	queries      atomic.Int32
-	crlGuard     atomic.Bool
-	logoutGuard  atomic.Bool
-	crlCalls     atomic.Int32
-	lock         sync.Mutex
-	lastSigned   []byte
-	authorizedAt string
+	f                *stockHTTPFixture
+	intent           fiscal.Intent
+	input            fiscalcore.Invoice
+	binding          fiscalcore.ProductionBinding
+	runtime          *fiscalproduction.Runtime
+	cert             *fiscalcert.Fixture
+	authority        *httptest.Server
+	mode             atomic.Value
+	issues           atomic.Int32
+	queries          atomic.Int32
+	cancels          atomic.Int32
+	crlGuard         atomic.Bool
+	logoutGuard      atomic.Bool
+	crlCalls         atomic.Int32
+	lock             sync.Mutex
+	lastSigned       []byte
+	lastEvent        []byte
+	lastCancellation []byte
+	authorizedAt     string
 }
 
 func newProductionFixture(t *testing.T, model string) *productionFixture {
@@ -95,7 +98,7 @@ func newProductionFixture(t *testing.T, model string) *productionFixture {
 	p.authority.StartTLS()
 	t.Cleanup(p.authority.Close)
 	now := time.Now()
-	p.binding = fiscalcore.ProductionBinding{ID: "synthetic-production", TenantID: p.f.device.TenantID, StoreID: p.f.device.StoreID, DeviceID: p.f.device.DeviceID, ProfileID: "issuer-one", ProfileRevision: 2, Issuer: p.input.Issuer.CNPJ, UF: "SP", Timezone: "America/Sao_Paulo", Model: model, Series: 1, InitialNumber: 17, SoleAuthorityReference: "synthetic-single-authority", EndpointRegistryReference: "synthetic-endpoint-registry", HomologationReference: "synthetic-homologation-only", DeveloperReference: "synthetic-developer-reference", AuthorizationURL: "https://" + productionTestHost + "/issue", ConsultationURL: "https://" + productionTestHost + "/query", CertificateSHA256: p.cert.Credential.Fingerprint(), ValidFrom: now.Add(-time.Minute).UTC().Format(time.RFC3339), ValidUntil: now.Add(time.Hour).UTC().Format(time.RFC3339)}
+	p.binding = fiscalcore.ProductionBinding{ID: "synthetic-production", TenantID: p.f.device.TenantID, StoreID: p.f.device.StoreID, DeviceID: p.f.device.DeviceID, ProfileID: "issuer-one", ProfileRevision: 2, Issuer: p.input.Issuer.CNPJ, UF: "SP", Timezone: "America/Sao_Paulo", Model: model, Series: 1, InitialNumber: 17, SoleAuthorityReference: "synthetic-single-authority", EndpointRegistryReference: "synthetic-endpoint-registry", HomologationReference: "synthetic-homologation-only", DeveloperReference: "synthetic-developer-reference", AuthorizationURL: "https://" + productionTestHost + "/issue", ConsultationURL: "https://" + productionTestHost + "/query", CancellationURL: "https://" + productionTestHost + "/cancel", CertificateSHA256: p.cert.Credential.Fingerprint(), ValidFrom: now.Add(-time.Minute).UTC().Format(time.RFC3339), ValidUntil: now.Add(time.Hour).UTC().Format(time.RFC3339)}
 	valid, err := p.cert.CRL(false, now.Add(-time.Minute), now.Add(time.Hour))
 	if err != nil {
 		t.Fatal(err)
@@ -209,6 +212,66 @@ func (p *productionFixture) authorityHandler(w http.ResponseWriter, r *http.Requ
 		w.WriteHeader(400)
 		return
 	}
+	if r.URL.Path == "/cancel" {
+		p.cancels.Add(1)
+		var archived int
+		if err := p.f.db.QueryRow(`SELECT count(*) FROM fiscal_production_cancellation_requests`).Scan(&archived); err != nil || archived != 1 {
+			w.WriteHeader(500)
+			return
+		}
+		doc := etree.NewDocument()
+		if doc.ReadFromBytes(body) != nil {
+			w.WriteHeader(400)
+			return
+		}
+		info := doc.Root().FindElement(".//evento/infEvento")
+		if info == nil || info.SelectElement("tpAmb").Text() != "1" {
+			w.WriteHeader(400)
+			return
+		}
+		key := info.SelectElement("chNFe").Text()
+		mode := p.mode.Load().(string)
+
+		if mode == "cancel-logout-inflight" {
+			if err := localauth.Logout(context.Background(), p.f.db, p.f.token); err != nil {
+				w.WriteHeader(500)
+				return
+			}
+		}
+		if mode == "cancel-invalid-xml" {
+			fmt.Fprint(w, "<bad>")
+			return
+		}
+		if mode == "cancel-http500" {
+			w.WriteHeader(500)
+		}
+		if mode == "cancel-redirect" {
+			w.Header().Set("Location", "https://"+productionTestHost+"/cancel")
+			w.WriteHeader(302)
+			return
+		}
+		status := "135"
+		if strings.HasPrefix(mode, "cancel-status-") {
+			status = strings.TrimPrefix(mode, "cancel-status-")
+		}
+		response := []byte(fmt.Sprintf(`<retEnvEvento xmlns="%s" versao="1.00"><idLote>1</idLote><tpAmb>1</tpAmb><verAplic>SYNTHETIC1</verAplic><cOrgao>%s</cOrgao><cStat>128</cStat><xMotivo>Synthetic batch only</xMotivo><retEvento versao="1.00"><infEvento><tpAmb>1</tpAmb><verAplic>SYNTHETIC1</verAplic><cOrgao>%s</cOrgao><cStat>%s</cStat><xMotivo>Synthetic event only</xMotivo><chNFe>%s</chNFe><tpEvento>110111</tpEvento><xEvento>Cancelamento registrado</xEvento><nSeqEvento>1</nSeqEvento><dhRegEvento>%s</dhRegEvento><nProt>135260000000002</nProt></infEvento></retEvento></retEnvEvento>`, fiscalcore.NFeNS, key[:2], key[:2], status, key, time.Now().Format("2006-01-02T15:04:05-07:00")))
+		event := etree.NewDocument()
+		event.SetRoot(doc.Root().FindElement(".//evento").Copy())
+		eventRaw, _ := event.WriteToBytes()
+		p.lock.Lock()
+		p.lastEvent = eventRaw
+		p.lastCancellation = response
+		p.lock.Unlock()
+		if mode == "cancel-drop" {
+			connection, _, err := w.(http.Hijacker).Hijack()
+			if err == nil {
+				connection.Close()
+			}
+			return
+		}
+		w.Write(response)
+		return
+	}
 	if r.URL.Path == "/issue" {
 		p.issues.Add(1)
 		doc := etree.NewDocument()
@@ -267,7 +330,38 @@ func (p *productionFixture) authorityHandler(w http.ResponseWriter, r *http.Requ
 	if r.URL.Path == "/query" {
 		p.queries.Add(1)
 		w.Header().Set("Content-Type", "application/soap+xml")
-		_, _ = w.Write(p.response(true, "100"))
+		if p.mode.Load().(string) == "query-canceled-event" || p.mode.Load().(string) == "query-other-event" {
+			response := etree.NewDocument()
+			response.ReadFromBytes(p.response(true, "101"))
+			root := response.Root()
+			root.RemoveChild(root.SelectElement("protNFe"))
+			p.lock.Lock()
+			eventRaw := append([]byte(nil), p.lastEvent...)
+			registrationRaw := append([]byte(nil), p.lastCancellation...)
+			p.lock.Unlock()
+			event, registered := etree.NewDocument(), etree.NewDocument()
+			event.ReadFromBytes(eventRaw)
+			registered.ReadFromBytes(registrationRaw)
+			if p.mode.Load().(string) == "query-other-event" {
+				event.Root().FindElement("infEvento/detEvento/xJust").SetText("Different event content cannot recover original")
+				event.Root().RemoveChild(event.Root().SelectElement("Signature"))
+				raw, _ := event.WriteToBytes()
+				signed, err := p.cert.Credential.SignXML("nfe_event", raw, time.Now())
+				if err != nil {
+					w.WriteHeader(500)
+					return
+				}
+				event.ReadFromBytes(signed)
+			}
+			process := root.CreateElement("procEventoNFe")
+			process.CreateAttr("versao", "1.00")
+			process.AddChild(event.Root().Copy())
+			process.AddChild(registered.Root().SelectElement("retEvento").Copy())
+			raw, _ := response.WriteToBytes()
+			w.Write(raw)
+		} else {
+			_, _ = w.Write(p.response(true, "100"))
+		}
 		return
 	}
 	w.WriteHeader(404)

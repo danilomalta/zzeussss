@@ -21205,6 +21205,15 @@
     },
     "/local/v1/fiscal/intents/{id}/production/xml": {
       "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1xml"
+    },
+    "/local/v1/fiscal/intents/{id}/production/cancel": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1cancel"
+    },
+    "/local/v1/fiscal/intents/{id}/production/cancellation": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1cancellation"
+    },
+    "/local/v1/fiscal/intents/{id}/production/cancellation/xml": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1cancellation~1xml"
     }
   },
   "components": {

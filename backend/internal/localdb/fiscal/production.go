@@ -665,7 +665,7 @@ func (r *ProductionRecorder) Read(ctx context.Context) (fiscalcore.RecordedReque
 	return req, result, tx.Commit()
 }
 
-func productionLatestEvidenceTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string, beforeRevision int) (fiscalcore.ProductionEvidence, int, error) {
+func productionLatestTransportEvidenceTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string, beforeRevision int) (fiscalcore.ProductionEvidence, int, error) {
 	var revision int
 	var device, op string
 	err := tx.QueryRowContext(ctx, `SELECT revision,device_id,operation_id FROM fiscal_production_requests WHERE tenant_id=? AND store_id=? AND intent_id=? AND kind='issue' AND (?=0 OR revision<?) ORDER BY revision DESC LIMIT 1`, a.TenantID, a.StoreID, id, beforeRevision, beforeRevision).Scan(&revision, &device, &op)
@@ -755,3 +755,24 @@ func ReadProduction(ctx context.Context, db *sql.DB, a identity.Scope, d identit
 }
 
 func mustProductionJSON(value any) []byte { raw, _ := json.Marshal(value); return raw }
+
+// A reserved cancellation, even without a response, forbids presenting an active
+// authorization or preparing another invoice. Reading cannot undo this barrier.
+func productionLatestEvidenceTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string, beforeRevision int) (fiscalcore.ProductionEvidence, int, error) {
+	proof, revision, err := productionLatestTransportEvidenceTx(ctx, tx, a, id, beforeRevision)
+	if err != nil {
+		return proof, revision, err
+	}
+	var count int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM fiscal_production_cancellation_requests WHERE tenant_id=? AND store_id=? AND intent_id=?`, a.TenantID, a.StoreID, id).Scan(&count); err != nil {
+		return proof, revision, err
+	}
+	if count != 0 {
+		if proof.State != "canceled_requires_review" {
+			proof.State = "cancellation_requires_review"
+		}
+		proof.ProcessedXML = nil
+		proof.Protocol = nil
+	}
+	return proof, revision, nil
+}

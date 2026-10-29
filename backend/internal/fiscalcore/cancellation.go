@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/beevik/etree"
@@ -26,24 +27,29 @@ type CancellationRecorder interface {
 }
 
 type CancellationEvidence struct {
-	State        string         `json:"state"`
-	Key          string         `json:"key"`
-	EventID      string         `json:"event_id"`
-	Status       string         `json:"status,omitempty"`
-	Reason       string         `json:"reason,omitempty"`
-	Protocol     string         `json:"protocol,omitempty"`
-	RegisteredAt string         `json:"registered_at,omitempty"`
-	SignedXML    []byte         `json:"signed_xml"`
-	ProcessedXML []byte         `json:"processed_xml,omitempty"`
-	Exchange     ExchangeResult `json:"exchange"`
+	RecoveryQueryOperationID string         `json:"recovery_query_operation_id,omitempty"`
+	State                    string         `json:"state"`
+	Key                      string         `json:"key"`
+	EventID                  string         `json:"event_id"`
+	Status                   string         `json:"status,omitempty"`
+	Reason                   string         `json:"reason,omitempty"`
+	Protocol                 string         `json:"protocol,omitempty"`
+	RegisteredAt             string         `json:"registered_at,omitempty"`
+	SignedXML                []byte         `json:"signed_xml"`
+	ProcessedXML             []byte         `json:"processed_xml,omitempty"`
+	Exchange                 ExchangeResult `json:"exchange"`
 }
 
 // CancelHomologationNFe performs one explicit event110111/sequence1 attempt.
 // It does not decide legal deadlines, authorize production or repeat a POST.
 func (c *Client) CancelHomologationNFe(ctx context.Context, operationID, lot string, in Cancellation) (CancellationEvidence, error) {
+	return c.cancelNFe(ctx, operationID, lot, in, 2)
+}
+
+func (c *Client) cancelNFe(ctx context.Context, operationID, lot string, in Cancellation, environment int) (CancellationEvidence, error) {
 	var out CancellationEvidence
 	r, ok := c.recorder.(CancellationRecorder)
-	if !ok || in.Environment != 2 {
+	if !ok || in.Environment != environment {
 		return out, ErrUnsupported
 	}
 	if err := r.ValidateCancellation(ctx, in); err != nil {
@@ -64,7 +70,7 @@ func (c *Client) CancelHomologationNFe(ctx context.Context, operationID, lot str
 		out.State = result.State
 	}
 	if errors.Is(err, ErrRecorded) {
-		recovered, _ := RecoverHomologationCancellation(ctx, r)
+		recovered, _ := recoverCancellation(ctx, r, environment)
 		if recovered.Key != "" {
 			return recovered, err
 		}
@@ -73,19 +79,26 @@ func (c *Client) CancelHomologationNFe(ctx context.Context, operationID, lot str
 	if err != nil {
 		return out, err
 	}
-	return interpretCancellation(signed, lot, result)
+	out, err = interpretCancellationEnvironment(signed, lot, result, environment)
+	if err != nil {
+		return out, ErrUncertain
+	}
+	return out, nil
 }
 
 func RecoverHomologationCancellation(ctx context.Context, r CancellationRecorder) (CancellationEvidence, error) {
+	return recoverCancellation(ctx, r, 2)
+}
+func recoverCancellation(ctx context.Context, r CancellationRecorder, environment int) (CancellationEvidence, error) {
 	req, result, err := r.Read(ctx)
 	if err != nil {
 		return CancellationEvidence{}, err
 	}
-	original, err := OriginalCancellationFromRequest(req)
+	original, err := originalCancellationFromRequest(req, environment)
 	if err != nil || req.OperationID != result.OperationID {
 		return CancellationEvidence{}, ErrUncertain
 	}
-	return interpretCancellation(original.SignedXML, original.Lot, result)
+	return interpretCancellationEnvironment(original.SignedXML, original.Lot, result, environment)
 }
 
 type ArchivedCancellation struct {
@@ -97,9 +110,12 @@ type ArchivedCancellation struct {
 // OriginalCancellationFromRequest accepts only the exact archived SOAP batch,
 // not an arbitrary uploaded event. Archived signature integrity is not new trust.
 func OriginalCancellationFromRequest(req RecordedRequest) (ArchivedCancellation, error) {
+	return originalCancellationFromRequest(req, 2)
+}
+func originalCancellationFromRequest(req RecordedRequest, environment int) (ArchivedCancellation, error) {
 	var out ArchivedCancellation
 	sum := sha256.Sum256(req.Body)
-	if req.OperationID == "" || len(req.OperationID) > 128 || req.Scope == "" || req.URL == "" || req.Environment != "2" || !ValidAccessKey(req.Key) || req.Issuer != req.Key[6:20] || req.RequestSHA256 != hex.EncodeToString(sum[:]) {
+	if req.OperationID == "" || len(req.OperationID) > 128 || req.Scope == "" || req.URL == "" || (environment != 1 && environment != 2) || req.Environment != strconv.Itoa(environment) || !ValidAccessKey(req.Key) || req.Issuer != req.Key[6:20] || req.RequestSHA256 != hex.EncodeToString(sum[:]) {
 		return out, ErrUncertain
 	}
 	d, err := parseXMLLimits(req.Body, 2*MaxXML, 8200)
@@ -136,7 +152,7 @@ func OriginalCancellationFromRequest(req RecordedRequest) (ArchivedCancellation,
 	part = etree.NewDocument()
 	part.SetRoot(event.Copy())
 	out.SignedXML, _ = part.WriteToBytes()
-	out.Input, err = inspectArchivedCancellation(out.SignedXML)
+	out.Input, err = inspectArchivedCancellationEnvironment(out.SignedXML, environment)
 	if err != nil {
 		return ArchivedCancellation{}, err
 	}
@@ -147,6 +163,9 @@ func OriginalCancellationFromRequest(req RecordedRequest) (ArchivedCancellation,
 }
 
 func inspectArchivedCancellation(raw []byte) (Cancellation, error) {
+	return inspectArchivedCancellationEnvironment(raw, 2)
+}
+func inspectArchivedCancellationEnvironment(raw []byte, environment int) (Cancellation, error) {
 	var out Cancellation
 	if err := ValidateXML("nfe_event", raw); err != nil {
 		return out, err
@@ -193,15 +212,18 @@ func inspectArchivedCancellation(raw []byte) (Cancellation, error) {
 	if err != nil {
 		return out, ErrXML
 	}
-	if get("tpAmb") != "2" {
+	if (environment != 1 && environment != 2) || get("tpAmb") != strconv.Itoa(environment) {
 		return out, ErrUnsupported
 	}
-	return Cancellation{Key: get("chNFe"), CNPJ: issuer.Text(), Environment: 2, Time: when, Protocol: get("detEvento/nProt"), Reason: get("detEvento/xJust")}, nil
+	return Cancellation{Key: get("chNFe"), CNPJ: issuer.Text(), Environment: environment, Time: when, Protocol: get("detEvento/nProt"), Reason: get("detEvento/xJust")}, nil
 }
 
 func interpretCancellation(signed []byte, lot string, result ExchangeResult) (CancellationEvidence, error) {
+	return interpretCancellationEnvironment(signed, lot, result, 2)
+}
+func interpretCancellationEnvironment(signed []byte, lot string, result ExchangeResult, environment int) (CancellationEvidence, error) {
 	out := CancellationEvidence{State: "uncertain", SignedXML: append([]byte(nil), signed...), Exchange: result}
-	original, err := inspectArchivedCancellation(signed)
+	original, err := inspectArchivedCancellationEnvironment(signed, environment)
 	if err != nil {
 		return out, err
 	}
@@ -232,7 +254,7 @@ func interpretCancellationResponse(out CancellationEvidence, original Cancellati
 		}
 		return v.Text()
 	}
-	if get(root, "idLote") != lot || get(root, "tpAmb") != "2" || get(root, "cOrgao") != original.Key[:2] {
+	if get(root, "idLote") != lot || get(root, "tpAmb") != strconv.Itoa(original.Environment) || get(root, "cOrgao") != original.Key[:2] {
 		return out, ErrUncertain
 	}
 	out.State = "response_requires_review"
@@ -247,7 +269,7 @@ func interpretCancellationResponse(out CancellationEvidence, original Cancellati
 	}
 	event := events[0]
 	info := event.SelectElement("infEvento")
-	if info == nil || get(info, "tpAmb") != "2" || get(info, "cOrgao") != original.Key[:2] || get(info, "chNFe") != original.Key || get(info, "tpEvento") != "110111" || get(info, "nSeqEvento") != "1" {
+	if info == nil || get(info, "tpAmb") != strconv.Itoa(original.Environment) || get(info, "cOrgao") != original.Key[:2] || get(info, "chNFe") != original.Key || get(info, "tpEvento") != "110111" || get(info, "nSeqEvento") != "1" {
 		return out, ErrUncertain
 	}
 	out.Status = get(info, "cStat")
@@ -275,6 +297,9 @@ func interpretCancellationResponse(out CancellationEvidence, original Cancellati
 		return out, err
 	}
 	out.State = "cancellation_indicated_homologation"
+	if original.Environment == 1 {
+		out.State = "cancellation_indicated_production"
+	}
 	out.Protocol = protocol
 	out.RegisteredAt = get(info, "dhRegEvento")
 	out.ProcessedXML = processed

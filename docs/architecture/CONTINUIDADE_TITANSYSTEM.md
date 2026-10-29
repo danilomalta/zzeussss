@@ -2501,3 +2501,49 @@ Frontend/Electron, árvores originais e serviços8182/8282 preservados. Nenhum
 binário instalado, banco comercial acessado ou merge. Publicação somente na
 branch fiscal/PR5; CI deste novo delta deve concluir após o push. As credenciais
 históricas continuam pendentes de troca e não foram abertas nesta tarefa.
+
+
+## Cancelamento de produção e recuperação por consulta —28/10/2026
+
+Base49ddbb5 com sete checks aprovados, inclusive
+https://github.com/danilomalta/zzeussss/actions/runs/40777738365/job/123131280427 .
+Não usar a aprovação dessa base como CI do novo delta.
+
+Evento110111/sequência1 de produção55/65 passa a ter decisão explícita,
+consulta autorizada mais recente, permissão atual do dono/gerente, credencial/
+CRLs/endpoint verificados e journal imutável próprio. Reserva antes do POST;
+resposta incerta não desaparece e não gera reenvio. Alteração do conteúdo com
+a mesma operação é conflito. Cópia ativa bloqueada desde a reserva; nenhum
+estorno, entrada de estoque, alteração da venda ou liberação do número.
+
+Recuperação por consulta exige os dados, assinatura, certificado e digest do
+evento originalmente enviado, com registro correspondente. A consulta tem
+identificador próprio; a tentativa original conserva seu exchange incerto.
+Evento diferente, ainda que assinado e com o mesmo ID, é recusado. Backup
+cifrado/restauração conserva XML/IDs/barreira e invalida a sessão antiga.
+Migração74; endpoint cancellation_url privado e opcional. Os schemas originais
+ficam intactos; validação composta trata o evento alfanumérico sem relaxar
+envelope, filhos, namespace ou exigência de assinatura.
+
+Validação local final: 59pacotes, 1490 testes principais e 3281 resultados incluindo subtestes aprovados; zero falhas, 8 skips explícitos. Núcleo/runtime -race: 33 principais/162 resultados; API/SQLite -race: 86 principais/232 resultados e 132 comandos reais do titan-backup. Sem falhas/skips nas duas rodadas race. Vet, quatro builds,17 testes dos validadores e547rotas passaram. Os25fontes/configurações/contratos mantiveram seus hashes;73migrações e43XSDs anteriores intactos. Os8skips locais incluem PostgreSQL, pontes frontend e auxiliares opt-in; o CI continua exigindo as integrações relevantes.
+
+Homologação oficial NÃO executada. O registro anterior informa ausência de
+emitente/certificado; foi solicitada atualização somente de UF/modelos/caminho
+da configuração privada, sem envio de segredo. Nenhum certificado sintético
+foi usado na SEFAZ. A produção ambiente1 não pode ser reutilizada como se
+fosse ambiente2. As condições de credenciamento/acesso dependem da UF/modelo.
+Os testes desta entrega usam assinatura/mTLS/SQLite/backup reais e autoridade
+sintética isolada em loopback, sem comprovar homologação oficial.
+
+Detalhes e fontes oficiais:
+[FISCAL_CANCELAMENTO_PRODUCAO_20261028.md](FISCAL_CANCELAMENTO_PRODUCAO_20261028.md).
+Resultados/hashes:
+[verification.json](evidence/fiscal-production-cancellation-20261028/verification.json).
+Restam ensaio SEFAZ real, DANFE/contingência/inutilização e outros eventos de
+produção, motor nacional/RTC completo e demais cenários econômicos, SPED/PVA,
+NFS-e produção e adaptadores de credenciais. Certificado de matriz para filiais
+ainda precisa de implementação/aceite; o vínculo atual usa CNPJ exato.
+Nenhuma instalação, reinício de8182/8282, alteração de banco comercial, frontend/
+Electron ou merge. Árvores originais preservadas; publicação apenas na branch
+fiscal/PR5. Credenciais históricas permanecem pendentes de troca. CI deste
+novo commit deve concluir após a publicação.

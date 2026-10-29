@@ -30,6 +30,7 @@ type ProductionBinding struct {
 	EndpointRegistryReference string `json:"endpoint_registry_reference"`
 	HomologationReference     string `json:"homologation_reference"`
 	DeveloperReference        string `json:"developer_reference"`
+	CancellationURL           string `json:"cancellation_url,omitempty"`
 	AuthorizationURL          string `json:"authorization_url"`
 	ConsultationURL           string `json:"consultation_url"`
 	CertificateSHA256         string `json:"certificate_sha256"`
@@ -57,7 +58,7 @@ func (b ProductionBinding) Valid(now time.Time) bool {
 	from, e1 := time.Parse(time.RFC3339, b.ValidFrom)
 	until, e2 := time.Parse(time.RFC3339, b.ValidUntil)
 	fp, e3 := hex.DecodeString(b.CertificateSHA256)
-	return ok && ValidatePrintOptions(PrintOptions{WidthMM: 210, Timezone: b.Timezone}) == nil && docRE.MatchString(b.Issuer) && (b.Model == "55" || b.Model == "65") && b.Series >= 0 && b.Series <= 889 && b.InitialNumber >= 1 && b.InitialNumber <= 999999999 && b.ProfileRevision >= 1 && e1 == nil && e2 == nil && !now.Before(from) && now.Before(until) && until.After(from) && e3 == nil && len(fp) == 32 && strings.ToLower(b.CertificateSHA256) == b.CertificateSHA256 && ProductionEndpoint(b.AuthorizationURL) && ProductionEndpoint(b.ConsultationURL) && b.AuthorizationURL != b.ConsultationURL
+	return ok && ValidatePrintOptions(PrintOptions{WidthMM: 210, Timezone: b.Timezone}) == nil && docRE.MatchString(b.Issuer) && (b.Model == "55" || b.Model == "65") && b.Series >= 0 && b.Series <= 889 && b.InitialNumber >= 1 && b.InitialNumber <= 999999999 && b.ProfileRevision >= 1 && e1 == nil && e2 == nil && !now.Before(from) && now.Before(until) && until.After(from) && e3 == nil && len(fp) == 32 && strings.ToLower(b.CertificateSHA256) == b.CertificateSHA256 && ProductionEndpoint(b.AuthorizationURL) && ProductionEndpoint(b.ConsultationURL) && b.AuthorizationURL != b.ConsultationURL && (b.CancellationURL == "" || ProductionEndpoint(b.CancellationURL) && b.CancellationURL != b.AuthorizationURL && b.CancellationURL != b.ConsultationURL)
 }
 func (b ProductionBinding) SHA256() string {
 	raw, _ := json.Marshal(b)

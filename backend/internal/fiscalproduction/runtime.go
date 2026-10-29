@@ -191,3 +191,60 @@ func (r *Runtime) Query(ctx context.Context, a RequestContext, operation string,
 	}
 	return fiscal.ReadProduction(ctx, a.DB, a.Actor, a.Device, a.IntentID, a.Token)
 }
+
+// Cancellation requires a current explicit human decision and the most recent
+// authorized consultation, independent from commercial refunds or stock returns.
+func (r *Runtime) Cancel(ctx context.Context, a RequestContext, operation, query, reason, approval string) (fiscalcore.CancellationEvidence, error) {
+	old, err := fiscal.ReadProductionCancellation(ctx, a.DB, a.Actor, a.Device, a.IntentID, a.Token)
+	if err == nil {
+		if old.Exchange.OperationID != operation {
+			return old, fiscalcore.ErrRecorded
+		}
+		if err = fiscal.CheckProductionCancellationReplay(ctx, a.DB, a.Actor, a.Device, a.IntentID, a.Token, operation, query, reason, approval); err != nil {
+			return old, err
+		}
+		return old, nil
+	}
+	if !errors.Is(err, fiscal.ErrNotFound) {
+		return old, err
+	}
+	if err = r.Validate(); err != nil {
+		return old, err
+	}
+	if r.binding.CancellationURL == "" {
+		return old, ErrUnavailable
+	}
+	recorder, err := fiscal.NewProductionCancellationRecorder(ctx, a.DB, a.License, a.Actor, a.Device, a.IntentID, query, operation, approval, a.Token, r.binding)
+	if err != nil {
+		return old, err
+	}
+	input, err := recorder.Input(ctx, reason)
+	if err != nil {
+		return old, err
+	}
+	guard := &guardedCancellationRecorder{recorder, r}
+	client, err := fiscalcore.NewClientWithServerTrust(r.binding.CancellationURL, recorder.Scope(), r.credential, guard, r.network.ServerRoots, r.network.DialContext)
+	if err != nil {
+		return old, err
+	}
+	defer client.Close()
+	return client.CancelProductionNFe(ctx, operation, "1", input)
+}
+
+type guardedCancellationRecorder struct {
+	*fiscal.ProductionCancellationRecorder
+	runtime *Runtime
+}
+
+func (g *guardedCancellationRecorder) BeforeSend(ctx context.Context, id string) error {
+	if err := g.runtime.Validate(); err != nil {
+		return err
+	}
+	return g.ProductionCancellationRecorder.BeforeSend(ctx, id)
+}
+func (g *guardedCancellationRecorder) ValidateProductionCancellation(ctx context.Context, in fiscalcore.Cancellation, fingerprint, endpoint string) error {
+	if err := g.runtime.Validate(); err != nil {
+		return err
+	}
+	return g.ProductionCancellationRecorder.ValidateProductionCancellation(ctx, in, fingerprint, endpoint)
+}

@@ -718,6 +718,482 @@
           }
         }
       }
+    },
+    "/fiscal/intents/{id}/production/cancel": {
+      "post": {
+        "operationId": "cancelProductionFiscalDocument",
+        "summary": "Solicitar cancelamento110111/sequência1 com decisão explícita",
+        "description": "Sem estorno de dinheiro, estoque ou venda. Não infere prazos por UF. Requer consulta autorizada mais recente e permissão atual para envio; leitura histórica não exige credencial ativa.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Evidência real; status desconhecido/136/573 não confirma cancelamento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancellationEvidence"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Resultado incerto; requisição original preservada. Consultar, sem repetir o evento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancellationEvidence"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancellationDecision"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/intents/{id}/production/cancellation": {
+      "get": {
+        "operationId": "readProductionFiscalCancellation",
+        "summary": "Ler evidência arquivada do cancelamento",
+        "description": "Sem estorno de dinheiro, estoque ou venda. Não infere prazos por UF. Requer consulta autorizada mais recente e permissão atual para envio; leitura histórica não exige credencial ativa.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Evidência real; status desconhecido/136/573 não confirma cancelamento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancellationEvidence"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/intents/{id}/production/cancellation/xml": {
+      "get": {
+        "operationId": "readProductionFiscalCancellationXML",
+        "summary": "Baixar procEventoNFe confirmado",
+        "description": "Sem estorno de dinheiro, estoque ou venda. Não infere prazos por UF. Requer consulta autorizada mais recente e permissão atual para envio; leitura histórica não exige credencial ativa.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "XML do evento original e registro correspondente. Não é uma NF-e ativa.",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1244,6 +1720,10 @@
           "supplement_sha256": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
+          },
+          "cancellation_url": {
+            "type": "string",
+            "description": "Endpoint privado opcional, HTTPS governamental e distinto dos serviços de emissão/consulta. Não recebido pela API."
           }
         },
         "required": [
@@ -1543,6 +2023,123 @@
         },
         "required": [],
         "nullable": true
+      },
+      "CancellationDecision": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+          },
+          "query_operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 15,
+            "maxLength": 255
+          },
+          "approval_reference": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "operation_id",
+          "query_operation_id",
+          "reason",
+          "approval_reference"
+        ]
+      },
+      "CancellationExchange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "http_status": {
+            "type": "integer"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "format": "byte",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "uncertain",
+              "response_received"
+            ]
+          }
+        },
+        "required": [
+          "operation_id",
+          "http_status",
+          "sha256",
+          "body",
+          "state"
+        ]
+      },
+      "CancellationEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "event_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "registered_at": {
+            "type": "string"
+          },
+          "signed_xml": {
+            "type": "string",
+            "format": "byte"
+          },
+          "processed_xml": {
+            "type": "string",
+            "format": "byte"
+          },
+          "exchange": {
+            "$ref": "#/components/schemas/CancellationExchange"
+          },
+          "recovery_query_operation_id": {
+            "type": "string",
+            "description": "Consulta independente que comprovou o evento assinado exato. exchange conserva a tentativa original, inclusive resposta incerta."
+          }
+        },
+        "required": [
+          "state",
+          "key",
+          "event_id",
+          "signed_xml",
+          "exchange"
+        ]
       }
     }
   }

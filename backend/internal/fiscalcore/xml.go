@@ -144,6 +144,12 @@ func schemaPath(kind string) string {
 // ValidateXML uses only embedded, hashed official schema files. It never follows
 // a schemaLocation from the document, opens host files or fetches remote schemas.
 func ValidateXML(kind string, raw []byte) error {
+	if kind == "nfe_query_response" {
+		return validateNFeQueryResponse(raw)
+	}
+	return validateEmbeddedXML(kind, raw)
+}
+func validateEmbeddedXML(kind string, raw []byte) error {
 	byteLimit, nodeLimit := MaxXML, 8192
 	if kind == "nfe_process" || kind == "nfe_event_process" || kind == "nfe_invalidation_process" {
 		byteLimit, nodeLimit = 2*MaxXML, 8200

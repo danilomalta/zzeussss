@@ -96,7 +96,7 @@ func TestOlderBackupRestoresThroughMigration72(t *testing.T) {
 			}
 			defer current.Close()
 			var count int
-			if err := current.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != 73 {
+			if err := current.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != 74 {
 				t.Fatalf("migration count %d %v", count, err)
 			}
 			if err := db.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != historicalVersion {

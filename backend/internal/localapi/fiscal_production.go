@@ -152,3 +152,58 @@ func (s *Server) readProductionXML(c *fiber.Ctx) error {
 	c.Set("X-Titan-Production-Revision", strconv.Itoa(out.EvidenceRevision))
 	return c.Send(out.Evidence.ProcessedXML)
 }
+
+func (s *Server) cancelProduction(c *fiber.Ctx) error {
+	if !productionWrite(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	if s.production == nil {
+		return productionFailure(c, fiscalproduction.ErrUnavailable)
+	}
+	var in struct {
+		OperationID       string `json:"operation_id"`
+		QueryOperationID  string `json:"query_operation_id"`
+		Reason            string `json:"reason"`
+		ApprovalReference string `json:"approval_reference"`
+	}
+	if fiscalcore.DecodeInput(c.Body(), &in) != nil {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	out, err := s.production.Cancel(c.UserContext(), s.productionContext(c), in.OperationID, in.QueryOperationID, in.Reason, in.ApprovalReference)
+	if errors.Is(err, fiscalcore.ErrUncertain) {
+		return c.Status(202).JSON(out)
+	}
+	if err != nil {
+		return productionFailure(c, err)
+	}
+	return c.JSON(out)
+}
+func (s *Server) readProductionCancellation(c *fiber.Ctx) error {
+	if !fiscalRead(c) || !noBagQuery(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	a := s.productionContext(c)
+	out, err := fiscal.ReadProductionCancellation(c.UserContext(), s.DB, a.Actor, a.Device, a.IntentID, a.Token)
+	if err != nil {
+		return productionFailure(c, err)
+	}
+	return c.JSON(out)
+}
+
+func (s *Server) readProductionCancellationXML(c *fiber.Ctx) error {
+	if !fiscalRead(c) || !noBagQuery(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	a := s.productionContext(c)
+	out, err := fiscal.ReadProductionCancellation(c.UserContext(), s.DB, a.Actor, a.Device, a.IntentID, a.Token)
+	if err != nil {
+		return productionFailure(c, err)
+	}
+	if out.State != "cancellation_indicated_production" || len(out.ProcessedXML) == 0 {
+		return c.Status(409).JSON(fiber.Map{"error": "fiscal_registered_cancellation_xml_unavailable"})
+	}
+	c.Set(fiber.HeaderContentType, "application/xml; charset=utf-8")
+	c.Set(fiber.HeaderContentDisposition, `attachment; filename="Cancelamento-`+out.Key+`.xml"`)
+	c.Set("X-Content-Type-Options", "nosniff")
+	return c.Send(out.ProcessedXML)
+}

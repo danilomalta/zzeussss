@@ -1420,6 +1420,10 @@
           "production_configuration_sha256": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
+          },
+          "production_cancellation_available": {
+            "type": "boolean",
+            "description": "A instalação possui endpoint opcional de cancelamento e credencial/configuração vigentes. Cada decisão ainda depende de sessão, permissão e consulta autorizada recente."
           }
         }
       },
