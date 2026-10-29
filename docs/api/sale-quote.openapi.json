@@ -1,79 +1,270 @@
 {
   "openapi": "3.0.3",
-  "info": {"title": "Titan local — cotação de venda", "version": "1.0.0"},
+  "info": {
+    "title": "Titan local — cotação de venda",
+    "version": "1.0.0"
+  },
   "paths": {
     "/local/v1/sales/quote": {
       "post": {
         "summary": "Confere preços e saldo da venda sem reservar nem cobrar",
         "description": "Exige sessão local, caixa aberto do operador/aparelho, permissão Sell e contrato POS com dependências. Apenas dinheiro disponível. Descontos e pontos não implementados. A finalização revalida preços e estoque; esta resposta não trava preços nem saldo. Repetir a consulta não cria operação comercial. RequireTx atualiza somente a referência temporal da licença.",
-        "security": [{"localSession": []}],
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/QuoteInput"}}}
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteInput"
+              }
+            }
+          }
         },
         "responses": {
           "200": {
             "description": "Cotação atual. Cache-Control: no-store.",
-            "headers": {"Cache-Control": {"schema": {"type": "string", "enum": ["no-store"]}}},
-            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Quote"}}}
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
           },
-          "400": {"description": "Referência/quantidade inválida, dinheiro fora do limite exato do cliente, JSON duplicado/extra/null ou quantidade fracionada de unidade indivisível."},
-          "401": {"description": "Sessão/contexto revogado ou ausente."},
-          "403": {"description": "Permissão, aparelho, contrato, vigência ou referência temporal recusados."},
-          "409": {"description": "Estoque insuficiente ou caixa fechado/inexistente."},
-          "413": {"description": "Corpo maior que 128 KiB."},
-          "500": {"description": "Falha interna; nenhuma confirmação comercial."},
-          "503": {"description": "Verificador/contrato indisponível."}
+          "400": {
+            "description": "Referência/quantidade inválida, dinheiro fora do limite exato do cliente, JSON duplicado/extra/null ou quantidade fracionada de unidade indivisível."
+          },
+          "401": {
+            "description": "Sessão/contexto revogado ou ausente."
+          },
+          "403": {
+            "description": "Permissão, aparelho, contrato, vigência ou referência temporal recusados."
+          },
+          "409": {
+            "description": "Estoque insuficiente ou caixa fechado/inexistente."
+          },
+          "413": {
+            "description": "Corpo maior que 128 KiB."
+          },
+          "500": {
+            "description": "Falha interna; nenhuma confirmação comercial."
+          },
+          "503": {
+            "description": "Verificador/contrato indisponível."
+          }
         }
       }
     }
   },
   "components": {
-    "securitySchemes": {"localSession": {"type": "http", "scheme": "bearer"}},
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
     "schemas": {
-      "ID": {"type": "string", "minLength": 1, "maxLength": 128},
-      "Amount": {"type": "integer", "format": "int64", "minimum": 0, "maximum": 9007199254740991},
+      "ID": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "Amount": {
+        "type": "integer",
+        "format": "int64",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
       "Item": {
-        "type": "object", "additionalProperties": false,
-        "required": ["product_id", "location_id", "quantity_milli"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_id",
+          "location_id",
+          "quantity_milli"
+        ],
         "properties": {
-          "product_id": {"$ref": "#/components/schemas/ID"},
-          "location_id": {"$ref": "#/components/schemas/ID"},
-          "quantity_milli": {"type": "integer", "format": "int64", "minimum": 1, "maximum": 9007199254740991}
+          "product_id": {
+            "$ref": "#/components/schemas/ID"
+          },
+          "location_id": {
+            "$ref": "#/components/schemas/ID"
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
         }
       },
       "QuoteInput": {
-        "type": "object", "additionalProperties": false,
-        "required": ["cash_session_id", "items"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cash_session_id",
+          "items"
+        ],
         "properties": {
-          "cash_session_id": {"$ref": "#/components/schemas/ID"},
-          "items": {"type": "array", "minItems": 1, "maxItems": 500, "items": {"$ref": "#/components/schemas/Item"}}
+          "cash_session_id": {
+            "$ref": "#/components/schemas/ID"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 500,
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          },
+          "tax_quote_operations": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Opt-in: one unique scoped tax quote per item in the same order. Price, quantity, current policy/profile, issuer day and 10-minute age are revalidated before payment. No prices/rates are trusted from this request."
+          }
         }
       },
       "QuoteItem": {
-        "type": "object", "additionalProperties": false,
-        "required": ["product_id", "location_id", "quantity_milli", "unit", "unit_price_cents", "total_cents", "available_milli"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_id",
+          "location_id",
+          "quantity_milli",
+          "unit",
+          "unit_price_cents",
+          "total_cents",
+          "available_milli"
+        ],
         "properties": {
-          "product_id": {"$ref": "#/components/schemas/ID"},
-          "location_id": {"$ref": "#/components/schemas/ID"},
-          "quantity_milli": {"type": "integer", "format": "int64", "minimum": 1, "maximum": 9007199254740991},
-          "unit": {"type": "string", "enum": ["unit", "kg", "g", "liter", "ml", "meter"]},
-          "unit_price_cents": {"$ref": "#/components/schemas/Amount"},
-          "total_cents": {"$ref": "#/components/schemas/Amount"},
-          "available_milli": {"allOf": [{"$ref": "#/components/schemas/Amount"}], "description": "Saldo livre do produto/local após descontar reservas de produção ativas, repetido para linhas equivalentes; não somar saldos repetidos. Todas as linhas precisam caber cumulativamente. Produto inativo é recusado tanto na cotação quanto na venda."}
-        }
+          "product_id": {
+            "$ref": "#/components/schemas/ID"
+          },
+          "location_id": {
+            "$ref": "#/components/schemas/ID"
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "unit_price_cents": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "total_cents": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "available_milli": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Amount"
+              }
+            ],
+            "description": "Saldo livre do produto/local após descontar reservas de produção ativas, repetido para linhas equivalentes; não somar saldos repetidos. Todas as linhas precisam caber cumulativamente. Produto inativo é recusado tanto na cotação quanto na venda."
+          },
+          "tax": {
+            "$ref": "fiscal-preparation.openapi.json#/components/schemas/SaleTaxBinding"
+          },
+          "merchandise_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "description": "total_cents includes approved additional taxes for an opt-in tax-priced item; merchandise_cents and tax identify the separate amounts. Legacy items omit both fields."
       },
       "Quote": {
-        "type": "object", "additionalProperties": false,
-        "required": ["cash_session_id", "items", "total_cents", "payment_methods", "discounts_supported", "loyalty_supported", "reserved"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cash_session_id",
+          "items",
+          "total_cents",
+          "payment_methods",
+          "discounts_supported",
+          "loyalty_supported",
+          "reserved"
+        ],
         "properties": {
-          "cash_session_id": {"$ref": "#/components/schemas/ID"},
-          "items": {"type": "array", "minItems": 1, "maxItems": 500, "items": {"$ref": "#/components/schemas/QuoteItem"}},
-          "total_cents": {"type": "integer", "format": "int64", "minimum": 1, "maximum": 9007199254740991},
-          "payment_methods": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"type": "string", "enum": ["cash"]}},
-          "discounts_supported": {"type": "boolean", "enum": [false]},
-          "loyalty_supported": {"type": "boolean", "enum": [false]},
-          "reserved": {"type": "boolean", "enum": [false]}
+          "cash_session_id": {
+            "$ref": "#/components/schemas/ID"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 500,
+            "items": {
+              "$ref": "#/components/schemas/QuoteItem"
+            }
+          },
+          "total_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "payment_methods": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "cash"
+              ]
+            }
+          },
+          "discounts_supported": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "loyalty_supported": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "reserved": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
         }
       }
     }

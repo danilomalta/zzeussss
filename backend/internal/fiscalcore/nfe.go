@@ -96,6 +96,10 @@ type TaxNode struct {
 	Children []TaxNode
 }
 type InvoiceLine struct {
+	FCI                                                                                    string `json:"FCI,omitempty"`
+	TaxQuoteOperationID                                                                    string `json:"TaxQuoteOperationID,omitempty"`
+	CEST                                                                                   string `json:"CEST,omitempty"`
+	BenefitCode                                                                            string `json:"BenefitCode,omitempty"`
 	ProductID, Description, Unit, Quantity, UnitPrice, Discount, Freight, Insurance, Other string
 	NCM, CFOP, GTIN                                                                        string
 	Taxes                                                                                  []TaxNode
@@ -248,6 +252,14 @@ func buildInvoice(in Invoice) ([]byte, string, error) {
 		}
 		for _, v := range [][2]string{{"cProd", line.ProductID}, {"cEAN", gtin}, {"xProd", line.Description}, {"NCM", line.NCM}, {"CFOP", line.CFOP}, {"uCom", line.Unit}, {"qCom", line.Quantity}, {"vUnCom", line.UnitPrice}, {"vProd", money(gross)}, {"cEANTrib", gtin}, {"uTrib", line.Unit}, {"qTrib", line.Quantity}, {"vUnTrib", line.UnitPrice}} {
 			field(prod, v[0], v[1])
+			if v[0] == "NCM" {
+				if line.CEST != "" {
+					field(prod, "CEST", line.CEST)
+				}
+				if line.BenefitCode != "" {
+					field(prod, "cBenef", line.BenefitCode)
+				}
+			}
 		}
 		for _, v := range []struct {
 			name, value string
@@ -267,6 +279,9 @@ func buildInvoice(in Invoice) ([]byte, string, error) {
 			}
 		}
 		field(prod, "indTot", "1")
+		if line.FCI != "" {
+			field(prod, "nFCI", line.FCI)
+		}
 		tax := det.CreateElement("imposto")
 		if err = taxNodes(tax, line.Taxes, 0); err != nil {
 			return nil, "", err
@@ -278,6 +293,19 @@ func buildInvoice(in Invoice) ([]byte, string, error) {
 		if _, ok := in.TaxTotals[name]; !ok {
 			return nil, "", ErrRule
 		}
+	}
+	sharingNames := []string{"vFCPUFDest", "vICMSUFDest", "vICMSUFRemet"}
+	sharingCount := 0
+	for _, name := range sharingNames {
+		if _, ok := in.TaxTotals[name]; ok {
+			sharingCount++
+		}
+	}
+	if sharingCount != 0 && sharingCount != 3 {
+		return nil, "", ErrRule
+	}
+	if sharingCount == 3 {
+		required = append(required, sharingNames...)
 	}
 	total := new(big.Rat).Set(products)
 	total.Sub(total, discounts)
@@ -306,6 +334,15 @@ func buildInvoice(in Invoice) ([]byte, string, error) {
 			v = money(n)
 		}
 		field(totals, name, v)
+		if name == "vICMSDeson" && sharingCount == 3 {
+			for _, extra := range sharingNames {
+				n, err := decimal(in.TaxTotals[extra])
+				if err != nil {
+					return nil, "", err
+				}
+				field(totals, extra, money(n))
+			}
+		}
 	}
 	for name := range in.TaxTotals {
 		found := false

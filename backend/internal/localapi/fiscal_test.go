@@ -26,12 +26,16 @@ import (
 const fiscalProfileBody = `{"operation_id":"issuer-create","profile_id":"issuer-one","expected_revision":0,"cnpj":"12ABC34501DE35","legal_name":"Synthetic test issuer","state":"SP","municipality_ibge":"3550308","state_registration":"123456789","crt":"1","model":"65","environment":"homologation","series":1}`
 const fiscalIntentBody = `{"operation_id":"fiscal-one","sale_id":"sale-one","profile_id":"issuer-one","profile_revision":1}`
 
-func fiscalFixture(t *testing.T) *stockHTTPFixture {
+func fiscalFixture(t *testing.T, model ...string) *stockHTTPFixture {
 	t.Helper()
 	f := salesSetup(t)
 	f.install(t, signedTestContract(t, f.private, f.owner.TenantID, 3, []modules.ID{modules.Core, modules.Inventory, modules.POS, modules.Fiscal, modules.Staff}), 200)
 	salesRequest(t, f, salesInput(f), 201)
-	code, body := request(t, f.app, "POST", "/local/v1/fiscal/profiles", fiscalProfileBody, f.token)
+	profile := fiscalProfileBody
+	if len(model) > 0 {
+		profile = strings.Replace(profile, `"model":"65"`, `"model":"`+model[0]+`"`, 1)
+	}
+	code, body := request(t, f.app, "POST", "/local/v1/fiscal/profiles", profile, f.token)
 	if code != 201 {
 		t.Fatalf("profile %d %s", code, body)
 	}

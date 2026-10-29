@@ -1,0 +1,6 @@
+.fiscal-customer { color:var(--text); overflow-wrap:anywhere; display:grid; gap:16px; }
+.fiscal-customer fieldset { min-width:0; border:1px solid var(--border); border-radius:10px; padding:16px; }
+.fiscal-customer fieldset > button { margin-block:16px 0; margin-inline-end:12px; }
+.fiscal-customer dl > div { margin-block:12px; }
+.fiscal-customer dt { font-weight:600; }
+.fiscal-customer dd { margin-inline-start:16px; }

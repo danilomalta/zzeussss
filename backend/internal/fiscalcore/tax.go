@@ -58,61 +58,73 @@ type TaxContext struct {
 	Date          string `json:"date"`
 }
 type TaxRule struct {
-	ID                string         `json:"id"`
-	ProductID         string         `json:"product_id"`
-	CFOP              string         `json:"cfop"`
-	NCM               string         `json:"ncm"`
-	OriginUF          string         `json:"origin_uf"`
-	DestinationUF     string         `json:"destination_uf"`
-	CRT               string         `json:"crt"`
-	Model             string         `json:"model"`
-	ValidFrom         string         `json:"valid_from"`
-	ValidUntil        string         `json:"valid_until"`
-	LegalReference    string         `json:"legal_reference"`
-	ApprovalReference string         `json:"approval_reference"`
-	Components        []TaxComponent `json:"components"`
+	ID                string                  `json:"id"`
+	ProductID         string                  `json:"product_id"`
+	CFOP              string                  `json:"cfop"`
+	NCM               string                  `json:"ncm"`
+	OriginUF          string                  `json:"origin_uf"`
+	DestinationUF     string                  `json:"destination_uf"`
+	CRT               string                  `json:"crt"`
+	Model             string                  `json:"model"`
+	ValidFrom         string                  `json:"valid_from"`
+	ValidUntil        string                  `json:"valid_until"`
+	LegalReference    string                  `json:"legal_reference"`
+	ApprovalReference string                  `json:"approval_reference"`
+	BaseRounding      string                  `json:"base_rounding,omitempty"` // before_tax (legacy) or tax_final
+	Components        []TaxComponent          `json:"components"`
+	Goods             *GoodsTaxClassification `json:"goods,omitempty"`
 }
 type TaxComponent struct {
-	Code             string        `json:"code"`
-	Method           string        `json:"method"` // percentage, per_unit, exempt
-	Rate             string        `json:"rate"`
-	ReductionPercent string        `json:"reduction_percent"`
-	MVA              percentString `json:"mva_percent"`
-	AddApplied       []string      `json:"add_applied"`
-	SubtractApplied  []string      `json:"subtract_applied"`
-	DeductApplied    []string      `json:"deduct_applied"`
-	AddsToTotal      bool          `json:"adds_to_total"`
+	OwnOperationDeduction *STOwnDeductionInput `json:"own_operation_deduction,omitempty"`
+	Deferment             *ICMSDefermentInput  `json:"deferment,omitempty"`
+	AdjustedMVA           *AdjustedMVAInput    `json:"adjusted_mva,omitempty"`
+	Code                  string               `json:"code"`
+	Method                string               `json:"method"` // percentage, gross_up, per_unit, exempt
+	Rate                  string               `json:"rate"`
+	ReductionPercent      string               `json:"reduction_percent"`
+	MVA                   percentString        `json:"mva_percent"`
+	AddApplied            []string             `json:"add_applied"`
+	SubtractApplied       []string             `json:"subtract_applied"`
+	DeductApplied         []string             `json:"deduct_applied"`
+	AddsToTotal           bool                 `json:"adds_to_total"`
 }
 
 // A string alias keeps JSON monetary/rate inputs exact; never accept float64.
 type percentString = string
 type TaxItem struct {
-	ProductID string `json:"product_id"`
-	Quantity  string `json:"quantity"`
-	UnitPrice string `json:"unit_price"`
-	Discount  string `json:"discount"`
-	Freight   string `json:"freight"`
-	Insurance string `json:"insurance"`
-	Other     string `json:"other"`
+	RetainedST *RetainedSTInput `json:"retained_st,omitempty"`
+	ProductID  string           `json:"product_id"`
+	Quantity   string           `json:"quantity"`
+	UnitPrice  string           `json:"unit_price"`
+	Discount   string           `json:"discount"`
+	Freight    string           `json:"freight"`
+	Insurance  string           `json:"insurance"`
+	Other      string           `json:"other"`
 }
 type AppliedTax struct {
-	Code   string `json:"code"`
-	Method string `json:"method"`
-	Base   string `json:"base"`
-	Rate   string `json:"rate"`
-	Amount string `json:"amount"`
+	OwnOperationDeduction *STOwnDeductionResult `json:"own_operation_deduction,omitempty"`
+	Deferment             *ICMSDefermentResult  `json:"deferment,omitempty"`
+	MVAAdjustment         *AdjustedMVAResult    `json:"mva_adjustment,omitempty"`
+	Code                  string                `json:"code"`
+	Method                string                `json:"method"`
+	Base                  string                `json:"base"`
+	Rate                  string                `json:"rate"`
+	Amount                string                `json:"amount"`
+	UnroundedBase         string                `json:"unrounded_base,omitempty"` // exact rational, not float
 }
 type TaxResult struct {
-	RuleID                string       `json:"rule_id"`
-	CFOP                  string       `json:"cfop"`
-	NCM                   string       `json:"ncm"`
-	Gross                 string       `json:"gross"`
-	Net                   string       `json:"net"`
-	Total                 string       `json:"total"`
-	Taxes                 []AppliedTax `json:"taxes"`
-	LegalReference        string       `json:"legal_reference"`
-	ApprovalReference     string       `json:"approval_reference"`
-	OfficialAuthorization bool         `json:"official_authorization"`
+	RetainedST            *RetainedSTInput `json:"retained_st,omitempty"`
+	RuleID                string           `json:"rule_id"`
+	CFOP                  string           `json:"cfop"`
+	NCM                   string           `json:"ncm"`
+	Gross                 string           `json:"gross"`
+	Net                   string           `json:"net"`
+	Total                 string           `json:"total"`
+	Taxes                 []AppliedTax     `json:"taxes"`
+	LegalReference        string           `json:"legal_reference"`
+	ApprovalReference     string           `json:"approval_reference"`
+	OfficialAuthorization bool             `json:"official_authorization"`
+	GoodsXML              *GoodsTaxMapping `json:"goods_xml,omitempty"`
 }
 
 var ufCodes = map[string]string{"RO": "11", "AC": "12", "AM": "13", "RR": "14", "PA": "15", "AP": "16", "TO": "17", "MA": "21", "PI": "22", "CE": "23", "RN": "24", "PB": "25", "PE": "26", "AL": "27", "SE": "28", "BA": "29", "MG": "31", "ES": "32", "RJ": "33", "SP": "35", "PR": "41", "SC": "42", "RS": "43", "MS": "50", "MT": "51", "GO": "52", "DF": "53"}
@@ -162,6 +174,18 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		return out, ErrRule
 	}
 	r := selected
+	if err = validateSTOwnDeduction(*r); err != nil {
+		return out, err
+	}
+	if err = validateICMSDeferment(*r); err != nil {
+		return out, err
+	}
+	if err = validateAdjustedMVA(*r); err != nil {
+		return out, err
+	}
+	if r.BaseRounding != "" && r.BaseRounding != "before_tax" && r.BaseRounding != "tax_final" {
+		return out, ErrRule
+	}
 	if r.ID == "" || len(r.ID) > 128 || r.LegalReference == "" || r.ApprovalReference == "" || len(r.Components) == 0 || len(r.Components) > 16 {
 		return out, ErrRule
 	}
@@ -177,7 +201,10 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		return out, err
 	}
 	grossRaw := new(big.Rat).Mul(quantity, unit)
-	gross, _ := decimal(money(grossRaw))
+	gross, err := decimal(money(grossRaw))
+	if err != nil {
+		return out, ErrInput
+	}
 	discount, err := decimal(item.Discount)
 	if err != nil || discount.Cmp(gross) > 0 {
 		return out, ErrInput
@@ -191,7 +218,10 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		net.Add(net, a)
 	}
 	// The monetary operation base is rounded before percentage calculations.
-	net, _ = decimal(money(net))
+	net, err = decimal(money(net))
+	if err != nil {
+		return out, ErrInput
+	}
 	total := new(big.Rat).Set(net)
 	applied := map[string]*big.Rat{}
 	out = TaxResult{RuleID: r.ID, CFOP: r.CFOP, NCM: r.NCM, Gross: money(gross), Net: money(net), LegalReference: r.LegalReference, ApprovalReference: r.ApprovalReference, Taxes: []AppliedTax{}}
@@ -210,6 +240,15 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		mva, e := decimal(t.MVA)
 		if e != nil || mva.Cmp(big.NewRat(1000, 1)) > 0 {
 			return TaxResult{}, ErrRule
+		}
+		var adjustment *AdjustedMVAResult
+		if t.AdjustedMVA != nil {
+			v, e := AdjustMVA(*t.AdjustedMVA)
+			if e != nil {
+				return TaxResult{}, e
+			}
+			mva, _ = decimal(v.AppliedPercent)
+			adjustment = &v
 		}
 		base := new(big.Rat).Set(net)
 		for _, entry := range []struct {
@@ -235,12 +274,29 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		if base.Sign() < 0 {
 			return TaxResult{}, ErrRule
 		}
-		base, _ = decimal(money(base))
+		if r.BaseRounding != "tax_final" {
+			base, err = decimal(money(base))
+			if err != nil {
+				return TaxResult{}, ErrInput
+			}
+		}
 		amount := zero()
 		switch t.Method {
 		case "percentage":
 			if rate.Cmp(big.NewRat(100, 1)) > 0 {
 				return TaxResult{}, ErrRule
+			}
+			amount.Mul(base, new(big.Rat).Quo(rate, big.NewRat(100, 1)))
+		case "gross_up":
+			if rate.Cmp(big.NewRat(100, 1)) >= 0 {
+				return TaxResult{}, ErrRule
+			}
+			base.Quo(base, new(big.Rat).Sub(big.NewRat(1, 1), new(big.Rat).Quo(rate, big.NewRat(100, 1))))
+			if r.BaseRounding != "tax_final" {
+				base, err = decimal(money(base))
+				if err != nil {
+					return TaxResult{}, ErrInput
+				}
 			}
 			amount.Mul(base, new(big.Rat).Quo(rate, big.NewRat(100, 1)))
 		case "per_unit":
@@ -256,7 +312,29 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		default:
 			return TaxResult{}, ErrUnsupported
 		}
-		amount, _ = decimal(money(amount))
+		amount, err = decimal(money(amount))
+		if err != nil {
+			return TaxResult{}, ErrInput
+		}
+		var ownDeduction *STOwnDeductionResult
+		if t.OwnOperationDeduction != nil {
+			v, e := CalculateSTOwnDeduction(money(net), *t.OwnOperationDeduction)
+			if e != nil {
+				return TaxResult{}, e
+			}
+			ownDeduction = &v
+			deduction, _ := decimal(v.Amount)
+			amount.Sub(amount, deduction)
+		}
+		var deferred *ICMSDefermentResult
+		if t.Deferment != nil {
+			v, e := CalculateICMSDeferment(money(amount), *t.Deferment)
+			if e != nil {
+				return TaxResult{}, e
+			}
+			deferred = &v
+			amount, _ = decimal(v.DueAmount)
+		}
 		seen := map[string]bool{}
 		for _, code := range t.DeductApplied {
 			a, ok := applied[code]
@@ -277,11 +355,28 @@ func Calculate(c TaxContext, item TaxItem, rules []TaxRule) (TaxResult, error) {
 		if t.Method == "per_unit" {
 			baseValue = item.Quantity
 		}
-		out.Taxes = append(out.Taxes, AppliedTax{Code: t.Code, Method: t.Method, Base: baseValue, Rate: t.Rate, Amount: money(amount)})
+		value := AppliedTax{Code: t.Code, Method: t.Method, Base: baseValue, Rate: t.Rate, Amount: money(amount)}
+		value.OwnOperationDeduction = ownDeduction
+		value.Deferment = deferred
+		value.MVAAdjustment = adjustment
+		if r.BaseRounding == "tax_final" {
+			value.UnroundedBase = base.RatString()
+		}
+		out.Taxes = append(out.Taxes, value)
 	}
 	out.Total = money(total)
 	if len(out.Total) > 18 {
 		return TaxResult{}, fmt.Errorf("%w: total limit", ErrInput)
+	}
+	if err = validateRetainedSTItem(c, item, *r); err != nil {
+		return TaxResult{}, err
+	}
+	out.RetainedST = item.RetainedST
+	if r.Goods != nil {
+		out.GoodsXML, err = MapGoodsTaxes(*r, out)
+		if err != nil {
+			return TaxResult{}, err
+		}
 	}
 	return out, nil
 }

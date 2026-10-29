@@ -1,0 +1,424 @@
+{
+  "base_commit": "f6115f972cb75f04c0cfdc6179976c330d756be1",
+  "branch": "feat/fiscal-homolog-journal-20261027",
+  "recorded_at": "2026-10-28T22:08:42.082506+00:00",
+  "scope": "Normal synchronous production NF-e55/NFC-e65, reviewed cash-sale economic slice; disabled by default; synthetic authority acceptance only",
+  "official_homologation": false,
+  "real_commercial_data_or_credentials_used": false,
+  "installed": false,
+  "services_restarted": false,
+  "go_flags": "GOFLAGS=-buildvcs=false GOCACHE=/tmp/titan-fiscal-go-cache; race suites use -race; API race passes explicit newly-built titan-backup path",
+  "tests": {
+    "backend-full": {
+      "report_sha256": "7cf32b5467e17632572a4e290db93e44e4a42747243a4a5c1803c01636e83c29",
+      "top_level_passed": 1481,
+      "passed_including_subtests": 3251,
+      "tested_packages": 59,
+      "packages": [
+        {
+          "package": "titansystem-backend/cmd/api",
+          "elapsed_seconds": 0.235
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-fiscal",
+          "elapsed_seconds": 0.034
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-license",
+          "elapsed_seconds": 0.039
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-backup",
+          "elapsed_seconds": 0.753
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-access",
+          "elapsed_seconds": 0.919
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-online",
+          "elapsed_seconds": 0.007
+        },
+        {
+          "package": "titansystem-backend/internal/apicontract",
+          "elapsed_seconds": 0.006
+        },
+        {
+          "package": "titansystem-backend/internal/core/database",
+          "elapsed_seconds": 0.007
+        },
+        {
+          "package": "titansystem-backend/internal/core/entitlements",
+          "elapsed_seconds": 0.007
+        },
+        {
+          "package": "titansystem-backend/internal/core/modules",
+          "elapsed_seconds": 0.003
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-trade",
+          "elapsed_seconds": 0.046
+        },
+        {
+          "package": "titansystem-backend/internal/core/security",
+          "elapsed_seconds": 0.01
+        },
+        {
+          "package": "titansystem-backend/internal/deployment",
+          "elapsed_seconds": 0.026
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/cashaccounting",
+          "elapsed_seconds": 0.021
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/cashcount",
+          "elapsed_seconds": 0.009
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/cashjournal",
+          "elapsed_seconds": 0.073
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/dockagenda",
+          "elapsed_seconds": 0.004
+        },
+        {
+          "package": "titansystem-backend/internal/core/routes",
+          "elapsed_seconds": 0.361
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/fiscal",
+          "elapsed_seconds": 0.016
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/fleet",
+          "elapsed_seconds": 0.004
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-receive",
+          "elapsed_seconds": 0.463
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-sync",
+          "elapsed_seconds": 0.771
+        },
+        {
+          "package": "titansystem-backend/internal/fiscalproduction",
+          "elapsed_seconds": 0.889
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/inventory",
+          "elapsed_seconds": 0.658
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/localsetup",
+          "elapsed_seconds": 0.465
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-local",
+          "elapsed_seconds": 1.966
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/outgoing",
+          "elapsed_seconds": 0.666
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/payables",
+          "elapsed_seconds": 0.009
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/production",
+          "elapsed_seconds": 0.003
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/purchases",
+          "elapsed_seconds": 0.004
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/catalog",
+          "elapsed_seconds": 3.144
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/entitlementstore",
+          "elapsed_seconds": 3.214
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/register",
+          "elapsed_seconds": 1.329
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/stationfile",
+          "elapsed_seconds": 0.392
+        },
+        {
+          "package": "titansystem-backend/internal/fiscalcore",
+          "elapsed_seconds": 5.019
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/stockreservation",
+          "elapsed_seconds": 0.005
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/management",
+          "elapsed_seconds": 3.3609999999999998
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/sale",
+          "elapsed_seconds": 1.389
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/stock",
+          "elapsed_seconds": 0.703
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/supplycycle",
+          "elapsed_seconds": 0.022
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/replenishment",
+          "elapsed_seconds": 2.545
+        },
+        {
+          "package": "titansystem-backend/internal/modules/auth/delivery",
+          "elapsed_seconds": 0.176
+        },
+        {
+          "package": "titansystem-backend/internal/modules/auth/usecase",
+          "elapsed_seconds": 0.217
+        },
+        {
+          "package": "titansystem-backend/internal/modules/financial/usecase",
+          "elapsed_seconds": 0.006
+        },
+        {
+          "package": "titansystem-backend/internal/modules/catalog/delivery",
+          "elapsed_seconds": 0.014
+        },
+        {
+          "package": "titansystem-backend/internal/modules/pos/usecase",
+          "elapsed_seconds": 0.014
+        },
+        {
+          "package": "titansystem-backend/internal/onlinecatalog",
+          "elapsed_seconds": 0.107
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/identity",
+          "elapsed_seconds": 6.407
+        },
+        {
+          "package": "titansystem-backend/pkg/middleware",
+          "elapsed_seconds": 0.007
+        },
+        {
+          "package": "titansystem-backend/internal/traderelay",
+          "elapsed_seconds": 0.487
+        },
+        {
+          "package": "titansystem-backend/tests/integration",
+          "elapsed_seconds": 0.107
+        },
+        {
+          "package": "titansystem-backend/internal/onlinesessions",
+          "elapsed_seconds": 1.884
+        },
+        {
+          "package": "titansystem-backend/cmd/titan-peer",
+          "elapsed_seconds": 9.159
+        },
+        {
+          "package": "titansystem-backend/internal/localdb",
+          "elapsed_seconds": 11.665
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/localauth",
+          "elapsed_seconds": 13.352
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/stocktaking",
+          "elapsed_seconds": 9.511
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/incoming",
+          "elapsed_seconds": 39.12
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/backup",
+          "elapsed_seconds": 80.468
+        },
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "elapsed_seconds": 546.228
+        }
+      ],
+      "failed": [],
+      "skipped_tests": [
+        {
+          "package": "titansystem-backend/internal/core/routes",
+          "test": "TestPostgresCatalogCreationAndDiscountAtomicity"
+        },
+        {
+          "package": "titansystem-backend/internal/onlinesessions",
+          "test": "TestPostgresDurableRotationConcurrencyAndRollback"
+        },
+        {
+          "package": "titansystem-backend/internal/localdb",
+          "test": "TestMigrationCrashChild"
+        },
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "test": "TestCashJournalFrontendBridge"
+        },
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "test": "TestDeliveryFrontendBridge"
+        },
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "test": "TestMaintenanceFrontendBridge"
+        },
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "test": "TestPilotCashProcess"
+        },
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "test": "TestPilotCashScreenFlow"
+        }
+      ],
+      "backup_executable_commands": 0
+    },
+    "core-race": {
+      "report_sha256": "88cbb1ff81bb390c9bea2ffe11a9ea15f53a2663aa4f522b5cd01665d15a9750",
+      "top_level_passed": 32,
+      "passed_including_subtests": 156,
+      "tested_packages": 2,
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/fiscalproduction",
+          "elapsed_seconds": 2.168
+        },
+        {
+          "package": "titansystem-backend/internal/fiscalcore",
+          "elapsed_seconds": 12.505
+        }
+      ],
+      "failed": [],
+      "skipped_tests": [],
+      "backup_executable_commands": 0
+    },
+    "api-race": {
+      "report_sha256": "0cc71cb20fed9a44036c6278b9867a56487d42b7106e265f36fa6313852de839",
+      "top_level_passed": 78,
+      "passed_including_subtests": 208,
+      "tested_packages": 1,
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "elapsed_seconds": 437.046
+        }
+      ],
+      "failed": [],
+      "skipped_tests": [],
+      "backup_executable_commands": 120
+    }
+  },
+  "vet": "PASS go -C backend vet ./...",
+  "builds": {
+    "titan-backup": {
+      "bytes": 10563392,
+      "sha256": "2c78cbb19b256dccbb5ff1c7cd99dc7dd1a7fe832580fd1969b24c756c795c4f",
+      "installed": false
+    },
+    "titan-fiscal": {
+      "bytes": 23698505,
+      "sha256": "481b861ce81e559ed746144f8a555d8d8b04d004b6f67e884773608f556cac63",
+      "installed": false
+    },
+    "titan-local": {
+      "bytes": 42900786,
+      "sha256": "13c1f83bb057cfe15bb9e09366634709a3496e314f29b85a36e622ff2de9ffef",
+      "installed": false
+    },
+    "titan-trade": {
+      "bytes": 15089099,
+      "sha256": "d62220cadfa19d1ce0149df8160faa100b56b0a6c96f42bb880e65d16ad40487",
+      "installed": false
+    }
+  },
+  "api_contract_routes": 544,
+  "validator_tests": {
+    "contract_map": 10,
+    "backend_acceptance_gate": 7,
+    "failed": 0
+  },
+  "prior_files": {
+    ".sql": {
+      "prior_files": 72,
+      "changed": []
+    },
+    ".xsd": {
+      "prior_files": 42,
+      "changed": []
+    }
+  },
+  "limited_pattern_scan": {
+    "scope": "changed/new source/config files only; not historical revocation proof",
+    "patterns": [
+      "github_token",
+      "private_key_pem",
+      "aws_key_id"
+    ],
+    "findings": []
+  },
+  "source_and_contract_sha256": {
+    ".github/workflows/backend-pilot.yml": "68f38748702576496698a9543860d81d3afc039442ced2fc9d44b30969d1e5ab",
+    "backend/cmd/titan-local/serve.go": "ffc276a4e2c83221d2a9f7feb1d33461d1ede25437f59c2580b74bac8f171270",
+    "backend/internal/fiscalcore/guards_test.go": "2aeb674a7040f5cc6279bdb0f6dc09921abd656168bc83693063f1cdd6d53654",
+    "backend/internal/fiscalcore/issuance.go": "8d6fdca013d169371a8f9110113fb46a17b2738829c8e805e8954eeb180eb0ce",
+    "backend/internal/fiscalcore/production.go": "ca913aad07080d4cabd9e34199ee3d641a34d085c8a7e19c37fd3d3834ec3e76",
+    "backend/internal/fiscalcore/production_binding.go": "c2d3c7db135ee3aafca78928a400ed841ecc488a1a2135009f509561f7e49768",
+    "backend/internal/fiscalcore/query.go": "4cfba293ca9f521d324ec8eb612f72cf32f6b630eecfe8befb1ce09708d34cf5",
+    "backend/internal/fiscalcore/schemas/manifest.json": "c4b38989fd51e0e4d7c8b76f6bcd18960747e3c0812c530904b1ff92667813cf",
+    "backend/internal/fiscalcore/schemas/nfe400/authorization_response_root.xsd": "6916ec14755d249dec642e3c2e0278bc8ad0b59f326e15913915d286884319bc",
+    "backend/internal/fiscalcore/transport.go": "63925b58939118b7697fd42fc0de82f3d9e79aa83e9bd38486a45a92e6528fcd",
+    "backend/internal/fiscalcore/xml.go": "316c79204f9d9e252d9f2c44d6cccc1484a1c46a7d811c6a57e790eeac7a52ce",
+    "backend/internal/fiscalproduction/config.go": "5c380ca4db255b1b1ff4d539b3502267c73a65278878ecd3169833082f6c2015",
+    "backend/internal/fiscalproduction/runtime.go": "949fd7e0f760281bab243b029a0f5e4aff742cb39e4027ac5f3ea6ca0e5e8847",
+    "backend/internal/fiscalproduction/runtime_test.go": "21125222cde5487280def934e7cd4e62a301d1350cee610b3b25cb471169fa0e",
+    "backend/internal/localapi/customer_return_cross_shift_migration_test.go": "c449cfe64d637244f18b5928e4f83079ed83bd3a078782c5b9382f2fa3d6756f",
+    "backend/internal/localapi/customer_return_maintenance_test.go": "ac3c9b876fae28dbd7bd6757c0db3affe25153480f6460f367384dc0fb72344a",
+    "backend/internal/localapi/fiscal.go": "10c19a9eac91fcdb2db6cfce1f948595442df2baff0300b2db8688ac5b624a50",
+    "backend/internal/localapi/fiscal_production.go": "7c3bfd4bf1dfbe193ee9e6b0254a89bbc603f79265562d3095c1f281422e3c20",
+    "backend/internal/localapi/fiscal_production_test.go": "9c186148c3f2e417bd4f1e7d57d623f568b6385edbe4e25d31b0d34ac1688f36",
+    "backend/internal/localapi/pilot_backup_cli_test.go": "35916902755552e8b836e5e71b5ca269b74b893cf86498b141677b38a84998bf",
+    "backend/internal/localapi/server.go": "bf7065d4e1e77807ad48d06c0d0257a57bb1fe5ca31549d534c2954e0a403ea7",
+    "backend/internal/localdb/backup/backup.go": "fcef91d70ef909127e946305e82d9facccabc33dcc5bb5f3b97cfc957af01236",
+    "backend/internal/localdb/backup/compatibility_test.go": "ed965eafd4c7eda18f8adf5f17d3d76a1dac10f174f41ec18984714000f1954e",
+    "backend/internal/localdb/backup/inspection_test.go": "4e6a4fdeac8c9a9513d194a8b178d2e20b1bd1b6f0b76cb1cf9b9a953b63868e",
+    "backend/internal/localdb/fiscal/invoice_binding.go": "ffd1dd0ae1476b54fb649174e72a534e03cbcb1f4d51832a718a430ac071c0c9",
+    "backend/internal/localdb/fiscal/production.go": "b21d21d75feb440c150442af79a5239af1937fcd2eb12942cc388fb14c30f586",
+    "backend/internal/localdb/localdb_test.go": "3d1dda863805a25105330a943f76500135ad53daad793b6b0b35de90ad6c0257",
+    "backend/internal/localdb/migrations/0073_fiscal_production_emitter.sql": "5430cb23d197d5134dcdcb98de024326deea90bdc0efa913318594f404c2f9d9",
+    "backend/internal/testsupport/fiscalcert/cert.go": "18a48de09dcc9b213036932412bb09a541df145c8d19970573fbfd177ce45cd8",
+    "docs/api/fiscal-preparation.openapi.json": "68b32857f3cb561554199570edc776763a20fd05089c3e4d0e0cb7f329c1fea5",
+    "docs/api/fiscal-production.openapi.json": "efbe5851ece25e04367bb77250558dc849ebecb2e35de1ff0a49b498cbcf99e0",
+    "docs/api/route-inventory.json": "0723b3875db6bbd693c56d773991ad045cddb3ec45cd7a1ad7318ee3c071a2af",
+    "docs/api/routes.openapi.json": "8300942b029a72c4994fe687fc205bff2e7fb073cc97242c5eea90370cd3382d"
+  },
+  "git_diff_check": "PASS",
+  "previous_ci": {
+    "head": "f6115f972cb75f04c0cfdc6179976c330d756be1",
+    "checks_passed": 7,
+    "backend_acceptance_url": "https://github.com/danilomalta/zzeussss/actions/runs/40654534681/job/122702263542"
+  },
+  "new_commit_ci": "Pending publication; previous CI does not certify this delta",
+  "remaining": [
+    "Official authorized issuer/certificate/accreditation and SEFAZ acceptance",
+    "Full national tax classification/RTC and additional sale economics",
+    "Production DANFE and production events/contingency integrated into new journal",
+    "Protected PFX import, A3/HSM/Windows credential adapters and certificate-profile acceptance",
+    "SPED/PVA and production NFS-e; frontend provisioning/review integration"
+  ]
+}
