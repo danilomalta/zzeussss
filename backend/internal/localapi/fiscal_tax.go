@@ -25,6 +25,19 @@ func (s *Server) publishTaxPolicy(c *fiber.Ctx) error {
 	if string(fields["active"]) != "true" && string(fields["active"]) != "false" {
 		return fiscalFailure(c, fiscal.ErrInvalid)
 	}
+	var presence struct {
+		Rule struct {
+			Components []struct {
+				AddsToTotal *bool `json:"adds_to_total"`
+			} `json:"components"`
+		} `json:"rule"`
+	}
+	_ = json.Unmarshal(c.Body(), &presence)
+	for _, component := range presence.Rule.Components {
+		if component.AddsToTotal == nil {
+			return fiscalFailure(c, fiscal.ErrInvalid)
+		}
+	}
 	ss := c.Locals("session").(localauth.Session)
 	out, err := fiscal.PublishTaxPolicy(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, in, ss.Token)
 	if err != nil {

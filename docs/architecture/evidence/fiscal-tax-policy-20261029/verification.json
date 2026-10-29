@@ -4,33 +4,28 @@
   "scope": "Approved, scoped and versioned SQLite tax policies and immutable calculation quotes; not a complete national tax engine",
   "full_backend": {
     "packages_passed": 59,
-    "top_level_passed": 1498,
-    "passed_including_subtests": 3355,
+    "top_level_passed": 1505,
+    "passed_including_subtests": 3362,
     "failures": [],
     "skipped_tests": [
-      "TestFiscalProductionConfigNativeCLI",
       "TestPostgresCatalogCreationAndDiscountAtomicity",
       "TestPostgresDurableRotationConcurrencyAndRollback",
       "TestMigrationCrashChild",
-      "TestCashJournalFrontendBridge",
-      "TestDeliveryFrontendBridge",
-      "TestFiscalCustomerFrontendBridge",
-      "TestMaintenanceFrontendBridge",
       "TestPilotCashProcess",
       "TestPilotCashScreenFlow"
     ]
   },
   "tax_core_and_api_race": {
     "packages_passed": 2,
-    "top_level_passed": 6,
-    "passed_including_subtests": 43,
+    "top_level_passed": 7,
+    "passed_including_subtests": 44,
     "failures": [],
     "skipped_tests": []
   },
   "tax_api_real_backup_cli_race": {
     "packages_passed": 1,
-    "top_level_passed": 4,
-    "passed_including_subtests": 4,
+    "top_level_passed": 5,
+    "passed_including_subtests": 5,
     "failures": [],
     "skipped_tests": []
   },
@@ -48,7 +43,7 @@
     "failures": [],
     "skipped_tests": []
   },
-  "full_suite_note": "General suite ran on final production sources. Additional concurrent/context tests and real backup CLI variant were then compiled and rerun with race; recorded separately. Five opt-in tests skipped in the general run passed in explicit bridge/native reruns. Two PostgreSQL integrations were not configured locally; three process/screen auxiliaries skipped.",
+  "full_suite_note": "Final complete suite ran with all four frontend bridges and native fiscal executable enabled on final production/test sources. Two PostgreSQL integrations were not configured locally; three explicitly opt-in process/screen auxiliaries skipped. The CI still requires both PostgreSQL integrations; local results do not claim that gate passed.",
   "real_tax_http": {
     "requests": 8,
     "service_lifecycles": 3,
@@ -87,7 +82,7 @@
     ],
     "installed": false,
     "sha256": {
-      "titan-local": "2e4250abd27b6c0a9a8ac33849e34d531d6a4bd8065db3ebf08bb3862e33fd20",
+      "titan-local": "cab0e0d4f1e93ecd03645fbf9721602303664b95ebb3cecf048460dab777bf25",
       "titan-fiscal": "72fbd82cd62c7baa13c6ee574bf002a01c75a7cf713f12828d83ce95512dce62",
       "titan-backup": "5faff8b5074f1809dc565b719fe30fb21bfc1e762750046a1a00d338afef0efa"
     }
@@ -110,8 +105,8 @@
     "backend/internal/localapi/customer_return_cross_shift_migration_test.go": "186ba6b366ec50033d5f9a11f3df21f3338e67b1c7ba6229ea5cb62b9b8551ab",
     "backend/internal/localapi/customer_return_maintenance_test.go": "5a7e93cfa152930606184c5d4d09344a0241a7e621f9b58bb18aa73f8686d817",
     "backend/internal/localapi/fiscal.go": "2b642758a18f58561561a9fe6748babc6a2ef815abe168a0d3e4db70b3294f3b",
-    "backend/internal/localapi/fiscal_tax.go": "476d1d386a16ed62b969945a742000330622b898656a4ddd33dab4d8b2eb12df",
-    "backend/internal/localapi/fiscal_tax_test.go": "e0eb96e1d5aa655a24a1bd93eca828c324205d4ea4e3adb0e7a72578c9d8bc0a",
+    "backend/internal/localapi/fiscal_tax.go": "ffdef14b0835a33c2499afa4b636837b0fedf43c627236a14558aa96fd71e980",
+    "backend/internal/localapi/fiscal_tax_test.go": "a137d8757a4689982026cc267b262634ebed63cd66efae6c60a121c77c6e1139",
     "backend/internal/localapi/pilot_backup_cli_test.go": "c29f0beb1c27624cac6dca129a981ecc72d2cb41ba9140afecc042d696820255",
     "backend/internal/localdb/backup/backup.go": "2c016b4ef7102522ce8fdcf6b5f2b5e0c392375671f7ff2645b3eb1d47ad80ca",
     "backend/internal/localdb/backup/compatibility_test.go": "e3ec4f307e923e50a4c24c9eb859741b8d58ac545b44b153017fc3c62a2dd649",
@@ -124,5 +119,15 @@
     "docs/api/routes.openapi.json": "1c72ceafab1a722d2c09ba68dc4d2c0e48767c2c13b8b65182f4ddd630cdfb15",
     "tools/tests/test_verify_backend_acceptance.py": "4ddff3b59c607d7b7b35a7811005f98b724533e84469bb38937a6d5996979f3f",
     "tools/verify_backend_acceptance.py": "a5d0f1259d9124897a999b3cd94dbe709457f2c37ef8e4d107c086b3178696c3"
-  }
+  },
+  "corrected_test_invocations": [
+    {
+      "error": "httptest: failed to listen on a port: listen tcp6 [::1]:0: socket: operation not permitted",
+      "resolution": "Reran real loopback tests with approved socket permissions; final complete suite passed."
+    },
+    {
+      "error": "flag provided but not defined: -pilot-backup-cli",
+      "resolution": "Argument belongs only to localapi. Reran fiscalcore without it and localapi with it; both race packages passed."
+    }
+  ]
 }

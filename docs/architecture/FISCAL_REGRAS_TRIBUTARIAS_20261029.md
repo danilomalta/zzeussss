@@ -23,6 +23,8 @@ do proprietário como validação jurídica automática, nem cálculo como emiss
 - `GET /local/v1/fiscal/tax-quotes/:operation_id`: recupera a memória original
   do aparelho na loja atual. Exige permissão contábil. Não aplica regra mais nova.
 
+A publicação exige decisões booleanas explícitas para ativação e soma de cada
+tributo ao total; valores omitidos/nulos não viram `false` silenciosamente.
 Reenvio exato retorna o mesmo registro; reutilização do identificador com outra
 entrada/ator/loja é conflito. Revisão inativa bloqueia novos cálculos e preserva
 recuperação e reenvio idempotente dos anteriores. Alteração do perfil exige nova

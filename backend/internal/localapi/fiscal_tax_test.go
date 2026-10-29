@@ -42,6 +42,26 @@ func taxRequest(t *testing.T, f *stockHTTPFixture, method, path string, in any, 
 		t.Fatal("invalid response")
 	}
 }
+
+func TestFiscalTaxMissingTaxTotalDecisionCannotPublish(t *testing.T) {
+	f := fiscalFixture(t)
+	raw, _ := json.Marshal(taxPolicyFixture(f))
+	for _, body := range []string{
+		strings.Replace(string(raw), `"adds_to_total":false`, `"adds_to_total":null`, 1),
+		strings.Replace(string(raw), `,"adds_to_total":false`, "", 1),
+		strings.Replace(string(raw), `"active":true`, `"active":null`, 1),
+		strings.Replace(string(raw), `"active":true,`, "", 1),
+	} {
+		code, _ := request(t, f.app, "POST", "/local/v1/fiscal/tax-policies", body, f.token)
+		if code != 400 {
+			t.Fatal("missing explicit tax decision published", code)
+		}
+	}
+	var count int
+	if err := f.db.QueryRow(`SELECT count(*) FROM fiscal_tax_policies`).Scan(&count); err != nil || count != 0 {
+		t.Fatal("invalid decision persisted", count, err)
+	}
+}
 func TestFiscalTaxPolicyQuoteScopeRevisionAndRecovery(t *testing.T) {
 	f := fiscalFixture(t)
 	in := taxPolicyFixture(f)

@@ -2704,21 +2704,21 @@ tributo; dinheiro da operação e dependências anteriores continuam em centavos
 Valores excessivos são recusados sem panic. Percentuais de testes são vetores
 matemáticos descartáveis e não configurações fiscais distribuídas aos clientes.
 
-Regressões específicas com race: seis testes principais/43resultados, sem falhas
+Regressões específicas com race: sete testes principais/44resultados, sem falhas
 ou skips, incluindo publicação, idempotência concorrente, contexto, vigência,
 perfil, histórico, permissão e cálculo. Rodada adicional da API com race e
-`titan-backup` compilado: quatro testes principais, sem falhas/skips. O ensaio
+`titan-backup` compilado: cinco testes principais, sem falhas/skips. O ensaio
 tributário faz oito chamadas HTTP reais em três processos, preservando os
 hashes da política/resultado após reinício e restauração criptografada.
 Onze comandos do backup executam casos positivos e negativos; o relatório
 `pilot_cash_v1` mantém seu escopo financeiro, e a integridade tributária é
 conferida pela leitura da memória original via API.
 
-Suíte geral:59pacotes,1.498testes principais e3.355resultados incluindo subtestes,
-zero falhas. Dez skips nessa rodada: cinco opt-ins de bridge/CLI passaram nas
-rodadas explícitas; dois testes PostgreSQL não estavam configurados localmente;
-três eram auxiliares de processo/tela. Não foi declarado gate integrado local
-aprovado sem as duas integrações PostgreSQL exigidas no CI.
+Suíte geral final:59pacotes,1.505testes principais e3.362resultados incluindo
+subtestes, zero falhas. Cinco skips: dois testes PostgreSQL não estavam
+configurados localmente e três eram auxiliares de processo/tela. Quatro bridges
+e o CLI fiscal compilado foram habilitados nessa rodada. Não foi declarado gate
+integrado local aprovado sem as duas integrações PostgreSQL exigidas no CI.
 
 Quatro bridges frontend/API e o diagnóstico fiscal nativo compilado passaram
 separadamente. Os17testes dos validadores, vet dos três pacotes afetados, builds
