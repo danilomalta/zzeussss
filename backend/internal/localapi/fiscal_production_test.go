@@ -56,7 +56,7 @@ type productionFixture struct {
 	authorizedAt     string
 }
 
-func newProductionFixture(t *testing.T, model string) *productionFixture {
+func newProductionFixture(t *testing.T, model string, crt ...string) *productionFixture {
 	t.Helper()
 	p := &productionFixture{f: fiscalFixture(t, model)}
 	p.mode.Store("authorize")
@@ -64,6 +64,9 @@ func newProductionFixture(t *testing.T, model string) *productionFixture {
 	body = strings.ReplaceAll(body, `"issuer-create"`, `"production-profile"`)
 	body = strings.ReplaceAll(body, `"expected_revision":0`, `"expected_revision":1`)
 	body = strings.ReplaceAll(body, `"environment":"homologation"`, `"environment":"production"`)
+	if len(crt) > 0 {
+		body = strings.ReplaceAll(body, `"crt":"1"`, `"crt":"`+crt[0]+`"`)
+	}
 	if code, b := request(t, p.f.app, "POST", "/local/v1/fiscal/profiles", body, p.f.token); code != 201 {
 		t.Fatalf("profile %d %s", code, b)
 	}

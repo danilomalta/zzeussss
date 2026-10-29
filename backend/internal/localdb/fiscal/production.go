@@ -218,6 +218,9 @@ func PrepareProduction(ctx context.Context, db *sql.DB, license *entitlementstor
 	if err == nil && old.OperationID == operationID {
 		candidate := in
 		candidate.Key = old.Invoice.Key
+		if err = applyProductionTaxQuotesTx(ctx, tx, a, d, &candidate, intent.Input.ProfileID, intent.Input.ProfileRevision); err != nil {
+			return out, err
+		}
 		candidateRaw, _ := json.Marshal(candidate)
 		oldRaw, _ := json.Marshal(old.Invoice)
 		if old.Revision != expectedRevision+1 || old.ConfigurationSHA256 != b.SHA256() || !bytes.Equal(candidateRaw, oldRaw) {
@@ -236,6 +239,9 @@ func PrepareProduction(ctx context.Context, db *sql.DB, license *entitlementstor
 	}
 	in.Key, err = productionAllocationTx(ctx, tx, a, d, intent, b)
 	if err != nil {
+		return out, err
+	}
+	if err = applyProductionTaxQuotesTx(ctx, tx, a, d, &in, intent.Input.ProfileID, intent.Input.ProfileRevision); err != nil {
 		return out, err
 	}
 	key, err := fiscalcore.AccessKey(in.Key)
@@ -311,6 +317,9 @@ func ApproveProduction(ctx context.Context, db *sql.DB, license *entitlementstor
 	}
 	if prep.Revision != revision || prep.ReviewSHA256 != reviewSHA || prep.ConfigurationSHA256 != b.SHA256() {
 		return ErrConflict
+	}
+	if err = applyProductionTaxQuotesTx(ctx, tx, a, d, &prep.Invoice, intent.Input.ProfileID, intent.Input.ProfileRevision); err != nil {
+		return err
 	}
 	var oldSHA, ref, actor, device, op string
 	err = tx.QueryRowContext(ctx, `SELECT invoice_sha256,tax_reference,actor_id,device_id,operation_id FROM fiscal_production_approvals WHERE tenant_id=? AND store_id=? AND intent_id=? AND revision=?`, a.TenantID, a.StoreID, id, revision).Scan(&oldSHA, &ref, &actor, &device, &op)
@@ -401,6 +410,9 @@ func (r *ProductionRecorder) sendTx(ctx context.Context, tx *sql.Tx) (Production
 			return prep, ErrConflict
 		}
 		if err = productionSessionTx(ctx, tx, r.actor, r.device, r.intentID, r.revision, r.token); err != nil {
+			return prep, err
+		}
+		if err = applyProductionTaxQuotesTx(ctx, tx, r.actor, r.device, &prep.Invoice, intent.Input.ProfileID, intent.Input.ProfileRevision); err != nil {
 			return prep, err
 		}
 		var sha string

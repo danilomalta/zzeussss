@@ -1330,6 +1330,23 @@
               "$ref": "#/components/schemas/TaxNode"
             },
             "minItems": 1
+          },
+          "TaxQuoteOperationID": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "CEST": {
+            "type": "string",
+            "pattern": "^[0-9]{7}$"
+          },
+          "BenefitCode": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 10
+          },
+          "FCI": {
+            "type": "string",
+            "pattern": "^[0-9A-Fa-f-]{36}$"
           }
         },
         "required": [
@@ -1597,7 +1614,7 @@
           "Lines": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Line"
+              "$ref": "#/components/schemas/LineInput"
             },
             "minItems": 1,
             "maxItems": 990
@@ -1615,7 +1632,8 @@
             "additionalProperties": {
               "type": "string",
               "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
-            }
+            },
+            "nullable": true
           },
           "ContingencyAt": {
             "type": "string",
@@ -1640,10 +1658,9 @@
           "Presence",
           "Issuer",
           "Lines",
-          "Payments",
-          "TaxTotals"
+          "Payments"
         ],
-        "description": "Key omitida ou zerada: UF/CNPJ/modelo/série/número/data/cNF são atribuídos pelo backend. Valores decimais exatos em strings; venda em dinheiro sem descontos/acréscimos nesta integração. O documento precisa de classificação tributária revisada; a API não escolhe alíquotas."
+        "description": "Key omitida ou zerada: UF/CNPJ/modelo/série/número/data/cNF são atribuídos pelo backend. Valores decimais exatos em strings; venda em dinheiro sem descontos/acréscimos nesta integração. O documento precisa de classificação tributária revisada; a API não escolhe alíquotas. Modo com TaxQuoteOperationID: informe a referência em cada linha; Taxes/TaxTotals podem ser nulos/omitidos para preenchimento pelo backend. Sem preenchimento silencioso de valores conflitantes. O modo manual anterior continua distinto e não recebe prova de política aprovada."
       },
       "Configuration": {
         "type": "object",
@@ -2139,6 +2156,113 @@
           "event_id",
           "signed_xml",
           "exchange"
+        ]
+      },
+      "QuotedLineInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ProductID": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Unit": {
+            "type": "string"
+          },
+          "NCM": {
+            "type": "string"
+          },
+          "CFOP": {
+            "type": "string"
+          },
+          "GTIN": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "UnitPrice": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Discount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Freight": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Insurance": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Other": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Taxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxNode"
+            },
+            "minItems": 0,
+            "nullable": true
+          },
+          "TaxQuoteOperationID": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "CEST": {
+            "type": "string",
+            "pattern": "^[0-9]{7}$"
+          },
+          "BenefitCode": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 10
+          },
+          "FCI": {
+            "type": "string",
+            "pattern": "^[0-9A-Fa-f-]{36}$"
+          }
+        },
+        "required": [
+          "ProductID",
+          "Description",
+          "Unit",
+          "Quantity",
+          "UnitPrice",
+          "Discount",
+          "Freight",
+          "Insurance",
+          "Other",
+          "TaxQuoteOperationID"
+        ],
+        "description": "Os grupos, totais, NCM/CFOP, CEST, cBenef e FCI vêm da memória aprovada. Valores fornecidos precisam ser idênticos. Todas as linhas devem ter referência quando uma delas usar esse modo. Cotação, perfil ou política obsoleta bloqueia nova revisão/aprovação/envio; leitura histórica permanece disponível."
+      },
+      "LineInput": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Line"
+              },
+              {
+                "not": {
+                  "required": [
+                    "TaxQuoteOperationID"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "$ref": "#/components/schemas/QuotedLineInput"
+          }
         ]
       }
     }

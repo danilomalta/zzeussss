@@ -2740,3 +2740,74 @@ Detalhes e fontes oficiais:
 [FISCAL_REGRAS_TRIBUTARIAS_20261029.md](FISCAL_REGRAS_TRIBUTARIAS_20261029.md).
 Contrato: [fiscal-tax-policy.openapi.json](../api/fiscal-tax-policy.openapi.json).
 Evidência: [verification.json](evidence/fiscal-tax-policy-20261029/verification.json).
+
+## Backend — enquadramentos, DIFAL e vínculo tributário ao XML — 29/10/2026
+
+Base `8a98d2a158d0c3cd7f1cdfb78231cdd2dc40d55a`, mesma branch/PR5. Esta unidade
+amplia o backend; não altera frontend, Electron, serviços ou bancos comerciais.
+Não cria migração, ZIP ou instalação. As75migrações e os XSDs existentes foram
+preservados. Campos opcionais mantêm a serialização dos registros anteriores.
+
+Políticas podem declarar grupos legados tipados: ICMS00/10/20/40/41/50/70 em
+CRT2/3; CSOSN102/103/300/400 em CRT1; PIS/COFINS percentual, quantidade, CST04–09
+e49/99; IPI50/99 e51–55; FCP próprio/ST e ST por MVA. Incidência/não aplicação de
+IPI e FCP deve ser explícita. Classificação desconhecida não vira grupo zerado.
+O nome matemático `exempt` não substitui a natureza legal do CST informado.
+
+Referência nominal interestadual datada2026 com4/7/12% para mercadorias comuns,
+27UFs e origens qualificadas. Não escolhe exceção CAMEX/PPB nem alíquota interna.
+MVA ajustada conserva dados, fração exata e percentual de quatro casas, dependendo
+de escolha da fórmula/referência aplicável. Não determina MVA original por NCM
+ou existência de acordo de ST. FCI/dispensa e cBenef são declarações revisadas,
+sem consulta automática de existência/vigência no fisco.
+
+DIFAL de base única para consumidor final não contribuinte em NF-e55 normal,
+sem benefícios/alterações especiais de base, foi ligado ao grupo `ICMSUFDest`
+e aos totais. FCP de destino é separado. Alíquota interna é fornecida explicitamente
+na política aprovada. Não paga GNRE, movimenta banco nem aplica base dupla como
+se fosse base única. Cenários de destino fora do método suportado são recusados.
+
+O campo `Invoice.Lines[].TaxQuoteOperationID` permite ao emissor buscar a memória
+durável e preencher/verificar grupos, NCM/CFOP, CEST, cBenef e FCI. Se uma linha
+usar essa fonte, todas devem usar. Valida empresa/loja/aparelho, produto, perfil,
+quantidades/preços, destinatário, geografia, data e revisão ativa. Política
+superada/retirada bloqueia nova preparação/aprovação e é reavaliada antes do envio.
+Alterações do cliente não são substituídas silenciosamente. Leitura e recuperação
+históricas permanecem disponíveis; não apaga operação incerta nem libera número.
+O modo manual anterior não recebe prova de política automaticamente.
+
+O vínculo econômico ainda recusa ST/IPI adicionais que não estejam representados
+na venda/pagamento persistidos. Ter fórmula e XML unitários não conclui o contrato
+comercial para cobrar esses acréscimos. Regra completa de importação/exportação,
+retenção anterior, crédito e diferimento também não foi inferida desses grupos.
+
+Validação final:59pacotes,1.521testes principais e3.457resultados incluindo
+subtestes aprovados, zero falhas. Cinco skips: dois PostgreSQL não configurados
+localmente e três auxiliares opt-in de processo/tela. Quatro bridges e o CLI
+fiscal compilado foram habilitados. Núcleo tributário com race:12principais/
+111resultados; API com race:11principais/28resultados, sem falhas/skips nessas
+duas rodadas. Vet de todo backend,17testes dos validadores,551rotas e builds Linux
+passaram. Os21fontes/contratos/configurações mantiveram os hashes da rodada final.
+
+Ensaio nativo:10requisições TCP à API e um POST mTLS assinado à autoridade
+descartável, com regra→memória→revisão→aprovação→XML→recuperação idempotente.
+Não é homologação oficial. Também foram executados assinatura/XSD dos grupos,
+rejeição de valores adulterados, política retirada, reinício e backup criptografado.
+Há6318verificações de seleção nominal interestadual; não são6318regras legais.
+O CLI anterior e o novo produziram bytes idênticos para o caso genérico comparado.
+
+O CI da base8a98d2a foi conferido com sete checks verdes. O gate passa a exigir
+11integrações, incluindo os novos circuitos tributário, DIFAL/FCP e HTTP nativo.
+O resultado de CI do novo head deve ser conferido após sua publicação, antes
+de qualquer merge. Credenciais históricas não foram rotacionadas por esta unidade.
+
+Continua sem cobertura nacional integral: catálogos/enquadramentos e benefícios
+por vigência, RTC IBS/CBS/IS, ICMS monofásico, retenção anterior, créditos,
+desoneração/diferimento, acordos e métodos especiais, Simples/DAS/apuração e
+ISS/NFS-e. DANFE/contingência de produção, SPED/PVA e homologação oficial também
+permanecem fora desta entrega. Essas pendências são de implementação/validação,
+não apenas de certificado. Não anunciar fiscal completo.
+
+Detalhes/fontes: [FISCAL_TRIBUTACAO_APLICADA_20261029.md](FISCAL_TRIBUTACAO_APLICADA_20261029.md).
+Contratos: `docs/api/fiscal-tax-policy.openapi.json` e `docs/api/fiscal-production.openapi.json`.
+Evidências: [verification.json](evidence/fiscal-tax-classification-20261029/verification.json).

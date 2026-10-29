@@ -10,7 +10,10 @@ REQUIRED = {
     *{('titansystem-backend/internal/localapi', name) for name in (
         'TestCashJournalFrontendBridge', 'TestDeliveryFrontendBridge',
         'TestMaintenanceFrontendBridge', 'TestFiscalCustomerFrontendBridge',
-        'TestFiscalTaxRealHTTPRestartAndRestore')},
+        'TestFiscalTaxRealHTTPRestartAndRestore',
+        'TestHTTPFiscalProductionTaxQuotesBuildSignTransmitAndRecover',
+        'TestHTTPFiscalProductionTaxDestinationDIFALAndFCP',
+        'TestHTTPFiscalProductionTaxNativeLoopback')},
 }
 ALLOWED_SKIPS = {
     ('titansystem-backend/internal/localapi', 'TestPilotCashProcess'),

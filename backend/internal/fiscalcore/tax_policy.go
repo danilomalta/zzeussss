@@ -55,7 +55,7 @@ func ValidateTaxPolicy(r TaxRule, c TaxCase, sources []string) error {
 	seenSources := map[string]bool{}
 	for _, raw := range sources {
 		u, err := url.Parse(raw)
-		if !cleanTaxText(raw, 2048) || err != nil || u.Scheme != "https" || u.User != nil || u.Port() != "" || !strings.HasSuffix(strings.ToLower(u.Hostname()), ".gov.br") || seenSources[raw] {
+		if !cleanTaxText(raw, 2048) || err != nil || u.Scheme != "https" || u.User != nil || u.Port() != "" || !(strings.HasSuffix(strings.ToLower(u.Hostname()), ".gov.br") || strings.HasSuffix(strings.ToLower(u.Hostname()), ".leg.br")) || seenSources[raw] {
 			return ErrRule
 		}
 		seenSources[raw] = true
@@ -108,7 +108,28 @@ func ValidateTaxPolicy(r TaxRule, c TaxCase, sources []string) error {
 		}
 		seen[t.Code] = true
 	}
-	return nil
+	if r.Goods != nil {
+		if c.Operation != "sale" {
+			return ErrUnsupported
+		}
+		if r.Goods.Destination != nil && (c.FinalConsumer != "yes" || c.RecipientStatus != "noncontributor" || c.Purpose != "final_consumption") {
+			return ErrRule
+		}
+		if r.OriginUF != r.DestinationUF {
+			if c.FinalConsumer == "yes" {
+				if c.RecipientStatus != "noncontributor" || c.Purpose != "final_consumption" || r.Goods.Destination == nil {
+					return ErrUnsupported
+				}
+			} else if c.RecipientStatus != "contributor" || !oneOf(c.Purpose, "resale", "industrialization") {
+				return ErrUnsupported
+			}
+		}
+		if r.Goods.Origin != c.ProductOrigin {
+			return ErrRule
+		}
+		return ValidateGoodsTaxClassification(r)
+	}
+	return validateAdjustedMVA(r)
 }
 
 func ValidateTaxCase(c TaxCase, origin, destination string) error {

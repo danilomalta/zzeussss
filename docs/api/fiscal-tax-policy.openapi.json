@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Titan políticas tributárias aprovadas e memória de cálculo",
-    "version": "1.0.0",
-    "description": "Regras explícitas por produto, operação, destinatário, UF/município, CRT, modelo e vigência. Sem catálogo legal nacional pré-carregado ou escolha automática de CST/cClassTrib/benefícios. Publicação pelo proprietário; cálculo/leitura por ViewAccounting. HTTPS gov.br é procedência declarada, não validação jurídica automática. gross_up exige base que ainda não inclui o tributo. tax_final preserva frações na transformação da base; valores monetários da operação e tributos anteriores já são arredondados."
+    "version": "1.1.0",
+    "description": "Políticas aprovadas, versionadas, cálculo exato e grupos XML legados tipados. Sem catálogo nacional completo ou classificação automática por NCM. Fontes HTTPS governamentais ou legislativas declaradas, não verificação jurídica automática. Referência interestadual nominal 4/7/12 datada de2026; DIFAL de base única e FCP separado exigem incidência e alíquota interna explicitamente aprovadas. Sem pagamento GNRE. goods ausente permanece cálculo genérico e não autoriza vínculo automático ao emissor."
   },
   "servers": [
     {
@@ -581,6 +581,9 @@
           },
           "adds_to_total": {
             "type": "boolean"
+          },
+          "adjusted_mva": {
+            "$ref": "#/components/schemas/AdjustedMVAInput"
           }
         }
       },
@@ -656,6 +659,9 @@
             "items": {
               "$ref": "#/components/schemas/Component"
             }
+          },
+          "goods": {
+            "$ref": "#/components/schemas/GoodsTaxClassification"
           }
         }
       },
@@ -808,6 +814,9 @@
           },
           "unrounded_base": {
             "type": "string"
+          },
+          "mva_adjustment": {
+            "$ref": "#/components/schemas/AdjustedMVAResult"
           }
         }
       },
@@ -862,6 +871,9 @@
             "enum": [
               false
             ]
+          },
+          "goods_xml": {
+            "$ref": "#/components/schemas/GoodsTaxMapping"
           }
         }
       },
@@ -901,6 +913,309 @@
             "type": "boolean"
           }
         }
+      },
+      "AdjustedMVAInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "original_percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "interstate_rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "internal_rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "rounding": {
+            "type": "string",
+            "enum": [
+              "four_places_before_base"
+            ]
+          },
+          "legal_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "original_percent",
+          "interstate_rate",
+          "internal_rate",
+          "rounding",
+          "legal_reference"
+        ]
+      },
+      "AdjustedMVAResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "input": {
+            "$ref": "#/components/schemas/AdjustedMVAInput"
+          },
+          "exact_percent": {
+            "type": "string"
+          },
+          "applied_percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          }
+        },
+        "required": [
+          "input",
+          "exact_percent",
+          "applied_percent"
+        ]
+      },
+      "DestinationTaxClassification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reference": {
+            "type": "string",
+            "enum": [
+              "cv236_21_single_base_2026"
+            ]
+          },
+          "base_method": {
+            "type": "string",
+            "enum": [
+              "single_inclusive_operation_base"
+            ]
+          },
+          "fcp_scope": {
+            "type": "string",
+            "enum": [
+              "not_applicable",
+              "taxed"
+            ]
+          }
+        },
+        "required": [
+          "reference",
+          "base_method",
+          "fcp_scope"
+        ]
+      },
+      "GoodsTaxClassification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "origin": {
+            "type": "string",
+            "enum": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8"
+            ]
+          },
+          "icms": {
+            "type": "string",
+            "enum": [
+              "00",
+              "10",
+              "20",
+              "40",
+              "41",
+              "50",
+              "70",
+              "102",
+              "103",
+              "300",
+              "400"
+            ]
+          },
+          "pis": {
+            "type": "string",
+            "enum": [
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "49",
+              "99"
+            ]
+          },
+          "cofins": {
+            "type": "string",
+            "enum": [
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "49",
+              "99"
+            ]
+          },
+          "ipi_scope": {
+            "type": "string",
+            "enum": [
+              "classified",
+              "not_applicable"
+            ]
+          },
+          "fcp_scope": {
+            "type": "string",
+            "enum": [
+              "not_applicable",
+              "own",
+              "substitution",
+              "own_and_substitution"
+            ]
+          },
+          "ipi": {
+            "type": "string",
+            "enum": [
+              "50",
+              "99",
+              "51",
+              "52",
+              "53",
+              "54",
+              "55"
+            ]
+          },
+          "ipi_enquadramento": {
+            "type": "string",
+            "pattern": "^[0-9]{3}$"
+          },
+          "benefit_code": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 10
+          },
+          "interstate_basis": {
+            "type": "string",
+            "enum": [
+              "ordinary_goods_2026"
+            ]
+          },
+          "fci": {
+            "type": "string",
+            "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+          },
+          "fci_exemption_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "destination": {
+            "$ref": "#/components/schemas/DestinationTaxClassification"
+          }
+        },
+        "required": [
+          "origin",
+          "icms",
+          "pis",
+          "cofins",
+          "ipi_scope",
+          "fcp_scope"
+        ],
+        "description": "Enquadramento declarado/revisado pelo cliente; não é classificação legal automática. IPI/FCP precisam de escopo explícito. RTC, monofásicos, diferimento, créditos e retenção anterior não são representados. Venda interestadual com consumidor final não contribuinte exige destination e base única sem benefícios; demais cenários não cobertos são recusados."
+      },
+      "InterstateRateSelection": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reference": {
+            "type": "string",
+            "enum": [
+              "ordinary_goods_2026"
+            ]
+          },
+          "rate": {
+            "type": "string"
+          },
+          "origin_uf": {
+            "type": "string"
+          },
+          "destination_uf": {
+            "type": "string"
+          },
+          "product_origin": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string"
+          },
+          "valid_until": {
+            "type": "string"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "required": [
+          "reference",
+          "rate",
+          "origin_uf",
+          "destination_uf",
+          "product_origin",
+          "valid_from",
+          "valid_until",
+          "sources"
+        ]
+      },
+      "GoodsTaxMapping": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "classification": {
+            "$ref": "#/components/schemas/GoodsTaxClassification"
+          },
+          "taxes": {
+            "type": "array",
+            "items": {
+              "$ref": "./fiscal-production.openapi.json#/components/schemas/TaxNode"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+            }
+          },
+          "interstate_reference": {
+            "$ref": "#/components/schemas/InterstateRateSelection"
+          }
+        },
+        "required": [
+          "version",
+          "classification",
+          "taxes",
+          "totals"
+        ]
       }
     }
   }

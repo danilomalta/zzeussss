@@ -74,7 +74,7 @@ jobs:
           python3 ../tools/verify_backend_acceptance.py "$RUNNER_TEMP/backend-full.jsonl" | tee "$RUNNER_TEMP/backend-integrations.json"
       - name: Fiscal journal, session boundary and mTLS regressions with race detector
         run: |
-          go test -race ./internal/fiscalcore ./internal/fiscalproduction -run '^TestTaxPolicy|^TestFiscalTransportRechecks|^TestFiscalMTLS|^TestFiscalIssuance|^TestFiscalQuery|^TestFiscalEmbeddedSchema|^TestFiscalCancellation|^TestFiscalInvalidation|^TestFiscalDANFE|^TestProduction' -count=1 -timeout=5m -json > "$RUNNER_TEMP/fiscal-journal-core-race.jsonl"
+          go test -race ./internal/fiscalcore ./internal/fiscalproduction -run '^TestGoods|^TestInterstate|^TestDestination|^TestAdjusted|^TestTaxPolicy|^TestFiscalTransportRechecks|^TestFiscalMTLS|^TestFiscalIssuance|^TestFiscalQuery|^TestFiscalEmbeddedSchema|^TestFiscalCancellation|^TestFiscalInvalidation|^TestFiscalDANFE|^TestProduction' -count=1 -timeout=5m -json > "$RUNNER_TEMP/fiscal-journal-core-race.jsonl"
           go test -race ./internal/localapi -run '^TestFiscalTax|^TestFiscalTransmission|^TestFiscalInvoiceBinding|^TestFiscalNumbering|^TestFiscalQuerySQL|^TestFiscalCancellationSQL|^TestFiscalInvalidationSQL|^TestHTTPFiscalDANFE|^TestHTTPFiscalProduction' -count=1 -timeout=20m -json -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" > "$RUNNER_TEMP/fiscal-journal-local-race.jsonl"
       - name: Company trade and cash pilots with real CLI and race detector
         run: |
