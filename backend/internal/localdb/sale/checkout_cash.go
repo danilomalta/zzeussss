@@ -8,6 +8,7 @@ import (
 
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb/entitlementstore"
+	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
 )
 
@@ -63,6 +64,14 @@ func readPlanCompletionTx(ctx context.Context, tx *sql.Tx, actor identity.Scope,
 		FROM checkout_plan_sales f JOIN sales s ON s.tenant_id=f.tenant_id AND s.id=f.sale_id
 		WHERE f.tenant_id=? AND f.store_id=? AND f.device_id=? AND f.checkout_id=?`, actor.TenantID, actor.StoreID, device.DeviceID, plan.CheckoutID).Scan(&result.SaleID, &result.OperationID, &result.SaleStatus, &result.ReceivedCents, &result.ChangeCents, &result.CompletedAt)
 	if errors.Is(err, sql.ErrNoRows) {
+		required, e := fiscal.TaxPricingRequiredTx(ctx, tx, actor)
+		if e != nil {
+			return e
+		}
+		if required {
+			plan.CanFinalize = false
+			return nil
+		}
 		// This is an observed cash readiness hint, never an authorization grant
 		// or price/stock reservation. Finalization checks the contract again.
 		if plan.State == "prepared" && cashOnly(*plan) && checkShiftTx(ctx, tx, actor, device, plan.CashSessionID) == nil {

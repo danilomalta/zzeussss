@@ -197,6 +197,7 @@ type TaxQuoteInput struct {
 	Item           fiscalcore.TaxItem    `json:"item"`
 }
 type TaxQuote struct {
+	CatalogUnit  string               `json:"catalog_unit,omitempty"`
 	Input        TaxQuoteInput        `json:"input"`
 	Result       fiscalcore.TaxResult `json:"result"`
 	PolicySHA256 string               `json:"policy_sha256"`
@@ -210,7 +211,7 @@ func taxQuoteTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.De
 	var out TaxQuote
 	var body, result, hash, id string
 	var revision int
-	err := tx.QueryRowContext(ctx, `SELECT request_json,request_sha256,result_json,result_sha256,policy_sha256,policy_id,policy_revision,actor_id,created_at FROM fiscal_tax_quotes WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=?`, a.TenantID, a.StoreID, d.DeviceID, operation).Scan(&body, &hash, &result, &out.ResultSHA256, &out.PolicySHA256, &id, &revision, &out.ActorID, &out.CreatedAt)
+	err := tx.QueryRowContext(ctx, `SELECT request_json,request_sha256,result_json,result_sha256,policy_sha256,policy_id,policy_revision,actor_id,created_at,catalog_unit FROM fiscal_tax_quotes WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=?`, a.TenantID, a.StoreID, d.DeviceID, operation).Scan(&body, &hash, &result, &out.ResultSHA256, &out.PolicySHA256, &id, &revision, &out.ActorID, &out.CreatedAt, &out.CatalogUnit)
 	if errors.Is(err, sql.ErrNoRows) {
 		return out, ErrNotFound
 	}
@@ -297,7 +298,11 @@ func CreateTaxQuote(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	}
 	encoded, _ := json.Marshal(result)
 	out = TaxQuote{Input: in, Result: result, PolicySHA256: p.SHA256, ResultSHA256: taxHash(encoded), ActorID: a.IdentityID, CreatedAt: time.Now().UTC().Format(time.RFC3339Nano)}
-	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_tax_quotes(tenant_id,store_id,operation_id,device_id,actor_id,policy_id,policy_revision,request_json,request_sha256,policy_sha256,result_json,result_sha256,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, in.OperationID, d.DeviceID, a.IdentityID, in.PolicyID, in.PolicyRevision, string(body), taxHash(body), p.SHA256, string(encoded), out.ResultSHA256, out.CreatedAt)
+	err = tx.QueryRowContext(ctx, `SELECT unit FROM products WHERE tenant_id=? AND id=?`, a.TenantID, in.Item.ProductID).Scan(&out.CatalogUnit)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return TaxQuote{}, err
+	}
+	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_tax_quotes(tenant_id,store_id,operation_id,device_id,actor_id,policy_id,policy_revision,request_json,request_sha256,policy_sha256,result_json,result_sha256,created_at,catalog_unit) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, in.OperationID, d.DeviceID, a.IdentityID, in.PolicyID, in.PolicyRevision, string(body), taxHash(body), p.SHA256, string(encoded), out.ResultSHA256, out.CreatedAt, out.CatalogUnit)
 	if err != nil {
 		return TaxQuote{}, err
 	}

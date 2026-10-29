@@ -17,7 +17,13 @@ REQUIRED = {
         'TestHTTPFiscalProductionTaxDeferment',
         'TestHTTPFiscalProductionTaxSimpleCredit',
         'TestHTTPFiscalProductionTaxSimpleSTQuoteAndSaleGuard',
-        'TestHTTPFiscalProductionTaxSimpleSTZeroAdditionalAmount')},
+        'TestHTTPFiscalProductionTaxSimpleSTZeroAdditionalAmount',
+        'TestHTTPFiscalTaxPricedSaleToIssuedXML',
+        'TestHTTPFiscalTaxPricedSaleSessionGuardAndRecovery',
+        'TestHTTPFiscalTaxPricedSaleNativeLoopback',
+        'TestHTTPFiscalTaxPricedSaleIPIIncludedBeforePayment',
+        'TestHTTPFiscalTaxPricedSaleRequiredAcrossWriters',
+        'TestHTTPFiscalTaxPricedSaleModeRequiresExplicitOwnerDecision')},
 }
 ALLOWED_SKIPS = {
     ('titansystem-backend/internal/localapi', 'TestPilotCashProcess'),

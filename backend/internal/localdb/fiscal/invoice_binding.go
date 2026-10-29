@@ -46,6 +46,11 @@ func validateInvoiceSnapshot(in fiscalcore.Invoice, s Snapshot, key string, envi
 	}
 	// Same positional ordering as the immutable snapshot (sale_item ID order),
 	// allowing multiple lines for the same product without collapsing them.
+	quoted := false
+	for _, item := range s.Items {
+		quoted = quoted || item.Tax != nil
+	}
+	totals := map[string]*big.Rat{}
 	total := new(big.Int)
 	for i, item := range s.Items {
 		line := in.Lines[i]
@@ -64,6 +69,25 @@ func validateInvoiceSnapshot(in fiscalcore.Invoice, s Snapshot, key string, envi
 			return fiscalcore.ErrUnsupported
 		}
 		total.Add(total, big.NewInt(item.TotalCents))
+		if quoted {
+			if item.Tax == nil || item.Tax.AdditionalCents < 0 {
+				return ErrIntegrity
+			}
+			if line.TaxQuoteOperationID != item.Tax.QuoteOperationID || !sameTaxJSON(line.Taxes, item.Tax.Taxes) {
+				return ErrInvalid
+			}
+			total.Add(total, big.NewInt(item.Tax.AdditionalCents))
+			for key, value := range item.Tax.Totals {
+				n, ok := new(big.Rat).SetString(value)
+				if !ok {
+					return ErrIntegrity
+				}
+				if totals[key] == nil {
+					totals[key] = new(big.Rat)
+				}
+				totals[key].Add(totals[key], n)
+			}
+		}
 	}
 	if total.Cmp(big.NewInt(s.TotalCents)) != 0 {
 		return ErrIntegrity
@@ -78,6 +102,18 @@ func validateInvoiceSnapshot(in fiscalcore.Invoice, s Snapshot, key string, envi
 	// Snapshot represents the applied amount, not the banknotes handed over.
 	if paid.Cmp(total) != 0 {
 		return fiscalcore.ErrUnsupported
+	}
+	if quoted {
+		if len(totals) != len(in.TaxTotals) {
+			return ErrInvalid
+		}
+		for key, value := range totals {
+			n, ok := new(big.Rat).SetString(in.TaxTotals[key])
+			if !ok || n.Cmp(value) != 0 {
+				return ErrInvalid
+			}
+		}
+		return nil
 	}
 	for _, name := range []string{"vST", "vFCPST", "vII", "vIPI", "vIPIDevol", "vICMSDeson"} {
 		if !equalScaled(in.TaxTotals[name], 0, 1) {

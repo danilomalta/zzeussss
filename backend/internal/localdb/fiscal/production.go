@@ -75,7 +75,7 @@ func productionIntentTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d ide
 		if err != nil {
 			return Intent{}, err
 		}
-		if p.Revision != intent.Input.ProfileRevision || b.ProfileID != p.Input.ProfileID || b.ProfileRevision != p.Revision || b.Issuer != p.Input.CNPJ || b.UF != p.Input.State || b.Model != p.Input.Model || b.Series != p.Input.Series {
+		if (p.Input.Timezone != "" && p.Input.Timezone != b.Timezone) || p.Revision != intent.Input.ProfileRevision || b.ProfileID != p.Input.ProfileID || b.ProfileRevision != p.Revision || b.Issuer != p.Input.CNPJ || b.UF != p.Input.State || b.Model != p.Input.Model || b.Series != p.Input.Series {
 			return Intent{}, ErrConflict
 		}
 		if err = numberBarrierTx(ctx, tx, a.TenantID); err != nil {

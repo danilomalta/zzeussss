@@ -1,5 +1,7 @@
 # Simples Nacional e ST — ampliação de 29/10/2026
 
+Atualização posterior: o caminho opt-in de venda tributada descrito em `FISCAL_VENDA_TRIBUTADA_20261029.md` incorpora ST/FCP-ST/IPI antes do pagamento. As restrições comerciais abaixo registram o estado desta entrega anterior; não devem ser repetidas como limite do caminho novo.
+
 Base: `0b91281ab2055b46e7d0532ab0ef21af3ad1aed2`. Esta entrega amplia os cálculos, memórias de cotação e grupos XML dos CSOSN201/202/203. Não constitui cobertura tributária nacional completa, apuração de DAS ou homologação de cliente.
 
 ## Implementação

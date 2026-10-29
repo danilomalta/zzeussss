@@ -923,6 +923,10 @@
           },
           "repeated": {
             "type": "boolean"
+          },
+          "catalog_unit": {
+            "type": "string",
+            "description": "Unit observed server-side on quote creation; omitted for historical quotes without evidence. An empty/missing historical unit cannot authorize a new tax-priced sale."
           }
         }
       },

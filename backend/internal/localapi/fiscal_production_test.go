@@ -67,6 +67,12 @@ func newProductionFixture(t *testing.T, model string, crt ...string) *production
 	if len(crt) > 0 {
 		body = strings.ReplaceAll(body, `"crt":"1"`, `"crt":"`+crt[0]+`"`)
 	}
+	if len(crt) > 1 {
+		body = strings.TrimSuffix(body, "}") + `,"timezone":"` + crt[1] + `"}`
+	}
+	if len(crt) > 2 && crt[2] == "required" {
+		body = strings.TrimSuffix(body, "}") + `,"require_tax_pricing":true}`
+	}
 	if code, b := request(t, p.f.app, "POST", "/local/v1/fiscal/profiles", body, p.f.token); code != 201 {
 		t.Fatalf("profile %d %s", code, b)
 	}

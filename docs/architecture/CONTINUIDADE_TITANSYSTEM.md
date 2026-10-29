@@ -2835,3 +2835,20 @@ Validação completa:59pacotes, 1533testes principais/3549resultados incluindo s
 A cotação com ST foi preservada após reabertura/restauração criptografada. O ensaio de emissão dos grupos novos cobriu o caso sem acréscimo tributário à venda; acréscimos positivos continuam recusados antes de número/envio. **O contrato comercial ainda precisa vincular a cotação tributária ao preço/pagamento antes de concluir a venda. Não foi contornada essa pendência.**
 
 Detalhes/fontes: `FISCAL_SIMPLES_ST_20261029.md`; evidências/hashes: `evidence/fiscal-simple-st-20261029/verification.json`. Sem migração, mudança de XSD, frontend/Electron, instalação ou dados comerciais. Sem merge automático. Permanecem lacunas nacionais e de apuração, RTC, retenções anteriores, benefícios/regimes especiais, outros ST/DIFAL, DAS/ISS/NFS-e e obrigações acessórias. Nenhuma homologação oficial nesta entrega.
+
+
+## Venda tributada vinculada ao preço/pagamento — 29/10/2026
+
+Base `0506eaac06a1c8ac0c88ee4a9ddb31138a8867f3`, branch fiscal atual. **Resolvido no caminho opt-in da API:** ST/FCP-ST/IPI suportados passam a compor o preço aprovado antes de concluir a venda em dinheiro. Cotação, catálogo, quantidade, unidade, perfil/política vigentes, dia/fuso, idade e sessão são verificados na transação que grava dinheiro, estoque, vínculo tributário e outbox. Não se adiciona imposto a uma venda concluída.
+
+O proprietário pode exigir esse fluxo via `require_tax_pricing:true`; omitir referências não contorna o backend ou a finalização antiga. Plano bloqueado não anuncia `can_finalize:true`. Omissão do campo em nova revisão não desativa o modo exigido; replay histórico recupera a revisão original sem mudar a ativa. Nada foi ativado na instalação.
+
+Migração76 incremental,75 anteriores preservadas; backup25–76 e inspeção dos vínculos. Unidade observada no servidor para novas cotações; antigas sem unidade permanecem legíveis e não autorizam nova venda tributada. Recibo separa mercadoria/acréscimos. Cancelamento e devoluções comerciais conservam o total pago incluindo tributos; não cancelam a NF-e automaticamente. Evento de venda tributada usa outboxv2; o legado permanecev1.
+
+Validação final:59pacotes, 1545testes principais/3574resultados incluindo subtestes aprovados, zero falhas. Cinco skips explícitos: duas integrações PostgreSQL sem ambiente local e três auxiliares. API com race/backup nativo: 27principais/65resultados; stores com race: 12principais/19resultados, sem falhas/skips.85testes Python, vet,551rotas/contratos e três builds Linux passaram. Nove chamadas HTTP TCP reais, uma transmissão mTLS por emissão e onze comandos do executável de backup, mais a conferência final dos dados restaurados. Cotações/autoridade/dados descartáveis; não é homologação oficial.
+
+Exemplos comprovados: mercadoria3198 + ST230 + FCP-ST90 = pagamento3518, nos três CSOSNs; IPI160 com pagamento3358 no regime normal. Duas devoluções1759+1759 conservam3518. Reinício/restauração preservam vínculos/IDs. Saída legada CLI idêntica byte a byte.
+
+Detalhes: `FISCAL_VENDA_TRIBUTADA_20261029.md`; evidências/hashes: `evidence/fiscal-tax-priced-sale-20261029/verification.json`. CI exige21integrações; a base0506eaa teve7checks verdes, mas o novo HEAD precisa dos próprios resultados. Sem instalação, mudança de serviços/banco comercial, frontend ou merge na main.
+
+**Não concluído:** integração do checkout visual ao caminho opt-in, cobertura tributária nacional e obrigações adicionais (RTC, retenções, benefícios/regimes especiais/apurações, outros ST/DIFAL, Simples/DAS, ISS/NFS-e, SPED/PVA), homologação oficial e sincronização comercial do evento v2. As pendências anteriores de ST adicional no contrato da venda estão superadas somente no novo caminho documentado.

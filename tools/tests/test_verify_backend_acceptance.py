@@ -26,7 +26,7 @@ class AcceptanceGateTests(unittest.TestCase):
 
     def test_complete_report_is_accepted(self):
         result = gate.verify(self.report(self.success()))
-        self.assertEqual(result['required_integrations'], 15)
+        self.assertEqual(result['required_integrations'], 21)
         self.assertEqual(result['status'], 'PASS')
 
     def test_every_required_test_must_pass(self):

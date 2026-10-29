@@ -1,6 +1,7 @@
 package localapi
 
 import (
+	"encoding/json"
 	"errors"
 	"strconv"
 	"titansystem-backend/internal/core/modules"
@@ -95,7 +96,7 @@ func (s *Server) fiscalCapabilities(c *fiber.Ctx) error {
 }
 func (s *Server) configureFiscal(c *fiber.Ctx) error {
 	var in fiscal.ProfileInput
-	if !fiscalWrite(c) || decodeCash(c.Body(), &in, []string{"operation_id", "profile_id", "expected_revision", "cnpj", "legal_name", "state", "municipality_ibge", "state_registration", "crt", "model", "environment", "series"}) != nil {
+	if !fiscalWrite(c) || decodeFiscalProfile(c.Body(), &in) != nil {
 		return fiscalFailure(c, fiscal.ErrInvalid)
 	}
 	ss := c.Locals("session").(localauth.Session)
@@ -238,4 +239,11 @@ func (s *Server) fiscalRequirements(c *fiber.Ctx) error {
 		return fiscalFailure(c, err)
 	}
 	return c.JSON(out)
+}
+
+func decodeFiscalProfile(body []byte, in *fiscal.ProfileInput) error {
+	if _, err := exactSaleObject(body, []string{"operation_id", "profile_id", "expected_revision", "cnpj", "legal_name", "state", "municipality_ibge", "state_registration", "crt", "model", "environment", "series"}, "timezone", "require_tax_pricing"); err != nil {
+		return err
+	}
+	return json.Unmarshal(body, in)
 }

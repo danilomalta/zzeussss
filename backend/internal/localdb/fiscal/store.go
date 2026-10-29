@@ -50,6 +50,7 @@ func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store,
 	if role != "owner" {
 		return out, identity.ErrDenied
 	}
+
 	body, _ := json.Marshal(in)
 	var old, actor, store string
 	err = tx.QueryRowContext(ctx, `SELECT request_json,actor_id,store_id,revision,created_at FROM fiscal_profiles WHERE tenant_id=? AND device_id=? AND operation_id=?`, a.TenantID, d.DeviceID, in.OperationID).Scan(&old, &actor, &store, &out.Revision, &out.CreatedAt)
@@ -64,6 +65,15 @@ func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store,
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return out, err
+	}
+	if in.RequireTaxPricing == nil {
+		prior, err := profileTx(ctx, tx, a, in.ProfileID, 0)
+		if err != nil && !errors.Is(err, ErrNotFound) {
+			return out, err
+		}
+		if err == nil && prior.Input.RequireTaxPricing != nil && *prior.Input.RequireTaxPricing {
+			return out, ErrConflict
+		}
 	}
 	var revision int
 	if err = tx.QueryRowContext(ctx, `SELECT COALESCE(max(revision),0) FROM fiscal_profiles WHERE tenant_id=? AND store_id=? AND profile_id=?`, a.TenantID, a.StoreID, in.ProfileID).Scan(&revision); err != nil {
@@ -127,11 +137,12 @@ type IntentInput struct {
 	ProfileRevision int    `json:"profile_revision"`
 }
 type SaleItem struct {
-	ID             string `json:"id"`
-	ProductID      string `json:"product_id"`
-	QuantityMilli  int64  `json:"quantity_milli"`
-	UnitPriceCents int64  `json:"unit_price_cents"`
-	TotalCents     int64  `json:"total_cents"`
+	Tax            *SaleTaxBinding `json:"tax,omitempty"`
+	ID             string          `json:"id"`
+	ProductID      string          `json:"product_id"`
+	QuantityMilli  int64           `json:"quantity_milli"`
+	UnitPriceCents int64           `json:"unit_price_cents"`
+	TotalCents     int64           `json:"total_cents"`
 }
 type Payment struct {
 	ID          string `json:"id"`
@@ -243,6 +254,18 @@ func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 	}
 	if len(snap.Items) == 0 {
 		return out, ErrIntegrity
+	}
+	bindings, err := StoredSaleTaxesTx(ctx, tx, a, d, in.SaleID)
+	if err != nil {
+		return out, err
+	}
+	for i := range snap.Items {
+		if binding, ok := bindings[snap.Items[i].ID]; ok {
+			if binding.ProfileID != in.ProfileID || binding.ProfileRevision != in.ProfileRevision {
+				return out, ErrConflict
+			}
+			snap.Items[i].Tax = &binding
+		}
 	}
 	rows, err = tx.QueryContext(ctx, `SELECT id,method,status,amount_cents FROM sale_payments WHERE tenant_id=? AND sale_id=? ORDER BY id`, a.TenantID, in.SaleID)
 	if err != nil {
