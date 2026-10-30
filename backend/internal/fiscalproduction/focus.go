@@ -28,7 +28,7 @@ import (
 // No local signing, XSD, numbering or financial cancellation is performed here.
 const focusHomologation = "https://homologacao.focusnfe.com.br"
 
-var ErrFocusA3 = errors.New("Focus NFC-e requires A1; A3 is not supported")
+var ErrFocusA3 = errors.New("Focus NF-e/NFC-e requires A1; A3 is not supported")
 var errFocusUncertain = errors.New("Focus fiscal response requires consultation")
 var errFocusRejected = errors.New("Focus fiscal request rejected")
 
@@ -44,6 +44,9 @@ func (*FocusProvider) GoString() string             { return "[Focus fiscal prov
 func (*FocusProvider) MarshalJSON() ([]byte, error) { return []byte(`{}`), nil }
 
 func newFocusProvider(c TenantFiscalConfiguration, token []byte, csc ...[]byte) (*FocusProvider, error) {
+	if c.DocumentModel != "" && c.DocumentModel != "55" && c.DocumentModel != "65" {
+		return nil, ErrUnavailable
+	}
 	if c.CertificateType == "A3" {
 		return nil, ErrFocusA3
 	}
@@ -115,8 +118,15 @@ func (p *FocusProvider) scope(ctx context.Context, a RequestContext, permission 
 	return tx.Commit()
 }
 func (p *FocusProvider) ValidateCheckout(ctx context.Context, a RequestContext, environment int) error {
+	return p.validateModel(ctx, a, environment, "65")
+}
+
+func (p *FocusProvider) validateModel(ctx context.Context, a RequestContext, environment int, model string) error {
 	if environment != 2 {
 		return ErrCheckoutProduction
+	}
+	if p == nil || p.documentModel() != model {
+		return ErrUnavailable
 	}
 	if err := p.scope(ctx, a, identity.Sell); err != nil {
 		return err
@@ -125,7 +135,7 @@ func (p *FocusProvider) ValidateCheckout(ctx context.Context, a RequestContext, 
 	if err != nil {
 		return err
 	}
-	if profile.Revision != p.configuration.Binding.ProfileRevision || profile.Input.Environment != "homologation" || profile.Input.Model != "65" || profile.Input.CRT != p.configuration.CRT {
+	if profile.Revision != p.configuration.Binding.ProfileRevision || profile.Input.Environment != "homologation" || profile.Input.Model != model || profile.Input.CRT != p.configuration.CRT {
 		return ErrUnavailable
 	}
 	return nil
@@ -134,10 +144,10 @@ func (p *FocusProvider) intent(ctx context.Context, a RequestContext, in Documen
 	if in.Environment != 2 {
 		return fiscal.Intent{}, ErrCheckoutProduction
 	}
-	if in.Model != "65" || in.SaleID == "" || len(in.SaleID) > 128 {
+	if (in.Model != "65" && in.Model != "55") || in.SaleID == "" || len(in.SaleID) > 128 {
 		return fiscal.Intent{}, fiscal.ErrInvalid
 	}
-	if err := p.ValidateCheckout(ctx, a, 2); err != nil {
+	if err := p.validateModel(ctx, a, 2, in.Model); err != nil {
 		return fiscal.Intent{}, err
 	}
 	b := p.configuration.Binding
@@ -213,6 +223,7 @@ type focusReply struct {
 	StatusSEFAZ  string `json:"status_sefaz"`
 	MessageSEFAZ string `json:"mensagem_sefaz"`
 	Key          string `json:"chave_nfe"`
+	DANFE        string `json:"caminho_danfe"`
 	Message      string `json:"mensagem"`
 	Code         string `json:"codigo"`
 	Errors       []struct {
@@ -240,6 +251,10 @@ func (p *FocusProvider) safeMessage(s string) string {
 	return string(runes)
 }
 func (p *FocusProvider) exchange(ctx context.Context, method, ref, cnpj string, body []byte) (DocumentResult, error) {
+	return p.exchangeModel(ctx, method, ref, cnpj, body, "65")
+}
+
+func (p *FocusProvider) exchangeModel(ctx context.Context, method, ref, cnpj string, body []byte, model string) (DocumentResult, error) {
 	out := DocumentResult{State: "recovery_required", OperationID: ref, ErrorCode: "focus_consultation_required"}
 	if method == http.MethodDelete {
 		out.State = fiscal.CheckoutCancellationFailed
@@ -248,9 +263,15 @@ func (p *FocusProvider) exchange(ctx context.Context, method, ref, cnpj string, 
 	if p == nil || p.configuration.FocusBaseURL != focusHomologation || p.configuration.Environment != "homologation" {
 		return out, ErrCheckoutProduction
 	}
-	path := "/v2/nfce/" + url.PathEscape(ref)
+	resource := "/v2/nfce"
+	if model == "55" {
+		resource = "/v2/nfe"
+	} else if model != "65" {
+		return out, fiscal.ErrInvalid
+	}
+	path := resource + "/" + url.PathEscape(ref)
 	if method == http.MethodPost {
-		path = "/v2/nfce?ref=" + url.QueryEscape(ref)
+		path = resource + "?ref=" + url.QueryEscape(ref)
 	}
 	req, err := http.NewRequestWithContext(ctx, method, focusHomologation+path, bytes.NewReader(body))
 	if err != nil {
@@ -301,7 +322,7 @@ func (p *FocusProvider) exchange(ctx context.Context, method, ref, cnpj string, 
 	if method == http.MethodPost {
 		expected = http.StatusCreated
 	}
-	if resp.StatusCode != expected {
+	if resp.StatusCode != expected && !(model == "55" && method == http.MethodPost && resp.StatusCode == http.StatusAccepted) {
 		if method == http.MethodPost {
 			switch resp.StatusCode {
 			case 400, 401, 403, 415, 422:
@@ -318,11 +339,14 @@ func (p *FocusProvider) exchange(ctx context.Context, method, ref, cnpj string, 
 	switch reply.Status {
 	case "autorizado":
 		key := strings.TrimPrefix(reply.Key, "NFe")
-		if !fiscalcore.ValidAccessKey(key) || key[6:20] != cnpj || key[20:22] != "65" {
+		if !fiscalcore.ValidAccessKey(key) || key[6:20] != cnpj || key[20:22] != model {
 			return out, errFocusUncertain
 		}
 		out.State = "authorized_homologation"
 		out.Key = key
+		if model == "55" && safeFocusDANFEPath(reply.DANFE, cnpj, key) && p.safeMessage(reply.DANFE) == reply.DANFE {
+			out.Evidence, _ = json.Marshal(map[string]string{"danfe_path": reply.DANFE})
+		}
 		out.ErrorCode = ""
 		return out, nil
 	case "erro_autorizacao", "denegado":
@@ -356,7 +380,7 @@ func (p *FocusProvider) Emit(ctx context.Context, a RequestContext, in DocumentR
 		return DocumentResult{}, err
 	}
 	ref := focusReference(a.Actor.TenantID, in.SaleID)
-	body, err := focusInvoice(ctx, a, intent, in.Invoice)
+	body, err := focusInvoiceRequest(ctx, a, intent, in)
 	if err != nil {
 		return p.save(ctx, a, in.SaleID, intent.ID, DocumentResult{State: "failed", OperationID: ref, ErrorCode: "focus_request_unsupported"}, err)
 	}
@@ -375,7 +399,8 @@ func (p *FocusProvider) submit(ctx context.Context, a RequestContext, sale strin
 		method = http.MethodGet
 		body = nil
 	}
-	out, err := p.exchange(ctx, method, ref, intent.Snapshot.Profile.CNPJ, body)
+	model := intent.Snapshot.Profile.Model
+	out, err := p.exchangeModel(ctx, method, ref, intent.Snapshot.Profile.CNPJ, body, model)
 	if method == http.MethodGet {
 		out = p.preserveCancellationFailure(ctx, a, sale, out)
 	}
@@ -387,7 +412,7 @@ func (p *FocusProvider) Query(ctx context.Context, a RequestContext, in Document
 	if err != nil {
 		return DocumentResult{}, err
 	}
-	out, err := p.exchange(ctx, http.MethodGet, focusReference(a.Actor.TenantID, in.SaleID), intent.Snapshot.Profile.CNPJ, nil)
+	out, err := p.exchangeModel(ctx, http.MethodGet, focusReference(a.Actor.TenantID, in.SaleID), intent.Snapshot.Profile.CNPJ, nil, in.Model)
 	out = p.preserveCancellationFailure(ctx, a, in.SaleID, out)
 	return p.save(ctx, a, in.SaleID, intent.ID, out, err)
 }
@@ -408,7 +433,7 @@ func (p *FocusProvider) Cancel(ctx context.Context, a RequestContext, in Documen
 		return DocumentResult{}, err
 	}
 	ref := focusReference(a.Actor.TenantID, in.SaleID)
-	current, err := p.exchange(ctx, http.MethodGet, ref, intent.Snapshot.Profile.CNPJ, nil)
+	current, err := p.exchangeModel(ctx, http.MethodGet, ref, intent.Snapshot.Profile.CNPJ, nil, in.Model)
 	if err != nil {
 		return p.save(ctx, a, in.SaleID, intent.ID, current, err)
 	}
@@ -431,7 +456,7 @@ func (p *FocusProvider) Cancel(ctx context.Context, a RequestContext, in Documen
 	if !first {
 		return p.save(ctx, a, in.SaleID, intent.ID, p.preserveCancellationFailure(ctx, a, in.SaleID, current), fiscalcore.ErrRecorded)
 	}
-	out, err := p.exchange(ctx, http.MethodDelete, ref, intent.Snapshot.Profile.CNPJ, body)
+	out, err := p.exchangeModel(ctx, http.MethodDelete, ref, intent.Snapshot.Profile.CNPJ, body, in.Model)
 	out.Key = current.Key
 	return p.save(ctx, a, in.SaleID, intent.ID, out, err)
 }

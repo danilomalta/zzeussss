@@ -12,6 +12,8 @@ import (
 
 // Trusted process configuration. Secret references are rejected; secrets live in the vault.
 type TenantFiscalConfiguration struct {
+	// Empty preserves the existing NFC-e configuration; model 55 must be explicit.
+	DocumentModel        string          `json:"model,omitempty"`
 	VaultPath            string          `json:"vault_path,omitempty"`
 	MasterKeyFile        string          `json:"master_key_file,omitempty"`
 	CustomerManaged      bool            `json:"customer_managed,omitempty"`
@@ -47,7 +49,7 @@ func NewProviderRegistry(entries []ProviderRegistration) (*ProviderRegistry, err
 		c := entry.Configuration
 		b := c.Binding
 		if b.TenantID == "" || b.StoreID == "" || b.DeviceID == "" || b.ProfileID == "" || b.ProfileRevision < 1 ||
-			(c.Provider != "own" && c.Provider != "external") || (c.Environment != "homologation" && c.Environment != "production") ||
+			(c.Provider != "own" && c.Provider != "external") || (c.DocumentModel != "" && c.DocumentModel != "55" && c.DocumentModel != "65") || (c.Environment != "homologation" && c.Environment != "production") ||
 			(c.CRT != "1" && c.CRT != "2" && c.CRT != "3" && c.CRT != "4") || c.CSCReference != "" || c.CertificateReference != "" || c.TokenReference != "" {
 			return nil, ErrUnavailable
 		}

@@ -63,6 +63,11 @@ func focusTaxFields(dst map[string]any, nodes []fiscalcore.TaxNode) error {
 }
 func focusMoney(v int64) string { return fmt.Sprintf("%d.%02d", v/100, v%100) }
 func focusInvoice(ctx context.Context, a RequestContext, intent fiscal.Intent, raw json.RawMessage) ([]byte, error) {
+	return focusInvoiceRequest(ctx, a, intent, DocumentRequest{Invoice: raw})
+}
+
+func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.Intent, in DocumentRequest) ([]byte, error) {
+	raw := in.Invoice
 	var template fiscalcore.Invoice
 	if fiscalcore.DecodeInput(raw, &template) != nil || template.Environment != 2 || template.Key != (fiscalcore.KeyInput{}) || !template.ContingencyAt.IsZero() || template.ContingencyReason != "" {
 		return nil, fiscalcore.ErrUnsupported
@@ -72,8 +77,13 @@ func focusInvoice(ctx context.Context, a RequestContext, intent fiscal.Intent, r
 	}
 	snapshot := intent.Snapshot
 	p := snapshot.Profile
-	if p.Model != "65" || p.Environment != "homologation" || len(snapshot.Items) == 0 || len(snapshot.Items) > 500 {
+	if (p.Model != "65" && p.Model != "55") || p.Environment != "homologation" || len(snapshot.Items) == 0 || len(snapshot.Items) > 500 {
 		return nil, fiscalcore.ErrUnsupported
+	}
+	if p.Model == "55" {
+		if err := validateFocusNFeInput(template, in, p); err != nil {
+			return nil, err
+		}
 	}
 	items := make([]map[string]any, 0, len(snapshot.Items))
 	for i, item := range snapshot.Items {
@@ -113,7 +123,23 @@ func focusInvoice(ctx context.Context, a RequestContext, intent fiscal.Intent, r
 		}
 		payments = append(payments, map[string]string{"forma_pagamento": "01", "valor_pagamento": focusMoney(payment.AmountCents)})
 	}
-	return focusRecipientPayload(template, p, map[string]any{"cnpj_emitente": p.CNPJ, "serie": fmt.Sprint(p.Series), "inscricao_estadual_emitente": p.StateRegistration, "regime_tributario_emitente": p.CRT, "data_emissao": time.Now().UTC().Format(time.RFC3339), "natureza_operacao": template.Nature, "tipo_documento": "1", "finalidade_emissao": "1", "local_destino": "1", "consumidor_final": "1", "presenca_comprador": template.Presence, "indicador_inscricao_estadual_destinatario": "9", "modalidade_frete": "9", "valor_total": focusMoney(snapshot.TotalCents), "items": items, "formas_pagamento": payments})
+	payload := map[string]any{"cnpj_emitente": p.CNPJ, "serie": fmt.Sprint(p.Series), "inscricao_estadual_emitente": p.StateRegistration, "regime_tributario_emitente": p.CRT, "data_emissao": time.Now().UTC().Format(time.RFC3339), "natureza_operacao": template.Nature, "tipo_documento": "1", "finalidade_emissao": "1", "local_destino": "1", "consumidor_final": "1", "presenca_comprador": template.Presence, "indicador_inscricao_estadual_destinatario": "9", "modalidade_frete": "9", "valor_total": focusMoney(snapshot.TotalCents), "items": items, "formas_pagamento": payments}
+	if p.Model == "55" {
+		payload["finalidade_emissao"] = in.Purpose
+		payload["modalidade_frete"] = in.FreightMode
+		payload["tipo_documento"] = template.Direction
+		payload["local_destino"] = template.Destination
+		payload["consumidor_final"] = template.FinalConsumer
+		// Issuer registration is authoritative; addresses are configured in Focus.
+		payload["nome_emitente"] = p.LegalName
+		payload["uf_emitente"] = p.State
+		for _, row := range items {
+			if row["valor_frete"] != "0.00" {
+				return nil, fiscalcore.ErrUnsupported
+			}
+		}
+	}
+	return focusRecipientPayload(template, p, payload)
 }
 
 func focusRecipientPayload(template fiscalcore.Invoice, profile fiscal.ProfileInput, payload map[string]any) ([]byte, error) {

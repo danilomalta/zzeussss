@@ -165,7 +165,7 @@ func (r *ProviderRegistry) SaveCustomerCredentials(ctx context.Context, a Reques
 	if err != nil {
 		return CustomerCredentialStatus{}, err
 	}
-	if p.Revision != in.ProfileRevision || p.Input.Model != "65" {
+	if p.Revision != in.ProfileRevision || (p.Input.Model != "65" && p.Input.Model != "55") {
 		return CustomerCredentialStatus{}, fiscal.ErrConflict
 	}
 	v, c, err := r.customerVault(a)
@@ -204,6 +204,7 @@ func (r *ProviderRegistry) SaveCustomerCredentials(ctx context.Context, a Reques
 	c.Binding.ProfileRevision = p.Revision
 	c.Environment = p.Input.Environment
 	c.CRT = p.Input.CRT
+	c.DocumentModel = p.Input.Model
 	c.CertificateType = "A1"
 	c.FocusBaseURL = focusHomologation
 	record := customerCredentialRecord{Configuration: c, Revision: old.Revision + 1, OperationID: in.OperationID, RequestSHA256: fingerprint, Token: in.Token, CSC: in.CSC}

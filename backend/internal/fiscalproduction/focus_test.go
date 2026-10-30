@@ -145,7 +145,7 @@ func TestFocusFaultTimeoutThenConsultationNeverDuplicates(t *testing.T) {
 				_ = json.NewEncoder(w).Encode(map[string]string{"cnpj_emitente": "12345678000123", "ref": ref, "status": remote, "chave_nfe": "NFe" + key})
 			})
 			p.client.Timeout = 30 * time.Millisecond
-			intent := fiscal.Intent{ID: "synthetic-intent", Snapshot: fiscal.Snapshot{Profile: fiscal.ProfileInput{CNPJ: "12345678000123"}}}
+			intent := fiscal.Intent{ID: "synthetic-intent", Snapshot: fiscal.Snapshot{Profile: fiscal.ProfileInput{CNPJ: "12345678000123", Model: "65"}}}
 			first, err := p.submit(context.Background(), a, "sale", intent, ref, []byte(`{"synthetic":"timeout test only"}`))
 			if !errors.Is(err, errFocusUncertain) || first.State != "recovery_required" {
 				t.Fatal("timeout must remain uncertain")

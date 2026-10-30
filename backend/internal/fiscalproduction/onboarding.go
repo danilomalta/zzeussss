@@ -46,7 +46,7 @@ func DiagnoseOnboarding(r *ProviderRegistry, runtime *Runtime, a RequestContext,
 					expected.FocusBaseURL = focusHomologation
 				}
 				matches := configured && c.Provider == "external" && selected != nil && selected.configuration == expected &&
-					p.Input.Environment == "homologation" && p.Input.Model == "65" &&
+					p.Input.Environment == "homologation" && p.Input.Model == selected.documentModel() &&
 					c.CertificateType == "A1" && expected.FocusBaseURL == focusHomologation &&
 					len(selected.token) > 0 && fiscal.ValidCNPJ(p.Input.CNPJ)
 				if matches {
