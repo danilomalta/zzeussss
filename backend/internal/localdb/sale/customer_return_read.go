@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
 )
 
@@ -166,6 +167,23 @@ func readCustomerReturnsTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d 
 	}
 	if closeErr != nil {
 		return h, closeErr
+	}
+	bindings, err := fiscal.StoredSaleTaxesTx(ctx, tx, a, d, id)
+	if err != nil {
+		return h, err
+	}
+	if len(bindings) > 0 && len(bindings) != len(h.Items) {
+		return h, ErrConflict
+	}
+	for i := range h.Items {
+		if binding, ok := bindings[h.Items[i].SaleItemID]; ok {
+			if binding.AdditionalCents > checkoutMaxSafe-original {
+				return h, ErrConflict
+			}
+			original += binding.AdditionalCents
+			h.Items[i].OriginalCents += binding.AdditionalCents
+			h.Items[i].RemainingCents += binding.AdditionalCents
+		}
 	}
 	var count int
 	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM sale_items WHERE tenant_id=? AND sale_id=?`, a.TenantID, id).Scan(&count); err != nil {

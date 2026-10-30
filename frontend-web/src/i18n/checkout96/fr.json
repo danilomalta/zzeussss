@@ -68,5 +68,19 @@
   "manualProof96": "Enregistrer un justificatif manuel",
   "manualRecorded96": "Enregistré pour vérification",
   "manualHelp96": "Vérifiez le montant et le moyen sur le terminal. Cet enregistrement ne confirme pas le règlement ; contrôle à la clôture.",
-  "noCash96": "Sans espèces reçues : pas de monnaie à rendre."
+  "noCash96": "Sans espèces reçues : pas de monnaie à rendre.",
+  "checkoutFiscalTitle": "État fiscal",
+  "checkoutFiscalAuthorized": "Autorisée",
+  "checkoutFiscalFailed": "Échec",
+  "checkoutFiscalPending": "Retraitement ou récupération en attente",
+  "checkoutFiscalNone": "Aucune émission fiscale liée au paiement",
+  "checkoutFiscalHomologation": "Émission de test, sans validité fiscale.",
+  "checkoutFiscalRetry": "Retraiter",
+  "checkoutFiscalRefresh": "Actualiser l’état",
+  "checkoutFiscalLoading": "Vérification de l’état fiscal…",
+  "checkoutFiscalUnavailable": "État non confirmé. Actualisez avant de réessayer.",
+  "checkoutFiscalMissingRequest": "Retraitement indisponible sur cet appareil : la demande originale n’est pas enregistrée. Aucune nouvelle vente ne sera créée.",
+  "checkoutFiscalDemo": "Démonstration : aucune émission fiscale réelle.",
+  "checkoutFiscalCancelled": "Document fiscal annulé",
+  "checkoutFiscalCancellationFailed": "Échec de l’annulation du document fiscal"
 }

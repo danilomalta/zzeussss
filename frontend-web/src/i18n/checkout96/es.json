@@ -68,5 +68,19 @@
   "manualProof96": "Registrar comprobante manual",
   "manualRecorded96": "Registrado para revisión",
   "manualHelp96": "Revise importe y medio en el terminal. Este registro no confirma liquidación; se revisa al cierre.",
-  "noCash96": "Sin efectivo recibido: no hay cambio."
+  "noCash96": "Sin efectivo recibido: no hay cambio.",
+  "checkoutFiscalTitle": "Estado fiscal",
+  "checkoutFiscalAuthorized": "Autorizada",
+  "checkoutFiscalFailed": "Falló",
+  "checkoutFiscalPending": "Pendiente de reproceso o recuperación",
+  "checkoutFiscalNone": "Sin emisión fiscal vinculada al checkout",
+  "checkoutFiscalHomologation": "Emisión de homologación, sin validez fiscal.",
+  "checkoutFiscalRetry": "Reprocesar",
+  "checkoutFiscalRefresh": "Actualizar estado",
+  "checkoutFiscalLoading": "Consultando el estado fiscal…",
+  "checkoutFiscalUnavailable": "No se pudo confirmar el estado. Actualice antes de reintentar.",
+  "checkoutFiscalMissingRequest": "Reproceso no disponible en este dispositivo: falta la solicitud original guardada. No se creará otra venta.",
+  "checkoutFiscalDemo": "Demostración: sin emisión fiscal real.",
+  "checkoutFiscalCancelled": "Documento fiscal cancelado",
+  "checkoutFiscalCancellationFailed": "Error al cancelar el documento fiscal"
 }

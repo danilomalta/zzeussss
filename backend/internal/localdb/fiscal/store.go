@@ -50,6 +50,16 @@ func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store,
 	if role != "owner" {
 		return out, identity.ErrDenied
 	}
+
+	// A freshly onboarded owner has an identity/membership but may never have
+	// opened a cash register. Project only that authenticated identity for the
+	// legacy users foreign key; fiscal configuration must not require a sale.
+	if _, err = tx.ExecContext(ctx, `INSERT INTO users(tenant_id,id,display_name)
+        SELECT ?,i.id,i.display_name FROM identities i WHERE i.id=?
+        ON CONFLICT(tenant_id,id) DO NOTHING`, a.TenantID, a.IdentityID); err != nil {
+		return out, err
+	}
+
 	body, _ := json.Marshal(in)
 	var old, actor, store string
 	err = tx.QueryRowContext(ctx, `SELECT request_json,actor_id,store_id,revision,created_at FROM fiscal_profiles WHERE tenant_id=? AND device_id=? AND operation_id=?`, a.TenantID, d.DeviceID, in.OperationID).Scan(&old, &actor, &store, &out.Revision, &out.CreatedAt)
@@ -64,6 +74,15 @@ func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store,
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return out, err
+	}
+	if in.RequireTaxPricing == nil {
+		prior, err := profileTx(ctx, tx, a, in.ProfileID, 0)
+		if err != nil && !errors.Is(err, ErrNotFound) {
+			return out, err
+		}
+		if err == nil && prior.Input.RequireTaxPricing != nil && *prior.Input.RequireTaxPricing {
+			return out, ErrConflict
+		}
 	}
 	var revision int
 	if err = tx.QueryRowContext(ctx, `SELECT COALESCE(max(revision),0) FROM fiscal_profiles WHERE tenant_id=? AND store_id=? AND profile_id=?`, a.TenantID, a.StoreID, in.ProfileID).Scan(&revision); err != nil {
@@ -127,11 +146,12 @@ type IntentInput struct {
 	ProfileRevision int    `json:"profile_revision"`
 }
 type SaleItem struct {
-	ID             string `json:"id"`
-	ProductID      string `json:"product_id"`
-	QuantityMilli  int64  `json:"quantity_milli"`
-	UnitPriceCents int64  `json:"unit_price_cents"`
-	TotalCents     int64  `json:"total_cents"`
+	Tax            *SaleTaxBinding `json:"tax,omitempty"`
+	ID             string          `json:"id"`
+	ProductID      string          `json:"product_id"`
+	QuantityMilli  int64           `json:"quantity_milli"`
+	UnitPriceCents int64           `json:"unit_price_cents"`
+	TotalCents     int64           `json:"total_cents"`
 }
 type Payment struct {
 	ID          string `json:"id"`
@@ -244,6 +264,18 @@ func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 	if len(snap.Items) == 0 {
 		return out, ErrIntegrity
 	}
+	bindings, err := StoredSaleTaxesTx(ctx, tx, a, d, in.SaleID)
+	if err != nil {
+		return out, err
+	}
+	for i := range snap.Items {
+		if binding, ok := bindings[snap.Items[i].ID]; ok {
+			if binding.ProfileID != in.ProfileID || binding.ProfileRevision != in.ProfileRevision {
+				return out, ErrConflict
+			}
+			snap.Items[i].Tax = &binding
+		}
+	}
 	rows, err = tx.QueryContext(ctx, `SELECT id,method,status,amount_cents FROM sale_payments WHERE tenant_id=? AND sale_id=? ORDER BY id`, a.TenantID, in.SaleID)
 	if err != nil {
 		return out, err
@@ -273,6 +305,10 @@ func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 	out = Intent{ID: id, Input: in, DeviceID: d.DeviceID, ActorID: a.IdentityID, Status: "blocked_configuration", Snapshot: snap, SnapshotSHA256: hex.EncodeToString(sum[:]), CreatedAt: time.Now().UTC().Format(time.RFC3339Nano), Readiness: Unavailable()}
 	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_intents(tenant_id,store_id,id,device_id,actor_id,operation_id,sale_id,profile_id,profile_revision,model,environment,request_json,snapshot_json,snapshot_sha256,status,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, out.ID, d.DeviceID, a.IdentityID, in.OperationID, in.SaleID, in.ProfileID, p.Revision, p.Input.Model, p.Input.Environment, string(body), string(snapshot), out.SnapshotSHA256, out.Status, out.CreatedAt)
 	if err != nil {
+		return Intent{}, err
+	}
+	sessionDigest := sha256.Sum256([]byte(token))
+	if _, err = tx.ExecContext(ctx, `INSERT INTO fiscal_intent_session_bindings VALUES(?,?,?,?)`, a.TenantID, a.StoreID, out.ID, sessionDigest[:]); err != nil {
 		return Intent{}, err
 	}
 	return out, tx.Commit()
