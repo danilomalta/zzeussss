@@ -10,17 +10,21 @@ import (
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb/catalog"
 	"titansystem-backend/internal/localdb/entitlementstore"
+	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/stockreservation"
 )
 
 // QuoteInput carries no prices, payment approval, tenant or identity claims.
 type QuoteInput struct {
-	CashSessionID string `json:"cash_session_id"`
-	Items         []Item `json:"items"`
+	TaxQuoteOperations []string `json:"tax_quote_operations,omitempty"`
+	CashSessionID      string   `json:"cash_session_id"`
+	Items              []Item   `json:"items"`
 }
 
 type QuoteItem struct {
+	MerchandiseCents *int64                 `json:"merchandise_cents,omitempty"`
+	Tax              *fiscal.SaleTaxBinding `json:"tax,omitempty"`
 	Item
 	Unit           string `json:"unit"`
 	UnitPriceCents int64  `json:"unit_price_cents"`
@@ -43,7 +47,7 @@ type Quote struct {
 // QuoteWithContract checks the same scope, entitlement, shift, prices, rounding
 // and cumulative stock requirements as CompleteWithContract. Only the contract's
 // observed clock can change. No sale, payment, stock, cash or event is created.
-func QuoteWithContract(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, in QuoteInput) (Quote, error) {
+func QuoteWithContract(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, in QuoteInput, token ...string) (Quote, error) {
 	if db == nil || !validQuote(in) {
 		return Quote{}, ErrInvalid
 	}
@@ -58,9 +62,37 @@ func QuoteWithContract(ctx context.Context, db *sql.DB, contracts *entitlementst
 	if err = checkShiftTx(ctx, tx, actor, device, in.CashSessionID); err != nil {
 		return Quote{}, err
 	}
+	if len(in.TaxQuoteOperations) > 0 {
+		if len(token) != 1 {
+			return Quote{}, ErrInvalid
+		}
+		if err = fiscal.ValidateSaleSessionTx(ctx, tx, actor, device, token[0]); err != nil {
+			return Quote{}, err
+		}
+		if err = contracts.RequireTx(ctx, tx, actor, device, identity.Sell, modules.Fiscal); err != nil {
+			return Quote{}, err
+		}
+	}
+	required, err := fiscal.TaxPricingRequiredTx(ctx, tx, actor)
+	if err != nil {
+		return Quote{}, err
+	}
+	if required && len(in.TaxQuoteOperations) == 0 {
+		return Quote{}, ErrConflict
+	}
 	items, total, err := priceItemsTx(ctx, tx, actor, in.Items)
 	if err != nil {
 		return Quote{}, err
+	}
+	bindings, total, err := priceTaxesTx(ctx, tx, actor, device, in.TaxQuoteOperations, items, total)
+	if err != nil {
+		return Quote{}, err
+	}
+	for i := range bindings {
+		items[i].Tax = bindings[i]
+		base := items[i].TotalCents
+		items[i].MerchandiseCents = &base
+		items[i].TotalCents += bindings[i].AdditionalCents
 	}
 	// The web client uses exact safe integers. Refuse an unrepresentable snapshot.
 	const maxSafe int64 = 9007199254740991

@@ -68,5 +68,17 @@
   "manualProof96": "Record manual receipt",
   "manualRecorded96": "Recorded for review",
   "manualHelp96": "Check amount and method on the terminal. This record does not confirm acquirer settlement; receipts are reviewed at closing.",
-  "noCash96": "No cash received: no change due."
+  "noCash96": "No cash received: no change due.",
+  "checkoutFiscalTitle": "Fiscal status",
+  "checkoutFiscalAuthorized": "Authorized",
+  "checkoutFiscalFailed": "Failed",
+  "checkoutFiscalPending": "Pending reprocessing or recovery",
+  "checkoutFiscalNone": "No fiscal issuance linked to checkout",
+  "checkoutFiscalHomologation": "Test environment issuance; not a valid fiscal document.",
+  "checkoutFiscalRetry": "Reprocess",
+  "checkoutFiscalRefresh": "Refresh status",
+  "checkoutFiscalLoading": "Checking fiscal status…",
+  "checkoutFiscalUnavailable": "Status could not be confirmed. Refresh before trying again.",
+  "checkoutFiscalMissingRequest": "Reprocessing unavailable on this device: the original request is not saved. No new sale will be created.",
+  "checkoutFiscalDemo": "Demo: no real fiscal issuance."
 }

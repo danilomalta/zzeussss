@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+	_ "time/tzdata"
 	"unicode"
 	"unicode/utf8"
 )
@@ -83,6 +85,8 @@ func RoundDecimal(s string, scale int) (string, error) {
 }
 
 type ProfileInput struct {
+	RequireTaxPricing *bool  `json:"require_tax_pricing,omitempty"`
+	Timezone          string `json:"timezone,omitempty"`
 	OperationID       string `json:"operation_id"`
 	ProfileID         string `json:"profile_id"`
 	ExpectedRevision  int    `json:"expected_revision"`
@@ -98,6 +102,17 @@ type ProfileInput struct {
 }
 
 func (p ProfileInput) valid() bool {
+	if p.RequireTaxPricing != nil && *p.RequireTaxPricing && p.Timezone == "" {
+		return false
+	}
+	if p.Timezone != "" {
+		if len(p.Timezone) > 100 || p.Timezone == "Local" {
+			return false
+		}
+		if _, err := time.LoadLocation(p.Timezone); err != nil {
+			return false
+		}
+	}
 	code, ok := stateCodes[p.State]
 	if !ok || len(p.Municipality) != 7 || !strings.HasPrefix(p.Municipality, code) {
 		return false

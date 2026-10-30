@@ -1,0 +1,139 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan NF-e / NFC-e homologation print archive",
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/fiscal/intents/{id}/danfe": {
+      "get": {
+        "operationId": "readFiscalHomologationDANFE",
+        "summary": "Impressão técnica do DANFE NF-e 55 / NFC-e 65 de homologação arquivado",
+        "description": "Somente ambiente2 e emissão normal. Modelo65 requer largura58/80mm; modelo55 retrato requer210mm (A4). Seleção incompatível falha com409. NF-e55 tem folhas numeradas, cabeçalho repetido e código128 C/A para CNPJ numérico/alfanumérico. XML/protocolo selecionados do journal autenticado; não aceita XML, URL, certificado ou valores pelo cliente. Vendedor lê somente sua tentativa/aparelho; contabilidade autorizada lê a loja. Consulta mais recente pendente/negativa ou cancelamento iniciado bloqueiam cópia ativa. Sem rede, reenvio, nova assinatura ou efeito comercial. Configurar papel58/80mm ou A4 no driver; HTML não é PDF nem homologação oficial.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "width_mm",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                58,
+                80,
+                210
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "timezone",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Zona IANA brasileira explícita; exemplo America/Sao_Paulo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTML estático sem cache e com CSP restritiva; cabeçalhos X-Titan-Source-SHA256 e X-Titan-Artifact-SHA256 vinculam o artefato ao XML. Marca de homologação obrigatória.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Opções, query ou corpo inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão revogada ou inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão de leitura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Documento não encontrado no escopo permitido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Documento incerto, modelo/formato incompatível, não autorizado, NFC-e sem QR válido ou cancelamento iniciado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro de armazenamento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

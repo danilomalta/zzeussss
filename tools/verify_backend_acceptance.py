@@ -4,11 +4,30 @@ import json
 from pathlib import Path
 
 REQUIRED = {
+    ('titansystem-backend/cmd/titan-fiscal', 'TestFiscalProductionConfigNativeCLI'),
     ('titansystem-backend/internal/onlinesessions', 'TestPostgresDurableRotationConcurrencyAndRollback'),
     ('titansystem-backend/internal/core/routes', 'TestPostgresCatalogCreationAndDiscountAtomicity'),
     *{('titansystem-backend/internal/localapi', name) for name in (
         'TestCashJournalFrontendBridge', 'TestDeliveryFrontendBridge',
-        'TestMaintenanceFrontendBridge')},
+        'TestMaintenanceFrontendBridge', 'TestFiscalCustomerFrontendBridge',
+        'TestFiscalTaxRealHTTPRestartAndRestore',
+        'TestHTTPFiscalProductionTaxQuotesBuildSignTransmitAndRecover',
+        'TestHTTPFiscalProductionTaxDestinationDIFALAndFCP',
+        'TestHTTPFiscalProductionTaxNativeLoopback',
+        'TestHTTPFiscalProductionTaxDeferment',
+        'TestHTTPFiscalProductionTaxSimpleCredit',
+        'TestHTTPFiscalProductionTaxSimpleSTQuoteAndSaleGuard',
+        'TestHTTPFiscalProductionTaxSimpleSTZeroAdditionalAmount',
+        'TestHTTPFiscalTaxPricedSaleToIssuedXML',
+        'TestHTTPFiscalTaxPricedSaleSessionGuardAndRecovery',
+        'TestHTTPFiscalTaxPricedSaleNativeLoopback',
+        'TestHTTPFiscalTaxPricedSaleIPIIncludedBeforePayment',
+        'TestHTTPFiscalTaxPricedSaleRequiredAcrossWriters',
+        'TestHTTPFiscalTaxPricedSaleModeRequiresExplicitOwnerDecision',
+        'TestHTTPFiscalRetainedSTSaleSignedXMLAndRecovery',
+        'TestHTTPFiscalRetainedSTOwnerAndUnitGuard',
+        'TestHTTPFiscalRetainedSTRejectsMissingAndTamperedSource',
+        'TestHTTPFiscalRetainedSTNativeLoopback')},
 }
 ALLOWED_SKIPS = {
     ('titansystem-backend/internal/localapi', 'TestPilotCashProcess'),

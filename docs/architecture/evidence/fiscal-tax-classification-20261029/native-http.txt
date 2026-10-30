@@ -1,0 +1,12 @@
+Disposable data and authority; not official homologation.
+fiscal_production_tax_http_test.go:71: HTTP GET /local/v1/fiscal/tax-policies/policy-one -> 401
+fiscal_production_tax_http_test.go:73: HTTP POST /local/v1/fiscal/tax-policies -> 201
+fiscal_production_tax_http_test.go:82: HTTP POST /local/v1/fiscal/tax-quotes -> 201
+fiscal_production_tax_http_test.go:91: HTTP POST /local/v1/fiscal/intents/da11c9fb-f2b8-4ba7-9627-c00851a6ca89/production/prepare -> 201
+fiscal_production_tax_http_test.go:94: HTTP POST /local/v1/fiscal/intents/da11c9fb-f2b8-4ba7-9627-c00851a6ca89/production/approve -> 204
+fiscal_production_tax_http_test.go:97: HTTP POST /local/v1/fiscal/intents/da11c9fb-f2b8-4ba7-9627-c00851a6ca89/production/emit -> 200
+fiscal_production_tax_http_test.go:103: HTTP GET /local/v1/fiscal/intents/da11c9fb-f2b8-4ba7-9627-c00851a6ca89/production/xml -> 200
+fiscal_production_tax_http_test.go:107: HTTP GET /local/v1/fiscal/tax-quotes/quote-one -> 200
+fiscal_production_tax_http_test.go:113: HTTP POST /local/v1/fiscal/intents/da11c9fb-f2b8-4ba7-9627-c00851a6ca89/production/emit -> 200
+fiscal_production_tax_http_test.go:114: HTTP GET /local/v1/fiscal/intents/da11c9fb-f2b8-4ba7-9627-c00851a6ca89/production -> 200
+fiscal_production_tax_http_test.go:118: TAX NATIVE HTTP: 10 real client requests, SQLite policy/quote/review/approval, official XSD and one signed mTLS POST; authority and data disposable, not official homologation
