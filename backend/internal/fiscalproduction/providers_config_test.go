@@ -45,8 +45,8 @@ func TestFiscalProviderConfigurationIsolationAndSecrets(t *testing.T) {
 	if err = os.WriteFile(configPath, raw, 0600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = LoadProviderRegistry(configPath); err != nil {
-		t.Fatal(err)
+	if _, err = LoadProviderRegistry(configPath); err == nil {
+		t.Fatal("legacy secret files accepted")
 	}
 	// Inline secrets are rejected by strict existing configuration decoding.
 	if err = os.WriteFile(configPath, []byte(`{"version":1,"tenants":[],"token":"disposable-test-token"}`), 0600); err != nil {

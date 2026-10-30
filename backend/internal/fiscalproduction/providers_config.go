@@ -8,10 +8,7 @@ import (
 	"titansystem-backend/internal/localdb/fiscal"
 )
 
-// Trusted process configuration, never accepted from checkout HTTP input.
-// CertificateReference points to an existing private FileConfiguration, so own
-// keeps exactly the same certificate/CSC loading mechanism as Load.
-// CSCReference and TokenReference are private0600 files, not inline secrets.
+// Trusted process configuration. Secret references are rejected; secrets live in the vault.
 type TenantFiscalConfiguration struct {
 	Binding              ProviderBinding `json:"binding"`
 	Provider             string          `json:"provider"`
@@ -43,7 +40,7 @@ func NewProviderRegistry(entries []ProviderRegistration) (*ProviderRegistry, err
 		b := c.Binding
 		if b.TenantID == "" || b.StoreID == "" || b.DeviceID == "" || b.ProfileID == "" || b.ProfileRevision < 1 ||
 			(c.Provider != "own" && c.Provider != "external") || (c.Environment != "homologation" && c.Environment != "production") ||
-			(c.CRT != "1" && c.CRT != "2" && c.CRT != "3" && c.CRT != "4") || !privateReference(c.CSCReference) || !privateReference(c.CertificateReference) || !privateReference(c.TokenReference) {
+			(c.CRT != "1" && c.CRT != "2" && c.CRT != "3" && c.CRT != "4") || c.CSCReference != "" || c.CertificateReference != "" || c.TokenReference != "" {
 			return nil, ErrUnavailable
 		}
 		if _, ok := r.entries[b.TenantID]; ok {
@@ -96,7 +93,7 @@ func (r *ProviderRegistry) ValidateCheckoutConfiguration(ctx context.Context, a 
 	return nil
 }
 
-// LoadProviderRegistry persists no secret values and never resolves an external
+// LoadProviderRegistry reads encrypted tenant credentials and never resolves an external
 // provider to own. External configurations remain unavailable until an adapter
 // is explicitly installed by trusted process wiring.
 func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
@@ -106,17 +103,23 @@ func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
 	}
 	defer clear(raw)
 	var config struct {
-		Version int                         `json:"version"`
-		Tenants []TenantFiscalConfiguration `json:"tenants"`
+		Version   int                         `json:"version"`
+		VaultPath string                      `json:"vault_path"`
+		Tenants   []TenantFiscalConfiguration `json:"tenants"`
 	}
 	if fiscalcore.DecodeInput(raw, &config) != nil || config.Version != 1 || len(config.Tenants) == 0 || len(config.Tenants) > 1000 {
 		return nil, ErrUnavailable
 	}
+	vault, err := OpenFiscalSecretVault(config.VaultPath)
+	if err != nil {
+		return nil, ErrUnavailable
+	}
+	defer vault.Close()
 	entries := make([]ProviderRegistration, 0, len(config.Tenants))
 	for _, c := range config.Tenants {
 		e := ProviderRegistration{Configuration: c}
 		if c.Provider == "own" {
-			runtime, err := Load(c.CertificateReference)
+			runtime, err := vault.loadOwn(c.Binding.TenantID)
 			if err != nil {
 				return nil, ErrUnavailable
 			}
