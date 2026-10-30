@@ -24,11 +24,12 @@ import (
 )
 
 type Server struct {
-	DB          *sql.DB
-	Device      identity.DeviceContext
-	contracts   *entitlementstore.Store
-	tradeSigner ed25519.PrivateKey
-	production  *fiscalproduction.Runtime
+	DB              *sql.DB
+	Device          identity.DeviceContext
+	contracts       *entitlementstore.Store
+	tradeSigner     ed25519.PrivateKey
+	production      *fiscalproduction.Runtime
+	fiscalProviders *fiscalproduction.ProviderRegistry
 }
 
 // New preserves authentication and authorized reads without issuer keys.
@@ -55,8 +56,16 @@ func NewWithTradeSignerAndGate(db *sql.DB, device identity.DeviceContext, verifi
 }
 
 func NewWithProductionAndGate(db *sql.DB, device identity.DeviceContext, verifier *entitlements.Verifier, gate fiber.Handler, signer ed25519.PrivateKey, production *fiscalproduction.Runtime) (*fiber.App, error) {
+	return NewWithFiscalProvidersAndGate(db, device, verifier, gate, signer, production, nil)
+}
+
+// Providers come only from trusted process configuration; no checkout override.
+func NewWithFiscalProvidersAndGate(db *sql.DB, device identity.DeviceContext, verifier *entitlements.Verifier, gate fiber.Handler, signer ed25519.PrivateKey, production *fiscalproduction.Runtime, providers *fiscalproduction.ProviderRegistry) (*fiber.App, error) {
 	if db == nil || device.TenantID == "" || device.StoreID == "" || device.DeviceID == "" {
 		return nil, errors.New("servidor local sem aparelho")
+	}
+	if providers != nil && verifier == nil {
+		return nil, fiscalproduction.ErrUnavailable
 	}
 	if production != nil {
 		if verifier == nil {
@@ -67,7 +76,7 @@ func NewWithProductionAndGate(db *sql.DB, device identity.DeviceContext, verifie
 			return nil, fiscalproduction.ErrUnavailable
 		}
 	}
-	s := &Server{DB: db, Device: device, production: production}
+	s := &Server{DB: db, Device: device, production: production, fiscalProviders: providers}
 	if signer != nil {
 		if len(signer) != ed25519.PrivateKeySize {
 			return nil, errors.New("trade signing identity unavailable")
@@ -92,7 +101,7 @@ func NewWithProductionAndGate(db *sql.DB, device identity.DeviceContext, verifie
 		config.IdleTimeout = time.Minute
 		config.Concurrency = 128
 	}
-	if production != nil {
+	if production != nil || providers != nil {
 		config.WriteTimeout = 45 * time.Second
 	}
 	app := fiber.New(config)

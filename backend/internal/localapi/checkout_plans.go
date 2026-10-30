@@ -9,6 +9,7 @@ import (
 	"titansystem-backend/internal/fiscalproduction"
 
 	"github.com/gofiber/fiber/v2"
+	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/localauth"
 	"titansystem-backend/internal/localdb/sale"
 )
@@ -41,6 +42,8 @@ func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
 	}
 	session := c.Locals("session").(localauth.Session)
 	var invoice *fiscalcore.Invoice
+	var provider fiscalproduction.FiscalProvider
+	fiscalContext := fiscalproduction.RequestContext{DB: s.DB, License: s.contracts, Actor: session.Actor, Device: session.Device, Token: session.Token}
 	if raw, ok := values["fiscal_invoice"]; ok {
 		invoice = &fiscalcore.Invoice{}
 		if fiscalcore.DecodeInput(raw, invoice) != nil || invoice.Key != (fiscalcore.KeyInput{}) {
@@ -49,20 +52,37 @@ func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
 		if invoice.Environment != 2 {
 			return c.Status(400).JSON(fiber.Map{"error": "fiscal_checkout_production_disabled"})
 		}
-		if s.production == nil {
-			return c.SendStatus(503)
+		var binding fiscalproduction.ProviderBinding
+		if s.fiscalProviders != nil {
+			provider, binding, err = s.fiscalProviders.Resolve(fiscalContext)
+			if err != nil {
+				return c.SendStatus(503)
+			}
+			if err = s.fiscalProviders.ValidateCheckoutConfiguration(c.UserContext(), fiscalContext, invoice.Environment); err != nil {
+				if errors.Is(err, fiscalproduction.ErrCheckoutProduction) {
+					return c.Status(400).JSON(fiber.Map{"error": "fiscal_checkout_production_disabled"})
+				}
+				return productionFailure(c, err)
+			}
+		} else {
+			if s.production == nil {
+				return c.SendStatus(503)
+			}
+			provider = fiscalproduction.NewOwnProvider(s.production)
+			b := s.production.Binding()
+			binding = fiscalproduction.ProviderBinding{TenantID: b.TenantID, StoreID: b.StoreID, DeviceID: b.DeviceID, ProfileID: b.ProfileID, ProfileRevision: b.ProfileRevision}
 		}
 		plan, e := sale.ReadPlan(c.UserContext(), s.DB, session.Actor, session.Device, c.Params("id"))
 		if e != nil {
 			return saleError(c, e)
 		}
 		for _, item := range plan.Items {
-			if item.Tax == nil || plan.Completion == nil && (item.Tax.ProfileID != s.production.Binding().ProfileID || item.Tax.ProfileRevision != s.production.Binding().ProfileRevision) {
+			if item.Tax == nil || plan.Completion == nil && (item.Tax.ProfileID != binding.ProfileID || item.Tax.ProfileRevision != binding.ProfileRevision) {
 				return c.SendStatus(400)
 			}
 		}
 		if plan.Completion == nil {
-			e = s.production.ValidateCheckoutHomologation(c.UserContext(), fiscalproduction.RequestContext{DB: s.DB, License: s.contracts, Actor: session.Actor, Device: session.Device, Token: session.Token}, invoice.Environment)
+			e = provider.ValidateCheckout(c.UserContext(), fiscalContext, invoice.Environment)
 			if errors.Is(e, fiscalproduction.ErrCheckoutProduction) {
 				return c.Status(400).JSON(fiber.Map{"error": "fiscal_checkout_production_disabled"})
 			}
@@ -79,7 +99,16 @@ func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
 		return saleError(c, err)
 	}
 	if invoice != nil {
-		state, e := s.production.EmitCheckoutHomologation(c.UserContext(), fiscalproduction.RequestContext{DB: s.DB, License: s.contracts, Actor: session.Actor, Device: session.Device, Token: session.Token}, v.Completion.SaleID, *invoice)
+		raw, _ := json.Marshal(invoice)
+		input := fiscalproduction.DocumentRequest{Model: "65", Environment: 2, SaleID: v.Completion.SaleID, Invoice: raw}
+		var result fiscalproduction.DocumentResult
+		var e error
+		if v.Repeated {
+			result, e = provider.Reprocess(c.UserContext(), fiscalContext, input)
+		} else {
+			result, e = provider.Emit(c.UserContext(), fiscalContext, input)
+		}
+		state := fiscal.CheckoutStatus{State: result.State, OperationID: result.OperationID, IntentID: result.IntentID, Key: result.Key, ErrorCode: result.ErrorCode}
 		v.Fiscal = &state
 		if state.ErrorCode == "fiscal_status_persistence_failed" {
 			return c.Status(503).JSON(v)
