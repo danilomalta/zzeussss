@@ -1,0 +1,192 @@
+{
+  "base": "f492db7b9d46c8f6830bf72a83fd22525537f18c",
+  "branch": "feat/fiscal-homolog-journal-20261027",
+  "schema": 68,
+  "official_fiscal_calls": 0,
+  "production_enabled": false,
+  "full_fiscal_complete": false,
+  "synthetic_data_only": true,
+  "files_sha256": {
+    "backend/internal/fiscalcore/runtime_test.go": "4c65a37340e8f0540f3c759ba520724a7c3309dfcd74e78a4ddcb95656a9ab02",
+    "backend/internal/fiscalcore/transport.go": "ed77808e1cb64dafedefa4c135b249ed05d655bfe8d4d6226bc877802aaca913",
+    "backend/internal/localapi/customer_return_cross_shift_migration_test.go": "1455f03488b246b4fd5b4998803813caf057419fa92b5b3c0a4cae680b22448d",
+    "backend/internal/localapi/customer_return_maintenance_test.go": "ee82c893a21d893cced38b7d5b4ffd0c0e4f168a8e8d5b5388391686dd193183",
+    "backend/internal/localapi/fiscal_transmission_test.go": "2824d56ff4f11d2030050a09630f119c687a734e32ee5b0f23244abee804fd80",
+    "backend/internal/localapi/pilot_backup_cli_test.go": "c28817f0071e43d8fe40ddbdc846e2ac8dcee2679b6576e5636a4483473879b9",
+    "backend/internal/localdb/backup/backup.go": "b996699d070fb0bccd7dadd50cbef4ad866988fcc4eb34ee4e15486bb630fe5e",
+    "backend/internal/localdb/backup/compatibility_test.go": "618ef27c1c0050bcf1fac3471d65a511ff9ecf67c3133cafd17797e98e54b72f",
+    "backend/internal/localdb/backup/inspection_test.go": "3a8cc6449ae2749c5e8afa3a119577ed86b6b4fdc77ee672d479a4481f47f1d2",
+    "backend/internal/localdb/fiscal/store.go": "07b8c47ca90f06b08eb320879d3f58516152f23eebb098c61328d760de8d810f",
+    "backend/internal/localdb/fiscal/transmission.go": "6ddb5ee08c3bc5f44359540b3bf23da14f5d280618392d49c50eef816d7164e7",
+    "backend/internal/localdb/localdb_test.go": "6ee1a80745b4c2977f492680a874805983c4e8c1bad0d56b08705221c2a38745",
+    "backend/internal/localdb/migrations/0068_fiscal_transmission_journal.sql": "40f999e3739718f150d853117fa9a7d2a0d2d65f0eeb586139968e1f346be81e"
+  },
+  "native_backup_race": {
+    "log_sha256": "d13d2223ec0bff8205ec2d68611daf047f3c3db417313c247d500eed84a310f1",
+    "counts": {
+      "pass_tests": 27,
+      "pass_packages": 1
+    },
+    "top_level_passed": 12,
+    "failed": [],
+    "skipped_tests": [],
+    "native_backup_cli_calls": 33
+  },
+  "core_and_journal_race_before_added_backup_subcase": {
+    "log_sha256": "6e35335cd419c260c5688dc19dda279f81f6a2016603c25368568e22ae434829",
+    "counts": {
+      "pass_tests": 28,
+      "pass_packages": 2
+    },
+    "top_level_passed": 14,
+    "failed": []
+  },
+  "full_suite_initial": {
+    "log_sha256": "5b861cbe8aaf4ad87fe9403fc2b0d1123a2110d996c6e30fc64cefee4b0b2124",
+    "counts": {
+      "pass_tests": 2895,
+      "pass_packages": 57,
+      "skip_packages": 16,
+      "skip_tests": 8,
+      "fail_tests": 8,
+      "fail_packages": 1
+    },
+    "top_level_passed": 1376,
+    "failed": [
+      "TestTradeQueueBackupCompiledRestoreNeverReplaysOldSnapshot",
+      "TestTradeQueueCompiledExecutableBothPasses",
+      "TestTradeQueueContextCompiledCommandVerifiesSourceAndNeverOverwrites",
+      "TestTradeQueueProcessKilledAfterRemoteCommitRecoversWithoutSecondPost",
+      "TestTradeQueueRecoverySessionCompiledWithSourceOffline",
+      "TestTradeQueueScopeCompiledExecutableFiltersAndDelivers",
+      "TestTradeQueueScopeCompiledWatchNeverRebindsToReplacement",
+      "TestTradeRelayCompiledExecutableRealHTTP",
+      "titansystem-backend/internal/localapi"
+    ]
+  },
+  "full_suite_retry_status": "PASS; local integrations requiring absent PostgreSQL/frontend bridges are explicitly skipped, not certified",
+  "initial_failure_reason": "8 compiled-trade tests failed obtaining VCS status exit128; rerun uses real prebuilt titan-trade and GOFLAGS=-buildvcs=false; no tests removed",
+  "vet_final_exit_code": 0,
+  "contracts": {
+    "checker_tests_passed": 10,
+    "routes_checked": 537
+  },
+  "builds": {
+    "titan_local": true,
+    "titan_backup": true,
+    "titan_trade": true,
+    "installed": false,
+    "vcs_stamping": false,
+    "titan_fiscal": true
+  },
+  "remote_ci": "not yet executed for this new branch",
+  "limits": [
+    "technical journal restricted to homologation",
+    "no integrated tax classification or full XML-to-sale economic validation",
+    "no national number allocation or protection for raw disk clones",
+    "no DANFE compliance or SPED/PVA acceptance",
+    "NFS-e production compatibility remains unresolved",
+    "no real issuer/certificate/homologation supplied"
+  ],
+  "full_suite_retry": {
+    "log_sha256": "29bc702d203ea344349d0fe0794c42f8e1c8332330c0cc125092e48a2ae70713",
+    "counts": {
+      "pass_tests": 2911,
+      "pass_packages": 58,
+      "skip_packages": 16,
+      "skip_tests": 8
+    },
+    "top_level_passed": 1384,
+    "failed": [],
+    "skipped_tests": [
+      "TestPostgresCatalogCreationAndDiscountAtomicity",
+      "TestPostgresDurableRotationConcurrencyAndRollback",
+      "TestMigrationCrashChild",
+      "TestCashJournalFrontendBridge",
+      "TestDeliveryFrontendBridge",
+      "TestMaintenanceFrontendBridge",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ],
+    "native_backup_cli_calls": 0
+  },
+  "full_suite_retry_exit_code": 0,
+  "full_suite_retry_environment": {
+    "GOFLAGS": "-buildvcs=false",
+    "TITAN_TRADE_QUEUE": "1",
+    "TITAN_TRADE_CLI": "real binary built from this revision; absolute lab path"
+  },
+  "core_mtls_guard_race": {
+    "log_sha256": "6e35335cd419c260c5688dc19dda279f81f6a2016603c25368568e22ae434829",
+    "counts": {
+      "pass_tests": 2,
+      "pass_packages": 1
+    },
+    "top_level_passed": 2,
+    "failed": [],
+    "skipped_tests": [],
+    "native_backup_cli_calls": 0
+  },
+  "cli_capabilities": {
+    "uf_identifiers": [
+      "AC",
+      "AL",
+      "AM",
+      "AP",
+      "BA",
+      "CE",
+      "DF",
+      "ES",
+      "GO",
+      "MA",
+      "MG",
+      "MS",
+      "MT",
+      "PA",
+      "PB",
+      "PE",
+      "PI",
+      "PR",
+      "RJ",
+      "RN",
+      "RO",
+      "RR",
+      "RS",
+      "SC",
+      "SE",
+      "SP",
+      "TO"
+    ],
+    "pinned_schemas": [
+      "NF-e 4.00 PL_010g_v1.03",
+      "NF-e event 1.00",
+      "national NFS-e 1.01 production",
+      "national NFS-e 1.01 homologation 2026-10-20"
+    ],
+    "local_components": [
+      "exact arithmetic with explicit dated policies",
+      "NF-e/NFC-e serialization",
+      "issuer-bound RSA XML signature and XSD validation",
+      "cancellation XML",
+      "NFC-e QR 2/3 and PNG",
+      "one-attempt mTLS transport with durable technical journal",
+      "national DPS homologation XML/signature/compression with 2026-10-20 schema"
+    ],
+    "official_issuance": false,
+    "official_homologation": false,
+    "national_tax_rule_coverage": false,
+    "nfse_issuance": false,
+    "danfe_official": false,
+    "sped_official": false,
+    "pending": [
+      "production API/outbox, numbering, recovery and backup integration",
+      "approved tax classification/rules and RTC totals by issuer and effective date",
+      "official endpoint registry by UF/model/environment/effective date",
+      "certificate provisioning, complete ICP-Brasil chain/revocation and issuer accreditation",
+      "NFS-e DPS serie pattern interoperability with pinned national schema",
+      "municipal providers and NFS-e event author binding",
+      "official status/receipt reconciliation, other fiscal events and contingency lifecycle",
+      "official DANFE layout, SPED bookkeeping/PVA and official homologation"
+    ]
+  }
+}

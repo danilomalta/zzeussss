@@ -1,0 +1,22 @@
+Disposable fixture only. Not official tax-authority homologation.
+fiscal_tax_test.go:242: HTTP POST /local/v1/login -> 200
+fiscal_tax_test.go:246: HTTP POST /local/v1/fiscal/tax-policies -> 201
+fiscal_tax_test.go:247: HTTP POST /local/v1/fiscal/tax-quotes -> 201
+fiscal_tax_test.go:250: HTTP POST /local/v1/login -> 200
+fiscal_tax_test.go:251: HTTP GET /local/v1/fiscal/tax-quotes/quote-one -> 200
+fiscal_tax_test.go:258: BACKUP CLI key-init: expected_success=true observed_success=true
+fiscal_tax_test.go:258: BACKUP CLI create-live: expected_success=true observed_success=true
+fiscal_tax_test.go:258: BACKUP CLI verify: expected_success=true observed_success=true
+pilot_backup_cli_test.go:98: BACKUP CLI before-restore: expected_success=true observed_success=true
+fiscal_tax_test.go:258: BACKUP CLI wrong-key-init: expected_success=true observed_success=true
+fiscal_tax_test.go:258: BACKUP CLI reject-wrong-key: expected_success=false observed_success=false
+fiscal_tax_test.go:258: BACKUP CLI reject-wrong-company: expected_success=false observed_success=false
+fiscal_tax_test.go:258: BACKUP CLI restore-new-path: expected_success=true observed_success=true
+fiscal_tax_test.go:258: BACKUP CLI reject-overwrite: expected_success=false observed_success=false
+fiscal_tax_test.go:258: BACKUP CLI create-from-restored: expected_success=true observed_success=true
+pilot_backup_cli_test.go:98: BACKUP CLI after-restore: expected_success=true observed_success=true
+fiscal_tax_test.go:258: BACKUP CLI RESTORATION: pilot table counts and business SHA256 identical; encrypted archive SHA256 distinct; source and restored DBs separate
+fiscal_tax_test.go:283: HTTP GET /local/v1/fiscal/tax-quotes/quote-one -> 401
+fiscal_tax_test.go:284: HTTP POST /local/v1/login -> 200
+fiscal_tax_test.go:285: HTTP POST /local/v1/fiscal/tax-quotes -> 200
+fiscal_tax_test.go:289: TAX CALCULATION ONLY: 8 real HTTP calls, three service processes, exact policy/result hashes preserved through restart and encrypted restore; no SEFAZ transmission
