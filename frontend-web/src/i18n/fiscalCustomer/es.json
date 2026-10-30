@@ -54,5 +54,12 @@
   "xml_schema_and_signature_not_validated": "XML y firma no validados para este registro",
   "official_transport_not_configured": "Transporte oficial no verificado para este registro",
   "uf_developer_requirements_not_validated": "Requisitos del desarrollador en el estado aún no verificados",
-  "choose": "Seleccione"
+  "choose": "Seleccione",
+  "onboardingTitle": "Configuración fiscal inicial",
+  "onboardingIntro": "Guarde el perfil y compruebe la configuración instalada. Esta comprobación local no transmite documentos ni acredita la homologación.",
+  "onboardingCheck": "Comprobar configuración",
+  "onboardingConfiguration": "Configuración válida",
+  "onboarding_configuration_required": "Solicite al administrador que instale o corrija la configuración fiscal segura.",
+  "onboarding_official_verification_required": "Todavía se requiere la verificación oficial de homologación.",
+  "onboarding_production_blocked": "La emisión en producción sigue bloqueada en este flujo."
 }

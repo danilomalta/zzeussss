@@ -54,5 +54,12 @@
   "xml_schema_and_signature_not_validated": "XML and signature not validated for this profile",
   "official_transport_not_configured": "Official transport not verified for this profile",
   "uf_developer_requirements_not_validated": "State developer requirements not yet verified",
-  "choose": "Select"
+  "choose": "Select",
+  "onboardingTitle": "Fiscal onboarding",
+  "onboardingIntro": "Save the profile and check the installed configuration. This local check sends no documents and does not prove homologation.",
+  "onboardingCheck": "Check configuration",
+  "onboardingConfiguration": "Valid configuration",
+  "onboarding_configuration_required": "Ask the administrator to install or correct the secure fiscal configuration.",
+  "onboarding_official_verification_required": "Official homologation verification is still required.",
+  "onboarding_production_blocked": "Production issuance remains blocked in this flow."
 }

@@ -54,5 +54,12 @@
   "xml_schema_and_signature_not_validated": "尚未验证此配置的 XML 和签名",
   "official_transport_not_configured": "尚未验证此配置的官方传输",
   "uf_developer_requirements_not_validated": "尚未验证州开发者要求",
-  "choose": "请选择"
+  "choose": "请选择",
+  "onboardingTitle": "税务入门设置",
+  "onboardingIntro": "保存税务资料并检查已安装的配置。此本地检查不会发送文档，也不代表已通过官方测试认证。",
+  "onboardingCheck": "检查配置",
+  "onboardingConfiguration": "配置有效",
+  "onboarding_configuration_required": "请管理员安装或修正安全的税务配置。",
+  "onboarding_official_verification_required": "仍需完成官方测试认证验证。",
+  "onboarding_production_blocked": "此流程仍禁止生产环境开票。"
 }
