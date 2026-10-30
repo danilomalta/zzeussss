@@ -2,6 +2,8 @@ package fiscalproduction
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"titansystem-backend/internal/fiscalcore"
@@ -10,6 +12,8 @@ import (
 
 // Trusted process configuration. Secret references are rejected; secrets live in the vault.
 type TenantFiscalConfiguration struct {
+	VaultPath            string          `json:"vault_path,omitempty"`
+	MasterKeyFile        string          `json:"master_key_file,omitempty"`
 	CustomerManaged      bool            `json:"customer_managed,omitempty"`
 	CertificateType      string          `json:"certificate_type,omitempty"`
 	FocusBaseURL         string          `json:"focus_base_url,omitempty"`
@@ -134,24 +138,54 @@ func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
 	if fiscalcore.DecodeInput(raw, &config) != nil || config.Version != 1 || len(config.Tenants) == 0 || len(config.Tenants) > 1000 {
 		return nil, ErrUnavailable
 	}
-	vault, err := OpenFiscalSecretVault(config.VaultPath)
-	if err != nil {
-		return nil, ErrUnavailable
-	}
-	defer vault.Close()
+	seenKeys := map[[32]byte]bool{}
+	seenPaths := map[string]bool{}
 	entries := make([]ProviderRegistration, 0, len(config.Tenants))
 	for _, c := range config.Tenants {
+		if (c.VaultPath == "") != (c.MasterKeyFile == "") {
+			return nil, ErrUnavailable
+		}
+		var key []byte
+		var err error
+		if c.MasterKeyFile != "" {
+			key, err = readMasterKey(c.MasterKeyFile)
+		} else {
+			key, err = base64.StdEncoding.Strict().DecodeString(os.Getenv("FISCAL_MASTER_KEY"))
+		}
+		if err != nil || len(key) != 32 {
+			clear(key)
+			return nil, ErrUnavailable
+		}
+		digest := sha256.Sum256(key)
+		clear(key)
+		path := c.VaultPath
+		if path == "" {
+			path = config.VaultPath
+		}
+		if seenKeys[digest] || seenPaths[path] {
+			return nil, ErrUnavailable
+		}
+		seenKeys[digest] = true
+		seenPaths[path] = true
+		vault, err := openTenantVault(c, config.VaultPath)
+		if err != nil {
+			return nil, ErrUnavailable
+		}
+		// The registry only retains providers, never open database/key handles.
 		e := ProviderRegistration{Configuration: c}
 		if c.CustomerManaged {
 			if c.Provider != "external" {
+				vault.Close()
 				return nil, ErrUnavailable
 			}
+			vault.Close()
 			entries = append(entries, e)
 			continue
 		}
 		if c.Provider == "own" {
 			runtime, err := vault.loadOwn(c.Binding.TenantID)
 			if err != nil {
+				vault.Close()
 				return nil, ErrUnavailable
 			}
 			e.Provider = NewOwnProvider(runtime)
@@ -159,6 +193,7 @@ func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
 		if c.Provider == "external" && (c.CertificateType != "" || c.FocusBaseURL != "") {
 			token, err := vault.read(context.Background(), c.Binding.TenantID, "token")
 			if err != nil {
+				vault.Close()
 				return nil, ErrUnavailable
 			}
 			csc, _ := vault.read(context.Background(), c.Binding.TenantID, "csc")
@@ -166,10 +201,12 @@ func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
 			clear(token)
 			clear(csc)
 			if e2 != nil {
+				vault.Close()
 				return nil, e2
 			}
 			e.Provider = provider
 		}
+		vault.Close()
 		entries = append(entries, e)
 	}
 	registry, err := NewProviderRegistry(entries)
@@ -178,4 +215,24 @@ func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
 	}
 	registry.vaultPath = config.VaultPath
 	return registry, nil
+}
+
+func openTenantVault(c TenantFiscalConfiguration, fallback string) (*FiscalSecretVault, error) {
+	var v *FiscalSecretVault
+	var err error
+	if c.VaultPath != "" && c.MasterKeyFile != "" {
+		v, err = OpenCustomerFiscalVault(c.VaultPath, c.MasterKeyFile)
+	} else if c.VaultPath == "" && c.MasterKeyFile == "" {
+		v, err = OpenFiscalSecretVault(fallback)
+	} else {
+		return nil, ErrUnavailable
+	}
+	if err != nil {
+		return nil, ErrUnavailable
+	}
+	if err = v.bindTenant(context.Background(), c.Binding.TenantID); err != nil {
+		v.Close()
+		return nil, ErrUnavailable
+	}
+	return v, nil
 }

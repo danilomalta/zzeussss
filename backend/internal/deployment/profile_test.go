@@ -3,6 +3,7 @@ package deployment
 import (
 	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/json"
@@ -171,5 +172,61 @@ func TestTLSRejectsExpiredWrongSANKeyAndPermissions(t *testing.T) {
 	}
 	if _, err := p.TLS(now); err == nil {
 		t.Fatal("invalid key accepted")
+	}
+}
+
+func TestCustomerCloudVersion2ExplicitDestinationAndNoPublicDefault(t *testing.T) {
+	p := Profile{Version: 2, Mode: "cloud", Listen: "203.0.113.10:8443", TLSCert: "/customer/cert.pem", TLSKey: "/customer/key.pem", AllowedNetworks: []string{"198.51.100.0/24"}}
+	if err := p.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	d := p.Describe()
+	if !d.Available || d.Storage != "sqlite" || d.Authority != "customer_cloud" || d.TerminalOffline || !d.InternetRequired {
+		t.Fatal("incorrect cloud contract")
+	}
+	if !p.Allows("198.51.100.8") || p.Allows("192.0.2.8") {
+		t.Fatal("network escaped explicit list")
+	}
+	if _, err := p.TLS(time.Now()); err == nil {
+		t.Fatal("missing private TLS accepted")
+	}
+	for _, change := range []func(*Profile){func(p *Profile) { p.AllowedNetworks = nil }, func(p *Profile) { p.AllowedNetworks = []string{"0.0.0.0/0"} }, func(p *Profile) { p.TLSKey = "" }, func(p *Profile) { p.Listen = "0.0.0.0:8443" }, func(p *Profile) { p.Mode = "local" }, func(p *Profile) { p.Version = 1 }} {
+		copy := p
+		change(&copy)
+		if copy.Validate() == nil {
+			t.Fatal("implicit or unsafe deployment accepted")
+		}
+	}
+	raw, _ := json.Marshal(p)
+	read, err := Load(writeProfile(t, raw))
+	if err != nil || read.Mode != "cloud" || read.Version != 2 {
+		t.Fatal("customer choice not persisted", err)
+	}
+}
+
+func TestCustomerCloudVersion2RequiresRealTLSCertificate(t *testing.T) {
+	dir := t.TempDir()
+	pub, key, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now()
+	template := &x509.Certificate{SerialNumber: big.NewInt(77), Subject: pkix.Name{CommonName: "Disposable customer cloud"}, NotBefore: now.Add(-time.Minute), NotAfter: now.Add(time.Hour), IPAddresses: []net.IP{net.ParseIP("127.0.0.1")}, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}}
+	cert, err := x509.CreateCertificate(rand.Reader, template, template, pub, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	keyDER, err := x509.MarshalPKCS8PrivateKey(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	certPath, keyPath := filepath.Join(dir, "cert.pem"), filepath.Join(dir, "key.pem")
+	if os.WriteFile(certPath, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert}), 0600) != nil || os.WriteFile(keyPath, pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: keyDER}), 0600) != nil {
+		t.Fatal("write")
+	}
+	p := Profile{Version: 2, Mode: "cloud", Listen: "127.0.0.1:8443", TLSCert: certPath, TLSKey: keyPath, AllowedNetworks: []string{"127.0.0.1/32"}}
+	config, err := p.TLS(now)
+	if err != nil || config == nil || config.MinVersion < tls.VersionTLS12 {
+		t.Fatal("cloud without TLS", err)
 	}
 }

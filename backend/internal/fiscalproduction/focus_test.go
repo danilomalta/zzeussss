@@ -1,6 +1,7 @@
 package fiscalproduction
 
 import (
+	"bytes"
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
@@ -261,19 +262,31 @@ func TestFocusFaultA3AndProductionAddressRefused(t *testing.T) {
 }
 
 func TestFocusFaultVaultTenantProviderIsolation(t *testing.T) {
-	vault, path := testVault(t)
 	configurations := []TenantFiscalConfiguration{}
 	for _, tenant := range []string{"tenant-one", "tenant-two"} {
-		if err := vault.Put(context.Background(), tenant, "token", []byte("SyntheticToken"+strings.ReplaceAll(tenant, "-", ""))); err != nil {
+		dir := t.TempDir()
+		path := filepath.Join(dir, "vault.sqlite")
+		keyFile := filepath.Join(dir, "master.key")
+		var display bytes.Buffer
+		if err := CreateCustomerFiscalVault(path, keyFile, &display); err != nil {
 			t.Fatal(err)
 		}
-		configurations = append(configurations, TenantFiscalConfiguration{Binding: ProviderBinding{TenantID: tenant, StoreID: "store", DeviceID: "device", ProfileID: "profile", ProfileRevision: 1}, Provider: "external", Environment: "homologation", CRT: "1", CertificateType: "A1"})
+		vault, err := OpenCustomerFiscalVault(path, keyFile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = vault.Put(context.Background(), tenant, "token", []byte("SyntheticToken"+strings.ReplaceAll(tenant, "-", ""))); err != nil {
+			vault.Close()
+			t.Fatal(err)
+		}
+		vault.Close()
+		configurations = append(configurations, TenantFiscalConfiguration{VaultPath: path, MasterKeyFile: keyFile, Binding: ProviderBinding{TenantID: tenant, StoreID: "store", DeviceID: "device", ProfileID: "profile", ProfileRevision: 1}, Provider: "external", Environment: "homologation", CRT: "1", CertificateType: "A1"})
 	}
 	config := struct {
 		Version   int                         `json:"version"`
 		VaultPath string                      `json:"vault_path"`
 		Tenants   []TenantFiscalConfiguration `json:"tenants"`
-	}{1, path, configurations}
+	}{1, "", configurations}
 	raw, _ := json.Marshal(config)
 	file := filepath.Join(t.TempDir(), "providers.json")
 	if err := os.WriteFile(file, raw, 0600); err != nil {
@@ -283,6 +296,17 @@ func TestFocusFaultVaultTenantProviderIsolation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	duplicate := append([]TenantFiscalConfiguration(nil), configurations...)
+	duplicate[1].MasterKeyFile = duplicate[0].MasterKeyFile
+	duplicateRaw, _ := json.Marshal(map[string]any{"version": 1, "tenants": duplicate})
+	duplicateFile := filepath.Join(t.TempDir(), "duplicate.json")
+	if os.WriteFile(duplicateFile, duplicateRaw, 0600) != nil {
+		t.Fatal("write")
+	}
+	if _, err := LoadProviderRegistry(duplicateFile); err == nil {
+		t.Fatal("shared customer key accepted")
+	}
+
 	var previous *FocusProvider
 	for _, c := range configurations {
 		a := RequestContext{Actor: identity.Scope{TenantID: c.Binding.TenantID, StoreID: "store"}, Device: identity.DeviceContext{TenantID: c.Binding.TenantID, StoreID: "store", DeviceID: "device"}}

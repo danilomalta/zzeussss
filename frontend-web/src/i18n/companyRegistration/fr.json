@@ -31,5 +31,8 @@
   "conflict": "Conflit de révision. Consultez avant de modifier.",
   "error": "Impossible de confirmer l’inscription.",
   "fiscalNote": "Ces données ne prouvent ni homologation ni autorisation. Configurez certificats et jetons séparément.",
-  "unsaved": "Des données non enregistrées ou une tentative en attente subsistent. Quitter ?"
+  "unsaved": "Des données non enregistrées ou une tentative en attente subsistent. Quitter ?",
+  "keyCustody": "Clés sous contrôle du client",
+  "lostKey": "La perte de la clé maître rend les secrets inaccessibles. Le fournisseur ERP ne peut pas les récupérer. Générez et exportez votre sauvegarde privée à l’installation.",
+  "dataDestination": "Choisissez la destination à l’installation : local, serveur propre ou cloud du client. Changer de connexion ne migre pas les données et n’envoie aucune clé au fournisseur."
 }

@@ -23,7 +23,7 @@ export default function LocalCompanyRegistration(){
  catch(e){if(alive.current&&current()){if(e instanceof RegistrationError&&e.status>=400&&e.status<500){setPending(null);setMessage(e.code);}else setMessage('uncertain');}}finally{writing.current=false;if(alive.current)setBusy(false);}}
  function stage(value:'pre_registration'|'company_profile'){if(!input)return;if(value==='pre_registration'&&saved?.input.stage==='company_profile')return;setInput(value==='pre_registration'?{...input,stage:value,cnpj:'',legal_name:'',uf:'',state_registration:'',municipality_ibge:'',crt:'',provider:'',environment:''}:{...input,stage:value});}
  const full=input?.stage==='company_profile';
- return <main className="brand-app-content"><h1>{w.title}</h1><p>{w.intro}</p><p>{w.manual}</p>
+ return <main className="brand-app-content"><h1>{w.title}</h1><p>{w.intro}</p><p>{w.manual}</p><section className="brand-panel" aria-label={w.keyCustody}><h2>{w.keyCustody}</h2><p role="note">{w.lostKey}</p><p>{w.dataDestination}</p></section>
  <nav><Link to="/local/enterprise?area=fiscal">{w.fiscal}</Link> · <Link to="/local/enterprise?area=access">{w.staff}</Link> · <Link to="/local/settings">{w.settings}</Link></nav>
  <button className="brand-secondary" disabled={busy||writing.current||!current()} onClick={()=>void read()}>{pending?w.recover:w.load}</button>
  {message&&<p role="status">{w[message]||w.error}</p>}{pending&&<p>{w.uncertain} · {pending.operation_id}</p>}

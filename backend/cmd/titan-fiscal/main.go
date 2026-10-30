@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"titansystem-backend/internal/fiscalcore"
 	"titansystem-backend/internal/fiscalproduction"
@@ -72,6 +73,9 @@ func decode(raw []byte, target any) error {
 	return fiscalcore.DecodeInput(raw, target)
 }
 func run(args []string, stdout io.Writer) error {
+	if len(args) > 0 && strings.HasPrefix(args[0], "vault-") {
+		return vaultCommand(args, stdout, privateTerminal)
+	}
 	if len(args) == 1 && args[0] == "capabilities" {
 		return json.NewEncoder(stdout).Encode(fiscalcore.ComponentCapabilities())
 	}

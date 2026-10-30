@@ -35,8 +35,23 @@ func (*FiscalSecretVault) GoString() string { return "[fiscal secret vault]" }
 func OpenFiscalSecretVault(path string) (*FiscalSecretVault, error) {
 	key, err := base64.StdEncoding.Strict().DecodeString(os.Getenv("FISCAL_MASTER_KEY"))
 	defer clear(key)
-	if err != nil || len(key) != 32 || !filepath.IsAbs(path) || strings.ContainsAny(path, "?#") {
+	if err != nil {
 		return nil, ErrUnavailable
+	}
+	return openVaultKey(path, key)
+}
+func openVaultKey(path string, key []byte) (*FiscalSecretVault, error) {
+	if len(key) != 32 || !filepath.IsAbs(path) || strings.ContainsAny(path, "?#") {
+		return nil, ErrUnavailable
+	}
+	for parent := filepath.Dir(path); ; parent = filepath.Dir(parent) {
+		info, e := os.Lstat(parent)
+		if e != nil || info.Mode()&os.ModeSymlink != 0 {
+			return nil, ErrUnavailable
+		}
+		if parent == filepath.Dir(parent) {
+			break
+		}
 	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -64,7 +79,12 @@ func OpenFiscalSecretVault(path string) (*FiscalSecretVault, error) {
 		db.Close()
 		return nil, ErrUnavailable
 	}
-	return &FiscalSecretVault{db: db, aead: aead}, nil
+	v := &FiscalSecretVault{db: db, aead: aead}
+	if err = v.initializeKeyControl(); err != nil {
+		db.Close()
+		return nil, ErrUnavailable
+	}
+	return v, nil
 }
 func (v *FiscalSecretVault) Close() error { return v.db.Close() }
 func vaultAAD(tenant, purpose string) ([]byte, error) {
@@ -81,22 +101,36 @@ func (v *FiscalSecretVault) Put(ctx context.Context, tenant, purpose string, sec
 	if err != nil || len(secret) == 0 || len(secret) > 4*fiscalcore.MaxXML {
 		return ErrUnavailable
 	}
+	if err = v.bindTenant(ctx, tenant); err != nil {
+		return ErrUnavailable
+	}
+	tx, err := v.db.BeginTx(ctx, nil)
+	if err != nil {
+		return ErrUnavailable
+	}
+	defer tx.Rollback()
+	if _, err = v.checkKeyTx(ctx, tx); err != nil {
+		return ErrUnavailable
+	}
 	nonce := make([]byte, v.aead.NonceSize())
 	if _, err = rand.Read(nonce); err != nil {
 		return ErrUnavailable
 	}
 	encrypted := v.aead.Seal(nonce, nonce, secret, aad)
-	_, err = v.db.ExecContext(ctx, `INSERT INTO fiscal_secret_vault (tenant,purpose,ciphertext) VALUES (?,?,?) ON CONFLICT(tenant,purpose) DO UPDATE SET ciphertext=excluded.ciphertext`, tenant, purpose, encrypted)
+	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_secret_vault (tenant,purpose,ciphertext) VALUES (?,?,?) ON CONFLICT(tenant,purpose) DO UPDATE SET ciphertext=excluded.ciphertext`, tenant, purpose, encrypted)
 	if err != nil {
 		return ErrUnavailable
 	}
-	return nil
+	return tx.Commit()
 }
 
 // read is deliberately package-private; request input cannot select a tenant.
 func (v *FiscalSecretVault) read(ctx context.Context, tenant, purpose string) ([]byte, error) {
 	aad, err := vaultAAD(tenant, purpose)
 	if err != nil {
+		return nil, ErrUnavailable
+	}
+	if err = v.bindTenant(ctx, tenant); err != nil {
 		return nil, ErrUnavailable
 	}
 	var encrypted []byte

@@ -54,7 +54,7 @@ func (r *customerCredentialRecord) clear() { clear(r.Token); clear(r.CSC) }
 var customerOperation = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$`)
 
 func (r *ProviderRegistry) customerVault(a RequestContext) (*FiscalSecretVault, TenantFiscalConfiguration, error) {
-	if r == nil || r.vaultPath == "" {
+	if r == nil {
 		return nil, TenantFiscalConfiguration{}, ErrUnavailable
 	}
 	e, ok := r.entries[a.Actor.TenantID]
@@ -63,7 +63,7 @@ func (r *ProviderRegistry) customerVault(a RequestContext) (*FiscalSecretVault, 
 	if !ok || !c.CustomerManaged || c.Provider != "external" || b.StoreID != a.Actor.StoreID || b.DeviceID != a.Device.DeviceID || a.Device.TenantID != a.Actor.TenantID || a.Device.StoreID != a.Actor.StoreID {
 		return nil, c, ErrUnavailable
 	}
-	v, err := OpenFiscalSecretVault(r.vaultPath)
+	v, err := openTenantVault(c, r.vaultPath)
 	return v, c, err
 }
 func authorizeCustomerCredentials(ctx context.Context, a RequestContext) error {
@@ -215,11 +215,19 @@ func (r *ProviderRegistry) SaveCustomerCredentials(ctx context.Context, a Reques
 		return CustomerCredentialStatus{}, ErrUnavailable
 	}
 	encrypted := v.aead.Seal(nonce, nonce, raw, aad)
+	tx, err := v.db.BeginTx(ctx, nil)
+	if err != nil {
+		return CustomerCredentialStatus{}, ErrUnavailable
+	}
+	defer tx.Rollback()
+	if _, err = v.checkKeyTx(ctx, tx); err != nil {
+		return CustomerCredentialStatus{}, ErrUnavailable
+	}
 	var result sql.Result
 	if sealed == nil {
-		result, err = v.db.ExecContext(ctx, `INSERT INTO fiscal_secret_vault(tenant,purpose,ciphertext) VALUES (?,'customer_provider',?) ON CONFLICT(tenant,purpose) DO NOTHING`, a.Actor.TenantID, encrypted)
+		result, err = tx.ExecContext(ctx, `INSERT INTO fiscal_secret_vault(tenant,purpose,ciphertext) VALUES (?,'customer_provider',?) ON CONFLICT(tenant,purpose) DO NOTHING`, a.Actor.TenantID, encrypted)
 	} else {
-		result, err = v.db.ExecContext(ctx, `UPDATE fiscal_secret_vault SET ciphertext=? WHERE tenant=? AND purpose='customer_provider' AND ciphertext=?`, encrypted, a.Actor.TenantID, sealed)
+		result, err = tx.ExecContext(ctx, `UPDATE fiscal_secret_vault SET ciphertext=? WHERE tenant=? AND purpose='customer_provider' AND ciphertext=?`, encrypted, a.Actor.TenantID, sealed)
 	}
 	if err != nil {
 		return CustomerCredentialStatus{}, ErrUnavailable
@@ -231,13 +239,13 @@ func (r *ProviderRegistry) SaveCustomerCredentials(ctx context.Context, a Reques
 	if n != 1 {
 		return CustomerCredentialStatus{}, fiscal.ErrConflict
 	}
+	if err = tx.Commit(); err != nil {
+		return CustomerCredentialStatus{}, ErrUnavailable
+	}
 	return customerStatus(record), nil
 }
 func (r *ProviderRegistry) customerRegistration(tenant string, base TenantFiscalConfiguration) (ProviderRegistration, error) {
-	if r.vaultPath == "" {
-		return ProviderRegistration{}, ErrUnavailable
-	}
-	v, err := OpenFiscalSecretVault(r.vaultPath)
+	v, err := openTenantVault(base, r.vaultPath)
 	if err != nil {
 		return ProviderRegistration{}, err
 	}
@@ -251,6 +259,8 @@ func (r *ProviderRegistry) customerRegistration(tenant string, base TenantFiscal
 	if c.Binding.TenantID != base.Binding.TenantID || c.Binding.StoreID != base.Binding.StoreID || c.Binding.DeviceID != base.Binding.DeviceID || c.Provider != "external" || !c.CustomerManaged {
 		return ProviderRegistration{}, ErrUnavailable
 	}
+	c.VaultPath = base.VaultPath
+	c.MasterKeyFile = base.MasterKeyFile
 	if c.Environment == "production" {
 		return ProviderRegistration{}, ErrCheckoutProduction
 	}

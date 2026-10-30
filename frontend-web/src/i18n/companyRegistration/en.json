@@ -31,5 +31,8 @@
   "conflict": "Revision conflict. Read before editing.",
   "error": "Could not confirm registration.",
   "fiscalNote": "These details do not authorize issuance or prove homologation. Configure certificates and tokens separately.",
-  "unsaved": "Unsaved data or a pending attempt remains. Leave anyway?"
+  "unsaved": "Unsaved data or a pending attempt remains. Leave anyway?",
+  "keyCustody": "Customer-controlled keys",
+  "lostKey": "Losing the master key makes secrets inaccessible. The ERP vendor cannot recover them. Generate and export your private backup at installation.",
+  "dataDestination": "Choose the destination in installation configuration: local, own server or customer cloud. Selecting a connection does not migrate data or send keys to the vendor."
 }

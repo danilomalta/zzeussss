@@ -130,3 +130,33 @@ func TestHTTPFiscalCustomerCredentialsOwnerRecoveryAndNoDisclosure(t *testing.T)
 		t.Fatal("revoked session accepted", code)
 	}
 }
+
+func TestHTTPFiscalCustomerPrivateKeyFileDoesNotNeedSharedEnvironment(t *testing.T) {
+	f := fiscalFixture(t)
+	t.Setenv("FISCAL_MASTER_KEY", "")
+	dir := t.TempDir()
+	key := filepath.Join(dir, "client.key")
+	vault := filepath.Join(dir, "client.sqlite")
+	config := filepath.Join(dir, "client.json")
+	var privateTerminal bytes.Buffer
+	if err := fiscalproduction.CreateCustomerFiscalVault(vault, key, &privateTerminal); err != nil {
+		t.Fatal(err)
+	}
+	raw, _ := json.Marshal(map[string]any{"version": 1, "tenants": []fiscalproduction.TenantFiscalConfiguration{{VaultPath: vault, MasterKeyFile: key, CustomerManaged: true, Provider: "external", Environment: "homologation", CRT: "1", Binding: fiscalproduction.ProviderBinding{TenantID: f.owner.TenantID, StoreID: f.owner.StoreID, DeviceID: f.owner.DeviceID, ProfileID: "issuer-one", ProfileRevision: 1}}}})
+	if err := os.WriteFile(config, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	installCustomerProviderApp(t, f, config)
+	code, body := request(t, f.app, "POST", "/local/v1/fiscal/onboarding/issuer-one/provider", `{"operation_id":"private-client","expected_revision":0,"profile_revision":1,"token":"SyntheticClientToken","csc":""}`, f.token)
+	if code != 200 {
+		t.Fatal("save without shared environment", code)
+	}
+	keyRaw, _ := os.ReadFile(key)
+	if bytes.Contains(body, bytes.TrimSpace(keyRaw)) || bytes.Contains(body, []byte("SyntheticClientToken")) {
+		t.Fatal("key disclosure")
+	}
+	installCustomerProviderApp(t, f, config)
+	if code, _ := request(t, f.app, "GET", "/local/v1/fiscal/onboarding/issuer-one/provider", "", f.token); code != 200 {
+		t.Fatal("restart", code)
+	}
+}

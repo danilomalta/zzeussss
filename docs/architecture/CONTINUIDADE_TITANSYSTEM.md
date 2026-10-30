@@ -2913,3 +2913,10 @@ Detalhes/fontes/limites: `FISCAL_RETENCAO_ANTERIOR_20261029.md`; evidências/has
 - A página pública de proposta não anuncia mais registro concluído sem persistência. Chaves/segredos não fazem parte do cadastro central. Campos nos cinco idiomas.
 - O teste de migração mantém comparação exata, atualizada de76 para77 por causa da nova migração; não foi convertido em teste permissivo.
 - Evidência da Fase1: testes de `localdb` e `companyregistration` passaram (10,735s e3,380s); os dois testes HTTP selecionados de cadastro passaram (1,076s); 45 testes JS de cadastro/fiscal passaram; TypeScript sem emissão e mapa de558rotas passaram. Nenhuma alteração em tools/.github, banco real ou implantação.
+
+## Fase 2 — chaves e implantação sob controle do cliente — 30/10/2026
+
+- Branch `feat/cadastro-fase2`, base `feat/cadastro-fase1` (`254b607`). Cofre/chave privados por tenant no registry; chave/cofre compartilhado entre clientes recusado. Verificação de chave na abertura e binding autenticado de tenant. Legado multi-tenant exige migração explícita, não destrutiva, pelo titular; nenhum arquivo real foi acessado.
+- CLI titan-fiscal: vault-init (exibição única no terminal privado), vault-export-key (destino do cliente, sem sobrescrita), vault-rotate (backup confirmado, recifragem transacional, chave antiga preservada, escritor antigo bloqueado). Não há resposta HTTP com chave nem armazenamento no navegador. Aviso de perda da chave nos cinco idiomas. Manual: `CADASTRO_CHAVES_IMPLANTACAO_FASE2.md`.
+- Implantação cloud versão2 explícita: mesmo núcleo SQLite em host do cliente, TLS e redes permitidas obrigatórios. Não é migração para PostgreSQL, HA ou sincronização híbrida. Versão1 antiga mantém contratos. Nenhum destino é convertido ou migrado ao mudar conexão.
+- Verificações passaram: fiscalproduction5,071s, deployment0,011s, cmd/titan-fiscal0,221s; testes HTTP selecionados4,516s; cinco testes JS e TypeScript. Testes existentes de isolamento usam agora raízes realmente independentes, mantendo suas assertivas. tools/ e .github/ não alterados. Revogação de credenciais históricas segue externa/não comprovada.

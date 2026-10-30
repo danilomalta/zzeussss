@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -16,12 +17,18 @@ import (
 func customerFixture(t *testing.T) (*ProviderRegistry, RequestContext, string) {
 	t.Helper()
 	a := focusContext(t)
-	_, path := testVault(t)
+	dir := t.TempDir()
+	path := filepath.Join(dir, "customer.sqlite")
+	keyFile := filepath.Join(dir, "customer.key")
+	var terminal bytes.Buffer
+	if err := CreateCustomerFiscalVault(path, keyFile, &terminal); err != nil {
+		t.Fatal(err)
+	}
 	p, err := fiscal.Configure(context.Background(), a.DB, a.License, a.Actor, a.Device, fiscal.ProfileInput{OperationID: "customer-profile", ProfileID: "profile", CNPJ: "11222333000181", LegalName: "Synthetic client", State: "SP", Municipality: "3550308", StateRegistration: "123456789", CRT: "1", Model: "65", Environment: "homologation", Series: 1}, a.Token)
 	if err != nil {
 		t.Fatal(err)
 	}
-	registry, err := NewProviderRegistry([]ProviderRegistration{{Configuration: TenantFiscalConfiguration{CustomerManaged: true, Binding: ProviderBinding{TenantID: a.Actor.TenantID, StoreID: a.Actor.StoreID, DeviceID: a.Device.DeviceID, ProfileID: p.Input.ProfileID, ProfileRevision: 1}, Provider: "external", Environment: "homologation", CRT: "1"}}})
+	registry, err := NewProviderRegistry([]ProviderRegistration{{Configuration: TenantFiscalConfiguration{VaultPath: path, MasterKeyFile: keyFile, CustomerManaged: true, Binding: ProviderBinding{TenantID: a.Actor.TenantID, StoreID: a.Actor.StoreID, DeviceID: a.Device.DeviceID, ProfileID: p.Input.ProfileID, ProfileRevision: 1}, Provider: "external", Environment: "homologation", CRT: "1"}}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +111,10 @@ func TestCustomerCredentialsEncryptedRestartRecoveryAndProductionBlocked(t *test
 	if _, _, err = r.Resolve(a); !errors.Is(err, ErrCheckoutProduction) {
 		t.Fatal("production guard weakened", err)
 	}
-	t.Setenv("FISCAL_MASTER_KEY", "")
+	keyFile := r.entries[a.Actor.TenantID].Configuration.MasterKeyFile
+	if err = os.Rename(keyFile, keyFile+".retained"); err != nil {
+		t.Fatal(err)
+	}
 	if _, err = r.ReadCustomerCredentials(ctx, a, "profile"); err == nil {
 		t.Fatal("missing master key accepted")
 	}
@@ -129,8 +139,7 @@ func TestCustomerCredentialsCannotOptInOrSelectForeignVault(t *testing.T) {
 func TestCustomerCredentialsTenantIsolationAndConcurrentRotation(t *testing.T) {
 	ctx := context.Background()
 	r, a, path := customerFixture(t)
-	other, b, _ := customerFixture(t)
-	other.vaultPath = path
+	other, b, otherPath := customerFixture(t)
 	first := CustomerCredentialInput{OperationID: "tenant-first", ProfileRevision: 1, Token: []byte("FirstTenantPrivateToken"), CSC: []byte("FirstTenantCSC")}
 	second := CustomerCredentialInput{OperationID: "tenant-second", ProfileRevision: 1, Token: []byte("SecondTenantPrivateToken")}
 	if _, err := r.SaveCustomerCredentials(ctx, a, "profile", first); err != nil {
@@ -186,12 +195,21 @@ func TestCustomerCredentialsTenantIsolationAndConcurrentRotation(t *testing.T) {
 		t.Fatal("input formatting disclosed credentials")
 	}
 	// Swapping encrypted rows must fail authenticated decryption.
-	vault, err := OpenFiscalSecretVault(path)
+	vault, err := OpenCustomerFiscalVault(path, r.entries[a.Actor.TenantID].Configuration.MasterKeyFile)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer vault.Close()
-	if _, err = vault.db.Exec(`UPDATE fiscal_secret_vault SET ciphertext=(SELECT ciphertext FROM fiscal_secret_vault WHERE tenant=? AND purpose='customer_provider') WHERE tenant=? AND purpose='customer_provider'`, a.Actor.TenantID, b.Actor.TenantID); err != nil {
+	var sealed []byte
+	if err = vault.db.QueryRow(`SELECT ciphertext FROM fiscal_secret_vault WHERE tenant=? AND purpose='customer_provider'`, a.Actor.TenantID).Scan(&sealed); err != nil {
+		t.Fatal(err)
+	}
+	otherVault, err := OpenCustomerFiscalVault(otherPath, other.entries[b.Actor.TenantID].Configuration.MasterKeyFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer otherVault.Close()
+	if _, err = otherVault.db.Exec(`UPDATE fiscal_secret_vault SET ciphertext=? WHERE tenant=? AND purpose='customer_provider'`, sealed, b.Actor.TenantID); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = other.ReadCustomerCredentials(ctx, b, "profile"); err == nil {

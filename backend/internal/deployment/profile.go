@@ -51,6 +51,13 @@ func (p Profile) Describe() Description {
 		d.Storage = "sqlite"
 		d.Authority = "store_server"
 	case "cloud":
+		if p.Version == 2 {
+			d.Available = true
+			d.Storage = "sqlite"
+			d.Authority = "customer_cloud"
+			d.InternetRequired = true
+			return d
+		}
 		d.Storage = "postgresql"
 		d.Authority = "customer_cloud"
 		d.InternetRequired = true
@@ -141,6 +148,9 @@ func Load(path string) (Profile, error) {
 }
 
 func (p Profile) Validate() error {
+	if p.Version == 2 {
+		return p.validateCustomerCloud()
+	}
 	if p.Version != 1 {
 		return ErrProfile
 	}
@@ -208,11 +218,14 @@ func (p Profile) Allows(remote string) bool {
 	if p.Mode == "local" {
 		return ip.IsLoopback()
 	}
-	if p.Mode != "server" {
+	if p.Mode != "server" && !(p.Version == 2 && p.Mode == "cloud") {
 		return false
 	}
 	for _, value := range p.AllowedNetworks {
 		prefix, err := privatePrefix(value)
+		if p.Version == 2 && p.Mode == "cloud" {
+			prefix, err = customerPrefix(value)
+		}
 		if err == nil && prefix.Contains(ip) {
 			return true
 		}
@@ -260,4 +273,37 @@ func (p Profile) TLS(now time.Time) (*tls.Config, error) {
 		}
 	}
 	return &tls.Config{MinVersion: tls.VersionTLS12, Certificates: []tls.Certificate{certificate}}, nil
+}
+
+// Version 2 cloud is a customer-owned host running this same SQLite service,
+// not the legacy (unimplemented) PostgreSQL/hybrid contract of version 1.
+func (p Profile) validateCustomerCloud() error {
+	if p.Mode != "cloud" {
+		return ErrProfile
+	}
+	host, port, err := net.SplitHostPort(p.Listen)
+	ip := net.ParseIP(host)
+	n, e := strconv.Atoi(port)
+	if err != nil || e != nil || ip == nil || ip.IsUnspecified() || ip.IsMulticast() || n < 1 || n > 65535 {
+		return ErrProfile
+	}
+	if !filepath.IsAbs(p.TLSCert) || !filepath.IsAbs(p.TLSKey) || p.TLSCert == p.TLSKey || len(p.AllowedNetworks) < 1 || len(p.AllowedNetworks) > 16 {
+		return ErrProfile
+	}
+	seen := map[string]bool{}
+	for _, value := range p.AllowedNetworks {
+		prefix, err := customerPrefix(value)
+		if err != nil || seen[prefix.String()] {
+			return ErrProfile
+		}
+		seen[prefix.String()] = true
+	}
+	return nil
+}
+func customerPrefix(value string) (netip.Prefix, error) {
+	p, err := netip.ParsePrefix(value)
+	if err != nil || p != p.Masked() || p.Bits() == 0 || p.Addr().IsMulticast() || p.Addr().Is4In6() {
+		return netip.Prefix{}, ErrProfile
+	}
+	return p, nil
 }

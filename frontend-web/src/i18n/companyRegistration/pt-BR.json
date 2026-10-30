@@ -31,5 +31,8 @@
   "conflict": "Conflito de revisão. Consulte antes de editar.",
   "error": "Não foi possível confirmar o cadastro.",
   "fiscalNote": "Estes dados não homologam nem autorizam emissão. Certificados e tokens são configurados separadamente.",
-  "unsaved": "Há dados não salvos ou uma tentativa pendente. Sair mesmo assim?"
+  "unsaved": "Há dados não salvos ou uma tentativa pendente. Sair mesmo assim?",
+  "keyCustody": "Chaves sob controle do cliente",
+  "lostKey": "Perder a chave mestra torna os segredos inacessíveis. O provedor do ERP não consegue recuperá-los. Gere e exporte seu backup privado na instalação.",
+  "dataDestination": "O destino é escolhido na configuração da instalação: local, servidor próprio ou nuvem do cliente. Selecionar uma conexão não migra dados nem envia chaves ao provedor."
 }
