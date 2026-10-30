@@ -36,6 +36,14 @@ ALLOWED_SKIPS = {
 }
 
 
+# Customer credentials and explicit CLI opt-in are deliberately absent in CI.
+# This exception applies only to the new real Focus sandbox test; its failures
+# are still rejected above, and no existing required integration is exempted.
+OPTIONAL_EXTERNAL_SKIPS = {
+    ('titansystem-backend/internal/fiscalproduction', 'TestFocusSandboxRealNFCe'),
+}
+
+
 def verify(path):
     passed, skipped, packages = set(), set(), set()
     with Path(path).open(encoding='utf-8') as report:
@@ -52,7 +60,7 @@ def verify(path):
             if action == 'skip' and test:
                 skipped.add((package, test))
     missing = REQUIRED - passed
-    unexpected = skipped - ALLOWED_SKIPS
+    unexpected = skipped - ALLOWED_SKIPS - OPTIONAL_EXTERNAL_SKIPS
     if missing or unexpected or any(package not in packages for package, _ in REQUIRED):
         raise ValueError(f'Integrações ausentes: {sorted(missing)}; ignorados não permitidos: {sorted(unexpected)}')
     return {'status': 'PASS', 'required_integrations': len(REQUIRED),

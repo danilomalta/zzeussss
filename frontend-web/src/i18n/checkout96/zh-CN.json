@@ -80,5 +80,7 @@
   "checkoutFiscalLoading": "正在查询税务状态…",
   "checkoutFiscalUnavailable": "无法确认状态。请先刷新再重试。",
   "checkoutFiscalMissingRequest": "此设备未保存原始请求，无法重新处理。系统不会创建新销售。",
-  "checkoutFiscalDemo": "演示模式：不会进行真实税务开票。"
+  "checkoutFiscalDemo": "演示模式：不会进行真实税务开票。",
+  "checkoutFiscalCancelled": "税务票据已取消",
+  "checkoutFiscalCancellationFailed": "税务票据取消失败"
 }

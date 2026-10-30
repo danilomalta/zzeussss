@@ -80,5 +80,7 @@
   "checkoutFiscalLoading": "Consultando el estado fiscal…",
   "checkoutFiscalUnavailable": "No se pudo confirmar el estado. Actualice antes de reintentar.",
   "checkoutFiscalMissingRequest": "Reproceso no disponible en este dispositivo: falta la solicitud original guardada. No se creará otra venta.",
-  "checkoutFiscalDemo": "Demostración: sin emisión fiscal real."
+  "checkoutFiscalDemo": "Demostración: sin emisión fiscal real.",
+  "checkoutFiscalCancelled": "Documento fiscal cancelado",
+  "checkoutFiscalCancellationFailed": "Error al cancelar el documento fiscal"
 }

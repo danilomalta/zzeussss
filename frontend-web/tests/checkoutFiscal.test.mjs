@@ -73,3 +73,24 @@ test('unavailable browser storage does not participate in ID-only retry',async()
  const client=createCheckoutFiscalClient({getCurrent:()=>context,cache:{async read(){throw Error('storage');},async write(){throw Error('storage');}},fetcher:async(url,options)=>{if(options.method==='POST'){posts++;assert.ok(url.endsWith('/fiscal/reprocess'));assert.equal(options.body,'{}');state='authorized_homologation';}return {ok:true,status:200,json:async()=>plan(state)};}}).bind(context);
  const view=await client.read('checkout');assert.equal(view.state,'failed');assert.equal(view.canRetry,true);assert.equal((await client.retry('checkout')).state,'authorized');assert.equal(posts,1);
 });
+
+test('fiscal cancellation is display-only, separate from sale/payment, with safe reason in five languages',async()=>{
+ for(const [raw,expected] of [['cancelled_homologation','cancelled'],['cancellation_failed','cancellationFailed']]){
+  const response=plan(raw);response.fiscal.message='<img src=x onerror=alert(1)> Rejeicao';
+  assert.equal(checkoutFiscalView(response,'checkout').state,expected);
+  assert.equal(response.completion.sale_status,'committed');
+  const f=fixture(()=>response);assert.equal((await f.client.read('checkout')).canRetry,false);await f.client.retry('checkout');assert.ok(f.calls.every(c=>c.method==='GET'));
+ }
+ const require=createRequire(import.meta.url),ts=require('typescript'),React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+ const source=fs.readFileSync(new URL('../src/modules/pos/pages/CheckoutFiscalStatus.tsx',import.meta.url),'utf8');
+ const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
+ const mod={exports:{}};Function('require','exports','module',js)(name=>name.startsWith('react')?require(name):{},mod.exports,mod);
+ for(const locale of ['pt-BR','en','es','fr','zh-CN']){
+  const w=JSON.parse(fs.readFileSync(new URL(`../src/i18n/checkout96/${locale}.json`,import.meta.url)));
+  for(const [state,label] of [['cancelled','checkoutFiscalCancelled'],['cancellationFailed','checkoutFiscalCancellationFailed']]){
+   const html=renderToStaticMarkup(React.createElement(mod.exports.CheckoutFiscalStatusView,{view:{state,message:'<img src=x> Rejeicao'},busy:false,unavailable:false,demo:false,connected:true,w,onRetry(){throw Error('unexpected retry');},onRefresh(){}}));
+   assert.ok(html.includes(w[label]));assert.ok(!html.includes('>'+w.checkoutFiscalRetry+'</button>'));assert.equal((html.match(/<button/g)||[]).length,1);
+   if(state==='cancellationFailed'){assert.ok(html.includes('&lt;img'));assert.ok(!html.includes('<img'));}
+  }
+ }
+});

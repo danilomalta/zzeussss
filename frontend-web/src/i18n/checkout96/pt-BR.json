@@ -80,5 +80,7 @@
   "checkoutFiscalLoading": "Consultando situação fiscal…",
   "checkoutFiscalUnavailable": "Não foi possível confirmar o status. Atualize antes de tentar novamente.",
   "checkoutFiscalMissingRequest": "Reprocessamento indisponível neste aparelho: a solicitação original não está salva. Não será criada outra venda.",
-  "checkoutFiscalDemo": "Demonstração: nenhuma emissão fiscal real."
+  "checkoutFiscalDemo": "Demonstração: nenhuma emissão fiscal real.",
+  "checkoutFiscalCancelled": "Nota fiscal cancelada",
+  "checkoutFiscalCancellationFailed": "Erro no cancelamento da nota fiscal"
 }

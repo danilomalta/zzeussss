@@ -11,6 +11,7 @@ export function checkoutFiscalView(plan,checkout){
   if(!id(f.intent_id)||!/^[0-9A-Z]{44}$/.test(f.key||''))throw Error('invalidReply');
   return {state:'authorized',plan};
  }
+ if(f.state==='cancelled_homologation'||f.state==='cancellation_failed')return {state:f.state==='cancelled_homologation'?'cancelled':'cancellationFailed',message:typeof f.message==='string'?f.message:'',plan};
  if(f.state==='failed')return {state:'failed',plan};
  if(['pending','recovery_required','uncertain','reserved','sending','response_received','not_sent','recovery_pending','protocol_received_homologation'].includes(f.state))return {state:'pending',plan};
  throw Error('invalidReply');

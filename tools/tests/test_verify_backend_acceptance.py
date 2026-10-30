@@ -56,6 +56,24 @@ class AcceptanceGateTests(unittest.TestCase):
                                   for p, t in gate.ALLOWED_SKIPS]
         self.assertEqual(gate.verify(self.report(events))['skipped'], 3)
 
+    def test_real_focus_opt_in_skip_is_allowed_but_failure_is_rejected(self):
+        package = 'titansystem-backend/internal/fiscalproduction'
+        test = 'TestFocusSandboxRealNFCe'
+        events = self.success() + [{'Action': 'skip', 'Package': package, 'Test': test}]
+        self.assertEqual(gate.verify(self.report(events))['status'], 'PASS')
+        events[-1]['Action'] = 'fail'
+        with self.assertRaises(ValueError):
+            gate.verify(self.report(events))
+
+    def test_focus_exception_does_not_allow_other_skips(self):
+        for package, test in [
+            ('other', 'TestFocusSandboxRealNFCe'),
+            ('titansystem-backend/internal/fiscalproduction', 'TestFocusFaultTimeoutThenConsultationNeverDuplicates'),
+        ]:
+            with self.subTest(test=test), self.assertRaises(ValueError):
+                gate.verify(self.report(self.success() + [
+                    {'Action': 'skip', 'Package': package, 'Test': test}]))
+
     def test_empty_and_malformed_reports_are_rejected(self):
         with self.assertRaises(ValueError):
             gate.verify(self.report([]))

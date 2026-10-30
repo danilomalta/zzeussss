@@ -80,5 +80,7 @@
   "checkoutFiscalLoading": "Checking fiscal status…",
   "checkoutFiscalUnavailable": "Status could not be confirmed. Refresh before trying again.",
   "checkoutFiscalMissingRequest": "Reprocessing unavailable on this device: the original request is not saved. No new sale will be created.",
-  "checkoutFiscalDemo": "Demo: no real fiscal issuance."
+  "checkoutFiscalDemo": "Demo: no real fiscal issuance.",
+  "checkoutFiscalCancelled": "Fiscal document cancelled",
+  "checkoutFiscalCancellationFailed": "Fiscal document cancellation failed"
 }

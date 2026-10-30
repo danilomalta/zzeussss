@@ -122,7 +122,7 @@ func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
 		} else {
 			result, e = provider.Emit(c.UserContext(), fiscalContext, input)
 		}
-		state := fiscal.CheckoutStatus{CanReprocess: result.State == "failed", State: result.State, OperationID: result.OperationID, IntentID: result.IntentID, Key: result.Key, ErrorCode: result.ErrorCode}
+		state := fiscal.CheckoutStatus{CanReprocess: result.State == "failed", State: result.State, OperationID: result.OperationID, IntentID: result.IntentID, Key: result.Key, ErrorCode: result.ErrorCode, Message: result.Message}
 		v.Fiscal = &state
 		if state.ErrorCode == "fiscal_status_persistence_failed" {
 			return c.Status(503).JSON(v)

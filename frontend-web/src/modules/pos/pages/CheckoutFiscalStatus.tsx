@@ -27,7 +27,8 @@ export default function CheckoutFiscalStatus({checkout,canReprocess=true}:{check
 export function CheckoutFiscalStatusView({view,busy,unavailable,demo,canReprocess=true,connected,w,onRetry,onRefresh}:{view:CheckoutFiscalView|null;busy:boolean;unavailable:boolean;demo:boolean;canReprocess?:boolean;connected:boolean;w:Record<string,string>;onRetry:()=>void;onRefresh:()=>void}){
  return <section className="brand-panel" aria-label={w.checkoutFiscalTitle} aria-busy={busy}>
   <strong>{w.checkoutFiscalTitle}</strong>
-  <p role="status" aria-live="polite">{demo?w.checkoutFiscalDemo:unavailable?w.checkoutFiscalUnavailable:!view?w.checkoutFiscalLoading:w[{authorized:'checkoutFiscalAuthorized',failed:'checkoutFiscalFailed',pending:'checkoutFiscalPending',none:'checkoutFiscalNone'}[view.state]]}</p>
+  <p role="status" aria-live="polite">{demo?w.checkoutFiscalDemo:unavailable?w.checkoutFiscalUnavailable:!view?w.checkoutFiscalLoading:w[{authorized:'checkoutFiscalAuthorized',failed:'checkoutFiscalFailed',pending:'checkoutFiscalPending',none:'checkoutFiscalNone',cancelled:'checkoutFiscalCancelled',cancellationFailed:'checkoutFiscalCancellationFailed'}[view.state]]}</p>
+  {view?.state==='cancellationFailed'&&view.message&&<p role="alert">{view.message}</p>}
   {view?.state==='authorized'&&<p>{w.checkoutFiscalHomologation}</p>}
   {view?.state==='failed'&&canReprocess&&<><button type="button" className="brand-secondary" disabled={busy||!view.canRetry||!connected||demo} onClick={onRetry}>{w.checkoutFiscalRetry}</button>{!view.canRetry&&<p>{w.checkoutFiscalMissingRequest}</p>}</>}
   {!demo&&<button type="button" className="brand-secondary" disabled={busy||!connected} onClick={onRefresh}>{w.checkoutFiscalRefresh}</button>}

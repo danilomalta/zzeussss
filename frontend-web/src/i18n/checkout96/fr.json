@@ -80,5 +80,7 @@
   "checkoutFiscalLoading": "Vérification de l’état fiscal…",
   "checkoutFiscalUnavailable": "État non confirmé. Actualisez avant de réessayer.",
   "checkoutFiscalMissingRequest": "Retraitement indisponible sur cet appareil : la demande originale n’est pas enregistrée. Aucune nouvelle vente ne sera créée.",
-  "checkoutFiscalDemo": "Démonstration : aucune émission fiscale réelle."
+  "checkoutFiscalDemo": "Démonstration : aucune émission fiscale réelle.",
+  "checkoutFiscalCancelled": "Document fiscal annulé",
+  "checkoutFiscalCancellationFailed": "Échec de l’annulation du document fiscal"
 }

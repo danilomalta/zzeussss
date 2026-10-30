@@ -23,6 +23,7 @@ type DocumentRequest struct {
 	ApprovalReference string
 }
 type DocumentResult struct {
+	Message     string
 	State       string
 	OperationID string
 	IntentID    string

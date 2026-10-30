@@ -10,6 +10,8 @@ import (
 
 // Trusted process configuration. Secret references are rejected; secrets live in the vault.
 type TenantFiscalConfiguration struct {
+	CertificateType      string          `json:"certificate_type,omitempty"`
+	FocusBaseURL         string          `json:"focus_base_url,omitempty"`
 	Binding              ProviderBinding `json:"binding"`
 	Provider             string          `json:"provider"`
 	Environment          string          `json:"environment"`
@@ -94,8 +96,7 @@ func (r *ProviderRegistry) ValidateCheckoutConfiguration(ctx context.Context, a 
 }
 
 // LoadProviderRegistry reads encrypted tenant credentials and never resolves an external
-// provider to own. External configurations remain unavailable until an adapter
-// is explicitly installed by trusted process wiring.
+// provider to own. External uses Focus NFC-e homologation with a tenant vault token.
 func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
 	raw, err := privateFile(path)
 	if err != nil {
@@ -124,6 +125,20 @@ func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
 				return nil, ErrUnavailable
 			}
 			e.Provider = NewOwnProvider(runtime)
+		}
+		if c.Provider == "external" && (c.CertificateType != "" || c.FocusBaseURL != "") {
+			token, err := vault.read(context.Background(), c.Binding.TenantID, "token")
+			if err != nil {
+				return nil, ErrUnavailable
+			}
+			csc, _ := vault.read(context.Background(), c.Binding.TenantID, "csc")
+			provider, e2 := newFocusProvider(c, token, csc)
+			clear(token)
+			clear(csc)
+			if e2 != nil {
+				return nil, e2
+			}
+			e.Provider = provider
 		}
 		entries = append(entries, e)
 	}
