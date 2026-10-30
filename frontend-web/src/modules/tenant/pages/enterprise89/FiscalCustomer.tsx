@@ -2,12 +2,13 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {useEnterprise89} from '../../../../core/enterprise89/context';
 import {useLocalSession} from '../../../../core/local/useLocalSession';
 import {createFiscalCustomer,FiscalCustomerError,profileMatches,states} from '../../../../core/fiscalCustomer/client.mjs';
-import type {Capabilities,Profile,ProfileInput,Requirements} from '../../../../core/fiscalCustomer/client.mjs';
+import type {OnboardingDiagnostic,Capabilities,Profile,ProfileInput,Requirements} from '../../../../core/fiscalCustomer/client.mjs';
 import {fiscalWords} from '../../../../core/fiscalCustomer/words';
 import './fiscalCustomer.css';
 
 export function FiscalCustomer(){
  const {token,cap,locale,dirty}=useEnterprise89(), session=useLocalSession(s=>s.session), fw=fiscalWords(locale);
+ const [diagnostic,setDiagnostic]=useState<OnboardingDiagnostic|null>(null);
  const [lookup,setLookup]=useState(''),[input,setInput]=useState<ProfileInput|null>(null),[profile,setProfile]=useState<Profile|null>(null);
  const [capabilities,setCapabilities]=useState<Capabilities|null>(null),[guide,setGuide]=useState<Requirements|null>(null);
  const [message,setMessage]=useState(''),[busy,setBusy]=useState(false),[edited,setEdited]=useState(false);
@@ -23,9 +24,17 @@ export function FiscalCustomer(){
  },[token,session,scope,cap.role,cap.tenant_id,cap.store_id,cap.identity_id,cap.device_id]);
  const api=useMemo(()=>createFiscalCustomer({token,isCurrent:current}),[token,current]);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;sequence.current++;};},[]);
- useEffect(()=>{sequence.current++;setProfile(null);setInput(null);setGuide(null);setCapabilities(null);setEdited(false);setBusy(false);setMessage('');},[api]);
+ useEffect(()=>{sequence.current++;setProfile(null);setInput(null);setGuide(null);setDiagnostic(null);setCapabilities(null);setEdited(false);setBusy(false);setMessage('');},[api]);
  useEffect(()=>{dirty('fiscal-customer',edited||!!pending);return()=>dirty('fiscal-customer',false);},[dirty,edited,pending]);
  function failure(error:unknown){setMessage(error instanceof FiscalCustomerError?error.code:'network');}
+ async function diagnose(){
+  if(!profile||edited)return;
+  const n=++sequence.current;setBusy(true);setMessage('');setDiagnostic(null);
+  try{const value=await api.onboarding(profile.input.profile_id);if(mounted.current&&n===sequence.current&&current()){
+   if(value.profile_revision!==profile.revision){setMessage('conflict');return;}setDiagnostic(value);
+  }}catch(error){if(mounted.current&&n===sequence.current)failure(error);}
+  finally{if(mounted.current&&n===sequence.current)setBusy(false);}
+ }
  async function refresh(){
   const n=++sequence.current;setBusy(true);setMessage('');setCapabilities(null);
   try{const value=await api.capabilities();if(mounted.current&&n===sequence.current&&current())setCapabilities(value);}
@@ -33,8 +42,8 @@ export function FiscalCustomer(){
   finally{if(mounted.current&&n===sequence.current)setBusy(false);}
  }
  async function load(){
-  const n=++sequence.current;setBusy(true);setMessage('');setProfile(null);setInput(null);setGuide(null);
-  try{const value=await api.read(lookup);if(mounted.current&&n===sequence.current&&current()){setProfile(value);setInput({...value.input,expected_revision:value.revision});setEdited(false);}}
+  const n=++sequence.current;setBusy(true);setMessage('');setProfile(null);setInput(null);setGuide(null);setDiagnostic(null);
+  try{const value=await api.read(lookup);if(mounted.current&&n===sequence.current&&current()){setDiagnostic(null);setProfile(value);setInput({...value.input,expected_revision:value.revision});setEdited(false);}}
   catch(error){if(mounted.current&&n===sequence.current)failure(error);}
   finally{if(mounted.current&&n===sequence.current)setBusy(false);}
  }
@@ -48,7 +57,7 @@ export function FiscalCustomer(){
   if(!input||!owner||pending||writing.current||!current())return;
   writing.current=true;setBusy(true);setMessage('');
   const attempt={input:{...input,operation_id:crypto.randomUUID()},scope};setPending(attempt);
-  try{const value=await api.save(attempt.input);if(mounted.current&&current()){setProfile(value);setInput({...value.input,expected_revision:value.revision});setPending(null);setEdited(false);setMessage('saved');}}
+  try{const value=await api.save(attempt.input);if(mounted.current&&current()){setDiagnostic(null);setProfile(value);setInput({...value.input,expected_revision:value.revision});setPending(null);setEdited(false);setMessage('saved');}}
   catch(error){if(mounted.current){
    // A definitive HTTP rejection permits correction. Missing/malformed responses
    // retain the original operation and block a second POST, including on logout.
@@ -61,7 +70,7 @@ export function FiscalCustomer(){
   try{const value=await api.read(pending.input.profile_id,pending.input.expected_revision+1);
    if(mounted.current&&current()){
     if(!profileMatches(value,pending.input)){setMessage('conflict');return;}
-    setProfile(value);setInput({...value.input,expected_revision:value.revision});setPending(null);setEdited(false);setMessage('saved');
+    setDiagnostic(null);setProfile(value);setInput({...value.input,expected_revision:value.revision});setPending(null);setEdited(false);setMessage('saved');
    }
   }catch(error){if(mounted.current)failure(error);}finally{if(mounted.current)setBusy(false);}
  }
@@ -81,6 +90,9 @@ export function FiscalCustomer(){
    <label>{fw.series}<input required type="number" min={0} max={889} step={1} value={input.series} onChange={e=>{setInput({...input,series:Number(e.target.value)});setEdited(true);}}/></label>
   </div><button className="brand-primary" disabled={!edited}>{fw.save}</button><button type="button" className="brand-secondary" disabled={!edited} onClick={()=>{setInput(profile?{...profile.input,expected_revision:profile.revision}:null);setEdited(false);setGuide(null);setMessage('');}}>{fw.discard}</button></fieldset><button type="button" className="brand-secondary" disabled={busy||!current()||!states.includes(input.state)} onClick={()=>void requirements()}>{fw.ufGuide}</button></form>}
   {guide&&<section aria-label={fw.ufGuide}><h3>{guide.uf} · {guide.reference_date}</h3><p>{fw.dated}</p><dl>{(['issuer','developer','limits'] as const).map((key,i)=><div key={key}><dt>{fw[key]}</dt><dd>{[guide.issuer_requirements,guide.developer_requirements,guide.limitations][i]}</dd></div>)}</dl>{guide.sources.filter(s=>{try{const u=new URL(s.url);return u.protocol==='https:'&&u.hostname.endsWith('.gov.br');}catch{return false;}}).map((s,i)=><p key={i}><a href={s.url} target="_blank" rel="noreferrer">{s.title}</a></p>)}</section>}
+  {profile&&<section aria-label={fw.onboardingTitle}><h3>{fw.onboardingTitle}</h3><p>{fw.onboardingIntro}</p><button type="button" className="brand-secondary" disabled={blocked||edited} onClick={()=>void diagnose()}>{fw.onboardingCheck}</button>
+   {diagnostic&&!edited&&diagnostic.profile_revision===profile.revision&&<div role="status"><p>{fw.onboardingConfiguration}: {fw[diagnostic.configuration_valid?'yes':'no']}</p><ul>{diagnostic.blockers.map(code=><li key={code}>{fw[code]}</li>)}</ul></div>}
+  </section>}
   {profile&&<section><h3>{fw.blockers}</h3><ul>{profile.readiness.blockers.map((code,i)=><li key={i}>{fw[code]||code}</li>)}</ul><p>{fw.draft}</p></section>}
  </section>;
 }

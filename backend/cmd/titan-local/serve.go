@@ -49,9 +49,13 @@ func serveStationContext(ctx context.Context, args []string, out io.Writer) erro
 	issuerKeys := options.String("issuer-keys", "", "chaves públicas emissoras confiáveis")
 	port := options.Int("port", 8181, "porta loopback sem perfil de operação")
 	fiscalPath := options.String("fiscal-production", "", "configuração fiscal privada; desativada por padrão")
+	providersPath := options.String("fiscal-providers", "", "configuração privada de provedores por empresa")
 	profilePath := options.String("deployment", "", "perfil privado de operação local ou servidor")
 	if options.Parse(args) != nil || options.NArg() != 0 || *dbPath == "" || *stationPath == "" {
 		return errors.New("informe banco e aparelho")
+	}
+	if *fiscalPath != "" && *providersPath != "" {
+		return fiscalproduction.ErrUnavailable
 	}
 	if *port < 1 || *port > 65535 {
 		return errors.New("porta local deve estar entre 1 e 65535")
@@ -91,6 +95,16 @@ func serveStationContext(ctx context.Context, args []string, out io.Writer) erro
 			return fiscalproduction.ErrUnavailable
 		}
 	}
+	var providers *fiscalproduction.ProviderRegistry
+	if *providersPath != "" {
+		if verifier == nil {
+			return fiscalproduction.ErrUnavailable
+		}
+		providers, err = fiscalproduction.LoadProviderRegistry(*providersPath)
+		if err != nil {
+			return fiscalproduction.ErrUnavailable
+		}
+	}
 	// Unsupported profiles, bad certificate, network and flags are rejected
 	// before opening/migrating the existing database.
 	if err = ctx.Err(); err != nil {
@@ -102,7 +116,7 @@ func serveStationContext(ctx context.Context, args []string, out io.Writer) erro
 	}
 	defer db.Close()
 	defer clear(key)
-	app, err := localapi.NewWithProductionAndGate(db, device, verifier, networkGate(profile), key, fiscalRuntime)
+	app, err := localapi.NewWithFiscalProvidersAndGate(db, device, verifier, networkGate(profile), key, fiscalRuntime, providers)
 	if err != nil {
 		return err
 	}

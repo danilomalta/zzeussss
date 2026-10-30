@@ -68,5 +68,17 @@
   "manualProof96": "登记手工凭证",
   "manualRecorded96": "已登记待核对",
   "manualHelp96": "核对终端金额和付款方式。此记录不确认收单结算；结账时核对凭证。",
-  "noCash96": "未收现金：无需找零。"
+  "noCash96": "未收现金：无需找零。",
+  "checkoutFiscalTitle": "税务状态",
+  "checkoutFiscalAuthorized": "已授权",
+  "checkoutFiscalFailed": "失败",
+  "checkoutFiscalPending": "等待重新处理或恢复",
+  "checkoutFiscalNone": "此结账未关联税务开票",
+  "checkoutFiscalHomologation": "测试环境开票，不具税务效力。",
+  "checkoutFiscalRetry": "重新处理",
+  "checkoutFiscalRefresh": "刷新状态",
+  "checkoutFiscalLoading": "正在查询税务状态…",
+  "checkoutFiscalUnavailable": "无法确认状态。请先刷新再重试。",
+  "checkoutFiscalMissingRequest": "此设备未保存原始请求，无法重新处理。系统不会创建新销售。",
+  "checkoutFiscalDemo": "演示模式：不会进行真实税务开票。"
 }

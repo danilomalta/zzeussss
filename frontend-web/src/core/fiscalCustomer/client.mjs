@@ -39,6 +39,18 @@ export function createFiscalCustomer({token, isCurrent, fetcher = fetch}) {
     return value;
   }
   return {
+    async onboarding(profileID) {
+      if (!id(profileID)) throw new FiscalCustomerError('invalid');
+      const value = await request('onboarding/' + encodeURIComponent(profileID));
+      const flags = ['configuration_valid','production_blocked','transmission_performed','official_authorization'];
+      const codes = ['onboarding_configuration_required','onboarding_official_verification_required','onboarding_production_blocked'];
+      if (Object.keys(value).sort().join() !== [...flags,'profile_revision','blockers'].sort().join() ||
+          !flags.every(key => typeof value[key] === 'boolean') || value.production_blocked !== true ||
+          value.transmission_performed !== false || value.official_authorization !== false ||
+          !Number.isSafeInteger(value.profile_revision) || value.profile_revision < 1 ||
+          !Array.isArray(value.blockers) || !value.blockers.every(code => codes.includes(code))) throw new FiscalCustomerError('response');
+      return value;
+    },
     async capabilities() {
       const value = await request('capabilities');
       if (!['transmission_available','nfse_available','sped_generation_available','production_cancellation_available'].every(key => typeof value[key] === 'boolean')) throw new FiscalCustomerError('response');

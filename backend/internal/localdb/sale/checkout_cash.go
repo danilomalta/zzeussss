@@ -3,6 +3,7 @@ package sale
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -13,8 +14,9 @@ import (
 )
 
 type FinalizeCashPlanInput struct {
-	OperationID   string `json:"operation_id"`
-	ReceivedCents int64  `json:"received_cents"`
+	FiscalRequestSHA256 string `json:"fiscal_request_sha256,omitempty"`
+	OperationID         string `json:"operation_id"`
+	ReceivedCents       int64  `json:"received_cents"`
 }
 
 type PlanCompletion struct {
@@ -24,6 +26,16 @@ type PlanCompletion struct {
 	ReceivedCents int64  `json:"received_cents"`
 	ChangeCents   int64  `json:"change_cents"`
 	CompletedAt   string `json:"completed_at"`
+}
+
+func planTaxRefs(plan Plan) []string {
+	var refs []string
+	for _, item := range plan.Items {
+		if item.Tax != nil {
+			refs = append(refs, item.Tax.QuoteOperationID)
+		}
+	}
+	return refs
 }
 
 func samePlanPrices(a, b []QuoteItem) bool {
@@ -68,7 +80,7 @@ func readPlanCompletionTx(ctx context.Context, tx *sql.Tx, actor identity.Scope,
 		if e != nil {
 			return e
 		}
-		if required {
+		if required && len(planTaxRefs(*plan)) == 0 {
 			plan.CanFinalize = false
 			return nil
 		}
@@ -76,6 +88,14 @@ func readPlanCompletionTx(ctx context.Context, tx *sql.Tx, actor identity.Scope,
 		// or price/stock reservation. Finalization checks the contract again.
 		if plan.State == "prepared" && cashOnly(*plan) && checkShiftTx(ctx, tx, actor, device, plan.CashSessionID) == nil {
 			items, total, e := priceItemsTx(ctx, tx, actor, planItems(*plan))
+			if e == nil {
+				bindings, newTotal, err := priceTaxesTx(ctx, tx, actor, device, planTaxRefs(*plan), items, total)
+				e = err
+				total = newTotal
+				for i, b := range bindings {
+					items[i].TotalCents += b.AdditionalCents
+				}
+			}
 			plan.CanFinalize = e == nil && total == plan.TotalCents && samePlanPrices(plan.Items, items)
 		}
 		return nil
@@ -99,6 +119,17 @@ func readPlanCompletionTx(ctx context.Context, tx *sql.Tx, actor identity.Scope,
 	}
 	plan.State = "completed"
 	plan.Completion = &result
+	var raw string
+	e := tx.QueryRowContext(ctx, `SELECT payload_json FROM outbox WHERE tenant_id=? AND store_id=? AND device_id=? AND aggregate_id=? AND event_type='checkout.fiscal_status' ORDER BY created_at DESC,event_id DESC LIMIT 1`, actor.TenantID, actor.StoreID, device.DeviceID, plan.CheckoutID).Scan(&raw)
+	if e == nil {
+		var state fiscal.CheckoutStatus
+		if json.Unmarshal([]byte(raw), &state) != nil {
+			return ErrConflict
+		}
+		plan.Fiscal = &state
+	} else if !errors.Is(e, sql.ErrNoRows) {
+		return e
+	}
 	plan.CanFinalize = false
 	return nil
 }
@@ -106,7 +137,7 @@ func readPlanCompletionTx(ctx context.Context, tx *sql.Tx, actor identity.Scope,
 // FinalizeCashPlan atomically creates the existing cash sale, stock consumption,
 // net cash movement, stable payment IDs, outbox and tender/change audit link.
 // It accepts only cash allocations; no electronic approval can be supplied.
-func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, id string, in FinalizeCashPlanInput) (Plan, error) {
+func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, id string, in FinalizeCashPlanInput, token ...string) (Plan, error) {
 	if db == nil || !planID(id) || !planID(in.OperationID) || in.ReceivedCents <= 0 || in.ReceivedCents > checkoutMaxSafe {
 		return Plan{}, ErrInvalid
 	}
@@ -121,6 +152,14 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 	plan, err := readPlanTx(ctx, tx, actor, device, id)
 	if err != nil {
 		return Plan{}, err
+	}
+	if len(planTaxRefs(plan)) > 0 {
+		if len(token) != 1 {
+			return Plan{}, ErrInvalid
+		}
+		if err = fiscal.ValidateSaleSessionTx(ctx, tx, actor, device, token[0]); err != nil {
+			return Plan{}, err
+		}
 	}
 	hash := planHash(in)
 	if plan.Completion != nil {
@@ -157,6 +196,11 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 		return Plan{}, ErrConflict
 	}
 	authorize := func(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext) error {
+		if len(planTaxRefs(plan)) > 0 {
+			if err := contracts.RequireTx(ctx, tx, a, d, identity.Sell, modules.Fiscal); err != nil {
+				return err
+			}
+		}
 		return contracts.RequireTx(ctx, tx, a, d, identity.Sell, modules.POS)
 	}
 	if err = authorize(ctx, tx, actor, device); err != nil {
@@ -169,10 +213,17 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 	if err != nil {
 		return Plan{}, err
 	}
+	bindings, total, err := priceTaxesTx(ctx, tx, actor, device, planTaxRefs(plan), items, total)
+	if err != nil {
+		return Plan{}, err
+	}
+	for i, b := range bindings {
+		items[i].TotalCents += b.AdditionalCents
+	}
 	if total != plan.TotalCents || !samePlanPrices(plan.Items, items) {
 		return Plan{}, ErrConflict
 	}
-	saleInput := Input{OperationID: in.OperationID, SaleID: plan.CheckoutID, CashSessionID: plan.CashSessionID, Items: planItems(plan)}
+	saleInput := Input{TaxQuoteOperations: planTaxRefs(plan), OperationID: in.OperationID, SaleID: plan.CheckoutID, CashSessionID: plan.CashSessionID, Items: planItems(plan)}
 	ids := make([]string, len(plan.Parts))
 	for i, p := range plan.Parts {
 		saleInput.Payments = append(saleInput.Payments, Payment{Method: "cash", AmountCents: p.AmountCents})
