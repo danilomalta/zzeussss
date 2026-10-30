@@ -128,6 +128,8 @@ func NewWithFiscalProvidersAndGate(db *sql.DB, device identity.DeviceContext, ve
 		return c.JSON(fiber.Map{"tenant_id": session.Actor.TenantID, "store_id": session.Actor.StoreID, "identity_id": session.Actor.IdentityID, "device_id": session.Device.DeviceID, "expires_unix": session.ExpiresUnix})
 	})
 	protected.Get("/capabilities", s.capabilities)
+	protected.Get("/company/registration", s.companyRegistration)
+	protected.Post("/company/registration", s.companyRegistration)
 	protected.Get("/access/policy", s.readPolicy)
 	protected.Post("/access/policy", limiter.New(limiter.Config{Max: 20, Expiration: time.Minute}), s.mutatePolicy)
 	protected.Get("/access/audit", s.auditAccess)

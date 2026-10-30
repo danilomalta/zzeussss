@@ -1,3 +1,4 @@
+import {createRegistrationClient,prefillFiscalProfile} from '../../../../core/companyRegistration/client.mjs';
 import {FiscalProviderCredentials} from './FiscalProviderCredentials';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useEnterprise89} from '../../../../core/enterprise89/context';
@@ -24,6 +25,7 @@ export function FiscalCustomer(){
    session.tenant_id===cap.tenant_id && session.store_id===cap.store_id && session.identity_id===cap.identity_id && session.device_id===cap.device_id;
  },[token,session,scope,cap.role,cap.tenant_id,cap.store_id,cap.identity_id,cap.device_id]);
  const api=useMemo(()=>createFiscalCustomer({token,isCurrent:current}),[token,current]);
+ const companyApi=useMemo(()=>createRegistrationClient({token,isCurrent:current}),[token,current]);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;sequence.current++;};},[]);
  useEffect(()=>{sequence.current++;setProfile(null);setInput(null);setGuide(null);setDiagnostic(null);setCapabilities(null);setEdited(false);setBusy(false);setMessage('');},[api]);
  useEffect(()=>{dirty('fiscal-customer',edited||!!pending);return()=>dirty('fiscal-customer',false);},[dirty,edited,pending]);
@@ -75,7 +77,7 @@ export function FiscalCustomer(){
    }
   }catch(error){if(mounted.current)failure(error);}finally{if(mounted.current)setBusy(false);}
  }
- function create(){if(!owner||!current()||pending)return;sequence.current++;const profile_id=crypto.randomUUID();setProfile(null);setGuide(null);setLookup(profile_id);setInput({operation_id:'',profile_id,expected_revision:0,cnpj:'',legal_name:'',state:'',municipality_ibge:'',state_registration:'',crt:'',model:'55',environment:'homologation',series:1});setEdited(true);setMessage('');}
+ function create(){if(!owner||!current()||pending)return;sequence.current++;const profile_id=crypto.randomUUID();setProfile(null);setGuide(null);setLookup(profile_id);setInput({operation_id:'',profile_id,expected_revision:0,cnpj:'',legal_name:'',state:'',municipality_ibge:'',state_registration:'',crt:'',model:'55',environment:'homologation',series:1});setEdited(true);setMessage('');void companyApi.read().then(company=>{if(mounted.current&&current())setInput(previous=>previous?.profile_id===profile_id?prefillFiscalProfile(previous,company.input):previous);}).catch(()=>{/* Manual entry remains available. */});}
  const blocked=busy||!!pending||!current();
  return <section className="brand-panel fiscal-customer" aria-labelledby="fiscal-customer-title">
   <h2 id="fiscal-customer-title">{fw.title}</h2><p>{fw.intro}</p><p><strong>{fw.draft}</strong></p><p>{fw.private}</p>

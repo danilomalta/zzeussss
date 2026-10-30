@@ -21293,6 +21293,9 @@
           }
         }
       }
+    },
+    "/local/v1/company/registration": {
+      "$ref": "./company-registration.openapi.json#/paths/~1local~1v1~1company~1registration"
     }
   },
   "components": {

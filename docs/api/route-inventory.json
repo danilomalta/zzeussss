@@ -3913,6 +3913,20 @@
       "path": "/local/v1/fiscal/onboarding/:id/provider",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/company/registration",
+      "authentication": "session",
+      "source": "backend/internal/localapi/server.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/company/registration",
+      "authentication": "session",
+      "source": "backend/internal/localapi/server.go"
     }
   ]
 }

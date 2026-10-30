@@ -27,6 +27,7 @@ const LocalWorkbench73 = React.lazy(() => import('../../modules/tenant/pages/Loc
 const LocalIntegrations74 = React.lazy(() => import('../../modules/tenant/pages/LocalIntegrations74'));
 const LocalEnterprise89 = React.lazy(() => import('../../modules/tenant/pages/LocalEnterprise89'));
 const LocalOperation90 = React.lazy(() => import('../../modules/tenant/pages/LocalOperation90'));
+const LocalCompanyRegistration = React.lazy(() => import('../../modules/tenant/pages/LocalCompanyRegistration'));
 const LocalSettings80 = React.lazy(() => import('../../modules/tenant/pages/LocalSettings80'));
 const LocalBusiness85 = React.lazy(() => import('../../modules/tenant/pages/LocalBusiness85'));
 const LocalSectors86 = React.lazy(() => import('../../modules/tenant/pages/LocalSectors86'));
@@ -73,6 +74,7 @@ export const router = createBrowserRouter([
     { path: 'overview', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'owner', element: <SuspenseWrapper><LocalOwnerDashboard /></SuspenseWrapper> },
     { path: 'map', element: <SuspenseWrapper><LocalDistributionMap /></SuspenseWrapper> },
+    { path: 'company', element: <SuspenseWrapper><LocalCompanyRegistration /></SuspenseWrapper> },
     { path: 'settings', element: <SuspenseWrapper><LocalSettings80 /></SuspenseWrapper> },
     { path: 'operation', element: <SuspenseWrapper><LocalOperation90 /></SuspenseWrapper> },
     { path: 'integrations/diagnostics', element: <SuspenseWrapper><LocalIntegrations74 /></SuspenseWrapper> },
