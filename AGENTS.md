@@ -15,3 +15,11 @@
 - Se o mesmo erro persistir após 2 tentativas, pare e mostre o erro.
 - Ao terminar: commit, push e responder só com branch, hash e resultado
   resumido dos testes.
+
+## Decisões do produto
+
+1. O sistema é ALUGADO a clientes (provedor de ERP). O provedor NÃO tem acesso aos dados nem às chaves dos clientes. Sem backdoor, sem conta mestra do provedor, sem cópia de chave ou segredo no provedor, sem telemetria com dado fiscal ou de cliente.
+2. Cada cliente escolhe onde o sistema roda e onde os dados ficam: servidor local, servidor próprio ou nuvem. O código nunca presume o destino.
+3. Cada cliente tem as PRÓPRIAS chaves (chave mestra do cofre, tokens, certificados), geradas na instalação dele, sob controle dele. O cliente é responsável pelo backup. Chaves de um cliente nunca abrem dados de outro.
+4. Existem DOIS cadastros: (a) PRÉ-CADASTRO, o mínimo para a pessoa começar; (b) CADASTRO COMPLETO, dentro do sistema, onde se registram meios fiscais, funcionários e o resto. Os dados podem ser puxados de uma fonte automática OU digitados à mão; a digitação manual sempre funciona.
+5. Produção fiscal continua BLOQUEADA. Nada é simulado como oficial.
