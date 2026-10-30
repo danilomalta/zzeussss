@@ -3899,6 +3899,20 @@
       "path": "/local/v1/fiscal/onboarding/:id",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fiscal/onboarding/:id/provider",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/onboarding/:id/provider",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
     }
   ]
 }

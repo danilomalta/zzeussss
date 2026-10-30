@@ -51,6 +51,15 @@ func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store,
 		return out, identity.ErrDenied
 	}
 
+	// A freshly onboarded owner has an identity/membership but may never have
+	// opened a cash register. Project only that authenticated identity for the
+	// legacy users foreign key; fiscal configuration must not require a sale.
+	if _, err = tx.ExecContext(ctx, `INSERT INTO users(tenant_id,id,display_name)
+        SELECT ?,i.id,i.display_name FROM identities i WHERE i.id=?
+        ON CONFLICT(tenant_id,id) DO NOTHING`, a.TenantID, a.IdentityID); err != nil {
+		return out, err
+	}
+
 	body, _ := json.Marshal(in)
 	var old, actor, store string
 	err = tx.QueryRowContext(ctx, `SELECT request_json,actor_id,store_id,revision,created_at FROM fiscal_profiles WHERE tenant_id=? AND device_id=? AND operation_id=?`, a.TenantID, d.DeviceID, in.OperationID).Scan(&old, &actor, &store, &out.Revision, &out.CreatedAt)

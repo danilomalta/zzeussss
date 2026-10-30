@@ -67,5 +67,12 @@
   "onboardingTokenPresent": "服务中存在令牌",
   "onboardingCSCPresent": "服务中存在 CSC",
   "onboardingLocalOnly": "诊断范围",
-  "onboardingNoRemoteVerification": "仅本地检查。不查询 Focus，也不确认是否获得税务授权或证书是否有效。"
+  "onboardingNoRemoteVerification": "仅本地检查。不查询 Focus，也不确认是否获得税务授权或证书是否有效。",
+  "providerCredentialsTitle": "企业 Focus 凭据",
+  "providerCredentialsIntro": "仅所有者可配置，需要安装管理员启用。开票方的 A1 证书和 CSC 必须在 Focus 中配置；此页面不上传证书。",
+  "providerCredentialsRead": "查询私密配置",
+  "providerToken": "Focus 令牌（替换）",
+  "providerCSC": "本地 CSC（可选）",
+  "providerReplaceWarning": "保存将替换原有凭据；空 CSC 将删除本地 CSC。保存后不再显示这些值。",
+  "providerCredentialsSave": "保存到凭据库"
 }

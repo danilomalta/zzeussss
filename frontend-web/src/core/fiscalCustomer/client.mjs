@@ -38,7 +38,28 @@ export function createFiscalCustomer({token, isCurrent, fetcher = fetch}) {
         !Array.isArray(value.readiness?.blockers) || !value.readiness.blockers.every(v => typeof v === 'string')) throw new FiscalCustomerError('response');
     return value;
   }
+  function validateCredentials(value, profileID) {
+    const allowed=['revision','operation_id','profile_id','profile_revision','environment','token_present','csc_present','production_blocked'];
+    if(Object.keys(value).sort().join()!==allowed.sort().join() || value.profile_id!==profileID ||
+      !Number.isSafeInteger(value.revision)||value.revision<0 || !Number.isSafeInteger(value.profile_revision)||value.profile_revision<0 ||
+      typeof value.operation_id!=='string' || (value.revision>0&&!id(value.operation_id)) ||
+      !['','homologation','production'].includes(value.environment) || typeof value.token_present!=='boolean'||typeof value.csc_present!=='boolean'||value.production_blocked!==true) throw new FiscalCustomerError('response');
+    return value;
+  }
   return {
+    async providerStatus(profileID) {
+      if(!id(profileID))throw new FiscalCustomerError('invalid');
+      return validateCredentials(await request('onboarding/'+encodeURIComponent(profileID)+'/provider'),profileID);
+    },
+    async saveProviderCredentials(profileID,input) {
+      if(!id(profileID)||!input||Object.keys(input).sort().join()!==['operation_id','expected_revision','profile_revision','token','csc'].sort().join()||
+        !id(input.operation_id)||!Number.isSafeInteger(input.expected_revision)||input.expected_revision<0||
+        !Number.isSafeInteger(input.profile_revision)||input.profile_revision<1||typeof input.token!=='string'||!/^[A-Za-z0-9]{1,512}$/.test(input.token)||
+        typeof input.csc!=='string'||input.csc.length>128||!/^[!-~]*$/.test(input.csc))throw new FiscalCustomerError('invalid');
+      const value=validateCredentials(await request('onboarding/'+encodeURIComponent(profileID)+'/provider',input),profileID);
+      if(value.operation_id!==input.operation_id||value.revision!==input.expected_revision+1||value.profile_revision!==input.profile_revision)throw new FiscalCustomerError('response');
+      return value;
+    },
     async onboarding(profileID) {
       if (!id(profileID)) throw new FiscalCustomerError('invalid');
       const value = await request('onboarding/' + encodeURIComponent(profileID));

@@ -67,5 +67,12 @@
   "onboardingTokenPresent": "Token presente en el servicio",
   "onboardingCSCPresent": "CSC presente en el servicio",
   "onboardingLocalOnly": "Alcance del diagnóstico",
-  "onboardingNoRemoteVerification": "Verificación local. No consulta Focus ni confirma la validez del certificado o la autorización fiscal."
+  "onboardingNoRemoteVerification": "Verificación local. No consulta Focus ni confirma la validez del certificado o la autorización fiscal.",
+  "providerCredentialsTitle": "Credenciales Focus de la empresa",
+  "providerCredentialsIntro": "Solo el propietario puede configurar. Requiere habilitación del administrador de la instalación. El A1 y CSC del emisor deben configurarse en Focus; esta pantalla no carga certificados.",
+  "providerCredentialsRead": "Consultar configuración privada",
+  "providerToken": "Token Focus (sustituir)",
+  "providerCSC": "CSC local (opcional)",
+  "providerReplaceWarning": "Guardar sustituye las credenciales; un CSC vacío elimina el CSC local. Los valores no volverán a mostrarse.",
+  "providerCredentialsSave": "Guardar en la bóveda"
 }

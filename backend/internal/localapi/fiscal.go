@@ -21,6 +21,8 @@ func (s *Server) mountFiscal(r fiber.Router) {
 	r.Get("/fiscal/capabilities", s.fiscalCapabilities)
 	r.Get("/fiscal/requirements/:uf", s.fiscalRequirements)
 	r.Post("/fiscal/onboarding", s.configureFiscal)
+	r.Get("/fiscal/onboarding/:id/provider", s.fiscalCustomerCredentials)
+	r.Post("/fiscal/onboarding/:id/provider", s.fiscalCustomerCredentials)
 	r.Get("/fiscal/onboarding/:id", s.fiscalOnboarding)
 	r.Post("/fiscal/profiles", s.configureFiscal)
 	r.Get("/fiscal/profiles/:id", s.readFiscalProfile)

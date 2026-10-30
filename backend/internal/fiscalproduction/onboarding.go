@@ -30,6 +30,11 @@ func DiagnoseOnboarding(r *ProviderRegistry, runtime *Runtime, a RequestContext,
 		provider, b, err := r.Resolve(a)
 		if err == nil {
 			c := r.entries[a.Actor.TenantID].Configuration
+			if c.CustomerManaged {
+				if focus, ok := provider.(*FocusProvider); ok && focus != nil {
+					c = focus.configuration
+				}
+			}
 			configured = b.ProfileID == p.Input.ProfileID && b.ProfileRevision == p.Revision && c.Environment == p.Input.Environment && c.CRT == p.Input.CRT
 			switch selected := provider.(type) {
 			case *OwnProvider:

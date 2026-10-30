@@ -67,5 +67,12 @@
   "onboardingTokenPresent": "Token present in service",
   "onboardingCSCPresent": "CSC present in service",
   "onboardingLocalOnly": "Diagnostic scope",
-  "onboardingNoRemoteVerification": "Local check. It does not query Focus or confirm certificate validity or tax authority authorization."
+  "onboardingNoRemoteVerification": "Local check. It does not query Focus or confirm certificate validity or tax authority authorization.",
+  "providerCredentialsTitle": "Company Focus credentials",
+  "providerCredentialsIntro": "Only the owner can configure this. Installation administrator opt-in is required. The issuer A1 certificate and CSC must be configured in Focus; this screen does not upload certificates.",
+  "providerCredentialsRead": "Read private configuration",
+  "providerToken": "Focus token (replace)",
+  "providerCSC": "Local CSC (optional)",
+  "providerReplaceWarning": "Saving replaces prior credentials; an empty CSC removes the local CSC. Values will not be displayed again.",
+  "providerCredentialsSave": "Save in vault"
 }

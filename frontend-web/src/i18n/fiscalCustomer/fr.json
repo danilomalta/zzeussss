@@ -67,5 +67,12 @@
   "onboardingTokenPresent": "Jeton présent dans le service",
   "onboardingCSCPresent": "CSC présent dans le service",
   "onboardingLocalOnly": "Portée du diagnostic",
-  "onboardingNoRemoteVerification": "Vérification locale. Elle ne consulte pas Focus et ne confirme ni la validité du certificat ni l’autorisation fiscale."
+  "onboardingNoRemoteVerification": "Vérification locale. Elle ne consulte pas Focus et ne confirme ni la validité du certificat ni l’autorisation fiscale.",
+  "providerCredentialsTitle": "Identifiants Focus de l’entreprise",
+  "providerCredentialsIntro": "Seul le propriétaire peut configurer. Activation par l’administrateur de l’installation requise. Le certificat A1 et le CSC de l’émetteur doivent être configurés dans Focus ; cet écran ne transmet pas de certificats.",
+  "providerCredentialsRead": "Consulter la configuration privée",
+  "providerToken": "Jeton Focus (remplacer)",
+  "providerCSC": "CSC local (facultatif)",
+  "providerReplaceWarning": "L’enregistrement remplace les identifiants ; un CSC vide supprime le CSC local. Les valeurs ne seront plus affichées.",
+  "providerCredentialsSave": "Enregistrer dans le coffre"
 }

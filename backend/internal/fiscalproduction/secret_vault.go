@@ -68,7 +68,7 @@ func OpenFiscalSecretVault(path string) (*FiscalSecretVault, error) {
 }
 func (v *FiscalSecretVault) Close() error { return v.db.Close() }
 func vaultAAD(tenant, purpose string) ([]byte, error) {
-	if tenant == "" || len(tenant) > 256 || strings.ContainsRune(tenant, 0) || (purpose != "certificate" && purpose != "csc" && purpose != "token") {
+	if tenant == "" || len(tenant) > 256 || strings.ContainsRune(tenant, 0) || (purpose != "certificate" && purpose != "csc" && purpose != "token" && purpose != "customer_provider") {
 		return nil, ErrUnavailable
 	}
 	return []byte("fiscal-vault-v1\x00" + tenant + "\x00" + purpose), nil

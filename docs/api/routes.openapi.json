@@ -21226,6 +21226,73 @@
     },
     "/local/v1/fiscal/tax-quotes/{id}": {
       "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-quotes~1{id}"
+    },
+    "/local/v1/fiscal/onboarding": {
+      "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1profiles"
+    },
+    "/local/v1/fiscal/onboarding/{id}": {
+      "$ref": "./fiscal-onboarding.openapi.json#/paths/~1fiscal~1onboarding~1{id}"
+    },
+    "/local/v1/fiscal/onboarding/{id}/provider": {
+      "$ref": "./fiscal-onboarding.openapi.json#/paths/~1fiscal~1onboarding~1{id}~1provider"
+    },
+    "/local/v1/checkout/plans/{id}/fiscal/reprocess": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      ],
+      "post": {
+        "operationId": "reprocessCheckoutFiscalBySaleID",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Uses the original request persisted by the server. No invoice or secrets from the client; no new sale. Production remains blocked.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "maxProperties": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkout fiscal result; authorization only if actually returned by the configured homologation authority."
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not permitted"
+          },
+          "404": {
+            "description": "Checkout not found"
+          },
+          "409": {
+            "description": "Original request unavailable or operation conflict"
+          },
+          "500": {
+            "description": "Storage unavailable"
+          }
+        }
+      }
     }
   },
   "components": {

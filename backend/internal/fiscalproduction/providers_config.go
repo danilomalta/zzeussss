@@ -10,6 +10,7 @@ import (
 
 // Trusted process configuration. Secret references are rejected; secrets live in the vault.
 type TenantFiscalConfiguration struct {
+	CustomerManaged      bool            `json:"customer_managed,omitempty"`
 	CertificateType      string          `json:"certificate_type,omitempty"`
 	FocusBaseURL         string          `json:"focus_base_url,omitempty"`
 	Binding              ProviderBinding `json:"binding"`
@@ -25,7 +26,8 @@ type ProviderRegistration struct {
 	Provider      FiscalProvider
 }
 type ProviderRegistry struct {
-	entries map[string]ProviderRegistration
+	entries   map[string]ProviderRegistration
+	vaultPath string
 }
 
 func privateReference(path string) bool {
@@ -43,6 +45,9 @@ func NewProviderRegistry(entries []ProviderRegistration) (*ProviderRegistry, err
 		if b.TenantID == "" || b.StoreID == "" || b.DeviceID == "" || b.ProfileID == "" || b.ProfileRevision < 1 ||
 			(c.Provider != "own" && c.Provider != "external") || (c.Environment != "homologation" && c.Environment != "production") ||
 			(c.CRT != "1" && c.CRT != "2" && c.CRT != "3" && c.CRT != "4") || c.CSCReference != "" || c.CertificateReference != "" || c.TokenReference != "" {
+			return nil, ErrUnavailable
+		}
+		if c.CustomerManaged && (c.Provider != "external" || (c.CertificateType != "" && c.CertificateType != "A1") || (c.FocusBaseURL != "" && c.FocusBaseURL != focusHomologation)) {
 			return nil, ErrUnavailable
 		}
 		if _, ok := r.entries[b.TenantID]; ok {
@@ -67,6 +72,17 @@ func (r *ProviderRegistry) Resolve(a RequestContext) (FiscalProvider, ProviderBi
 		return nil, ProviderBinding{}, ErrUnavailable
 	}
 	e, ok := r.entries[a.Actor.TenantID]
+	original := e.Configuration.Binding
+	if !ok || a.Actor.TenantID != a.Device.TenantID || a.Actor.StoreID != a.Device.StoreID || original.StoreID != a.Actor.StoreID || original.DeviceID != a.Device.DeviceID {
+		return nil, ProviderBinding{}, ErrUnavailable
+	}
+	if e.Configuration.CustomerManaged {
+		var err error
+		e, err = r.customerRegistration(a.Actor.TenantID, e.Configuration)
+		if err != nil {
+			return nil, ProviderBinding{}, err
+		}
+	}
 	b := e.Configuration.Binding
 	if !ok || e.Provider == nil || a.Actor.TenantID != a.Device.TenantID || a.Actor.StoreID != a.Device.StoreID || b.StoreID != a.Actor.StoreID || b.DeviceID != a.Device.DeviceID {
 		return nil, ProviderBinding{}, ErrUnavailable
@@ -77,11 +93,18 @@ func (r *ProviderRegistry) ValidateCheckoutConfiguration(ctx context.Context, a 
 	if environment != 2 {
 		return ErrCheckoutProduction
 	}
-	_, b, err := r.Resolve(a)
+	provider, b, err := r.Resolve(a)
 	if err != nil {
 		return err
 	}
 	c := r.entries[a.Actor.TenantID].Configuration
+	if c.CustomerManaged {
+		if focus, ok := provider.(*FocusProvider); ok {
+			c = focus.configuration
+		} else {
+			return ErrUnavailable
+		}
+	}
 	if c.Environment != "homologation" {
 		return ErrCheckoutProduction
 	}
@@ -119,6 +142,13 @@ func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
 	entries := make([]ProviderRegistration, 0, len(config.Tenants))
 	for _, c := range config.Tenants {
 		e := ProviderRegistration{Configuration: c}
+		if c.CustomerManaged {
+			if c.Provider != "external" {
+				return nil, ErrUnavailable
+			}
+			entries = append(entries, e)
+			continue
+		}
 		if c.Provider == "own" {
 			runtime, err := vault.loadOwn(c.Binding.TenantID)
 			if err != nil {
@@ -142,5 +172,10 @@ func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
 		}
 		entries = append(entries, e)
 	}
-	return NewProviderRegistry(entries)
+	registry, err := NewProviderRegistry(entries)
+	if err != nil {
+		return nil, err
+	}
+	registry.vaultPath = config.VaultPath
+	return registry, nil
 }
