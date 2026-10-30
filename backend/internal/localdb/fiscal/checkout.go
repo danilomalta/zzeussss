@@ -1,22 +1,29 @@
 package fiscal
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
+	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/fiscalcore"
 	"titansystem-backend/internal/localdb"
+	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/identity"
 )
 
 type CheckoutStatus struct {
-	State       string `json:"state"`
-	IntentID    string `json:"intent_id,omitempty"`
-	OperationID string `json:"operation_id"`
-	ErrorCode   string `json:"error_code,omitempty"`
-	Key         string `json:"key,omitempty"`
+	CanReprocess bool   `json:"can_reprocess"`
+	State        string `json:"state"`
+	IntentID     string `json:"intent_id,omitempty"`
+	OperationID  string `json:"operation_id"`
+	ErrorCode    string `json:"error_code,omitempty"`
+	Key          string `json:"key,omitempty"`
 }
 
 // RecordCheckoutStatus appends an audit/status event to the existing durable
@@ -96,4 +103,106 @@ func CheckoutHomologationInvoice(ctx context.Context, db *sql.DB, a identity.Sco
 		return in, err
 	}
 	return in, tx.Commit()
+}
+
+// Candidate requests are content-addressed before committing the sale. Only the
+// request_hash frozen by checkout_plan_sales can ever be recovered. A rejected
+// finalization therefore cannot replace/poison the committed original request.
+func checkoutRequestOperation(a identity.Scope, d identity.DeviceContext, sale, hash string) string {
+	sum := sha256.Sum256([]byte(a.TenantID + "/" + a.StoreID + "/" + d.DeviceID + "/" + sale + "/" + hash))
+	return "checkout-request-" + hex.EncodeToString(sum[:])
+}
+func SaveCheckoutRequest(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, sale, hash string, body []byte, token string) error {
+	if !idPattern.MatchString(sale) || len(hash) != 64 || len(body) == 0 || len(body) > 128*1024 || !json.Valid(body) || license == nil {
+		return ErrInvalid
+	}
+	if _, err := hex.DecodeString(hash); err != nil {
+		return ErrInvalid
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if err = fiscalSessionTx(ctx, tx, a, d, token); err != nil {
+		return err
+	}
+	if err = license.RequireTx(ctx, tx, a, d, identity.Sell, modules.Fiscal); err != nil {
+		return err
+	}
+	var id string
+	if err = tx.QueryRowContext(ctx, `SELECT checkout_id FROM checkout_plans WHERE tenant_id=? AND store_id=? AND device_id=? AND actor_identity_id=? AND checkout_id=?`, a.TenantID, a.StoreID, d.DeviceID, a.IdentityID, sale).Scan(&id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
+		return err
+	}
+	var committed string
+	err = tx.QueryRowContext(ctx, `SELECT request_hash FROM checkout_plan_sales WHERE tenant_id=? AND checkout_id=?`, a.TenantID, sale).Scan(&committed)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+	if err == nil && committed != hash {
+		return ErrConflict
+	}
+	op := checkoutRequestOperation(a, d, sale, hash)
+	var old []byte
+	err = tx.QueryRowContext(ctx, `SELECT payload_json FROM outbox WHERE tenant_id=? AND store_id=? AND device_id=? AND aggregate_id=? AND operation_id=? AND event_type='checkout.fiscal_request'`, a.TenantID, a.StoreID, d.DeviceID, sale, op).Scan(&old)
+	if err == nil {
+		if !bytes.Equal(old, body) {
+			return ErrConflict
+		}
+		return tx.Commit()
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+	event, err := localdb.NewID()
+	if err != nil {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,'checkout.fiscal_request',1,?,?)`, event, a.TenantID, a.StoreID, d.DeviceID, op, sale, string(body), time.Now().UTC().Format(time.RFC3339Nano))
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// ReadCheckoutRequest is server-only: never attach the original invoice to the
+// public checkout response. It retains the original actor/device restrictions.
+func ReadCheckoutRequest(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, sale, token string) ([]byte, error) {
+	if !idPattern.MatchString(sale) || license == nil {
+		return nil, ErrInvalid
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	if err = fiscalSessionTx(ctx, tx, a, d, token); err != nil {
+		return nil, err
+	}
+	if err = license.RequireTx(ctx, tx, a, d, identity.Sell, modules.Fiscal); err != nil {
+		return nil, err
+	}
+	var hash string
+	err = tx.QueryRowContext(ctx, `SELECT f.request_hash FROM checkout_plan_sales f JOIN checkout_plans p ON p.tenant_id=f.tenant_id AND p.checkout_id=f.checkout_id JOIN sales s ON s.tenant_id=f.tenant_id AND s.id=f.sale_id WHERE f.tenant_id=? AND f.store_id=? AND f.device_id=? AND p.actor_identity_id=? AND f.checkout_id=? AND s.status='committed'`, a.TenantID, a.StoreID, d.DeviceID, a.IdentityID, sale).Scan(&hash)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	var body []byte
+	err = tx.QueryRowContext(ctx, `SELECT payload_json FROM outbox WHERE tenant_id=? AND store_id=? AND device_id=? AND aggregate_id=? AND operation_id=? AND event_type='checkout.fiscal_request'`, a.TenantID, a.StoreID, d.DeviceID, sale, checkoutRequestOperation(a, d, sale, hash)).Scan(&body)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	if len(body) == 0 || len(body) > 128*1024 || !json.Valid(body) {
+		return nil, ErrInvalid
+	}
+	return body, tx.Commit()
 }

@@ -1,6 +1,7 @@
 package localapi
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -19,6 +20,7 @@ func (s *Server) mountCheckoutPlans(r fiber.Router) {
 	r.Get("/checkout/plans/:id", s.readCheckoutPlan)
 	r.Post("/checkout/plans/:id/cancel", s.cancelCheckoutPlan)
 	r.Post("/checkout/plans/:id/finalize-cash", s.finalizeCashCheckoutPlan)
+	r.Post("/checkout/plans/:id/fiscal/reprocess", s.reprocessCheckoutFiscal)
 }
 
 func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
@@ -93,6 +95,18 @@ func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
 		canonical, _ := json.Marshal(invoice)
 		sum := sha256.Sum256(canonical)
 		in.FiscalRequestSHA256 = hex.EncodeToString(sum[:])
+		// Persist before sale commit/transmission. The sale's canonical request
+		// hash selects exactly this immutable body, even after a process crash.
+		finalization, _ := json.Marshal(in)
+		digest := sha256.Sum256(finalization)
+		original, _ := json.Marshal(struct {
+			OperationID   string              `json:"operation_id"`
+			ReceivedCents int64               `json:"received_cents"`
+			Invoice       *fiscalcore.Invoice `json:"fiscal_invoice"`
+		}{in.OperationID, in.ReceivedCents, invoice})
+		if e = fiscal.SaveCheckoutRequest(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, c.Params("id"), hex.EncodeToString(digest[:]), original, session.Token); e != nil {
+			return productionFailure(c, e)
+		}
 	}
 	v, err := sale.FinalizeCashPlan(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, c.Params("id"), in, session.Token)
 	if err != nil {
@@ -108,7 +122,7 @@ func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
 		} else {
 			result, e = provider.Emit(c.UserContext(), fiscalContext, input)
 		}
-		state := fiscal.CheckoutStatus{State: result.State, OperationID: result.OperationID, IntentID: result.IntentID, Key: result.Key, ErrorCode: result.ErrorCode}
+		state := fiscal.CheckoutStatus{CanReprocess: result.State == "failed", State: result.State, OperationID: result.OperationID, IntentID: result.IntentID, Key: result.Key, ErrorCode: result.ErrorCode}
 		v.Fiscal = &state
 		if state.ErrorCode == "fiscal_status_persistence_failed" {
 			return c.Status(503).JSON(v)
@@ -183,7 +197,48 @@ func (s *Server) readCheckoutPlan(c *fiber.Ctx) error {
 	if err != nil {
 		return saleError(c, err)
 	}
+	if v.Fiscal != nil && v.Fiscal.State == "failed" && v.Completion != nil && v.Completion.SaleStatus == "committed" {
+		_, e := fiscal.ReadCheckoutRequest(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, c.Params("id"), session.Token)
+		v.Fiscal.CanReprocess = e == nil
+	}
 	return c.JSON(v)
+}
+
+// Only the sale ID is accepted. Never accept an operation, tenant, invoice or
+// payment override on the recovery endpoint.
+func (s *Server) reprocessCheckoutFiscal(c *fiber.Ctx) error {
+	c.Set(fiber.HeaderCacheControl, "no-store")
+	if s.contracts == nil {
+		return c.SendStatus(503)
+	}
+	if c.Context().QueryArgs().Len() != 0 || len(c.Body()) > 4096 {
+		return c.SendStatus(400)
+	}
+	if len(bytes.TrimSpace(c.Body())) > 0 {
+		if _, err := exactSaleObject(c.Body(), []string{}); err != nil {
+			return c.SendStatus(400)
+		}
+	}
+	session := c.Locals("session").(localauth.Session)
+	plan, err := sale.ReadPlan(c.UserContext(), s.DB, session.Actor, session.Device, c.Params("id"))
+	if err != nil {
+		return saleError(c, err)
+	}
+	if plan.Completion == nil || plan.Completion.SaleStatus != "committed" || plan.Fiscal == nil {
+		return c.SendStatus(409)
+	}
+	if plan.Fiscal.State == "authorized_homologation" {
+		return c.JSON(plan)
+	}
+	if plan.Fiscal.State != "failed" && plan.Fiscal.State != "recovery_required" {
+		return c.SendStatus(409)
+	}
+	original, err := fiscal.ReadCheckoutRequest(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, c.Params("id"), session.Token)
+	if err != nil {
+		return productionFailure(c, err)
+	}
+	c.Request().SetBody(original)
+	return s.finalizeCashCheckoutPlan(c)
 }
 
 func (s *Server) cancelCheckoutPlan(c *fiber.Ctx) error {

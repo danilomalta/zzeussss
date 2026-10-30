@@ -5,7 +5,7 @@ import {createRequire} from 'node:module';
 import {createCheckoutFiscalClient,checkoutFiscalView} from '../src/core/local/checkoutFiscal.mjs';
 
 const original={operation_id:'same-finish',received_cents:2000,fiscal_invoice:{Environment:2,Nature:'Approved original invoice'}};
-const plan=state=>({checkout_id:'checkout',completion:{sale_id:'checkout',operation_id:'same-finish',received_cents:2000,sale_status:'committed'},fiscal:{state,operation_id:'original-fiscal-operation',intent_id:'intent',key:'3'.repeat(44)}});
+const plan=state=>({checkout_id:'checkout',completion:{sale_id:'checkout',operation_id:'same-finish',received_cents:2000,sale_status:'committed'},fiscal:{state,can_reprocess:true,operation_id:'original-fiscal-operation',intent_id:'intent',key:'3'.repeat(44)}});
 function fixture(fetcher){
  const session={tenant_id:'company',store_id:'store',identity_id:'operator',device_id:'device'};let current={token:'private-session',session};
  const data=new Map(),calls=[];
@@ -19,26 +19,27 @@ test('fiscal statuses are separate from payment and only homologation authorizat
  assert.throws(()=>checkoutFiscalView({...plan('failed'),checkout_id:'foreign'},'checkout'));
  assert.throws(()=>checkoutFiscalView({...plan('authorized_homologation'),fiscal:{state:'authorized_homologation',operation_id:'op'}},'checkout'));
 });
-test('finalize preserves the original body before sending; failed retry uses the same operation and no new sale',async()=>{
- let state='failed';const f=fixture((url,input)=>{if(input.method==='POST'&&f.calls.filter(c=>c.method==='POST').length===2)state='authorized_homologation';return plan(state);});
+test('cleared browser storage still allows ID-only retry with no invoice or new operation',async()=>{
+ let state='failed';const f=fixture((url,input)=>{if(url.endsWith('/fiscal/reprocess'))state='authorized_homologation';return plan(state);});
  const first=await f.client.finalize('checkout',original);assert.equal(first.state,'failed');assert.equal(first.canRetry,true);
- assert.equal(await f.client.read('checkout').then(v=>v.canRetry),true);
+ f.data.clear();assert.equal((await f.client.read('checkout')).canRetry,true);
  const last=await f.client.retry('checkout');assert.equal(last.state,'authorized');
- const posts=f.calls.filter(v=>v.method==='POST');assert.equal(posts.length,2);assert.equal(posts[0].body,posts[1].body);assert.deepEqual(JSON.parse(posts[0].body),original);
- assert.ok(posts.every(v=>v.url==='/local/v1/checkout/plans/checkout/finalize-cash'&&v.cache==='no-store'&&v.credentials==='omit'));
- assert.ok(!JSON.stringify([...f.data]).includes('private-session'));
+ const posts=f.calls.filter(v=>v.method==='POST');assert.equal(posts.length,2);assert.deepEqual(JSON.parse(posts[0].body),original);
+ assert.equal(posts[1].url,'/local/v1/checkout/plans/checkout/fiscal/reprocess');assert.equal(posts[1].body,'{}');
+ assert.ok(posts.every(v=>v.cache==='no-store'&&v.credentials==='omit'));
+ assert.equal(f.data.size,0);
  await f.client.retry('checkout');assert.equal(f.calls.filter(v=>v.method==='POST').length,2);
 });
-test('pending, recovery-required, missing original request and cancelled sale never issue a retry POST',async()=>{
+test('pending, missing server request and cancelled sale never issue a retry POST',async()=>{
  for(const state of ['pending','recovery_required']){const f=fixture(()=>plan(state));await f.client.retry('checkout');assert.equal(f.calls.filter(v=>v.method==='POST').length,0);}
- const f=fixture(()=>plan('failed'));assert.equal((await f.client.read('checkout')).canRetry,false);await assert.rejects(f.client.retry('checkout'),/missingRequest/);assert.ok(f.calls.every(v=>v.method==='GET'));
+ const f=fixture(()=>({...plan('failed'),fiscal:{...plan('failed').fiscal,can_reprocess:false}}));
+ assert.equal((await f.client.read('checkout')).canRetry,false);await assert.rejects(f.client.retry('checkout'),/missingRequest/);assert.ok(f.calls.every(v=>v.method==='GET'));
  const cancelled=fixture(()=>({...plan('failed'),completion:{...plan('failed').completion,sale_status:'cancelled'}}));assert.equal((await cancelled.client.read('checkout')).canRetry,false);
 });
-test('different original body and production are rejected locally without another POST',async()=>{
- const f=fixture(()=>plan('failed'));await f.client.finalize('checkout',original);
- await assert.rejects(f.client.finalize('checkout',{...original,operation_id:'different'}),/conflict/);
+test('production is rejected locally without a POST',async()=>{
+ const f=fixture(()=>plan('failed'));
  await assert.rejects(f.client.finalize('checkout',{...original,fiscal_invoice:{Environment:1}}),/invalidReply/);
- assert.equal(f.calls.filter(v=>v.method==='POST').length,1);
+ assert.equal(f.calls.length,0);
 });
 test('session or context change before/during a request refuses the reply and prevents POST',async()=>{
  const f=fixture(()=>plan('failed'));f.change({token:'new-login'});await assert.rejects(f.client.retry('checkout'),/context/);assert.equal(f.calls.length,0);
@@ -67,8 +68,8 @@ test('UI renders actual status, accessible buttons and homologation label in all
  }
 });
 
-test('missing browser storage does not hide a real failed fiscal status or permit POST',async()=>{
- const context={token:'session',session:{tenant_id:'t',store_id:'s',identity_id:'u',device_id:'d'}};let posts=0;
- const client=createCheckoutFiscalClient({getCurrent:()=>context,cache:{async read(){throw Error('storage');},async write(){throw Error('storage');}},fetcher:async(url,options)=>{if(options.method==='POST')posts++;return {ok:true,status:200,json:async()=>plan('failed')};}}).bind(context);
- const view=await client.read('checkout');assert.equal(view.state,'failed');assert.equal(view.canRetry,false);await assert.rejects(client.retry('checkout'),/missingRequest/);assert.equal(posts,0);
+test('unavailable browser storage does not participate in ID-only retry',async()=>{
+ const context={token:'session',session:{tenant_id:'t',store_id:'s',identity_id:'u',device_id:'d'}};let posts=0,state='failed';
+ const client=createCheckoutFiscalClient({getCurrent:()=>context,cache:{async read(){throw Error('storage');},async write(){throw Error('storage');}},fetcher:async(url,options)=>{if(options.method==='POST'){posts++;assert.ok(url.endsWith('/fiscal/reprocess'));assert.equal(options.body,'{}');state='authorized_homologation';}return {ok:true,status:200,json:async()=>plan(state)};}}).bind(context);
+ const view=await client.read('checkout');assert.equal(view.state,'failed');assert.equal(view.canRetry,true);assert.equal((await client.retry('checkout')).state,'authorized');assert.equal(posts,1);
 });

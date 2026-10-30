@@ -22,6 +22,7 @@ import (
 func TestHTTPCheckoutNFCeHomologationIntegration(t *testing.T) {
 	// Reuse the existing disposable mTLS authority/certificate and protocol builder.
 	p := newProductionFixture(t, "65", "1", "America/Sao_Paulo")
+	other := newProductionFixture(t, "65", "1", "America/Sao_Paulo")
 	body := strings.Replace(strings.Replace(fiscalProfileBody, `"issuer-create"`, `"checkout-homol-profile"`, 1), `"expected_revision":0`, `"expected_revision":2`, 1)
 	body = strings.TrimSuffix(body, "}") + `,"timezone":"America/Sao_Paulo","require_tax_pricing":true}`
 	if code, raw := request(t, p.f.app, "POST", "/local/v1/fiscal/profiles", body, p.f.token); code != 201 {
@@ -133,10 +134,51 @@ func TestHTTPCheckoutNFCeHomologationIntegration(t *testing.T) {
 			if code != 200 || !bytes.Contains(raw, []byte(`"state":"failed"`)) {
 				t.Fatal("failure not durable", string(raw))
 			}
+			if !bytes.Contains(raw, []byte(`"can_reprocess":true`)) {
+				t.Fatal("server original unavailable", string(raw))
+			}
+			before := p.issues.Load()
+			// Foreign company's token cannot read or replay this company's sale.
+			for _, method := range []string{"GET", "POST"} {
+				target := planPath + "/" + id
+				if method == "POST" {
+					target += "/fiscal/reprocess"
+				}
+				code, _ = request(t, p.f.app, method, target, "{}", other.f.token)
+				if code >= 200 && code < 300 {
+					t.Fatal("foreign tenant accessed original", code)
+				}
+			}
+			actor := numberingActor(p.f)
+			actor.TenantID = other.f.owner.TenantID
+			if _, e := fiscal.ReadCheckoutRequest(context.Background(), p.f.db, journalLicense(t, p.f, p.f.db), actor, p.f.device, id, p.f.token); e == nil {
+				t.Fatal("foreign tenant read original")
+			}
+			if p.issues.Load() != before {
+				t.Fatal("foreign request reached authority")
+			}
 			failAfterSale.Store(false)
+			// Restart the HTTP application; no original body is supplied again.
+			p.installApp(t, p.runtime)
+			code, raw = request(t, p.f.app, "POST", planPath+"/"+id+"/fiscal/reprocess", planJSON(t, payload), p.f.token)
+			if code != 400 {
+				t.Fatal("reprocess accepted an invoice override", code)
+			}
+			payload["operation_id"] = id + "-changed-finish"
 			code, raw = request(t, p.f.app, "POST", path, planJSON(t, payload), p.f.token)
+			if code != 409 {
+				t.Fatal("committed original request was replaceable", code, string(raw))
+			}
+			payload["operation_id"] = id + "-finish"
+			code, raw = request(t, p.f.app, "POST", planPath+"/"+id+"/fiscal/reprocess", "{}", p.f.token)
 			if code != 200 || json.Unmarshal(raw, &completed) != nil {
 				t.Fatal("retry failed", code, string(raw))
+			}
+		}
+		if id == "checkout-retry" {
+			before := p.issues.Load()
+			if code, _ := request(t, p.f.app, "POST", planPath+"/"+id+"/fiscal/reprocess", "{}", p.f.token); code != 200 || p.issues.Load() != before {
+				t.Fatal("ID-only replay duplicated emission", code)
 			}
 		}
 		if completed.Fiscal.State != "authorized_homologation" {
