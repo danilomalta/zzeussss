@@ -61,5 +61,11 @@
   "onboardingConfiguration": "配置有效",
   "onboarding_configuration_required": "请管理员安装或修正安全的税务配置。",
   "onboarding_official_verification_required": "仍需完成官方测试认证验证。",
-  "onboarding_production_blocked": "此流程仍禁止生产环境开票。"
+  "onboarding_production_blocked": "此流程仍禁止生产环境开票。",
+  "onboardingProvider": "服务提供商",
+  "onboardingCertificateType": "已配置的证书类型",
+  "onboardingTokenPresent": "服务中存在令牌",
+  "onboardingCSCPresent": "服务中存在 CSC",
+  "onboardingLocalOnly": "诊断范围",
+  "onboardingNoRemoteVerification": "仅本地检查。不查询 Focus，也不确认是否获得税务授权或证书是否有效。"
 }

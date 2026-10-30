@@ -1,5 +1,23 @@
 # Continuidade do TitanSystem
 
+## Cadastro em duas etapas — decisão do criador em 30/10/2026
+
+- Haverá pré-cadastro com o mínimo necessário para concluir a entrada inicial no sistema; os campos mínimos ainda devem ser definidos, sem inventar exigências nesta decisão.
+- Dentro do ERP haverá cadastro completo e progressivo da empresa, incluindo informações fiscais, funcionários e demais configurações pertinentes ao cliente.
+- Informações poderão ser obtidas por consultas e integrações reais disponíveis, ou preenchidas manualmente, conforme o caso e as escolhas do cliente. Não pressupor uma única forma obrigatória de preenchimento.
+- Não exigir todos os dados fiscais, certificados, funcionários e demais configurações no pré-cadastro. Recursos dependentes dessas configurações devem indicar suas pendências e requisitos específicos.
+- Reaproveitar o cadastro central da empresa nos módulos, sem perguntar novamente os mesmos dados. Dados consultados devem permitir conferência antes de sua utilização.
+- Esta decisão registra o fluxo de produto; não comprova implementação nem define automaticamente permissões, contratos ou dados obrigatórios de cada operação.
+
+## Premissa permanente do produto — confirmada pelo criador em 30/10/2026
+
+- O usuário é o criador e fornecedor do TitanSystem, um ERP alugado por assinatura para empresas clientes; não é o emitente fiscal do produto.
+- Antes de propor requisitos fiscais, distinguir o que pertence ao fornecedor do ERP do que pertence a cada empresa cliente.
+- Cada tenant cliente configura seu emitente, CNPJ, UF, regime, credenciamento, certificado A1, CSC e credenciais do provedor em ambiente privado, isolado por empresa. Não exigir que o criador forneça seus próprios dados fiscais para concluir desenvolvimento independente.
+- Entregar código, configuração por tenant, diagnóstico, segurança e testes independentes dos dados do criador. Ausência de emitente/token limita somente ensaios externos dependentes dessas credenciais; não interrompe outras implementações.
+- Preparação técnica e testes locais não comprovam emissão autorizada. Homologação real será executada com emitente e credenciais autorizados de um cliente/piloto; não inventar resultados nem remover bloqueios de produção.
+- Repositório atual exclusivo: `/home/danillo-malta/projetos/zzeussss`. Os caminhos Downloads citados no histórico abaixo são históricos.
+
 Revisão 62 — 26/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
@@ -2865,3 +2883,13 @@ Assinatura/XSD, memória persistida, venda, recibo, emissão/replay, reinício e
 Validação final: 59 pacotes, 1552 testes principais/3625 resultados incluindo subtestes, zero falhas. Cinco skips: duas integrações PostgreSQL locais sem ambiente e três auxiliares opt-in de processo/tela. Núcleo com race: 70 principais/431 resultados; API com race: 31 principais/78 resultados, sem falhas/skips. 85 testes Python, vet, 551 rotas/contratos e builds Linux passaram. CI exige 25 integrações; conferir os checks do novo HEAD.
 
 Detalhes/fontes/limites: `FISCAL_RETENCAO_ANTERIOR_20261029.md`; evidências/hashes: `evidence/fiscal-retained-st-20261029/verification.json`. Sem instalação, alteração de frontend/Electron, serviços, banco comercial ou merge na main. A cobertura tributária nacional, integração visual e demais obrigações fiscais continuam pendentes; não anunciar fiscal completo.
+
+## Entrega de diagnóstico Focus por cliente — 30/10/2026
+
+- Branch `feat/fiscal-customer-readiness`, derivada de `feat/fiscal-adapter-focus` em `7a86c554210485967eb9e4fcd69f6b4fc4d9f206`.
+- Corrigido o diagnóstico de onboarding que reconhecia somente OwnProvider e marcava a configuração Focus como inválida. A resolução verifica empresa, loja, aparelho, perfil, revisão, regime, modelo 65 e ambiente de homologação; não usa runtime de outra empresa como alternativa.
+- A tela apresenta provedor, ambiente, tipo A1 configurado e presença de token/CSC, nos cinco idiomas. A presença local não comprova validade de certificado, CSC remoto, credenciamento ou autorização. Não são devolvidos valores, caminhos privados nem identificadores de outros clientes.
+- Nenhuma rota nova, nenhuma emissão remota e nenhuma alteração do bloqueio de produção. O cadastro fiscal ainda grava o perfil; a entrada de segredos pela tela não foi implementada nesta entrega. Os segredos continuam no cofre privado do serviço.
+- Verificações: regressões selecionadas de fiscalproduction (onboarding, provedores, cofre e falhas simuladas Focus); localapi somente `TestHTTPFiscalOnboarding*`, sempre com `-timeout 120s -count=1`; 46 testes frontend de fiscalCustomer/onboarding; TypeScript sem emissão; `go build ./...`. Todos passaram. As falhas simuladas não comprovam aceitação pela Focus/SEFAZ.
+- Local/servidor próprio/nuvem são escolhas de implantação do cliente, não garantias automáticas de confidencialidade. O isolamento do cofre não impede o administrador da infraestrutura que controla a chave mestra de acessar segredos; não prometer ausência absoluta de acesso em hospedagem controlada pelo fornecedor. Não foi criado acesso remoto para o fornecedor.
+- Pendências explícitas: configuração fiscal autoatendida de segredos no fluxo completo do cliente, ensaio real com emitente autorizado, cobertura tributária ainda recusada pelo adapter, habilitação controlada de produção e conclusão/comprovação dos demais produtos fiscais (NF-e 55, contingência, DANFE, SPED/PVA, NFS-e). Esta entrega não conclui essas pendências nem o pré-cadastro do produto.

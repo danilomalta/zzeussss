@@ -61,5 +61,11 @@
   "onboardingConfiguration": "Configuration valide",
   "onboarding_configuration_required": "Demandez à l’administrateur d’installer ou de corriger la configuration fiscale sécurisée.",
   "onboarding_official_verification_required": "La vérification officielle d’homologation reste nécessaire.",
-  "onboarding_production_blocked": "L’émission en production reste bloquée dans ce parcours."
+  "onboarding_production_blocked": "L’émission en production reste bloquée dans ce parcours.",
+  "onboardingProvider": "Fournisseur",
+  "onboardingCertificateType": "Type de certificat configuré",
+  "onboardingTokenPresent": "Jeton présent dans le service",
+  "onboardingCSCPresent": "CSC présent dans le service",
+  "onboardingLocalOnly": "Portée du diagnostic",
+  "onboardingNoRemoteVerification": "Vérification locale. Elle ne consulte pas Focus et ne confirme ni la validité du certificat ni l’autorisation fiscale."
 }

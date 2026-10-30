@@ -28,3 +28,22 @@ test('all five languages translate every onboarding label and blocker',async()=>
   for(const key of keys)assert.ok(typeof words[key]==='string'&&words[key].trim(),`${lang}: ${key}`);
  }
 });
+
+test('Focus diagnostic permits only safe credential-presence fields and never accepts secret responses',async()=>{
+ const provider={provider:'external',environment:'homologation',certificate_type:'A1',token_present:true,csc_present:false};
+ const response={...diagnostic(),configuration_valid:true,provider_configuration:provider};
+ assert.deepEqual(await client(async()=>Response.json(response)).onboarding('profile-one'),response);
+ for(const patch of [{token:'private'},{csc:'private'},{certificate:'private'},{environment:'production'},{certificate_type:'A3'},{provider:'unknown'},{token_present:'yes'},{csc_present:null}]){
+  await assert.rejects(client(async()=>Response.json({...response,provider_configuration:{...provider,...patch}})).onboarding('profile-one'),e=>e.code==='response');
+ }
+ for(const provider_configuration of [null,'private',[],false]){
+  await assert.rejects(client(async()=>Response.json({...response,provider_configuration})).onboarding('profile-one'),e=>e.code==='response');
+ }
+});
+test('Focus presence diagnostics and offline limits have translations in five languages',async()=>{
+ const keys=['onboardingProvider','onboardingCertificateType','onboardingTokenPresent','onboardingCSCPresent','onboardingLocalOnly','onboardingNoRemoteVerification'];
+ for(const lang of ['pt-BR','en','es','fr','zh-CN']){
+  const words=JSON.parse(await readFile(new URL(`../src/i18n/fiscalCustomer/${lang}.json`,import.meta.url)));
+  for(const key of keys)assert.ok(typeof words[key]==='string'&&words[key].trim(),`${lang}: ${key}`);
+ }
+});

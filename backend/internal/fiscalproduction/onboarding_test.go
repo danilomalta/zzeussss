@@ -1,6 +1,10 @@
 package fiscalproduction
 
 import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strings"
 	"testing"
 	"time"
 	"titansystem-backend/internal/localdb/fiscal"
@@ -64,5 +68,74 @@ func TestOnboardingOfflineScopeRevisionAndRevocation(t *testing.T) {
 	}
 	if DiagnoseOnboarding(nil, runtime, a, p).ConfigurationValid {
 		t.Fatal("revoked credential accepted")
+	}
+}
+
+// These are offline configuration checks, not evidence of Focus acceptance.
+type noOnboardingNetwork struct{}
+
+func (noOnboardingNetwork) RoundTrip(*http.Request) (*http.Response, error) {
+	panic("diagnostic attempted HTTP")
+}
+
+func TestOnboardingFocusCustomerIsolationAndNoSecrets(t *testing.T) {
+	entries := []ProviderRegistration{}
+	for _, tenant := range []string{"client-one", "client-two"} {
+		c := TenantFiscalConfiguration{Binding: ProviderBinding{TenantID: tenant, StoreID: "store", DeviceID: "device", ProfileID: "profile-" + tenant, ProfileRevision: 3}, Provider: "external", Environment: "homologation", CRT: "1", CertificateType: "A1"}
+		provider, err := newFocusProvider(c, []byte("PrivateToken"+strings.ReplaceAll(tenant, "-", "")), []byte("PrivateCSC"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		provider.client.Transport = noOnboardingNetwork{}
+		entries = append(entries, ProviderRegistration{Configuration: c, Provider: provider})
+	}
+	registry, err := NewProviderRegistry(entries)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		c := entry.Configuration
+		a := RequestContext{Actor: identity.Scope{TenantID: c.Binding.TenantID, StoreID: "store"}, Device: identity.DeviceContext{TenantID: c.Binding.TenantID, StoreID: "store", DeviceID: "device"}}
+		p := fiscal.Profile{Revision: 3, Input: fiscal.ProfileInput{ProfileID: c.Binding.ProfileID, CNPJ: "11222333000181", Environment: "homologation", CRT: "1", Model: "65", State: "SP", Series: 1}}
+		out := DiagnoseOnboarding(registry, nil, a, p)
+		if !out.ConfigurationValid || !out.ProductionBlocked || out.TransmissionPerformed || out.OfficialAuthorization || len(out.Blockers) != 2 {
+			t.Fatal("incorrect offline readiness")
+		}
+		d := out.ProviderConfiguration
+		if d == nil || d.Provider != "external" || !d.TokenPresent || !d.CSCPresent || d.CertificateType != "A1" || d.Environment != "homologation" {
+			t.Fatal("missing safe credential presence")
+		}
+		raw, _ := json.Marshal(out)
+		for _, secret := range []string{"PrivateToken", "PrivateCSC", "token_reference", c.Binding.TenantID} {
+			if strings.Contains(string(raw), secret) {
+				t.Fatal("diagnostic leaked private data")
+			}
+		}
+		for i, change := range []func(*RequestContext, *fiscal.Profile){
+			func(a *RequestContext, p *fiscal.Profile) { a.Actor.TenantID = "foreign" },
+			func(a *RequestContext, p *fiscal.Profile) { a.Device.TenantID = "foreign" },
+			func(a *RequestContext, p *fiscal.Profile) { a.Actor.StoreID = "foreign" },
+			func(a *RequestContext, p *fiscal.Profile) { a.Device.DeviceID = "foreign" },
+			func(a *RequestContext, p *fiscal.Profile) { p.Input.ProfileID = "foreign" },
+			func(a *RequestContext, p *fiscal.Profile) { p.Revision++ },
+			func(a *RequestContext, p *fiscal.Profile) { p.Input.Environment = "production" },
+			func(a *RequestContext, p *fiscal.Profile) { p.Input.CRT = "3" },
+			func(a *RequestContext, p *fiscal.Profile) { p.Input.Model = "55" },
+		} {
+			t.Run(fmt.Sprintf("%s-mismatch-%d", c.Binding.TenantID, i), func(t *testing.T) {
+				aa, pp := a, p
+				change(&aa, &pp)
+				got := DiagnoseOnboarding(registry, nil, aa, pp)
+				if got.ConfigurationValid || got.ProviderConfiguration != nil || !got.ProductionBlocked || got.TransmissionPerformed || got.OfficialAuthorization {
+					t.Fatal("foreign or stale configuration disclosed")
+				}
+			})
+		}
+		// No local CSC is also meaningful: Focus manages its own credentials;
+		// absence here must be reported, never interpreted as a remote check.
+		entry.Provider.(*FocusProvider).csc = nil
+		if got := DiagnoseOnboarding(registry, nil, a, p); !got.ConfigurationValid || got.ProviderConfiguration.CSCPresent {
+			t.Fatal("CSC presence invented")
+		}
 	}
 }

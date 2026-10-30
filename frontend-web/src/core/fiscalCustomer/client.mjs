@@ -44,7 +44,13 @@ export function createFiscalCustomer({token, isCurrent, fetcher = fetch}) {
       const value = await request('onboarding/' + encodeURIComponent(profileID));
       const flags = ['configuration_valid','production_blocked','transmission_performed','official_authorization'];
       const codes = ['onboarding_configuration_required','onboarding_official_verification_required','onboarding_production_blocked'];
-      if (Object.keys(value).sort().join() !== [...flags,'profile_revision','blockers'].sort().join() ||
+      const provider = value.provider_configuration;
+      const optional = provider === undefined ? [] : ['provider_configuration'];
+      if (provider !== undefined && (!provider || typeof provider !== 'object' ||
+          Object.keys(provider).sort().join() !== ['provider','environment','certificate_type','token_present','csc_present'].sort().join() ||
+          provider.provider !== 'external' || provider.environment !== 'homologation' || provider.certificate_type !== 'A1' ||
+          typeof provider.token_present !== 'boolean' || typeof provider.csc_present !== 'boolean')) throw new FiscalCustomerError('response');
+      if (Object.keys(value).sort().join() !== [...flags,'profile_revision','blockers',...optional].sort().join() ||
           !flags.every(key => typeof value[key] === 'boolean') || value.production_blocked !== true ||
           value.transmission_performed !== false || value.official_authorization !== false ||
           !Number.isSafeInteger(value.profile_revision) || value.profile_revision < 1 ||

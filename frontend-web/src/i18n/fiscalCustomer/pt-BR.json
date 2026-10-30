@@ -61,5 +61,11 @@
   "onboardingConfiguration": "Configuração válida",
   "onboarding_configuration_required": "Instale ou corrija a configuração fiscal segura com o administrador.",
   "onboarding_official_verification_required": "A validação oficial de homologação ainda é necessária.",
-  "onboarding_production_blocked": "A emissão em produção continua bloqueada neste fluxo."
+  "onboarding_production_blocked": "A emissão em produção continua bloqueada neste fluxo.",
+  "onboardingProvider": "Provedor",
+  "onboardingCertificateType": "Tipo de certificado configurado",
+  "onboardingTokenPresent": "Token presente no serviço",
+  "onboardingCSCPresent": "CSC presente no serviço",
+  "onboardingLocalOnly": "Alcance do diagnóstico",
+  "onboardingNoRemoteVerification": "Verificação local. Não consulta a Focus nem confirma validade do certificado ou autorização da SEFAZ."
 }

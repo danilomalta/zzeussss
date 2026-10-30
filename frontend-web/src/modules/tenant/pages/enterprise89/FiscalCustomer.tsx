@@ -91,7 +91,14 @@ export function FiscalCustomer(){
   </div><button className="brand-primary" disabled={!edited}>{fw.save}</button><button type="button" className="brand-secondary" disabled={!edited} onClick={()=>{setInput(profile?{...profile.input,expected_revision:profile.revision}:null);setEdited(false);setGuide(null);setMessage('');}}>{fw.discard}</button></fieldset><button type="button" className="brand-secondary" disabled={busy||!current()||!states.includes(input.state)} onClick={()=>void requirements()}>{fw.ufGuide}</button></form>}
   {guide&&<section aria-label={fw.ufGuide}><h3>{guide.uf} · {guide.reference_date}</h3><p>{fw.dated}</p><dl>{(['issuer','developer','limits'] as const).map((key,i)=><div key={key}><dt>{fw[key]}</dt><dd>{[guide.issuer_requirements,guide.developer_requirements,guide.limitations][i]}</dd></div>)}</dl>{guide.sources.filter(s=>{try{const u=new URL(s.url);return u.protocol==='https:'&&u.hostname.endsWith('.gov.br');}catch{return false;}}).map((s,i)=><p key={i}><a href={s.url} target="_blank" rel="noreferrer">{s.title}</a></p>)}</section>}
   {profile&&<section aria-label={fw.onboardingTitle}><h3>{fw.onboardingTitle}</h3><p>{fw.onboardingIntro}</p><button type="button" className="brand-secondary" disabled={blocked||edited} onClick={()=>void diagnose()}>{fw.onboardingCheck}</button>
-   {diagnostic&&!edited&&diagnostic.profile_revision===profile.revision&&<div role="status"><p>{fw.onboardingConfiguration}: {fw[diagnostic.configuration_valid?'yes':'no']}</p><ul>{diagnostic.blockers.map(code=><li key={code}>{fw[code]}</li>)}</ul></div>}
+   {diagnostic&&!edited&&diagnostic.profile_revision===profile.revision&&<div role="status"><p>{fw.onboardingConfiguration}: {fw[diagnostic.configuration_valid?'yes':'no']}</p>{diagnostic.provider_configuration&&<dl>
+    <div><dt>{fw.onboardingProvider}</dt><dd>Focus NFC-e</dd></div>
+    <div><dt>{fw.environment}</dt><dd>{fw.homologation}</dd></div>
+    <div><dt>{fw.onboardingCertificateType}</dt><dd>{diagnostic.provider_configuration.certificate_type}</dd></div>
+    <div><dt>{fw.onboardingTokenPresent}</dt><dd>{fw[diagnostic.provider_configuration.token_present?'yes':'no']}</dd></div>
+    <div><dt>{fw.onboardingCSCPresent}</dt><dd>{fw[diagnostic.provider_configuration.csc_present?'yes':'no']}</dd></div>
+    <div><dt>{fw.onboardingLocalOnly}</dt><dd>{fw.onboardingNoRemoteVerification}</dd></div>
+   </dl>}<ul>{diagnostic.blockers.map(code=><li key={code}>{fw[code]}</li>)}</ul></div>}
   </section>}
   {profile&&<section><h3>{fw.blockers}</h3><ul>{profile.readiness.blockers.map((code,i)=><li key={i}>{fw[code]||code}</li>)}</ul><p>{fw.draft}</p></section>}
  </section>;

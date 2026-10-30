@@ -61,5 +61,11 @@
   "onboardingConfiguration": "Valid configuration",
   "onboarding_configuration_required": "Ask the administrator to install or correct the secure fiscal configuration.",
   "onboarding_official_verification_required": "Official homologation verification is still required.",
-  "onboarding_production_blocked": "Production issuance remains blocked in this flow."
+  "onboarding_production_blocked": "Production issuance remains blocked in this flow.",
+  "onboardingProvider": "Provider",
+  "onboardingCertificateType": "Configured certificate type",
+  "onboardingTokenPresent": "Token present in service",
+  "onboardingCSCPresent": "CSC present in service",
+  "onboardingLocalOnly": "Diagnostic scope",
+  "onboardingNoRemoteVerification": "Local check. It does not query Focus or confirm certificate validity or tax authority authorization."
 }
