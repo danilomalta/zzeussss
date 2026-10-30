@@ -13,6 +13,7 @@ import (
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/entitlementstore"
+	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
 )
 
@@ -26,6 +27,7 @@ type PlanPartInput struct {
 }
 
 type PlanInput struct {
+	TaxQuoteOperations []string        `json:"tax_quote_operations,omitempty"`
 	OperationID        string          `json:"operation_id"`
 	CheckoutID         string          `json:"checkout_id"`
 	CashSessionID      string          `json:"cash_session_id"`
@@ -47,18 +49,19 @@ type PlanCancellation struct {
 }
 
 type Plan struct {
-	CheckoutID    string            `json:"checkout_id"`
-	OperationID   string            `json:"operation_id"`
-	CashSessionID string            `json:"cash_session_id"`
-	State         string            `json:"state"`
-	TotalCents    int64             `json:"total_cents"`
-	Items         []QuoteItem       `json:"items"`
-	Parts         []PlanPart        `json:"parts"`
-	CreatedAt     string            `json:"created_at"`
-	Repeated      bool              `json:"repeated"`
-	CanFinalize   bool              `json:"can_finalize"`
-	Cancellation  *PlanCancellation `json:"cancellation,omitempty"`
-	Completion    *PlanCompletion   `json:"completion,omitempty"`
+	Fiscal        *fiscal.CheckoutStatus `json:"fiscal,omitempty"`
+	CheckoutID    string                 `json:"checkout_id"`
+	OperationID   string                 `json:"operation_id"`
+	CashSessionID string                 `json:"cash_session_id"`
+	State         string                 `json:"state"`
+	TotalCents    int64                  `json:"total_cents"`
+	Items         []QuoteItem            `json:"items"`
+	Parts         []PlanPart             `json:"parts"`
+	CreatedAt     string                 `json:"created_at"`
+	Repeated      bool                   `json:"repeated"`
+	CanFinalize   bool                   `json:"can_finalize"`
+	Cancellation  *PlanCancellation      `json:"cancellation,omitempty"`
+	Completion    *PlanCompletion        `json:"completion,omitempty"`
 }
 
 type CancelPlanInput struct {
@@ -101,7 +104,7 @@ func planHash(in any) string {
 // CreatePlanWithContract persists an immutable, fully allocated quote snapshot.
 // No money is collected, stock reserved or sale committed, including for cash.
 // Replays return the original snapshot even after prices, stock or shift change.
-func CreatePlanWithContract(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, in PlanInput) (Plan, error) {
+func CreatePlanWithContract(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, in PlanInput, token ...string) (Plan, error) {
 	if db == nil || contracts == nil || !validPlan(in) {
 		return Plan{}, ErrInvalid
 	}
@@ -112,6 +115,17 @@ func CreatePlanWithContract(ctx context.Context, db *sql.DB, contracts *entitlem
 	defer tx.Rollback()
 	if err = contracts.RequireTx(ctx, tx, actor, device, identity.Sell, modules.POS); err != nil {
 		return Plan{}, err
+	}
+	if len(in.TaxQuoteOperations) > 0 {
+		if len(token) != 1 {
+			return Plan{}, ErrInvalid
+		}
+		if err = fiscal.ValidateSaleSessionTx(ctx, tx, actor, device, token[0]); err != nil {
+			return Plan{}, err
+		}
+		if err = contracts.RequireTx(ctx, tx, actor, device, identity.Sell, modules.Fiscal); err != nil {
+			return Plan{}, err
+		}
 	}
 	hash := planHash(in)
 	var priorCheckout, action, priorHash string
@@ -146,6 +160,16 @@ func CreatePlanWithContract(ctx context.Context, db *sql.DB, contracts *entitlem
 	items, total, err := priceItemsTx(ctx, tx, actor, in.Items)
 	if err != nil {
 		return Plan{}, err
+	}
+	bindings, total, err := priceTaxesTx(ctx, tx, actor, device, in.TaxQuoteOperations, items, total)
+	if err != nil {
+		return Plan{}, err
+	}
+	for i, b := range bindings {
+		base := items[i].TotalCents
+		items[i].MerchandiseCents = &base
+		items[i].Tax = b
+		items[i].TotalCents += b.AdditionalCents
 	}
 	if total != in.ExpectedTotalCents {
 		return Plan{}, ErrConflict
