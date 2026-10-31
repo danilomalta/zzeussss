@@ -115,6 +115,18 @@ func (c *Client) exchange(ctx context.Context, id, key, environment, contentType
 	if id == "" || len(id) > 128 || len(body) > 2*MaxXML || len(body) == 0 || (environment != "1" && environment != "2") {
 		return out, ErrInput
 	}
+	if environment == "1" {
+		// A file journal alone is not production authority, even when the
+		// caller already possesses a signed XML. Trusted production recorders
+		// and their live pre-send guard must both be explicitly supplied.
+		_, issue := c.recorder.(ProductionRecorder)
+		_, cancel := c.recorder.(ProductionCancellationRecorder)
+		_, guarded := c.recorder.(SendGuard)
+		if !guarded || (!issue && !cancel) {
+			return out, ErrUnsupported
+		}
+	}
+
 	sum := sha256.Sum256(body)
 	record := RecordedRequest{OperationID: id, Scope: c.scope, URL: c.endpoint.String(), Issuer: c.credential.document, Environment: environment, Key: key, RequestSHA256: hex.EncodeToString(sum[:]), Body: append([]byte(nil), body...)}
 	if err := c.recorder.Reserve(ctx, record); err != nil {

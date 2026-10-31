@@ -41,6 +41,9 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Aviso: Arquivo .env não localizado. Usando variáveis de ambiente globais.")
 	}
+	if err := validateStartupSecrets(os.Getenv); err != nil {
+		log.Fatal(err)
+	}
 	addr, err := onlineListenAddress(os.Getenv("TITAN_API_HOST"), os.Getenv("PORT"))
 	if err != nil {
 		log.Fatal("Endereço ou porta da API inválidos. Use TITAN_API_HOST como IP literal e PORT entre 1 e 65535.")
