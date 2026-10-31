@@ -21184,6 +21184,118 @@
     },
     "/local/v1/fiscal/operations/{id}/receipt": {
       "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1operations~1{id}~1receipt"
+    },
+    "/local/v1/fiscal/intents/{id}/danfe": {
+      "$ref": "./fiscal-danfe.openapi.json#/paths/~1fiscal~1intents~1{id}~1danfe"
+    },
+    "/local/v1/fiscal/intents/{id}/production/prepare": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1prepare"
+    },
+    "/local/v1/fiscal/intents/{id}/production/approve": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1approve"
+    },
+    "/local/v1/fiscal/intents/{id}/production/emit": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1emit"
+    },
+    "/local/v1/fiscal/intents/{id}/production/query": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1query"
+    },
+    "/local/v1/fiscal/intents/{id}/production": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production"
+    },
+    "/local/v1/fiscal/intents/{id}/production/xml": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1xml"
+    },
+    "/local/v1/fiscal/intents/{id}/production/cancel": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1cancel"
+    },
+    "/local/v1/fiscal/intents/{id}/production/cancellation": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1cancellation"
+    },
+    "/local/v1/fiscal/intents/{id}/production/cancellation/xml": {
+      "$ref": "./fiscal-production.openapi.json#/paths/~1fiscal~1intents~1{id}~1production~1cancellation~1xml"
+    },
+    "/local/v1/fiscal/tax-policies": {
+      "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-policies"
+    },
+    "/local/v1/fiscal/tax-policies/{id}": {
+      "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-policies~1{id}"
+    },
+    "/local/v1/fiscal/tax-quotes": {
+      "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-quotes"
+    },
+    "/local/v1/fiscal/tax-quotes/{id}": {
+      "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-quotes~1{id}"
+    },
+    "/local/v1/fiscal/onboarding": {
+      "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1profiles"
+    },
+    "/local/v1/fiscal/onboarding/{id}": {
+      "$ref": "./fiscal-onboarding.openapi.json#/paths/~1fiscal~1onboarding~1{id}"
+    },
+    "/local/v1/fiscal/onboarding/{id}/provider": {
+      "$ref": "./fiscal-onboarding.openapi.json#/paths/~1fiscal~1onboarding~1{id}~1provider"
+    },
+    "/local/v1/checkout/plans/{id}/fiscal/reprocess": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      ],
+      "post": {
+        "operationId": "reprocessCheckoutFiscalBySaleID",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Uses the original request persisted by the server. No invoice or secrets from the client; no new sale. Production remains blocked.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "maxProperties": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkout fiscal result; authorization only if actually returned by the configured homologation authority."
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not permitted"
+          },
+          "404": {
+            "description": "Checkout not found"
+          },
+          "409": {
+            "description": "Original request unavailable or operation conflict"
+          },
+          "500": {
+            "description": "Storage unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/company/registration": {
+      "$ref": "./company-registration.openapi.json#/paths/~1local~1v1~1company~1registration"
     }
   },
   "components": {

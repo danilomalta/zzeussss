@@ -1,6 +1,7 @@
 package localapi
 
 import (
+	"encoding/json"
 	"errors"
 	"strconv"
 	"titansystem-backend/internal/core/modules"
@@ -13,19 +14,39 @@ import (
 )
 
 func (s *Server) mountFiscal(r fiber.Router) {
+	r.Post("/fiscal/tax-policies", s.publishTaxPolicy)
+	r.Get("/fiscal/tax-policies/:id", s.readTaxPolicy)
+	r.Post("/fiscal/tax-quotes", s.createTaxQuote)
+	r.Get("/fiscal/tax-quotes/:id", s.readTaxQuote)
 	r.Get("/fiscal/capabilities", s.fiscalCapabilities)
 	r.Get("/fiscal/requirements/:uf", s.fiscalRequirements)
+	r.Post("/fiscal/onboarding", s.configureFiscal)
+	r.Get("/fiscal/onboarding/:id/provider", s.fiscalCustomerCredentials)
+	r.Post("/fiscal/onboarding/:id/provider", s.fiscalCustomerCredentials)
+	r.Get("/fiscal/onboarding/:id", s.fiscalOnboarding)
 	r.Post("/fiscal/profiles", s.configureFiscal)
 	r.Get("/fiscal/profiles/:id", s.readFiscalProfile)
 	r.Post("/fiscal/intents", s.prepareFiscal)
 	r.Get("/fiscal/intents", s.listFiscalIntents)
 	r.Get("/fiscal/intents/:id", s.readFiscalIntent)
+	r.Get("/fiscal/intents/:id/danfe", s.readFiscalDANFE)
+	r.Post("/fiscal/intents/:id/production/prepare", s.prepareProduction)
+	r.Post("/fiscal/intents/:id/production/approve", s.approveProduction)
+	r.Post("/fiscal/intents/:id/production/emit", s.emitProduction)
+	r.Post("/fiscal/intents/:id/production/query", s.queryProduction)
+	r.Post("/fiscal/intents/:id/production/cancel", s.cancelProduction)
+	r.Get("/fiscal/intents/:id/production/cancellation", s.readProductionCancellation)
+	r.Get("/fiscal/intents/:id/production/cancellation/xml", s.readProductionCancellationXML)
+	r.Get("/fiscal/intents/:id/production", s.readProduction)
+	r.Get("/fiscal/intents/:id/production/xml", s.readProductionXML)
 	r.Get("/fiscal/operations/:id/receipt", s.readFiscalOperation)
 }
 
 func fiscalFailure(c *fiber.Ctx, err error) error {
 	code, kind := 500, "fiscal_storage_error"
 	switch {
+	case errors.Is(err, fiscal.ErrDocumentUnavailable):
+		code, kind = 409, "fiscal_document_not_printable"
 	case errors.Is(err, fiscal.ErrInvalid):
 		code, kind = 400, "invalid_fiscal_request"
 	case errors.Is(err, fiscal.ErrConflict):
@@ -63,11 +84,23 @@ func (s *Server) fiscalCapabilities(c *fiber.Ctx) error {
 	if err != nil {
 		return fiscalFailure(c, err)
 	}
-	return c.JSON(fiber.Map{"scope": "durable_preparation_only", "models": []string{"55", "65"}, "profile_configuration": "active_owner_and_fiscal_contract", "readiness": fiscal.Unavailable(), "nfse_available": false, "sped_generation_available": false, "transmission_available": false, "automatic_retry_available": false})
+	out := fiber.Map{"scope": "durable_preparation_and_homologation_archive_print", "homologation_archive_print_available": true, "models": []string{"55", "65"}, "profile_configuration": "active_owner_and_fiscal_contract", "readiness": fiscal.Unavailable(), "nfse_available": false, "sped_generation_available": false, "transmission_available": false, "automatic_retry_available": false, "production_cancellation_available": false}
+	if s.production != nil && s.production.Validate() == nil {
+		b := s.production.Binding()
+		if b.TenantID == ss.Actor.TenantID && b.StoreID == ss.Actor.StoreID && b.DeviceID == ss.Device.DeviceID {
+			out["scope"] = "synchronous_production_emitter"
+			out["transmission_available"] = true
+			out["readiness"] = fiscal.Readiness{Blockers: []string{"reviewed_production_document_and_approval_required"}}
+			out["production_cancellation_available"] = b.CancellationURL != ""
+			out["production_model"] = b.Model
+			out["production_configuration_sha256"] = b.SHA256()
+		}
+	}
+	return c.JSON(out)
 }
 func (s *Server) configureFiscal(c *fiber.Ctx) error {
 	var in fiscal.ProfileInput
-	if !fiscalWrite(c) || decodeCash(c.Body(), &in, []string{"operation_id", "profile_id", "expected_revision", "cnpj", "legal_name", "state", "municipality_ibge", "state_registration", "crt", "model", "environment", "series"}) != nil {
+	if !fiscalWrite(c) || decodeFiscalProfile(c.Body(), &in) != nil {
 		return fiscalFailure(c, fiscal.ErrInvalid)
 	}
 	ss := c.Locals("session").(localauth.Session)
@@ -210,4 +243,11 @@ func (s *Server) fiscalRequirements(c *fiber.Ctx) error {
 		return fiscalFailure(c, err)
 	}
 	return c.JSON(out)
+}
+
+func decodeFiscalProfile(body []byte, in *fiscal.ProfileInput) error {
+	if _, err := exactSaleObject(body, []string{"operation_id", "profile_id", "expected_revision", "cnpj", "legal_name", "state", "municipality_ibge", "state_registration", "crt", "model", "environment", "series"}, "timezone", "require_tax_pricing"); err != nil {
+		return err
+	}
+	return json.Unmarshal(body, in)
 }

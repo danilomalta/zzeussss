@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 	"titansystem-backend/internal/apicontract"
+	"titansystem-backend/internal/fiscalproduction"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -23,10 +24,12 @@ import (
 )
 
 type Server struct {
-	DB          *sql.DB
-	Device      identity.DeviceContext
-	contracts   *entitlementstore.Store
-	tradeSigner ed25519.PrivateKey
+	DB              *sql.DB
+	Device          identity.DeviceContext
+	contracts       *entitlementstore.Store
+	tradeSigner     ed25519.PrivateKey
+	production      *fiscalproduction.Runtime
+	fiscalProviders *fiscalproduction.ProviderRegistry
 }
 
 // New preserves authentication and authorized reads without issuer keys.
@@ -49,10 +52,31 @@ func NewWithVerifierAndGate(db *sql.DB, device identity.DeviceContext, verifier 
 
 // Signing key comes only from verified process configuration, never HTTP.
 func NewWithTradeSignerAndGate(db *sql.DB, device identity.DeviceContext, verifier *entitlements.Verifier, gate fiber.Handler, signer ed25519.PrivateKey) (*fiber.App, error) {
+	return NewWithProductionAndGate(db, device, verifier, gate, signer, nil)
+}
+
+func NewWithProductionAndGate(db *sql.DB, device identity.DeviceContext, verifier *entitlements.Verifier, gate fiber.Handler, signer ed25519.PrivateKey, production *fiscalproduction.Runtime) (*fiber.App, error) {
+	return NewWithFiscalProvidersAndGate(db, device, verifier, gate, signer, production, nil)
+}
+
+// Providers come only from trusted process configuration; no checkout override.
+func NewWithFiscalProvidersAndGate(db *sql.DB, device identity.DeviceContext, verifier *entitlements.Verifier, gate fiber.Handler, signer ed25519.PrivateKey, production *fiscalproduction.Runtime, providers *fiscalproduction.ProviderRegistry) (*fiber.App, error) {
 	if db == nil || device.TenantID == "" || device.StoreID == "" || device.DeviceID == "" {
 		return nil, errors.New("servidor local sem aparelho")
 	}
-	s := &Server{DB: db, Device: device}
+	if providers != nil && verifier == nil {
+		return nil, fiscalproduction.ErrUnavailable
+	}
+	if production != nil {
+		if verifier == nil {
+			return nil, fiscalproduction.ErrUnavailable
+		}
+		b := production.Binding()
+		if production.Validate() != nil || b.TenantID != device.TenantID || b.StoreID != device.StoreID || b.DeviceID != device.DeviceID {
+			return nil, fiscalproduction.ErrUnavailable
+		}
+	}
+	s := &Server{DB: db, Device: device, production: production, fiscalProviders: providers}
 	if signer != nil {
 		if len(signer) != ed25519.PrivateKeySize {
 			return nil, errors.New("trade signing identity unavailable")
@@ -77,6 +101,9 @@ func NewWithTradeSignerAndGate(db *sql.DB, device identity.DeviceContext, verifi
 		config.IdleTimeout = time.Minute
 		config.Concurrency = 128
 	}
+	if production != nil || providers != nil {
+		config.WriteTimeout = 45 * time.Second
+	}
 	app := fiber.New(config)
 	app.Use(apicontract.Errors())
 	if gate != nil {
@@ -87,6 +114,9 @@ func NewWithTradeSignerAndGate(db *sql.DB, device identity.DeviceContext, verifi
 	if gate != nil {
 		app.Use(gate)
 	}
+	// Includes denied/expired fiscal requests: authentication errors must not
+	// become cacheable merely because they never reached the route handler.
+	app.Use("/local/v1/fiscal", func(c *fiber.Ctx) error { c.Set(fiber.HeaderCacheControl, "no-store"); return c.Next() })
 	v1 := app.Group("/local/v1")
 	v1.Get("/health", func(c *fiber.Ctx) error { return c.JSON(fiber.Map{"status": "local"}) })
 	v1.Post("/login", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.login)
@@ -98,6 +128,8 @@ func NewWithTradeSignerAndGate(db *sql.DB, device identity.DeviceContext, verifi
 		return c.JSON(fiber.Map{"tenant_id": session.Actor.TenantID, "store_id": session.Actor.StoreID, "identity_id": session.Actor.IdentityID, "device_id": session.Device.DeviceID, "expires_unix": session.ExpiresUnix})
 	})
 	protected.Get("/capabilities", s.capabilities)
+	protected.Get("/company/registration", s.companyRegistration)
+	protected.Post("/company/registration", s.companyRegistration)
 	protected.Get("/access/policy", s.readPolicy)
 	protected.Post("/access/policy", limiter.New(limiter.Config{Max: 20, Expiration: time.Minute}), s.mutatePolicy)
 	protected.Get("/access/audit", s.auditAccess)

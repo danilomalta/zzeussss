@@ -1,0 +1,76 @@
+{
+  "base": "2b75dfce4158efebf93bb2daf5f4ff669fc35f1f",
+  "date": "2026-10-27",
+  "scope": "cash, normal emission, homologation only; no production or official homologation",
+  "checks": [
+    {
+      "log": "fiscal-issuance-core-final.jsonl",
+      "sha256": "c6177ce365864609b4cd32f511f1969d140e32f2d6c5e23491b3364b4fb5491a",
+      "top_pass": 22,
+      "counts": {
+        "pass": 36,
+        "fail": 0,
+        "skip": 0
+      },
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/localdb/fiscal",
+          "action": "pass"
+        },
+        {
+          "package": "titansystem-backend/internal/fiscalcore",
+          "action": "pass"
+        }
+      ],
+      "backup_cli_commands": 0
+    },
+    {
+      "log": "fiscal-issuance-local-final.jsonl",
+      "sha256": "72dcfe4ab0bdac4e179a88c808ad2c483f25fd64d619ae285a16846b6b8c6417",
+      "top_pass": 20,
+      "counts": {
+        "pass": 62,
+        "fail": 0,
+        "skip": 0
+      },
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "action": "pass"
+        }
+      ],
+      "backup_cli_commands": 33
+    }
+  ],
+  "other_checks": {
+    "go_vet_affected_packages": "passed",
+    "go_build_titan_local_and_titan_fiscal": "passed; not installed",
+    "api_contracts": "537 routes passed",
+    "git_diff_check": "passed"
+  },
+  "source_sha256": {
+    "backend/internal/fiscalcore/issuance.go": "97f3d33c5f3d7ad3addddda4f8a5682616d63a25cee19d17393dbdd1c7540c81",
+    "backend/internal/fiscalcore/issuance_test.go": "852bd16f6b73e144d088bcf07da3cb91d16c4e7315633e49909aabcf5a7a517b",
+    "backend/internal/fiscalcore/xml.go": "db3ab81212f4fb30206dde8a92018198211524c36dd94a8bea8565d6810638fc",
+    "backend/internal/localdb/fiscal/invoice_binding.go": "56d86964ddfcab214052871933eb4241587e1fffeea14a18530b257db5e8df9f",
+    "backend/internal/localapi/fiscal_invoice_binding_test.go": "0a39ef12ff63f2015d9e44e9fd588e1aec3a1fef9cc967da1d07e8e232cd8978",
+    ".github/workflows/backend-pilot.yml": "0b9d39af6013276b0aeb0259c66beeddfdcd43b372aa40ba16432e4b05106cdb"
+  },
+  "not_executed": [
+    "full repository regression suite for this delta",
+    "real SEFAZ/NFS-e exchange",
+    "combined SQLite+TLS E2E",
+    "production issuance",
+    "DANFE conformance",
+    "SPED PVA",
+    "real issuer homologation"
+  ],
+  "first_attempt_failures": [
+    "FileRecorder test directory permission: invalid fiscal input; corrected to 0700",
+    "test used nonexistent logout route: 404; changed to existing localauth.Logout",
+    "Go command from root: go.mod file not found; rerun from backend"
+  ],
+  "ci": "pending for this delta; seven passed checks belong to base 2b75dfc",
+  "services_8182_8282": "preserved",
+  "credentials": "unchanged; merge remains blocked"
+}

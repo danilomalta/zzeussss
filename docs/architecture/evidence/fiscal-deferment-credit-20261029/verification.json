@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-29",
+  "base_commit": "3b745541cfc232bde78ec7020ce9dd8334c64c3f",
+  "scope": "CST51 domestic full/partial ICMS deferment; CSOSN101 approved prior-month credit; not all Brazilian tax law",
+  "backend_full": {
+    "packages_passed": 59,
+    "top_level_passed": 1523,
+    "passed_including_subtests": 3500,
+    "failures": [],
+    "skipped_tests": [
+      "TestFiscalProductionConfigNativeCLI",
+      "TestPostgresCatalogCreationAndDiscountAtomicity",
+      "TestPostgresDurableRotationConcurrencyAndRollback",
+      "TestMigrationCrashChild",
+      "TestCashJournalFrontendBridge",
+      "TestDeliveryFrontendBridge",
+      "TestFiscalCustomerFrontendBridge",
+      "TestMaintenanceFrontendBridge",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "core_race": {
+    "packages_passed": 1,
+    "top_level_passed": 17,
+    "passed_including_subtests": 155,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "api_race": {
+    "packages_passed": 1,
+    "top_level_passed": 8,
+    "passed_including_subtests": 27,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "optional_bridges_reexecuted": {
+    "packages_passed": 1,
+    "top_level_passed": 4,
+    "passed_including_subtests": 4,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "optional_cli_reexecuted": {
+    "packages_passed": 1,
+    "top_level_passed": 1,
+    "passed_including_subtests": 1,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "remaining_skips_after_supplemental_runs": [
+    "TestPostgresCatalogCreationAndDiscountAtomicity",
+    "TestPostgresDurableRotationConcurrencyAndRollback",
+    "TestMigrationCrashChild",
+    "TestPilotCashProcess",
+    "TestPilotCashScreenFlow"
+  ],
+  "python_tests": {
+    "passed": 85,
+    "failures": 0,
+    "initial_restricted_run": "Six setup/socket errors in sandbox; corrected by rerunning unchanged tests with loopback/build access, all 85 then passed"
+  },
+  "contracts": {
+    "routes": 551,
+    "status": "PASS",
+    "required_ci_integrations": 13
+  },
+  "vet": "PASS ./...",
+  "compatibility": {
+    "byte_identical": true,
+    "sha256": "2d5ca4a0570a97d8830e4751a98b87ecd5baf75a49193f4327f13ad3c84f1d86",
+    "input": "synthetic legacy fixture only"
+  },
+  "linux_builds": {
+    "titan-local": "a6abd8848c841468b7f02744302cec508c33c715de9ec80993e1130fba602aa8",
+    "titan-fiscal": "53391d8bd961afc34b268d6e276160506d2088b801c0003b92af765a3f60f6d9"
+  },
+  "full_suite_test_only_delta": "Full suite compiled before test-only timezone alignment. Production files unchanged; entire tax API race selection rerun after aligning the credit test to issuer timezone.",
+  "installation_changed": false,
+  "migrations_added": 0,
+  "official_homologation": false,
+  "authority": "Synthetic disposable mTLS authority. New integration clients use Fiber App.Test with real SQLite; emission reaches real loopback TLS socket. Not official SEFAZ. Existing native TCP regression is also rerun in the full suite.",
+  "ci_base": {
+    "commit": "3b745541cfc232bde78ec7020ce9dd8334c64c3f",
+    "success": 6,
+    "cancelled": 1,
+    "cause": "40-minute aggregate job timeout during last pilot/race step; full regression and fiscal race steps successful",
+    "fix": "90-minute aggregate budget; individual test timeouts and mandatory checks preserved",
+    "new_head": "Must check after publication"
+  },
+  "tested_source_sha256": {
+    "backend/internal/fiscalcore/goods_tax.go": "fffd69924c06f7cbf010cabb1b930feeae72f94dbb00282137cb548021edde43",
+    "backend/internal/fiscalcore/icms_deferment.go": "d5712e3b3b4ca495aa1b802516bca7eb5e33fa976dc855a111b5ced956bbfdf7",
+    "backend/internal/fiscalcore/icms_deferment_test.go": "ca990dab56f61fdbee2ad1585d71369c7aa316a138490615c66c90c8a15ae8b6",
+    "backend/internal/fiscalcore/simple_credit.go": "88f90060a2288f51a8dbf1dcb125c6fab615487ca282f1bf208cf5ca20938e3e",
+    "backend/internal/fiscalcore/simple_credit_test.go": "99b2bf87e19c764c75104161bb0be90d14528610fb775464fa7ae7454be110af",
+    "backend/internal/fiscalcore/tax.go": "351439588bbafdd1e5c563a923b24ceff5a15aff16072649bab4e07291835bd8",
+    "backend/internal/fiscalcore/tax_policy.go": "124f8b9c5e0e6d97683d4f25fa748aea663510ec42ccbffb1e3c8f6e05280a34",
+    "backend/internal/localapi/fiscal_production_deferment_test.go": "f2997c92c2bbc088a7c262b2830718daeb506de9ae294906bb51301ed9962d31",
+    "backend/internal/localapi/fiscal_production_simple_credit_test.go": "a672f3fa77321d7bceab032d019a1aca1081b267a532f83a5d12137c9983caf8",
+    "docs/api/fiscal-tax-policy.openapi.json": "d94a54b3fb0c190b0a183fd0e2c507cf015f76d1c7789de810ce8009627d4cff",
+    "tools/tests/test_verify_backend_acceptance.py": "62fd1b587e74b76e835120f16b71c20aac94996a5607babb0b479c8af5bec7eb",
+    "tools/verify_backend_acceptance.py": "f2e95aa5b2a59139463771b658bc9bcc946c642bcad35cc8c93f66c9d95a2ff4",
+    ".github/workflows/backend-pilot.yml": "4d047f9b02a01ff16e7185316d83ad43f712852469fa1b1edcbdf440e743504d"
+  },
+  "limits": [
+    "CST51 restricted to domestic NF-e55 CRT2/3 without reduced base or FCP deferment.",
+    "CSOSN101 restricted to CRT1/NF-e55 eligible approved recipient/case; no automatic bracket or DAS assessment.",
+    "No official legal applicability lookup, complete benefits catalogue, RTC IBS/CBS/IS, retained ST, all credits/special regimes or national tax completeness.",
+    "No new frontend, installed-service changes, real issuer test, DANFE/contingency, NFS-e production or SPED/PVA acceptance.",
+    "PostgreSQL integration environment not configured locally; required CI gates remain enforced."
+  ]
+}

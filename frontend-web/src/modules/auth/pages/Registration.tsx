@@ -30,7 +30,7 @@ export default function Registration() {
   if(step===3&&!reviewed){setMessage('errors.confirm');return;}
   if(!event.currentTarget.checkValidity()){setMessage('errors.fields');event.currentTarget.querySelector<HTMLElement>(':invalid')?.focus();return;}
   if(step===1&&!selected.length){setMessage('errors.modules');return;}
-  if(step<3){go(step+1);return;}if(!proposal87(businessProfile)){setMessage('errors.fields');return;}setMessage('register.done');
+  if(step<3){go(step+1);return;}if(!proposal87(businessProfile)){setMessage('errors.fields');return;}setMessage('register.unavailable');
  }
  function cards(ids:string[]){
   return <div className="plan-grid">{plans.filter(plan=>ids.includes(plan.id)).map(plan=><button type="button" key={plan.id} className={`plan-card ${selected.includes(plan.id)?'selected':''}`} aria-pressed={selected.includes(plan.id)} onClick={()=>toggle(plan.id)}>

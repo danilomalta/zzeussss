@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+	"titansystem-backend/internal/sqlitewrite"
 
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb"
@@ -29,14 +30,20 @@ type Profile struct {
 // The profile is always a draft, including when environment=production.
 func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ProfileInput, token string) (Profile, error) {
 	var out Profile
+	err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+		var err error
+		out, err = configureTx(ctx, tx, license, a, d, in, token)
+		return err
+	})
+	return out, err
+}
+
+func configureTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ProfileInput, token string) (Profile, error) {
+	var out Profile
 	if !in.valid() {
 		return out, ErrInvalid
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return out, err
-	}
-	defer tx.Rollback()
+	var err error
 	if err = fiscalSessionTx(ctx, tx, a, d, token); err != nil {
 		return out, err
 	}
@@ -50,6 +57,16 @@ func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store,
 	if role != "owner" {
 		return out, identity.ErrDenied
 	}
+
+	// A freshly onboarded owner has an identity/membership but may never have
+	// opened a cash register. Project only that authenticated identity for the
+	// legacy users foreign key; fiscal configuration must not require a sale.
+	if _, err = tx.ExecContext(ctx, `INSERT INTO users(tenant_id,id,display_name)
+        SELECT ?,i.id,i.display_name FROM identities i WHERE i.id=?
+        ON CONFLICT(tenant_id,id) DO NOTHING`, a.TenantID, a.IdentityID); err != nil {
+		return out, err
+	}
+
 	body, _ := json.Marshal(in)
 	var old, actor, store string
 	err = tx.QueryRowContext(ctx, `SELECT request_json,actor_id,store_id,revision,created_at FROM fiscal_profiles WHERE tenant_id=? AND device_id=? AND operation_id=?`, a.TenantID, d.DeviceID, in.OperationID).Scan(&old, &actor, &store, &out.Revision, &out.CreatedAt)
@@ -60,10 +77,19 @@ func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store,
 		out.Input = in
 		out.Repeated = true
 		out.Readiness = Unavailable()
-		return out, tx.Commit()
+		return out, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return out, err
+	}
+	if in.RequireTaxPricing == nil {
+		prior, err := profileTx(ctx, tx, a, in.ProfileID, 0)
+		if err != nil && !errors.Is(err, ErrNotFound) {
+			return out, err
+		}
+		if err == nil && prior.Input.RequireTaxPricing != nil && *prior.Input.RequireTaxPricing {
+			return out, ErrConflict
+		}
 	}
 	var revision int
 	if err = tx.QueryRowContext(ctx, `SELECT COALESCE(max(revision),0) FROM fiscal_profiles WHERE tenant_id=? AND store_id=? AND profile_id=?`, a.TenantID, a.StoreID, in.ProfileID).Scan(&revision); err != nil {
@@ -77,7 +103,7 @@ func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store,
 	if err != nil {
 		return Profile{}, err
 	}
-	return out, tx.Commit()
+	return out, nil
 }
 
 func profileTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string, revision int) (Profile, error) {
@@ -127,11 +153,12 @@ type IntentInput struct {
 	ProfileRevision int    `json:"profile_revision"`
 }
 type SaleItem struct {
-	ID             string `json:"id"`
-	ProductID      string `json:"product_id"`
-	QuantityMilli  int64  `json:"quantity_milli"`
-	UnitPriceCents int64  `json:"unit_price_cents"`
-	TotalCents     int64  `json:"total_cents"`
+	Tax            *SaleTaxBinding `json:"tax,omitempty"`
+	ID             string          `json:"id"`
+	ProductID      string          `json:"product_id"`
+	QuantityMilli  int64           `json:"quantity_milli"`
+	UnitPriceCents int64           `json:"unit_price_cents"`
+	TotalCents     int64           `json:"total_cents"`
 }
 type Payment struct {
 	ID          string `json:"id"`
@@ -166,14 +193,20 @@ type Intent struct {
 // nor signs/transmits XML. Missing contracts block writes, including replay.
 func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in IntentInput, token string) (Intent, error) {
 	var out Intent
+	err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+		var err error
+		out, err = prepareTx(ctx, tx, license, a, d, in, token)
+		return err
+	})
+	return out, err
+}
+
+func prepareTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in IntentInput, token string) (Intent, error) {
+	var out Intent
 	if !idPattern.MatchString(in.OperationID) || !idPattern.MatchString(in.SaleID) || !idPattern.MatchString(in.ProfileID) || in.ProfileRevision < 1 {
 		return out, ErrInvalid
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return out, err
-	}
-	defer tx.Rollback()
+	var err error
 	if err = fiscalSessionTx(ctx, tx, a, d, token); err != nil {
 		return out, err
 	}
@@ -192,7 +225,7 @@ func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 			return Intent{}, err
 		}
 		out.Repeated = true
-		return out, tx.Commit()
+		return out, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return out, err
@@ -244,6 +277,18 @@ func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 	if len(snap.Items) == 0 {
 		return out, ErrIntegrity
 	}
+	bindings, err := StoredSaleTaxesTx(ctx, tx, a, d, in.SaleID)
+	if err != nil {
+		return out, err
+	}
+	for i := range snap.Items {
+		if binding, ok := bindings[snap.Items[i].ID]; ok {
+			if binding.ProfileID != in.ProfileID || binding.ProfileRevision != in.ProfileRevision {
+				return out, ErrConflict
+			}
+			snap.Items[i].Tax = &binding
+		}
+	}
 	rows, err = tx.QueryContext(ctx, `SELECT id,method,status,amount_cents FROM sale_payments WHERE tenant_id=? AND sale_id=? ORDER BY id`, a.TenantID, in.SaleID)
 	if err != nil {
 		return out, err
@@ -275,7 +320,11 @@ func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 	if err != nil {
 		return Intent{}, err
 	}
-	return out, tx.Commit()
+	sessionDigest := sha256.Sum256([]byte(token))
+	if _, err = tx.ExecContext(ctx, `INSERT INTO fiscal_intent_session_bindings VALUES(?,?,?,?)`, a.TenantID, a.StoreID, out.ID, sessionDigest[:]); err != nil {
+		return Intent{}, err
+	}
+	return out, nil
 }
 
 func intentTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (Intent, error) {

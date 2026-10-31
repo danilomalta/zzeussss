@@ -1,5 +1,23 @@
 # Continuidade do TitanSystem
 
+## Cadastro em duas etapas — decisão do criador em 30/10/2026
+
+- Haverá pré-cadastro com o mínimo necessário para concluir a entrada inicial no sistema; os campos mínimos ainda devem ser definidos, sem inventar exigências nesta decisão.
+- Dentro do ERP haverá cadastro completo e progressivo da empresa, incluindo informações fiscais, funcionários e demais configurações pertinentes ao cliente.
+- Informações poderão ser obtidas por consultas e integrações reais disponíveis, ou preenchidas manualmente, conforme o caso e as escolhas do cliente. Não pressupor uma única forma obrigatória de preenchimento.
+- Não exigir todos os dados fiscais, certificados, funcionários e demais configurações no pré-cadastro. Recursos dependentes dessas configurações devem indicar suas pendências e requisitos específicos.
+- Reaproveitar o cadastro central da empresa nos módulos, sem perguntar novamente os mesmos dados. Dados consultados devem permitir conferência antes de sua utilização.
+- Esta decisão registra o fluxo de produto; não comprova implementação nem define automaticamente permissões, contratos ou dados obrigatórios de cada operação.
+
+## Premissa permanente do produto — confirmada pelo criador em 30/10/2026
+
+- O usuário é o criador e fornecedor do TitanSystem, um ERP alugado por assinatura para empresas clientes; não é o emitente fiscal do produto.
+- Antes de propor requisitos fiscais, distinguir o que pertence ao fornecedor do ERP do que pertence a cada empresa cliente.
+- Cada tenant cliente configura seu emitente, CNPJ, UF, regime, credenciamento, certificado A1, CSC e credenciais do provedor em ambiente privado, isolado por empresa. Não exigir que o criador forneça seus próprios dados fiscais para concluir desenvolvimento independente.
+- Entregar código, configuração por tenant, diagnóstico, segurança e testes independentes dos dados do criador. Ausência de emitente/token limita somente ensaios externos dependentes dessas credenciais; não interrompe outras implementações.
+- Preparação técnica e testes locais não comprovam emissão autorizada. Homologação real será executada com emitente e credenciais autorizados de um cliente/piloto; não inventar resultados nem remover bloqueios de produção.
+- Repositório atual exclusivo: `/home/danillo-malta/projetos/zzeussss`. Os caminhos Downloads citados no histórico abaixo são históricos.
+
 Revisão 62 — 26/10/2026. Registro único de continuidade a atualizar a cada entrega.
 Este arquivo faz parte das fontes do projeto; não implica commit ou publicação.
 
@@ -2254,3 +2272,664 @@ imagens e relatórios conferidos, hashes dos artefatos validados. O check
 HTTP integral ainda executava os pilotos com detector de corridas na hora
 deste registro. Não é declarado aprovado antes de sua conclusão. A alteração
 de política/documentação também precisa dos checks de sua própria revisão.
+
+## Fiscal68 — journal de homologação e barreira de restauração
+
+Trabalho separado em `feat/fiscal-homolog-journal-20261027`, base exata f492db7.
+Migração incremental68, intenção ligada à sessão original, tentativa persistida
+antes da rede, nova conferência imediatamente antes do POST, recuperação sem
+reenvio e bloqueio durável após Restore, inclusive para nova sessão/venda.
+Índice de emitente/modelo/série/número impede reutilizar registro mudando cNF.
+Produção, alocação nacional de numeração e homologação oficial não habilitadas.
+
+O escopo e os limites estão em [FISCAL_JOURNAL_20261027.md](FISCAL_JOURNAL_20261027.md).
+Esse componente não conclui motor tributário nacional, DANFE, SPED/PVA,
+NFS-e produção ou a integração completa do emissor. Nenhum serviço real foi
+selecionado; certificados e dados de teste são descartáveis. A base PR4 chegou
+a sete checks verdes, mas isso não substitui os testes desta revisão nem libera
+o merge com as credenciais antigas ainda pendentes de troca.
+
+Verificação local final fiscal68: suíte geral58pacotes/2911 resultados de
+teste e subteste, zero falhas; oito skips explícitos sem comprovação das
+integrações ausentes. -race do journal com CLI de backup real:12 funções/27
+resultados,33 comandos de backup, zero falhas. Dois testes mTLS/guard com
+-race aprovados. Vet, contratos e compilação passaram. Primeira rodada geral
+registrou oito falhas de carimbo VCS; repetição integral com carimbo omitido
+e titan-trade real passou, sem retirar testes. CI da branch própria pendente.
+
+
+## Continuidade fiscal — vínculo econômico e orquestração técnica
+
+Base2b75dfc do PR5: os sete checks dessa revisão passaram (job de integrações
+https://github.com/danilomalta/zzeussss/actions/runs/40457584324/job/122034408179).
+Isso atualiza a anotação anterior de CI pendente; não certifica alterações futuras.
+
+Nova unidade: `IssueHomologationNFe`, conferência da venda congelada antes de
+assinar, journal/guard/mTLS e leitura de protocolo estritamente associado;
+recuperação sem rede/chave privada vigente e repetição preservando os bytes/IDs
+originais. Fontes, testes e limites em
+[FISCAL_ORQUESTRADOR_HOMOLOGACAO_20261027.md](FISCAL_ORQUESTRADOR_HOMOLOGACAO_20261027.md).
+Não há novo endpoint, emissão comercial ou homologação oficial. Numeração
+automática, política tributária aprovada, DANFE, SPED/PVA e NFS-e produção
+continuam pendentes. Não alterar as pastas originais para simular essa conclusão.
+Resultados locais e hashes ficam no registro de evidência dessa unidade;
+CI novo deve ser conferido separadamente. Credenciais ainda não trocadas:
+sem merge, sem remoção de chaves antigas de backup ou reinício dos serviços.
+
+Verificação local da nova unidade:42 funções principais/98 resultados incluindo
+subtestes com -race, zero falhas/zero skips;33 comandos de backup real. Vet dos
+pacotes afetados, compilação e537rotas conferidos. Suíte geral do repositório
+não repetida localmente neste delta; CI deve executá-la na revisão publicada.
+
+
+## Fiscal69 — numeração durável da base emissora em homologação
+
+Basefc0d0f0. Migração69 acrescenta origem explícita de série pelo owner e
+atribuição imutável de número/instante/cNF/chave à intenção e sessão originais.
+Sem expiração/reuso automático. Concorrência é serializada antes de ler a
+sequência, inclusive entre conexões SQLite. Orquestrador passa a exigir essa
+atribuição; tentativas técnicas legadas não podem roubar número reservado.
+Backup aceita25–69; restauração conserva atribuição e bloqueia novas reservas.
+Não houve alteração das pastas originais, serviços, frontend, Electron ou banco
+comercial. Esta é autoridade de uma única base, não numeração global entre
+instalações ou outros ERPs. Produção/rotas comerciais não foram habilitadas.
+
+Detalhes e limites em [FISCAL_NUMERACAO_HOMOLOGACAO_20261027.md](FISCAL_NUMERACAO_HOMOLOGACAO_20261027.md).
+Resultados finais devem constar no registro de evidência antes da entrega.
+Continuam pendentes política tributária completa aprovada, autoridade entre
+instalações, reconciliação/consulta/eventos oficiais, DANFE, SPED/PVA, NFS-e
+produção e homologação real. O bloqueio de merge por credenciais antigas
+ainda não trocadas permanece. Não substituir essas pendências por mock.
+
+Resultados finais fiscal69:58pacotes/1400 funções principais/
+2976 resultados aprovados na suíte geral, zero falhas, oito skips
+explicitados no registro. Fiscal -race:31 funções/80 resultados,44 comandos
+de backup real, zero falhas/zero skips. Vet completo, quatro builds técnicos,
+17 testes dos validadores e537rotas aprovados. Nada instalado. CI do commit
+novo continua obrigatório antes de aceitar essa unidade; não há merge.
+
+
+## Fiscal70 — consulta, reconciliação e schemas incorporados
+
+Base0910400. Consulta `consSitNFe` em homologação com journal próprio imutável,
+sessão atual e permissão contábil; consulta nova não retoma emissão antiga.
+Conferência estrita de resposta/protocolo e composição de `nfeProc` validado.
+217/eventos não liberam número ou reenviam documento. Respostas ficam por
+consulta; uma resposta atrasada não substitui outra. Reinício/Restore preservam
+IDs/bytes e barreiras de emissão. Backup aceita25–70.
+
+Corrigido defeito de XSD inicial dependente do diretório atual em CompileFile: raiz
+e dependências passam a vir do FS incorporado. Regressões fora do repositório
+cobrem núcleo e CLI. Identidade da consulta usa memberships, preservando acesso
+de contador criado no cadastro central sem depender da tabela legada users.
+
+Detalhes, fontes oficiais e limites em
+[FISCAL_CONSULTA_RECONCILIACAO_20261027.md](FISCAL_CONSULTA_RECONCILIACAO_20261027.md).
+Não foi habilitada rota comercial, emissão em produção, homologação real, DANFE,
+SPED/PVA, motor tributário nacional completo ou NFS-e produção. Pastas originais
+e serviços preservados. Resultados finais no registro de evidência desta unidade.
+Sem merge: credenciais antigas continuam pendentes de troca pelo proprietário.
+
+
+Resultado local final fiscal70:58pacotes/1416 funções principais/
+3026 resultados aprovados, zero falhas, oito skips listados na evidência.
+Núcleo/CLI -race:29 funções/64 resultados em três pacotes, zero falhas/skips.
+Fiscal SQLite -race:41 funções/102 resultados,55 comandos de backup real,
+zero falhas/skips. Vet completo, quatro builds,17 testes dos validadores e
+537rotas aprovados. Nenhum binário instalado. Os sete checks da base0910400
+passaram; esta revisão precisa de CI próprio. Nenhum merge realizado.
+
+
+## Fiscal71 — cancelamento vinculado e preservado
+
+Base4d99c54. Evento110111/sequência1 ligado ao protocolo de autorização e
+consulta mais recente da intenção. Exige dono/gerente, contrato e sessão atuais;
+journal imutável antes de rede e guard antes do POST. Protocolo135/155 pode
+compor procEventoNFe validado; HTTP200,136/573 e Fault não bastam. Recuperação
+conserva bytes/IDs originais, inclusive após nova tentativa com outro ID. Não
+movimenta caixa, pagamentos, venda ou estoque. Backup aceita25–71; Restore
+conserva o processo e bloqueia novo envio. Migrações anteriores preservadas.
+
+CI4d99c54: seis checks aprovados e falha no teste de sigilo do ciclo de compras.
+Causa comprovada: substring31500 presente por acaso nos microssegundos da data.
+Corrigidas as duas assertivas para conferir campos JSON, sem mudar autorização;
+regressão específica repetida20vezes. Nova revisão exige CI próprio.
+
+Detalhes/fontes/limites em
+[FISCAL_CANCELAMENTO_HOMOLOGACAO_20261027.md](FISCAL_CANCELAMENTO_HOMOLOGACAO_20261027.md).
+Não declarar emissão/cancelamento real, DANFE, SPED/PVA, NFS-e produção, motor
+tributário nacional completo ou homologação oficial. Regras de elegibilidade
+jurídica e demais eventos permanecem pendentes. Sem alteração dos serviços ou
+pastas originais; nenhum merge. Credenciais antigas ainda não trocadas.
+
+
+Resultado local final fiscal71:58pacotes/1430 funções principais/
+3084 resultados incluindo subtestes aprovados, zero falhas; oito skips
+explicitados na evidência. Núcleo/CLI -race:32 funções/89 resultados
+em três pacotes; SQLite fiscal -race:51 funções/133 resultados e
+66comandos de backup real, ambos sem falhas/skips. Regressão de CI:dois testes
+repetidos20vezes,40aprovações. Vet completo, quatro builds,17 testes dos
+validadores e537rotas passaram. Fontes conferidos por hash antes/depois dos
+testes. Nenhum binário instalado. Novo CI obrigatório; nenhum merge.
+
+
+## Fiscal72 — inutilização de faixas em homologação (28/10/2026)
+
+Basef532e39: sete checks aprovados, inclusive HTTP/PostgreSQL/SQLite/pontes
+frontend/recuperação em https://github.com/danilomalta/zzeussss/actions/runs/40490651352/job/122143445013 .
+Isso atualiza o CI pendente da unidade71, sem certificar alterações posteriores.
+
+Nova unidade: XML/assinatura/transporte e journal imutável de inutilização,
+protocolo102 associado exatamente e ProcInutNFe validado. Faixas pendentes ou
+incertas bloqueiam atribuição e emissão legada; não sobrepõem número já atribuído.
+Trava compartilhada com o alocador e guards SQL. Apenas dono com sessão/contrato
+atuais decide uma faixa; leitura contábil não concede envio. Nova sessão e Restore
+não retomam a tentativa. Nenhum efeito automático em caixa, venda ou estoque.
+Backup aceita25–72 e preserva exclusões. Schemas oficiais novos com suporte
+alfanumérico, sem alterar os38arquivos anteriores. Produção continua bloqueada.
+
+Detalhes/fontes/limites em
+[FISCAL_INUTILIZACAO_HOMOLOGACAO_20261028.md](FISCAL_INUTILIZACAO_HOMOLOGACAO_20261028.md).
+O limite10000é local de recursos, não regra jurídica nacional.563 não é sucesso.
+Não há liberação automática de faixas, regra de prazo por UF, DANFE, SPED/PVA,
+NFS-e produção ou motor tributário nacional completo. Pastas originais e serviços
+preservados. Sem merge; credenciais antigas continuam pendentes de troca.
+
+
+Resultado local final fiscal72: 58 pacotes, 1445 testes principais e 3139 resultados incluindo subtestes aprovados; zero falhas, 8 skips explícitos. Núcleo/CLI com -race: 36 principais/118 resultados em três pacotes. SQLite fiscal com -race: 62 principais/158 resultados e 77 comandos reais de backup/restauração, sem falhas ou skips nessas duas rodadas. Vet completo, quatro builds, 17 testes dos validadores e 537 rotas passaram. Os 25 fontes/configurações foram conferidos por hash antes e depois; as 71 migrações e os 38 XSDs anteriores permanecem idênticos. CI desta revisão deve rodar após publicação.
+
+
+## Impressão NFC-e homologação —28/10/2026
+
+A basebc21e6e passou os sete checks: https://github.com/danilomalta/zzeussss/actions/runs/40640900803/job/122658539869 . Esta confirmação não certifica o delta posterior.
+
+Nova rota de leitura/impressão autenticada, por intenção arquivada, modelo65/ambiente2/normal. Confere assinatura e protocolo, seleciona a consulta mais recente e bloqueia documento incerto ou com cancelamento iniciado. Não transmite nem modifica venda/caixa/estoque. Sessão revogada não imprime; nova sessão autorizada conserva a cópia. Restore mantém barreiras. Suplemento QR2/3 ligado ao documento e validado sem reassinar; corrigidos separadores que o XSD recusava. Fusos brasileiros explícitos e tzdata incorporada. HTML estático, sem scripts/fontes remotas, dados escapados, hashes e no-store.
+
+Leiaute58/80mm e100itens ensaiados em Chromium/Poppler. Papel é configuração do driver; PDFs são QA, não saída nativa. Sem impressora/câmera física, emissão oficial, modelo55, contingência, cópia cancelada ou homologação real. Schema72 sem migração. Detalhes e evidências em [FISCAL_DANFE_NFCE_HOMOLOGACAO_20261028.md](FISCAL_DANFE_NFCE_HOMOLOGACAO_20261028.md). Frontend/Electron, originais e serviços preservados; sem merge. Fiscal completo ainda pendente, com limites expressos no documento.
+
+
+Resultado local final: 58 pacotes, 1457 testes principais e 3173 resultados incluindo subtestes aprovados; zero falhas, 8 skips explícitos. Núcleo/CLI -race: 42/139 em três pacotes. SQLite/API fiscal -race: 68/171, com 88 comandos reais de backup/restauração; ambas as rodadas sem falhas/skips. Vet, quatro builds,17 testes dos validadores,538 rotas e QA visual passaram.15 fontes/configurações conferidos por hash;72 migrações e42XSDs anteriores intactos. Nenhum executável instalado. CI do novo commit deve rodar após publicação.
+
+
+## DANFE NF-e55 A4 de homologação — 28/10/2026
+
+Basea790b66. A rota autenticada de cópia fiscal passa a aceitar210mm para
+NF-e55 normal/retrato; NFC-e65 conserva58/80mm. Arquivo original do journal,
+assinatura/protocolo/chave/ambiente/digest conferidos, folhas numeradas,
+código128 C/A com CNPJ alfanumérico, paginação de produtos e textos longos.
+Nova consulta pendente/negativa e cancelamento iniciado bloqueiam cópia ativa.
+Permissões e sessão atuais, reinício/Restore e barreira de reenvio preservados.
+Nenhuma operação comercial é produzida pela leitura.
+
+Resultado local: 58 pacotes, 1461 testes principais e
+3206 resultados incluindo subtestes aprovados, zero falhas;
+8 skips explícitos. Núcleo -race: 10 principais/35 resultados.
+API -race: 6 principais/32 resultados, com 22 comandos reais de titan-backup;
+sem falhas ou skips nessas duas rodadas. Vet, três builds,17 testes dos
+validadores,538rotas e QA A4 tela/impressão passaram.100itens preservados em
+9folhas sem transbordamento. Os9arquivos fonte/contrato mantiveram seus hashes.
+Schema72 e42XSDs anteriores inalterados. A primeira suíte falhou em8testes que
+compilam transporte, por metadadosVCS do ambiente; repetição integral aprovada
+com GOFLAGS=-buildvcs=false, inclusive nos subprocessos. Cache isolado em/tmp.
+
+Detalhes: [FISCAL_DANFE_NFE55_HOMOLOGACAO_20261028.md](FISCAL_DANFE_NFE55_HOMOLOGACAO_20261028.md).
+Evidências: [verification.json](evidence/fiscal-danfe55-20261028/verification.json).
+Não é DANFE55 de produção homologado, PDF nativo, paisagem, contingência ou
+ensaio físico. Emissor de produção, motor nacional completo, SPED/PVA,
+NFS-e produção e homologação real continuam pendentes de código/validação.
+Frontend/Electron, originais e serviços8182/8282 preservados; nenhum executável
+instalado ou merge. O CI desta alteração ainda precisa rodar.
+
+
+## Emissor síncrono revisado de produção —28/10/2026
+
+Basef6115f9: sete checks aprovados, inclusive
+https://github.com/danilomalta/zzeussss/actions/runs/40654534681/job/122702263542 .
+Essa evidência é da base, não certifica o delta desta unidade.
+
+Produção normal55/65 ganha API de preparação/aprovação/emissão/consulta e
+leitura do XML processado. Venda em dinheiro congelada, quantidades/preços/
+pagamentos/total exatos, revisão/hash e aprovação do dono/contador. Certificado,
+CRLs, endpoint governamental e contexto atuais antes do envio único. Série e
+numeração têm autoridade própria, trava e histórico imutável; incerteza,
+duplicidade ou logout não apagam nem reenviam a operação. Correção explícita
+somente após rejeição certa, mantendo o número. Nenhuma nova movimentação de
+caixa/estoque/venda. Backup cifrado preserva journal e XML; restauração mantém
+a barreira de envio, com leitura/consulta autorizadas sem reiniciar a emissão.
+
+Configuração privada explícita no processo, desativada por padrão; nenhum
+endpoint/chave/CSC vindo do navegador. Certificados e autoridade dos testes
+são sintéticos com assinatura e mTLS reais em loopback. Sem emissão oficial,
+credenciamento ou homologação real. Não declarar fiscal integralmente pronto.
+
+Validação local: 59 pacotes, 1481 testes principais e 3251 resultados incluindo subtestes aprovados; zero falhas, 8 skips explícitos. Núcleo/runtime -race: 32 principais/156 resultados. API/SQLite -race: 78 principais/208 resultados e 120 comandos reais do titan-backup. Sem falhas/skips nas rodadas race. Vet completo, quatro builds,17 testes dos validadores e544rotas passaram. As72migrações e42XSDs anteriores permanecem idênticos; schema73 novo e wrapper de resposta adicional. Os33fontes/configurações/contratos foram conferidos por hash. Os8skips locais incluem PostgreSQL, três pontes frontend e auxiliares opt-in; as integrações relevantes continuam obrigatórias no CI.
+
+Detalhes e limites em
+[FISCAL_EMISSOR_PRODUCAO_20261028.md](FISCAL_EMISSOR_PRODUCAO_20261028.md);
+[evidência agregada e hashes](evidence/fiscal-production-20261028/verification.json).
+Continuam pendentes regras tributárias nacionais/RTC completas, operações
+econômicas adicionais, DANFE/eventos/contingência de produção integrados ao
+novo journal, SPED/PVA, NFS-e produção e aceite com emitente/certificado reais.
+O provisionamento atual usa PEM privado; PFX protegido e adaptadores A3/HSM/
+Windows precisam de implementação/aceite próprios. A série é exclusiva deste
+banco, não uma autoridade distribuída entre instalações. A interface de
+provisionamento/revisão não foi alterada nesta entrega de backend/API.
+
+Frontend/Electron, árvores originais e serviços8182/8282 preservados. Nenhum
+binário instalado, banco comercial acessado ou merge. Publicação somente na
+branch fiscal/PR5; CI deste novo delta deve concluir após o push. As credenciais
+históricas continuam pendentes de troca e não foram abertas nesta tarefa.
+
+
+## Cancelamento de produção e recuperação por consulta —28/10/2026
+
+Base49ddbb5 com sete checks aprovados, inclusive
+https://github.com/danilomalta/zzeussss/actions/runs/40777738365/job/123131280427 .
+Não usar a aprovação dessa base como CI do novo delta.
+
+Evento110111/sequência1 de produção55/65 passa a ter decisão explícita,
+consulta autorizada mais recente, permissão atual do dono/gerente, credencial/
+CRLs/endpoint verificados e journal imutável próprio. Reserva antes do POST;
+resposta incerta não desaparece e não gera reenvio. Alteração do conteúdo com
+a mesma operação é conflito. Cópia ativa bloqueada desde a reserva; nenhum
+estorno, entrada de estoque, alteração da venda ou liberação do número.
+
+Recuperação por consulta exige os dados, assinatura, certificado e digest do
+evento originalmente enviado, com registro correspondente. A consulta tem
+identificador próprio; a tentativa original conserva seu exchange incerto.
+Evento diferente, ainda que assinado e com o mesmo ID, é recusado. Backup
+cifrado/restauração conserva XML/IDs/barreira e invalida a sessão antiga.
+Migração74; endpoint cancellation_url privado e opcional. Os schemas originais
+ficam intactos; validação composta trata o evento alfanumérico sem relaxar
+envelope, filhos, namespace ou exigência de assinatura.
+
+Validação local final: 59pacotes, 1490 testes principais e 3281 resultados incluindo subtestes aprovados; zero falhas, 8 skips explícitos. Núcleo/runtime -race: 33 principais/162 resultados; API/SQLite -race: 86 principais/232 resultados e 132 comandos reais do titan-backup. Sem falhas/skips nas duas rodadas race. Vet, quatro builds,17 testes dos validadores e547rotas passaram. Os25fontes/configurações/contratos mantiveram seus hashes;73migrações e43XSDs anteriores intactos. Os8skips locais incluem PostgreSQL, pontes frontend e auxiliares opt-in; o CI continua exigindo as integrações relevantes.
+
+Homologação oficial NÃO executada. O registro anterior informa ausência de
+emitente/certificado; foi solicitada atualização somente de UF/modelos/caminho
+da configuração privada, sem envio de segredo. Nenhum certificado sintético
+foi usado na SEFAZ. A produção ambiente1 não pode ser reutilizada como se
+fosse ambiente2. As condições de credenciamento/acesso dependem da UF/modelo.
+Os testes desta entrega usam assinatura/mTLS/SQLite/backup reais e autoridade
+sintética isolada em loopback, sem comprovar homologação oficial.
+
+Detalhes e fontes oficiais:
+[FISCAL_CANCELAMENTO_PRODUCAO_20261028.md](FISCAL_CANCELAMENTO_PRODUCAO_20261028.md).
+Resultados/hashes:
+[verification.json](evidence/fiscal-production-cancellation-20261028/verification.json).
+Restam ensaio SEFAZ real, DANFE/contingência/inutilização e outros eventos de
+produção, motor nacional/RTC completo e demais cenários econômicos, SPED/PVA,
+NFS-e produção e adaptadores de credenciais. Certificado de matriz para filiais
+ainda precisa de implementação/aceite; o vínculo atual usa CNPJ exato.
+Nenhuma instalação, reinício de8182/8282, alteração de banco comercial, frontend/
+Electron ou merge. Árvores originais preservadas; publicação apenas na branch
+fiscal/PR5. Credenciais históricas permanecem pendentes de troca. CI deste
+novo commit deve concluir após a publicação.
+
+## Configuração fiscal por cliente —29/10/2026
+
+Base `aae03e97b34b599c9883998c72c94bcad809afcf`, branch
+`feat/fiscal-homolog-journal-20261027`, PR5. O emitente é o cliente do ERP,
+vinculado à empresa/loja/aparelho da sessão. O proprietário do TitanSystem
+não precisa cadastrar uma empresa própria para representar todos os clientes.
+O software continua responsável pela implementação, segurança e compatibilidade;
+os requisitos particulares do emitente não substituem os testes do produto.
+O credenciamento depende da UF/modelo: referência oficial consultada em29/10,
+[Portal NF-e, perguntas frequentes](https://www.nfe.fazenda.gov.br/pOrtal/perguntasFrequentes.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=4figqHYhYho%3D).
+
+**Entregue nesta unidade:** em `/local/enterprise?area=fiscal`, nova aba
+“Configuração fiscal do cliente”. Cria/consulta revisões de cadastro para55/65
+usando exclusivamente as APIs existentes `/local/v1/fiscal/profiles`,
+`profiles/:id`, `capabilities` e `requirements/:uf`. Somente proprietário pode
+gravar; a API continua validando contrato, identidade e autorização. CNPJ, razão
+social, IE, município IBGE, CRT, modelo, ambiente e série são dados do emitente.
+UF e CRT exigem escolha explícita, sem presumir regime tributário. As capacidades
+da instalação ficam separadas das pendências do cadastro. Salvar revisão ou
+selecionar produção não declara homologação, autorização de nota ou emissão.
+
+O arquivo local de XML anterior permanece em aba própria, sem substituir dados
+ou documentos. Cinco idiomas completos; referências oficiais retornadas pela
+API permanecem em português e explicitamente datadas. Sem certificado, senha,
+CSC, chave, URL arbitrária de transmissão ou segredos em formulário/exportação.
+Somente links HTTPS governamentais são exibidos nas referências. Não há mock de
+sucesso na interface entregue. Tema, teclado, foco e controles touch reutilizam
+o padrão existente, com correção de contraste no painel novo.
+
+**Conflitos e recuperação:** revisão esperada impede sobrescrita concorrente.
+O cliente recusa POST de consulta/contexto antigo e descarta resposta tardia.
+Resposta ausente/inválida preserva a tentativa em memória e bloqueia outro POST;
+a recuperação consulta a revisão exata e compara todos os campos, inclusive
+operation_id. Não há reenvio automático. A navegação avisa sobre alterações;
+se a página for fechada/recarregada, é preciso consultar manualmente o cadastro
+e a revisão pelo identificador. Ainda não há listagem de cadastros na API nem
+journal durável desta tentativa no navegador. Esses limites não são ocultados.
+
+**Provas:**2.505 testes de frontend em117 arquivos, zero falhas/skips;
+40 específicos da nova aba/cliente/traduções. TypeScript e build passaram,
+Vite20,48s, mantendo o aviso preexistente dos chunks da planilha. Seis regressões
+da API fiscal passaram, incluindo sessão/permissão, revisão, HTTP real,
+reinício e restauração criptografada. Novo `TestFiscalCustomerFrontendBridge`
+passou com `-race`:35 requisições HTTP reais, três POSTs (um conflito recusado),
+três revisões SQLite,27 referências UF e recuperação da resposta perdida por GET
+sem repetir gravação. Sete testes do validador de aceite passaram; inventário
+de547 rotas permanece válido. O ensaio visual assistido usou respostas fictícias
+com aviso explícito: não é prova SEFAZ nem cliente comercial em operação.
+
+O CI do commit-base terminou com seis checks verdes e BackendCI reprovado por
+atingir o timeout padrão de10min; o teste interrompido tinha somente19s de
+execução. Prazo por pacote agora explícito de30min, job principal limitado a45min,
+sem remover testes/assertivas. O bridge fiscal novo é a sexta integração
+obrigatória do aceite do backend; ausência/skip reprova o validador.
+O resultado do CI do novo commit deve ser consultado após publicar; os checks
+antigos não são apresentados como prova desse commit.
+
+**Ainda não entregue por esta unidade:** assistente de instalação de credenciais,
+ensaio oficial automático, ativação de produção, listagem de emitentes, novas
+regras tributárias, NFS-e produção ou SPED/PVA. A aba é configuração revisionada,
+não homologação fiscal completa. Permanecem os limites da entrega anterior de
+DANFE/contingência/eventos de produção e demais cenários econômicos. Não houve
+transmissão SEFAZ, alteração da API comercial, banco real, serviço8182/8282,
+Electron, instalação do aplicativo ou merge na main. Backend recebeu somente
+um teste de integração descartável, sem alteração de lógica ou contrato fiscal.
+
+Arquivos/testes, hashes e resultados:
+[verification.json](evidence/fiscal-customer-20261029/verification.json),
+[frontend-tests.json](evidence/fiscal-customer-20261029/frontend-tests.json),
+[real-client-bridge.txt](evidence/fiscal-customer-20261029/real-client-bridge.txt).
+
+## Backend fiscal — A1 protegido e diagnóstico nativo —29/10/2026
+
+Pedido retomado no backend, base `7223bac548f9c621f15f3964d82f2efc8edfb5ff`,
+mesma branch fiscal/PR5. Nenhuma tela ou simulação foi acrescentada ao produto.
+O carregador real usado por `titan-local serve --fiscal-production` agora aceita
+A1 PFX/P12 DER com senha em arquivo privado, mantendo PEM. Não exporta chave,
+não aceita senha inline, não promove raiz embutida a confiança nem armazena segredo no
+journal/SQLite. CNPJ, fingerprint, cadeia, vigência e CRL continuam obrigatórios.
+Origens incompletas/misturadas, senha errada e arquivos inseguros são recusados;
+revogação posterior continua bloqueando envio. Dependência fixada em0.7.4,
+incluindo a correção PBMAC1 do fornecedor. Nenhuma outra dependência atualizada.
+
+`titan-fiscal check-production-config --in ...` lê a configuração privada
+existente e devolve JSON limitado sem CNPJ, senha, chave, caminho privado ou URL.
+Erro produz saída não zero. O check não abre banco, escreve arquivo, transmite
+nem afirma homologação; sessão/contrato da instalação e credenciamento oficial
+não são verificados por esse comando offline. O emitente será cada cliente,
+sem usar uma empresa do proprietário do ERP para representar todos.
+
+**Validação final:**59pacotes,1.498testes principais e3.315resultados incluindo
+subtestes aprovados; zero falhas. Cinco skips de testes locais identificados:
+PostgreSQL catálogo/sessão e três auxiliares de processo/tela. Quatro bridges de
+frontend e o novo executável nativo foram habilitados na rodada completa.
+Carregador/CLI com `-race`:10testes principais/53resultados, zero falhas/skips;
+API de produção com `-race`:5principais/7resultados, zero falhas/skips. Assinatura
+XML, checagem criptográfica, mTLS, HTTP, reinício e backup/restauração executam
+código real; as identidades/autoridade dos testes são exclusivamente descartáveis,
+sem envio SEFAZ ou uso de dados/certificados comerciais. Não confundir os testes
+com uma configuração distribuída para cliente ou uma aprovação fiscal oficial.
+
+Vet de três pacotes,17testes dos validadores, mapa de547rotas e verificação de
+integridade de todos os módulos passaram. Builds Linux de titan-local/titan-fiscal
+e cross-build Windows de titan-local passaram. O executável Linux compilado foi
+executado no teste obrigatório de sucesso/erro do diagnóstico. Os11fontes e
+configurações testados preservaram seus hashes. Migrações, schemas oficiais,
+frontend e Electron permanecem sem alterações nesta unidade.
+
+O CI de7223bac terminou com seis checks verdes. O aceite integrado reprovou no
+limite de10min da rodada de API fiscal com `-race`; o teste interrompido tinha
+11s. A causa foi conferida no artefato JSON do run40810819619, não inferida do
+código de saída. O limite agora é20min, mantendo o job em40min e todas as
+assertivas. `TestFiscalProductionConfigNativeCLI` é a sétima integração
+obrigatória do aceite, com binário compilado pelo workflow; skip/ausência reprova
+o gate. O resultado do novo head deve ser conferido após a publicação.
+
+**Pendente:** provisionamento seguro por ACL/cofre Windows, A3/HSM, rotação,
+certificado matriz/filiais e ensaio oficial. O cross-build Windows não comprova
+provisionamento nessa plataforma. Continuam pendentes motor tributário nacional,
+DANFE e contingência de produção, SPED/PVA e NFS-e de produção. A1 funcional não
+conclui essas áreas. Nenhum serviço8182/8282, instalação, banco comercial ou árvore
+original foi alterado, e não houve merge na main. Os binários/logs ficam fora do
+Git em `/tmp/titan-backend-pfx-20261029/`; não foi criado novo ZIP de distribuição.
+
+Detalhes:
+[FISCAL_A1_BACKEND_20261029.md](FISCAL_A1_BACKEND_20261029.md).
+Resultados, limites e hashes:
+[verification.json](evidence/fiscal-a1-backend-20261029/verification.json).
+
+## Backend — políticas tributárias e memória de cálculo — 29/10/2026
+
+Base `d2773f3f12cc1e659d0bc13f2f753e41257523bb`, mesma branch fiscal/PR5.
+Responsável desta unidade: backend fiscal local. Frontend, Electron, serviços
+instalados, projetos originais e bancos comerciais não foram alterados.
+
+A calculadora agora tem políticas duráveis aprovadas pelo proprietário, com
+revisões, expectativa de versão, produto/perfil fiscal, fontes declaradas,
+vigência e classificação explícita da operação/destinatário/origem. Quatro rotas
+autenticadas publicam/leem políticas e criam/recuperam memórias de cálculo.
+Não há regra nacional pré-carregada, inferência de isenção nem escolha de
+alíquota por UF. O sistema valida o contexto e a estrutura representável;
+a classificação jurídica continua exigindo revisão responsável por cliente.
+
+Nova migração75 mantém políticas e cálculos imutáveis. Repetição idempotente
+preserva IDs/hashes; alteração de entrada ou revisão conflitante é recusada.
+Sobreposição ativa é conflito. Revogar sessão ou mudar empresa/loja/usuário/
+aparelho bloqueia tentativa antiga. Mudança de perfil exige revisão da política;
+regras inativas não produzem novos cálculos, mas o histórico continua legível.
+Backup aceita25–75, com teste de migração também dos snapshots72/73/74.
+
+O cálculo acrescenta gross-up explícito e escolha de arredondamento da base,
+preservando o modo antigo. Frações da base podem ser retidas até o cálculo do
+tributo; dinheiro da operação e dependências anteriores continuam em centavos.
+Valores excessivos são recusados sem panic. Percentuais de testes são vetores
+matemáticos descartáveis e não configurações fiscais distribuídas aos clientes.
+
+Regressões específicas com race: sete testes principais/44resultados, sem falhas
+ou skips, incluindo publicação, idempotência concorrente, contexto, vigência,
+perfil, histórico, permissão e cálculo. Rodada adicional da API com race e
+`titan-backup` compilado: cinco testes principais, sem falhas/skips. O ensaio
+tributário faz oito chamadas HTTP reais em três processos, preservando os
+hashes da política/resultado após reinício e restauração criptografada.
+Onze comandos do backup executam casos positivos e negativos; o relatório
+`pilot_cash_v1` mantém seu escopo financeiro, e a integridade tributária é
+conferida pela leitura da memória original via API.
+
+Suíte geral final:59pacotes,1.505testes principais e3.362resultados incluindo
+subtestes, zero falhas. Cinco skips: dois testes PostgreSQL não estavam
+configurados localmente e três eram auxiliares de processo/tela. Quatro bridges
+e o CLI fiscal compilado foram habilitados nessa rodada. Não foi declarado gate
+integrado local aprovado sem as duas integrações PostgreSQL exigidas no CI.
+
+Quatro bridges frontend/API e o diagnóstico fiscal nativo compilado passaram
+separadamente. Os17testes dos validadores, vet dos três pacotes afetados, builds
+Linux, integridade de módulos e mapa de551rotas passaram. O CI passa a exigir
+o ensaio tributário real como oitava integração obrigatória e inclui os testes
+novos no race. Resultado da suíte geral e hashes constam no arquivo de evidência
+desta unidade; não se deve inferir CI verde de resultados locais.
+
+Não foi entregue o motor tributário nacional completo. Permanecem sem cobertura
+integral as tabelas/enquadramentos CST/CSOSN/cClassTrib, benefícios, DIFAL/FCP,
+ST/protocolos, Simples/DAS, monofásicos, créditos/ajustes e serviços/importação/
+exportação. As memórias ainda não preenchem automaticamente os grupos de XML do
+emissor de produção. Não conclui DANFE/contingência de produção, SPED/PVA,
+NFS-e de produção nem homologação oficial de cada cliente. A pesquisa oficial
+RTC apontou respostas provisórias sinalizadas por `x-warning-dados-simulados`;
+elas não foram incorporadas como regras válidas nem usadas para alegar cobertura.
+
+Detalhes e fontes oficiais:
+[FISCAL_REGRAS_TRIBUTARIAS_20261029.md](FISCAL_REGRAS_TRIBUTARIAS_20261029.md).
+Contrato: [fiscal-tax-policy.openapi.json](../api/fiscal-tax-policy.openapi.json).
+Evidência: [verification.json](evidence/fiscal-tax-policy-20261029/verification.json).
+
+## Backend — enquadramentos, DIFAL e vínculo tributário ao XML — 29/10/2026
+
+Base `8a98d2a158d0c3cd7f1cdfb78231cdd2dc40d55a`, mesma branch/PR5. Esta unidade
+amplia o backend; não altera frontend, Electron, serviços ou bancos comerciais.
+Não cria migração, ZIP ou instalação. As75migrações e os XSDs existentes foram
+preservados. Campos opcionais mantêm a serialização dos registros anteriores.
+
+Políticas podem declarar grupos legados tipados: ICMS00/10/20/40/41/50/70 em
+CRT2/3; CSOSN102/103/300/400 em CRT1; PIS/COFINS percentual, quantidade, CST04–09
+e49/99; IPI50/99 e51–55; FCP próprio/ST e ST por MVA. Incidência/não aplicação de
+IPI e FCP deve ser explícita. Classificação desconhecida não vira grupo zerado.
+O nome matemático `exempt` não substitui a natureza legal do CST informado.
+
+Referência nominal interestadual datada2026 com4/7/12% para mercadorias comuns,
+27UFs e origens qualificadas. Não escolhe exceção CAMEX/PPB nem alíquota interna.
+MVA ajustada conserva dados, fração exata e percentual de quatro casas, dependendo
+de escolha da fórmula/referência aplicável. Não determina MVA original por NCM
+ou existência de acordo de ST. FCI/dispensa e cBenef são declarações revisadas,
+sem consulta automática de existência/vigência no fisco.
+
+DIFAL de base única para consumidor final não contribuinte em NF-e55 normal,
+sem benefícios/alterações especiais de base, foi ligado ao grupo `ICMSUFDest`
+e aos totais. FCP de destino é separado. Alíquota interna é fornecida explicitamente
+na política aprovada. Não paga GNRE, movimenta banco nem aplica base dupla como
+se fosse base única. Cenários de destino fora do método suportado são recusados.
+
+O campo `Invoice.Lines[].TaxQuoteOperationID` permite ao emissor buscar a memória
+durável e preencher/verificar grupos, NCM/CFOP, CEST, cBenef e FCI. Se uma linha
+usar essa fonte, todas devem usar. Valida empresa/loja/aparelho, produto, perfil,
+quantidades/preços, destinatário, geografia, data e revisão ativa. Política
+superada/retirada bloqueia nova preparação/aprovação e é reavaliada antes do envio.
+Alterações do cliente não são substituídas silenciosamente. Leitura e recuperação
+históricas permanecem disponíveis; não apaga operação incerta nem libera número.
+O modo manual anterior não recebe prova de política automaticamente.
+
+O vínculo econômico ainda recusa ST/IPI adicionais que não estejam representados
+na venda/pagamento persistidos. Ter fórmula e XML unitários não conclui o contrato
+comercial para cobrar esses acréscimos. Regra completa de importação/exportação,
+retenção anterior, crédito e diferimento também não foi inferida desses grupos.
+
+Validação final:59pacotes,1.521testes principais e3.457resultados incluindo
+subtestes aprovados, zero falhas. Cinco skips: dois PostgreSQL não configurados
+localmente e três auxiliares opt-in de processo/tela. Quatro bridges e o CLI
+fiscal compilado foram habilitados. Núcleo tributário com race:12principais/
+111resultados; API com race:11principais/28resultados, sem falhas/skips nessas
+duas rodadas. Vet de todo backend,17testes dos validadores,551rotas e builds Linux
+passaram. Os21fontes/contratos/configurações mantiveram os hashes da rodada final.
+
+Ensaio nativo:10requisições TCP à API e um POST mTLS assinado à autoridade
+descartável, com regra→memória→revisão→aprovação→XML→recuperação idempotente.
+Não é homologação oficial. Também foram executados assinatura/XSD dos grupos,
+rejeição de valores adulterados, política retirada, reinício e backup criptografado.
+Há6318verificações de seleção nominal interestadual; não são6318regras legais.
+O CLI anterior e o novo produziram bytes idênticos para o caso genérico comparado.
+
+O CI da base8a98d2a foi conferido com sete checks verdes. O gate passa a exigir
+11integrações, incluindo os novos circuitos tributário, DIFAL/FCP e HTTP nativo.
+O resultado de CI do novo head deve ser conferido após sua publicação, antes
+de qualquer merge. Credenciais históricas não foram rotacionadas por esta unidade.
+
+Continua sem cobertura nacional integral: catálogos/enquadramentos e benefícios
+por vigência, RTC IBS/CBS/IS, ICMS monofásico, retenção anterior, créditos,
+desoneração/diferimento, acordos e métodos especiais, Simples/DAS/apuração e
+ISS/NFS-e. DANFE/contingência de produção, SPED/PVA e homologação oficial também
+permanecem fora desta entrega. Essas pendências são de implementação/validação,
+não apenas de certificado. Não anunciar fiscal completo.
+
+Detalhes/fontes: [FISCAL_TRIBUTACAO_APLICADA_20261029.md](FISCAL_TRIBUTACAO_APLICADA_20261029.md).
+Contratos: `docs/api/fiscal-tax-policy.openapi.json` e `docs/api/fiscal-production.openapi.json`.
+Evidências: [verification.json](evidence/fiscal-tax-classification-20261029/verification.json).
+
+
+## Ampliação tributária — diferimento e crédito, 29/10/2026
+
+Base: `3b745541cfc232bde78ec7020ce9dd8334c64c3f`, branch `feat/fiscal-homolog-journal-20261027`. Acrescentados CST51 interno NF-e55 CRT2/3 (operação/diferido/devido, sem redução/FCP diferido) e CSOSN101 CRT1/NF-e55 (crédito aprovado, competência anterior, vigência mensal, destinatário contribuinte normal declarado, revenda/industrialização). Ambos vinculados às cotações persistidas, XSD e assinatura, sem inferir enquadramento legal, percentual ou faixas do cliente.
+
+Regressão completa: 59pacotes, 1523testes principais/3500resultados incluindo subtestes, zero falhas. A primeira rodada não habilitou cinco opt-ins (quatro bridges e CLI); foram executados separadamente, todos os cinco passaram. Permanecem cinco skips identificados (duas integrações PostgreSQL sem ambiente e três auxiliares de processo/tela). Race do núcleo:17principais/155resultados; race da API tributária:8principais/27resultados, sem falhas ou skips.85testes Python passaram após repetir fora da restrição de sockets/compilação do sandbox; o código dos testes não foi relaxado. Vet,551rotas/contratos e builds Linux passaram. CLI anterior conserva saída byte a byte no caso de compatibilidade.
+
+CI:13integrações obrigatórias. O aceite anterior cancelou pelo limite agregado de40minutos durante os pilotos finais; suíte completa e race fiscal haviam passado. Corrigido o orçamento para90minutos, sem remover testes ou aumentar limites individuais. Novo HEAD exige seus próprios checks.
+
+Fontes, recortes, comandos lógicos e limites: `FISCAL_DIFERIMENTO_CREDITO_20261029.md`. Evidências/hashes: `evidence/fiscal-deferment-credit-20261029/verification.json`. Sem migração nova, instalação, mudança de serviços, frontend, backend original ou banco comercial. Sem merge automático.
+
+**Não está concluída a cobertura tributária nacional.** Continuam RTC IBS/CBS/IS, retenções anteriores, créditos/diferimentos e regimes especiais adicionais, catálogo de benefícios/enquadramentos, apuração Simples/DAS, demais ST/DIFAL, NFS-e e obrigações acessórias. Novos testes usam autoridade descartável; não são homologação oficial.
+
+
+## Ampliação tributária — Simples e ST, 29/10/2026
+
+Base `0b91281ab2055b46e7d0532ab0ef21af3ad1aed2`, branch fiscal atual. Acrescentados CSOSN201/202/203 para NF-e55/CRT1, contribuinte não consumidor final/revenda: dedução teórica própria separada do crédito do destinatário, ST e FCP-ST. Dedução, alíquota, redução, base e referência precisam de aprovação explícita; sem inferir MVA/acordos/enquadramento. Crédito201 conserva a competência e os limites da política mensal existente.
+
+Validação completa:59pacotes, 1533testes principais/3549resultados incluindo subtestes aprovados, zero falhas. Os quatro bridges e o CLI estavam habilitados nessa rodada. Cinco skips explícitos: duas integrações PostgreSQL não configuradas localmente e três auxiliares de processo/tela. Race núcleo20principais/191resultados; API10principais/35resultados, sem falhas/skips.85testes Python, vet,551rotas/contratos e builds Linux passaram. Compatibilidade byte a byte da cotação legada e de sete grupos/cotações anteriores comprovada. Gate do CI ampliado para15integrações obrigatórias; verificar checks do novo HEAD.
+
+A cotação com ST foi preservada após reabertura/restauração criptografada. O ensaio de emissão dos grupos novos cobriu o caso sem acréscimo tributário à venda; acréscimos positivos continuam recusados antes de número/envio. **O contrato comercial ainda precisa vincular a cotação tributária ao preço/pagamento antes de concluir a venda. Não foi contornada essa pendência.**
+
+Detalhes/fontes: `FISCAL_SIMPLES_ST_20261029.md`; evidências/hashes: `evidence/fiscal-simple-st-20261029/verification.json`. Sem migração, mudança de XSD, frontend/Electron, instalação ou dados comerciais. Sem merge automático. Permanecem lacunas nacionais e de apuração, RTC, retenções anteriores, benefícios/regimes especiais, outros ST/DIFAL, DAS/ISS/NFS-e e obrigações acessórias. Nenhuma homologação oficial nesta entrega.
+
+
+## Venda tributada vinculada ao preço/pagamento — 29/10/2026
+
+Base `0506eaac06a1c8ac0c88ee4a9ddb31138a8867f3`, branch fiscal atual. **Resolvido no caminho opt-in da API:** ST/FCP-ST/IPI suportados passam a compor o preço aprovado antes de concluir a venda em dinheiro. Cotação, catálogo, quantidade, unidade, perfil/política vigentes, dia/fuso, idade e sessão são verificados na transação que grava dinheiro, estoque, vínculo tributário e outbox. Não se adiciona imposto a uma venda concluída.
+
+O proprietário pode exigir esse fluxo via `require_tax_pricing:true`; omitir referências não contorna o backend ou a finalização antiga. Plano bloqueado não anuncia `can_finalize:true`. Omissão do campo em nova revisão não desativa o modo exigido; replay histórico recupera a revisão original sem mudar a ativa. Nada foi ativado na instalação.
+
+Migração76 incremental,75 anteriores preservadas; backup25–76 e inspeção dos vínculos. Unidade observada no servidor para novas cotações; antigas sem unidade permanecem legíveis e não autorizam nova venda tributada. Recibo separa mercadoria/acréscimos. Cancelamento e devoluções comerciais conservam o total pago incluindo tributos; não cancelam a NF-e automaticamente. Evento de venda tributada usa outboxv2; o legado permanecev1.
+
+Validação final:59pacotes, 1545testes principais/3574resultados incluindo subtestes aprovados, zero falhas. Cinco skips explícitos: duas integrações PostgreSQL sem ambiente local e três auxiliares. API com race/backup nativo: 27principais/65resultados; stores com race: 12principais/19resultados, sem falhas/skips.85testes Python, vet,551rotas/contratos e três builds Linux passaram. Nove chamadas HTTP TCP reais, uma transmissão mTLS por emissão e onze comandos do executável de backup, mais a conferência final dos dados restaurados. Cotações/autoridade/dados descartáveis; não é homologação oficial.
+
+Exemplos comprovados: mercadoria3198 + ST230 + FCP-ST90 = pagamento3518, nos três CSOSNs; IPI160 com pagamento3358 no regime normal. Duas devoluções1759+1759 conservam3518. Reinício/restauração preservam vínculos/IDs. Saída legada CLI idêntica byte a byte.
+
+Detalhes: `FISCAL_VENDA_TRIBUTADA_20261029.md`; evidências/hashes: `evidence/fiscal-tax-priced-sale-20261029/verification.json`. CI exige21integrações; a base0506eaa teve7checks verdes, mas o novo HEAD precisa dos próprios resultados. Sem instalação, mudança de serviços/banco comercial, frontend ou merge na main.
+
+**Não concluído:** integração do checkout visual ao caminho opt-in, cobertura tributária nacional e obrigações adicionais (RTC, retenções, benefícios/regimes especiais/apurações, outros ST/DIFAL, Simples/DAS, ISS/NFS-e, SPED/PVA), homologação oficial e sincronização comercial do evento v2. As pendências anteriores de ST adicional no contrato da venda estão superadas somente no novo caminho documentado.
+
+
+## Retenção anterior CST 60 / CSOSN 500 — 29/10/2026
+
+Base `bf1ac5b4e6e9944c1cf49bfb8ce9c64ac735ac99`, branch fiscal existente. Os sete checks da base passaram. Acrescentados CST 60 (CRT 2/3) e CSOSN 500 (CRT 1), NF-e 55 interna, CFOP 5405, contribuinte/revenda não consumidor final, CEST explícito. Retenção anterior é evidência, sem nova cobrança: mercadoria/pagamento 3198, ST anterior 230 e FCP anterior 90, acréscimo zero.
+
+A declaração exige proprietário ativo e sessão/contrato dentro da transação. Preserva chave/item/quantidade/unidade/referência e valores; rejeita origem incompleta, mês futuro, quantidade/unidade divergentes e FCP que não fecha. Não consulta/autentica XML de compra nem faz rateio, vínculo automático com lote ou controle cumulativo de alocação da origem. Não anuncia recolhimento/crédito.
+
+Assinatura/XSD, memória persistida, venda, recibo, emissão/replay, reinício e backup criptografado foram ensaiados. Dez chamadas HTTP TCP reais e um POST mTLS por emissão, com autoridade descartável. Não é homologação oficial. Nenhuma migração nova; as 76 existentes permanecem intactas. CLI legado no caso comparado conserva os bytes.
+
+Validação final: 59 pacotes, 1552 testes principais/3625 resultados incluindo subtestes, zero falhas. Cinco skips: duas integrações PostgreSQL locais sem ambiente e três auxiliares opt-in de processo/tela. Núcleo com race: 70 principais/431 resultados; API com race: 31 principais/78 resultados, sem falhas/skips. 85 testes Python, vet, 551 rotas/contratos e builds Linux passaram. CI exige 25 integrações; conferir os checks do novo HEAD.
+
+Detalhes/fontes/limites: `FISCAL_RETENCAO_ANTERIOR_20261029.md`; evidências/hashes: `evidence/fiscal-retained-st-20261029/verification.json`. Sem instalação, alteração de frontend/Electron, serviços, banco comercial ou merge na main. A cobertura tributária nacional, integração visual e demais obrigações fiscais continuam pendentes; não anunciar fiscal completo.
+
+## Entrega de diagnóstico Focus por cliente — 30/10/2026
+
+- Branch `feat/fiscal-customer-readiness`, derivada de `feat/fiscal-adapter-focus` em `7a86c554210485967eb9e4fcd69f6b4fc4d9f206`.
+- Corrigido o diagnóstico de onboarding que reconhecia somente OwnProvider e marcava a configuração Focus como inválida. A resolução verifica empresa, loja, aparelho, perfil, revisão, regime, modelo 65 e ambiente de homologação; não usa runtime de outra empresa como alternativa.
+- A tela apresenta provedor, ambiente, tipo A1 configurado e presença de token/CSC, nos cinco idiomas. A presença local não comprova validade de certificado, CSC remoto, credenciamento ou autorização. Não são devolvidos valores, caminhos privados nem identificadores de outros clientes.
+- Nenhuma rota nova, nenhuma emissão remota e nenhuma alteração do bloqueio de produção. O cadastro fiscal ainda grava o perfil; a entrada de segredos pela tela não foi implementada nesta entrega. Os segredos continuam no cofre privado do serviço.
+- Verificações: regressões selecionadas de fiscalproduction (onboarding, provedores, cofre e falhas simuladas Focus); localapi somente `TestHTTPFiscalOnboarding*`, sempre com `-timeout 120s -count=1`; 46 testes frontend de fiscalCustomer/onboarding; TypeScript sem emissão; `go build ./...`. Todos passaram. As falhas simuladas não comprovam aceitação pela Focus/SEFAZ.
+- Local/servidor próprio/nuvem são escolhas de implantação do cliente, não garantias automáticas de confidencialidade. O isolamento do cofre não impede o administrador da infraestrutura que controla a chave mestra de acessar segredos; não prometer ausência absoluta de acesso em hospedagem controlada pelo fornecedor. Não foi criado acesso remoto para o fornecedor.
+- Pendências explícitas: configuração fiscal autoatendida de segredos no fluxo completo do cliente, ensaio real com emitente autorizado, cobertura tributária ainda recusada pelo adapter, habilitação controlada de produção e conclusão/comprovação dos demais produtos fiscais (NF-e 55, contingência, DANFE, SPED/PVA, NFS-e). Esta entrega não conclui essas pendências nem o pré-cadastro do produto.
+
+## Cadastro de credenciais fiscais pelo cliente — 30/10/2026
+
+- Branch `feat/fiscal-customer-credentials`, baseada em `feat/fiscal-customer-readiness` (`e8a0ad649422045fe58434defbf967b8b77d95aa`). Esta unidade entrega token Focus e CSC local opcional pelo proprietário da empresa, não o fiscal inteiro.
+- Novo painel no cadastro fiscal modelo 65, com campos ocultos, consulta prévia da revisão, limpeza após envio/troca de sessão e recuperação por GET sem guardar a solicitação secreta no navegador nem reenviar automaticamente. Cinco idiomas preservados.
+- Ativação explícita por instalação/tenant via `customer_managed: true`. Endereço e cofre não vêm do HTTP. Configurações antigas e emissor próprio são preservados. Persistência AES-GCM por tenant/purpose com troca atômica do ciphertext, identificação da tentativa e comparação de revisão; reinício recompõe o provedor sem memória do cliente. A3 e URL de produção recusados. Perfil de produção pode ser salvo, mas emissão continua bloqueada.
+- Corrigida a causa da chave estrangeira: perfil fiscal de proprietário novo dependia indiretamente da projeção na tabela legada users, feita apenas ao abrir caixa. Configure agora projeta a identidade autenticada depois das verificações de sessão, contrato e papel owner, sem criar administrador paralelo nem abrir caixa.
+- Duas rotas novas, GET/POST `/local/v1/fiscal/onboarding/:id/provider`, registradas no inventário e no OpenAPI. Foram completados os vínculos já ausentes de onboarding e reprocesso fiscal no mapa OpenAPI, sem modificar essas rotas existentes.
+- Evidências: fiscalproduction e localdb/fiscal completos passaram com `-timeout 120s -count=1` (5,639s e 0,014s); localapi somente onboarding/cadastro (2,242s) e os dois testes existentes de checkout NFC-e/seleção por tenant (2,941s); 53 testes frontend passaram; TypeScript e `go build ./...` passaram; mapa de 556 rotas conferido e dez testes do verificador OpenAPI passaram. Testes incluem dados descartáveis, dois tenants, rotação concorrente, substituição de ciphertext entre tenants, proprietário/perfis restritos, logout, reinício, conflito e resposta perdida. O teste real Focus permanece desativado por padrão e não foi executado.
+- Manual de ativação e custódia: `docs/api/fiscal-customer-credentials.md`. Não foram alterados serviços ativos, bancos comerciais, chaves reais ou implantação instalada. O cofre externo ainda precisa de cópia segura própria; não foi incorporado automaticamente ao backup comercial existente. Quem controla infraestrutura e chave mestra pode tecnicamente ler o cofre: não prometer inacessibilidade absoluta ao administrador da hospedagem.
+- Pendências mantidas: homologação real de cada emitente autorizado; cobertura tributária ainda recusada pelo adapter; habilitação controlada de produção; conclusão/comprovação de NF-e 55, contingência, DANFE, SPED/PVA e NFS-e. O cadastro mínimo de entrada do ERP e upload autoatendido de certificados do emissor próprio não foram implementados nesta unidade. Não depender de dados fiscais do criador do ERP para desenvolver as partes independentes.
+
+## Fase 1 — cadastro central manual — 30/10/2026
+
+- Branch `feat/cadastro-fase1`, empilhada em `feat/cadastro-fase0` (`2098001`). Pré-cadastro inicial reaproveita a instalação privada localsetup (empresa/responsável/estação/credencial), sem endpoint público que permita reclamar uma instalação existente.
+- Cadastro dentro do ERP em `/local/company`, com acesso por Configurações, etapas pré-cadastro/cadastro da empresa, persistência via GET/POST `/local/v1/company/registration` e recuperação por operation_id. Migração aditiva77; histórico imutável, proprietário ativo, sessão e aparelho validados. O cadastro não concede contrato fiscal nem cria conta mestra.
+- Digitação manual disponível; interface de consulta automática explicitamente desligada, sem fonte externa, sem envio de CNPJ a terceiros. O formulário fiscal reaproveita campos centrais vazios e preserva digitação já feita. Funcionários e meios fiscais continuam nas áreas existentes, com links na nova tela.
+- A página pública de proposta não anuncia mais registro concluído sem persistência. Chaves/segredos não fazem parte do cadastro central. Campos nos cinco idiomas.
+- O teste de migração mantém comparação exata, atualizada de76 para77 por causa da nova migração; não foi convertido em teste permissivo.
+- Evidência da Fase1: testes de `localdb` e `companyregistration` passaram (10,735s e3,380s); os dois testes HTTP selecionados de cadastro passaram (1,076s); 45 testes JS de cadastro/fiscal passaram; TypeScript sem emissão e mapa de558rotas passaram. Nenhuma alteração em tools/.github, banco real ou implantação.
+
+## Fase 2 — chaves e implantação sob controle do cliente — 30/10/2026
+
+- Branch `feat/cadastro-fase2`, base `feat/cadastro-fase1` (`254b607`). Cofre/chave privados por tenant no registry; chave/cofre compartilhado entre clientes recusado. Verificação de chave na abertura e binding autenticado de tenant. Legado multi-tenant exige migração explícita, não destrutiva, pelo titular; nenhum arquivo real foi acessado.
+- CLI titan-fiscal: vault-init (exibição única no terminal privado), vault-export-key (destino do cliente, sem sobrescrita), vault-rotate (backup confirmado, recifragem transacional, chave antiga preservada, escritor antigo bloqueado). Não há resposta HTTP com chave nem armazenamento no navegador. Aviso de perda da chave nos cinco idiomas. Manual: `CADASTRO_CHAVES_IMPLANTACAO_FASE2.md`.
+- Implantação cloud versão2 explícita: mesmo núcleo SQLite em host do cliente, TLS e redes permitidas obrigatórios. Não é migração para PostgreSQL, HA ou sincronização híbrida. Versão1 antiga mantém contratos. Nenhum destino é convertido ou migrado ao mudar conexão.
+- Verificações passaram: fiscalproduction5,071s, deployment0,011s, cmd/titan-fiscal0,221s; testes HTTP selecionados4,516s; cinco testes JS e TypeScript. Testes existentes de isolamento usam agora raízes realmente independentes, mantendo suas assertivas. tools/ e .github/ não alterados. Revogação de credenciais históricas segue externa/não comprovada.
+
+## Fase 3 interrompida por contrato Focus incompleto — 30/10/2026
+
+- `feat/cadastro-fase3` empilhada na Fase2 (`b75af68`), somente documentação. Fontes oficiais consultadas: emitir/consultar/cancelar NF-e e inutilizar/consultar inutilizações, com campos oficiais de homologação.
+- Primeiro bloqueio: o POST de inutilização documentado não expõe seleção/semântica do ano, enquanto o mecanismo existente exige Year no ID/XML e na reserva durável. Não assumir ano corrente nem eliminar essa correspondência. Detalhes e fontes: `CADASTRO_FASE3_BLOQUEIO_FOCUS.md`.
+- Conforme instrução de parar no primeiro bloqueio, não implementados nesta fase: adapter NF-e55, cancelamento/inutilização NF-e e DANFE Focus; tributação não ampliada. Não houve envio fiscal real, liberação de produção, mudança em tools/.github ou merge. Próximo passo: obter contrato oficial inequívoco para o ano da inutilização e retomar esta fase; depois realizar somente os ensaios autorizados de cada cliente.
+
+## Contenção SQLite nas escritas fiscais — 31/10/2026
+
+- Branch `feat/cadastro-fase3b`, base `daf9417`. Transações BEGIN IMMEDIATE antes da leitura, busy_timeout de 1000ms e até quatro tentativas, com conflito tipado ao esgotar contenção. Aplicado a Put, initializeKeyControl, bindTenant, RotateCustomerMasterKey, Configure e Prepare. Preservados todos os testes existentes, o bloqueio de produção e as regras de isolamento. Sem rotas ou dependências novas.
+- Seis testes novos reproduziram falhas antes da correção (50/50 por função). Depois: 0/50 falhas por função, usando -timeout 300s. Put e binding permitem resultados consistentes conforme seus contratos; Configure, Prepare e rotação de chave têm vencedor único.
+- Rotação de chave: reproduzidos arquivos órfãos de tentativas perdedoras antes da correção; não reproduzida corrupção dos segredos ou incompatibilidade da chave vencedora. Agora chave exportada e marcador cifrado correspondem aos segredos recifrados; arquivo próprio da tentativa não confirmada é removido após rollback, sem sobrescrever arquivos alheios. Chave antiga preservada para backups.
+- Regressões com -count=1: fiscalproduction e localdb/fiscal passaram. Race uma rodada por pacote: esses pacotes passaram; sqlitewrite compilado com race. Nos testes afetados de localapi, nenhuma advertência DATA RACE, mas o pacote falhou em dois testes de backup, também reproduzidos em worktree separada do commit anterior daf9417: TestHTTPFiscalRestartEncryptedBackupRestoreOriginalIDs e TestFiscalRealHTTPPreparationRestartAndRestore. O validador de backup aceita schemas até 76 e a base já usa 77; não alterado nesta tarefa. Não declarar a regressão localapi totalmente verde.

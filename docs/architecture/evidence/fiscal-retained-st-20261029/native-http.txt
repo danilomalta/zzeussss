@@ -1,0 +1,12 @@
+Authority, certificate, identities and data are disposable. No official homologation. Controlled status lines only.
+fiscal_retained_st_test.go:256: HTTP POST /local/v1/fiscal/tax-quotes -> 201
+fiscal_retained_st_test.go:259: HTTP POST /local/v1/sales/quote -> 200
+fiscal_retained_st_test.go:265: HTTP POST /local/v1/sales -> 201
+fiscal_retained_st_test.go:266: HTTP POST /local/v1/fiscal/intents -> 201
+fiscal_retained_st_test.go:276: HTTP POST /local/v1/fiscal/intents/b98abd32-8128-4095-a713-7743a2e1639b/production/prepare -> 201
+fiscal_retained_st_test.go:279: HTTP POST /local/v1/fiscal/intents/b98abd32-8128-4095-a713-7743a2e1639b/production/approve -> 204
+fiscal_retained_st_test.go:281: HTTP POST /local/v1/fiscal/intents/b98abd32-8128-4095-a713-7743a2e1639b/production/emit -> 200
+fiscal_retained_st_test.go:282: HTTP POST /local/v1/fiscal/intents/b98abd32-8128-4095-a713-7743a2e1639b/production/emit -> 200
+fiscal_retained_st_test.go:286: HTTP GET /local/v1/fiscal/intents/b98abd32-8128-4095-a713-7743a2e1639b/production/xml -> 200
+fiscal_retained_st_test.go:290: HTTP GET /local/v1/fiscal/tax-quotes/native-retained-quote -> 200
+fiscal_retained_st_test.go:294: RETAINED ST NATIVE: 10 real TCP HTTP calls; cash3198 unchanged by historical ST230/FCP90; one signed mTLS post; disposable authority, no official homologation.

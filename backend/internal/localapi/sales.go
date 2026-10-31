@@ -31,7 +31,7 @@ func (s *Server) completeSale(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 	session := c.Locals("session").(localauth.Session)
-	result, err := sale.CompleteWithContract(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, input)
+	result, err := sale.CompleteWithContract(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, input, session.Token)
 	if err != nil {
 		return saleError(c, err)
 	}
@@ -53,6 +53,8 @@ func (s *Server) readSale(c *fiber.Ctx) error {
 
 func saleError(c *fiber.Ctx, err error) error {
 	switch {
+	case errors.Is(err, localauth.ErrDenied):
+		return c.SendStatus(fiber.StatusUnauthorized)
 	case errors.Is(err, sale.ErrInvalid):
 		return c.SendStatus(fiber.StatusBadRequest)
 	case errors.Is(err, sale.ErrNotFound):
@@ -67,9 +69,9 @@ func saleError(c *fiber.Ctx, err error) error {
 
 // exactSaleObject rejects duplicate/extra/missing/null fields, including in
 // nested items and payments. Numbers are subsequently decoded into int64.
-func exactSaleObject(body []byte, fields []string) (map[string]json.RawMessage, error) {
+func exactSaleObject(body []byte, fields []string, optional ...string) (map[string]json.RawMessage, error) {
 	allowed := make(map[string]bool, len(fields))
-	for _, field := range fields {
+	for _, field := range append(append([]string(nil), fields...), optional...) {
 		allowed[field] = true
 	}
 	values := make(map[string]json.RawMessage, len(fields))
@@ -94,19 +96,30 @@ func exactSaleObject(body []byte, fields []string) (map[string]json.RawMessage, 
 		values[name] = value
 	}
 	closing, err := decoder.Token()
-	if err != nil || closing != json.Delim('}') || len(values) != len(fields) {
+	if err != nil || closing != json.Delim('}') {
 		return nil, sale.ErrInvalid
 	}
 	if _, err := decoder.Token(); err != io.EOF {
 		return nil, sale.ErrInvalid
 	}
+	for _, field := range fields {
+		if _, ok := values[field]; !ok {
+			return nil, sale.ErrInvalid
+		}
+	}
 	return values, nil
 }
 
 func decodeSale(body []byte) (sale.Input, error) {
-	values, err := exactSaleObject(body, []string{"operation_id", "sale_id", "cash_session_id", "items", "payments"})
+	values, err := exactSaleObject(body, []string{"operation_id", "sale_id", "cash_session_id", "items", "payments"}, "tax_quote_operations")
 	if err != nil {
 		return sale.Input{}, err
+	}
+	if raw, ok := values["tax_quote_operations"]; ok {
+		var refs []string
+		if json.Unmarshal(raw, &refs) != nil || len(refs) == 0 || len(refs) > 100 {
+			return sale.Input{}, sale.ErrInvalid
+		}
 	}
 	for _, check := range []struct {
 		name   string

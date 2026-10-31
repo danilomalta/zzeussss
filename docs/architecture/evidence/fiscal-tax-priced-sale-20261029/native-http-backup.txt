@@ -1,0 +1,23 @@
+Dados e autoridade descartáveis; não é homologação oficial. Somente linhas controladas, sem tokens, chaves ou conteúdo de banco.
+fiscal_tax_sale_test.go:282: BACKUP CLI key-init: expected_success=true observed_success=true
+fiscal_tax_sale_test.go:282: BACKUP CLI create-live: expected_success=true observed_success=true
+fiscal_tax_sale_test.go:282: BACKUP CLI verify: expected_success=true observed_success=true
+pilot_backup_cli_test.go:98: BACKUP CLI before-restore: expected_success=true observed_success=true
+fiscal_tax_sale_test.go:282: BACKUP CLI wrong-key-init: expected_success=true observed_success=true
+fiscal_tax_sale_test.go:282: BACKUP CLI reject-wrong-key: expected_success=false observed_success=false
+fiscal_tax_sale_test.go:282: BACKUP CLI reject-wrong-company: expected_success=false observed_success=false
+fiscal_tax_sale_test.go:282: BACKUP CLI restore-new-path: expected_success=true observed_success=true
+fiscal_tax_sale_test.go:282: BACKUP CLI reject-overwrite: expected_success=false observed_success=false
+fiscal_tax_sale_test.go:282: BACKUP CLI create-from-restored: expected_success=true observed_success=true
+pilot_backup_cli_test.go:98: BACKUP CLI after-restore: expected_success=true observed_success=true
+fiscal_tax_sale_test.go:282: BACKUP CLI RESTORATION: pilot table counts and business SHA256 identical; encrypted archive SHA256 distinct; source and restored DBs separate
+fiscal_tax_sale_test.go:373: HTTP POST /local/v1/sales/quote -> 200
+fiscal_tax_sale_test.go:374: HTTP POST /local/v1/sales -> 201
+fiscal_tax_sale_test.go:375: HTTP GET /local/v1/sales/taxed-sale -> 200
+fiscal_tax_sale_test.go:376: HTTP POST /local/v1/fiscal/intents -> 201
+fiscal_tax_sale_test.go:386: HTTP POST /local/v1/fiscal/intents/6b0d4154-484a-4439-8e1a-aba77aa73c80/production/prepare -> 201
+fiscal_tax_sale_test.go:389: HTTP POST /local/v1/fiscal/intents/6b0d4154-484a-4439-8e1a-aba77aa73c80/production/approve -> 204
+fiscal_tax_sale_test.go:391: HTTP POST /local/v1/fiscal/intents/6b0d4154-484a-4439-8e1a-aba77aa73c80/production/emit -> 200
+fiscal_tax_sale_test.go:392: HTTP POST /local/v1/fiscal/intents/6b0d4154-484a-4439-8e1a-aba77aa73c80/production/emit -> 200
+fiscal_tax_sale_test.go:396: HTTP GET /local/v1/fiscal/intents/6b0d4154-484a-4439-8e1a-aba77aa73c80/production -> 200
+fiscal_tax_sale_test.go:400: TAX PRICED SALE NATIVE: 9 real TCP HTTP requests, merchandise3198 + ST230 + FCP-ST90 = cash3518; one signed mTLS POST, disposable authority only, no official homologation
