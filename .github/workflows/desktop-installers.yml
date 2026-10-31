@@ -2,7 +2,7 @@ name: Desktop installer acceptance
 
 on:
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, integration/piloto-main-20261027]
   workflow_dispatch:
 
 permissions:

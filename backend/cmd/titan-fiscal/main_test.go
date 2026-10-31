@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
+	"titansystem-backend/internal/fiscalcore"
 )
 
 func TestFiscalOfflineCLICapabilitiesAndSafeFiles(t *testing.T) {
@@ -47,5 +50,26 @@ func TestFiscalOfflineCLICapabilitiesAndSafeFiles(t *testing.T) {
 	}
 	if err := run([]string{"tax-quote", "--in", source, "--out", filepath.Join(dir, "other.json"), "extra"}, &output); err == nil {
 		t.Fatal("extra arguments")
+	}
+}
+
+func TestFiscalCLIValidatesEmbeddedSchemaOutsideRepository(t *testing.T) {
+	dir := t.TempDir()
+	t.Chdir(dir)
+	key, err := fiscalcore.AccessKey(fiscalcore.KeyInput{UF: "SP", IssuedAt: time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC), CNPJ: "12ABC34501DE35", Model: "65", Series: 1, Number: 1, Emission: 1, NumericCode: "12345678"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := filepath.Join(dir, "query.xml")
+	xml := fmt.Sprintf(`<consSitNFe xmlns="%s" versao="4.00"><tpAmb>2</tpAmb><xServ>CONSULTAR</xServ><chNFe>%s</chNFe></consSitNFe>`, fiscalcore.NFeNS, key)
+	if err = os.WriteFile(source, []byte(xml), 0600); err != nil {
+		t.Fatal(err)
+	}
+	var output bytes.Buffer
+	if err = run([]string{"validate", "--kind", "nfe_query", "--in", source}, &output); err != nil {
+		t.Fatal("embedded XSD unavailable from installed working directory", err)
+	}
+	if !strings.Contains(output.String(), "XSD valid") {
+		t.Fatal("missing validation result")
 	}
 }

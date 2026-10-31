@@ -5,7 +5,7 @@ on:
     branches: [feat/backend-b02a-compat]
     paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py', 'tools/check_api_contracts.py', 'tools/tests/test_api_contracts.py', 'docs/api/**']
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, integration/piloto-main-20261027]
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,8 @@ jobs:
   backend-pilot:
     name: Real HTTP, PostgreSQL, SQLite, frontend bridges and recovery
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    # Full suite (30m), fiscal race (5m + 20m), trade/cash race (20m), builds and evidence.
+    timeout-minutes: 90
     services:
       postgres:
         image: postgres:17
@@ -54,7 +55,7 @@ jobs:
       - name: Build real executables
         run: |
           set -euo pipefail
-          for tool in titan-local titan-backup titan-access titan-peer titan-receive titan-sync titan-trade; do
+          for tool in titan-local titan-backup titan-access titan-peer titan-receive titan-sync titan-trade titan-fiscal; do
             CGO_ENABLED=0 go build -trimpath -o "$RUNNER_TEMP/$tool" "./cmd/$tool"
           done
       - name: Full backend regression suite with mandatory real integrations
@@ -66,15 +67,21 @@ jobs:
           TITAN_CASH_JOURNAL_BRIDGE: ${{ github.workspace }}/frontend-web/tests/cashJournal.bridge.mjs
           TITAN_DELIVERY_BRIDGE: ${{ github.workspace }}/frontend-web/tests/deliveryCycle.bridge.mjs
           TITAN_MAINTENANCE_BRIDGE: ${{ github.workspace }}/frontend-web/tests/internalMaintenance.bridge.mjs
+          TITAN_FISCAL_CUSTOMER_BRIDGE: ${{ github.workspace }}/frontend-web/tests/fiscalCustomer.bridge.mjs
+          TITAN_FISCAL_CLI: ${{ runner.temp }}/titan-fiscal
         run: |
           set -euo pipefail
-          go test ./... -count=1 -json > "$RUNNER_TEMP/backend-full.jsonl"
+          go test ./... -count=1 -timeout=30m -json > "$RUNNER_TEMP/backend-full.jsonl"
           python3 ../tools/verify_backend_acceptance.py "$RUNNER_TEMP/backend-full.jsonl" | tee "$RUNNER_TEMP/backend-integrations.json"
+      - name: Fiscal journal, session boundary and mTLS regressions with race detector
+        run: |
+          go test -race ./internal/fiscalcore ./internal/fiscalproduction -run '^TestRetainedST|^TestGoods|^TestInterstate|^TestDestination|^TestAdjusted|^TestTaxPolicy|^TestFiscalTransportRechecks|^TestFiscalMTLS|^TestFiscalIssuance|^TestFiscalQuery|^TestFiscalEmbeddedSchema|^TestFiscalCancellation|^TestFiscalInvalidation|^TestFiscalDANFE|^TestProduction' -count=1 -timeout=5m -json > "$RUNNER_TEMP/fiscal-journal-core-race.jsonl"
+          go test -race ./internal/localapi -run '^TestHTTPFiscalRetainedST|^TestHTTPFiscalTaxPricedSale|^TestFiscalTax|^TestFiscalTransmission|^TestFiscalInvoiceBinding|^TestFiscalNumbering|^TestFiscalQuerySQL|^TestFiscalCancellationSQL|^TestFiscalInvalidationSQL|^TestHTTPFiscalDANFE|^TestHTTPFiscalProduction' -count=1 -timeout=20m -json -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" > "$RUNNER_TEMP/fiscal-journal-local-race.jsonl"
       - name: Company trade and cash pilots with real CLI and race detector
         run: |
           set -euo pipefail
           env -u TITAN_SESSION_TEST_DATABASE_URL -u TITAN_CATALOG_TEST_DATABASE_URL \
-            -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE \
+            -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE -u TITAN_FISCAL_CUSTOMER_BRIDGE \
             go test -race ./internal/localapi \
             -run '^TestTrade|^TestHTTPCustomerReturn|^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore|CustomerReturnRestartAndRestore)$' \
             -count=1 -v -timeout=20m -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" -pilot-trade-cli="$RUNNER_TEMP/titan-trade" -pilot-trade-queue \
@@ -86,6 +93,8 @@ jobs:
           name: backend-pilot-${{ github.sha }}
           retention-days: 14
           path: |
+            ${{ runner.temp }}/fiscal-journal-core-race.jsonl
+            ${{ runner.temp }}/fiscal-journal-local-race.jsonl
             ${{ runner.temp }}/backend-integrations.json
             ${{ runner.temp }}/backend-full.jsonl
             ${{ runner.temp }}/pilot-cli-race.log
@@ -96,3 +105,4 @@ jobs:
             ${{ runner.temp }}/titan-receive
             ${{ runner.temp }}/titan-sync
             ${{ runner.temp }}/titan-trade
+            ${{ runner.temp }}/titan-fiscal

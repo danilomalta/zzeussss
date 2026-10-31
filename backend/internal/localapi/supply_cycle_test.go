@@ -140,7 +140,7 @@ func TestSupplyCycleVerticalReceivingFinancialApprovalPartialPaymentAndReturn(t 
 	// Physical/history responses contain no amounts from the finance operation.
 	b := agendaCall(t, f, "GET", cycleDelivery+"/history?limit=2&offset=2", nil, 200)
 	var history supplycycle.History
-	if json.Unmarshal(b, &history) != nil || history.Total != 4 || len(history.Items) != 2 || strings.Contains(string(b), "31500") {
+	if json.Unmarshal(b, &history) != nil || history.Total != 4 || len(history.Items) != 2 || cycleHasFinancialFields(b) {
 		t.Fatal(string(b))
 	}
 	var cycle supplycycle.Cycle
@@ -312,7 +312,7 @@ func TestSupplyCycleFinancialReadRestrictionAndOriginalActor(t *testing.T) {
 	stockToken := caseWorker(t, f, "cycle-stock")
 	for _, path := range []string{cycleDelivery, cycleDelivery + "/history", cycleOrder + "/supply-cycle"} {
 		code, b := request(t, f.app, "GET", path, "", stockToken)
-		if code != 200 || strings.Contains(string(b), "31500") {
+		if code != 200 || cycleHasFinancialFields(b) {
 			t.Fatal(code, string(b))
 		}
 	}
@@ -582,5 +582,48 @@ func TestSupplyCycleDamagedStockEvidenceBlocksFinancialApproval(t *testing.T) {
 	var o supplycycle.Origin
 	if json.Unmarshal(b, &o) != nil || !o.ReviewRequired {
 		t.Fatal(string(b))
+	}
+}
+
+// Inspect semantic JSON fields, never coincidental digits in UUIDs/timestamps.
+func cycleHasFinancialFields(raw []byte) bool {
+	var value any
+	if json.Unmarshal(raw, &value) != nil {
+		return true
+	}
+	var visit func(any) bool
+	visit = func(v any) bool {
+		switch item := v.(type) {
+		case map[string]any:
+			for key, value := range item {
+				switch key {
+				case "payable", "origin", "payable_id", "document_reference", "amount_cents", "total_cents", "installments", "source_reference":
+					return true
+				}
+				if visit(value) {
+					return true
+				}
+			}
+		case []any:
+			for _, value := range item {
+				if visit(value) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	return visit(value)
+}
+func TestSupplyCycleFinancialVisibilityChecksJSONFields(t *testing.T) {
+	for _, raw := range []string{`{"created_at":"2026-10-27T10:20:01.315004798Z","id":"31500","description":"31500 units referenced as text"}`, `{"items":[{"delivery":{"id":"31500"}}]}`} {
+		if cycleHasFinancialFields([]byte(raw)) {
+			t.Fatal("public identifiers/timestamps mistaken for finance")
+		}
+	}
+	for _, raw := range []string{`{"total_cents":31500}`, `{"items":[{"origin":{"amount_cents":31500}}]}`, `{"payable":{}}`, `{"document_reference":"invoice-one"}`, `{"total_\u0063ents":31500}`, `{invalid}`} {
+		if !cycleHasFinancialFields([]byte(raw)) {
+			t.Fatal("financial field or malformed body escaped assertion")
+		}
 	}
 }

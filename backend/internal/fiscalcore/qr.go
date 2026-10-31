@@ -33,7 +33,10 @@ func queryURL(base, value string) (string, error) {
 	}
 	q := url.Values{}
 	q.Set("p", value)
-	u.RawQuery = q.Encode()
+	// The official NFC-e XML schema requires literal pipe separators. Escaping
+	// them as %7C produces a URL that decodes correctly in a browser but is
+	// rejected when placed in infNFeSupl/qrCode. Other values remain URL encoded.
+	u.RawQuery = strings.ReplaceAll(q.Encode(), "%7C", "|")
 	return u.String(), nil
 }
 

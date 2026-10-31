@@ -1,0 +1,1514 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan políticas tributárias aprovadas e memória de cálculo",
+    "version": "1.1.0",
+    "description": "Políticas aprovadas, versionadas, cálculo exato e grupos XML legados tipados. Sem catálogo nacional completo ou classificação automática por NCM. Fontes HTTPS governamentais ou legislativas declaradas, não verificação jurídica automática. Referência interestadual nominal 4/7/12 datada de2026; DIFAL de base única e FCP separado exigem incidência e alíquota interna explicitamente aprovadas. Sem pagamento GNRE. goods ausente permanece cálculo genérico e não autoriza vínculo automático ao emissor."
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/fiscal/tax-policies": {
+      "post": {
+        "operationId": "publishTaxPolicy",
+        "description": "Empresa/loja/aparelho/ator derivados da sessão. Sem emissão, homologação, apuração ou alteração de venda/estoque/caixa. Histórico imutável e recuperação idempotente.",
+        "responses": {
+          "200": {
+            "description": "Evidência real de configuração/cálculo; não equivale a enquadramento legal ou autorização fiscal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Evidência real de configuração/cálculo; não equivale a enquadramento legal ou autorização fiscal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/tax-policies/{id}": {
+      "get": {
+        "operationId": "readTaxPolicy",
+        "description": "Empresa/loja/aparelho/ator derivados da sessão. Sem emissão, homologação, apuração ou alteração de venda/estoque/caixa. Histórico imutável e recuperação idempotente.",
+        "responses": {
+          "200": {
+            "description": "Evidência real de configuração/cálculo; não equivale a enquadramento legal ou autorização fiscal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          },
+          {
+            "name": "revision",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Omitir para a revisão mais recente. Não aceita duplicatas."
+          }
+        ]
+      }
+    },
+    "/fiscal/tax-quotes": {
+      "post": {
+        "operationId": "createTaxQuote",
+        "description": "Empresa/loja/aparelho/ator derivados da sessão. Sem emissão, homologação, apuração ou alteração de venda/estoque/caixa. Histórico imutável e recuperação idempotente.",
+        "responses": {
+          "200": {
+            "description": "Evidência real de configuração/cálculo; não equivale a enquadramento legal ou autorização fiscal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Evidência real de configuração/cálculo; não equivale a enquadramento legal ou autorização fiscal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/tax-quotes/{id}": {
+      "get": {
+        "operationId": "readTaxQuote",
+        "description": "Empresa/loja/aparelho/ator derivados da sessão. Sem emissão, homologação, apuração ou alteração de venda/estoque/caixa. Histórico imutável e recuperação idempotente.",
+        "responses": {
+          "200": {
+            "description": "Evidência real de configuração/cálculo; não equivale a enquadramento legal ou autorização fiscal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dados inválidos, sessão/contexto recusado, permissão/contrato indisponível, conflito ou integridade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Context": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "origin_uf",
+          "destination_uf",
+          "crt",
+          "model",
+          "date"
+        ],
+        "properties": {
+          "origin_uf": {
+            "type": "string"
+          },
+          "destination_uf": {
+            "type": "string"
+          },
+          "crt": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          }
+        }
+      },
+      "Case": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "purpose",
+          "origin_municipality",
+          "destination_municipality",
+          "recipient_status",
+          "final_consumer",
+          "product_origin"
+        ],
+        "properties": {
+          "operation": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "origin_municipality": {
+            "type": "string"
+          },
+          "destination_municipality": {
+            "type": "string"
+          },
+          "recipient_status": {
+            "type": "string"
+          },
+          "final_consumer": {
+            "type": "string"
+          },
+          "product_origin": {
+            "type": "string"
+          },
+          "cest": {
+            "type": "string"
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_id",
+          "quantity",
+          "unit_price",
+          "discount",
+          "freight",
+          "insurance",
+          "other"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "unit_price": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "discount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "freight": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "insurance": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "other": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "retained_st": {
+            "$ref": "#/components/schemas/RetainedSTInput"
+          }
+        }
+      },
+      "Component": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "method",
+          "rate",
+          "reduction_percent",
+          "mva_percent",
+          "adds_to_total"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{0,31}$"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "percentage",
+              "gross_up",
+              "per_unit",
+              "exempt"
+            ]
+          },
+          "rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "reduction_percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "mva_percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "add_applied": {
+            "type": "array",
+            "maxItems": 16,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "subtract_applied": {
+            "type": "array",
+            "maxItems": 16,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "deduct_applied": {
+            "type": "array",
+            "maxItems": 16,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "adds_to_total": {
+            "type": "boolean"
+          },
+          "adjusted_mva": {
+            "$ref": "#/components/schemas/AdjustedMVAInput"
+          },
+          "deferment": {
+            "$ref": "#/components/schemas/ICMSDefermentInput"
+          },
+          "own_operation_deduction": {
+            "$ref": "#/components/schemas/STOwnDeductionInput"
+          }
+        }
+      },
+      "Rule": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "product_id",
+          "cfop",
+          "ncm",
+          "origin_uf",
+          "destination_uf",
+          "crt",
+          "model",
+          "valid_from",
+          "valid_until",
+          "legal_reference",
+          "approval_reference",
+          "base_rounding",
+          "components"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "product_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "cfop": {
+            "type": "string"
+          },
+          "ncm": {
+            "type": "string"
+          },
+          "origin_uf": {
+            "type": "string"
+          },
+          "destination_uf": {
+            "type": "string"
+          },
+          "crt": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string"
+          },
+          "valid_until": {
+            "type": "string"
+          },
+          "legal_reference": {
+            "type": "string"
+          },
+          "approval_reference": {
+            "type": "string"
+          },
+          "base_rounding": {
+            "type": "string",
+            "enum": [
+              "before_tax",
+              "tax_final"
+            ]
+          },
+          "components": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 16,
+            "items": {
+              "$ref": "#/components/schemas/Component"
+            }
+          },
+          "goods": {
+            "$ref": "#/components/schemas/GoodsTaxClassification"
+          }
+        }
+      },
+      "PolicyInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "profile_id",
+          "profile_revision",
+          "active",
+          "rule",
+          "case",
+          "sources"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 999999
+          },
+          "profile_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "rule": {
+            "$ref": "#/components/schemas/Rule"
+          },
+          "case": {
+            "$ref": "#/components/schemas/Case"
+          },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 16,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      },
+      "Policy": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "input",
+          "revision",
+          "sha256",
+          "actor_id",
+          "created_at",
+          "repeated"
+        ],
+        "properties": {
+          "input": {
+            "$ref": "#/components/schemas/PolicyInput"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "actor_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "QuoteInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "policy_id",
+          "policy_revision",
+          "context",
+          "case",
+          "item"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "policy_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "policy_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "case": {
+            "$ref": "#/components/schemas/Case"
+          },
+          "item": {
+            "$ref": "#/components/schemas/Item"
+          }
+        }
+      },
+      "AppliedTax": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "method",
+          "base",
+          "rate",
+          "amount"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "base": {
+            "type": "string"
+          },
+          "rate": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "unrounded_base": {
+            "type": "string"
+          },
+          "mva_adjustment": {
+            "$ref": "#/components/schemas/AdjustedMVAResult"
+          },
+          "deferment": {
+            "$ref": "#/components/schemas/ICMSDefermentResult"
+          },
+          "own_operation_deduction": {
+            "$ref": "#/components/schemas/STOwnDeductionResult"
+          }
+        }
+      },
+      "Result": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rule_id",
+          "cfop",
+          "ncm",
+          "gross",
+          "net",
+          "total",
+          "legal_reference",
+          "approval_reference",
+          "taxes",
+          "official_authorization"
+        ],
+        "properties": {
+          "rule_id": {
+            "type": "string"
+          },
+          "cfop": {
+            "type": "string"
+          },
+          "ncm": {
+            "type": "string"
+          },
+          "gross": {
+            "type": "string"
+          },
+          "net": {
+            "type": "string"
+          },
+          "total": {
+            "type": "string"
+          },
+          "legal_reference": {
+            "type": "string"
+          },
+          "approval_reference": {
+            "type": "string"
+          },
+          "taxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppliedTax"
+            }
+          },
+          "official_authorization": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "goods_xml": {
+            "$ref": "#/components/schemas/GoodsTaxMapping"
+          },
+          "retained_st": {
+            "$ref": "#/components/schemas/RetainedSTInput"
+          }
+        }
+      },
+      "Quote": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "input",
+          "result",
+          "policy_sha256",
+          "result_sha256",
+          "actor_id",
+          "created_at",
+          "repeated"
+        ],
+        "properties": {
+          "input": {
+            "$ref": "#/components/schemas/QuoteInput"
+          },
+          "result": {
+            "$ref": "#/components/schemas/Result"
+          },
+          "policy_sha256": {
+            "type": "string"
+          },
+          "result_sha256": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "catalog_unit": {
+            "type": "string",
+            "description": "Unit observed server-side on quote creation; omitted for historical quotes without evidence. An empty/missing historical unit cannot authorize a new tax-priced sale."
+          }
+        }
+      },
+      "AdjustedMVAInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "original_percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "interstate_rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "internal_rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "rounding": {
+            "type": "string",
+            "enum": [
+              "four_places_before_base"
+            ]
+          },
+          "legal_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "original_percent",
+          "interstate_rate",
+          "internal_rate",
+          "rounding",
+          "legal_reference"
+        ]
+      },
+      "AdjustedMVAResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "input": {
+            "$ref": "#/components/schemas/AdjustedMVAInput"
+          },
+          "exact_percent": {
+            "type": "string"
+          },
+          "applied_percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          }
+        },
+        "required": [
+          "input",
+          "exact_percent",
+          "applied_percent"
+        ]
+      },
+      "DestinationTaxClassification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reference": {
+            "type": "string",
+            "enum": [
+              "cv236_21_single_base_2026"
+            ]
+          },
+          "base_method": {
+            "type": "string",
+            "enum": [
+              "single_inclusive_operation_base"
+            ]
+          },
+          "fcp_scope": {
+            "type": "string",
+            "enum": [
+              "not_applicable",
+              "taxed"
+            ]
+          }
+        },
+        "required": [
+          "reference",
+          "base_method",
+          "fcp_scope"
+        ]
+      },
+      "GoodsTaxClassification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "origin": {
+            "type": "string",
+            "enum": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8"
+            ]
+          },
+          "icms": {
+            "type": "string",
+            "enum": [
+              "00",
+              "10",
+              "20",
+              "40",
+              "41",
+              "50",
+              "51",
+              "70",
+              "101",
+              "102",
+              "103",
+              "201",
+              "202",
+              "203",
+              "300",
+              "400",
+              "60",
+              "500"
+            ]
+          },
+          "pis": {
+            "type": "string",
+            "enum": [
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "49",
+              "99"
+            ]
+          },
+          "cofins": {
+            "type": "string",
+            "enum": [
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "49",
+              "99"
+            ]
+          },
+          "ipi_scope": {
+            "type": "string",
+            "enum": [
+              "classified",
+              "not_applicable"
+            ]
+          },
+          "fcp_scope": {
+            "type": "string",
+            "enum": [
+              "not_applicable",
+              "own",
+              "substitution",
+              "own_and_substitution",
+              "retained"
+            ]
+          },
+          "ipi": {
+            "type": "string",
+            "enum": [
+              "50",
+              "99",
+              "51",
+              "52",
+              "53",
+              "54",
+              "55"
+            ]
+          },
+          "ipi_enquadramento": {
+            "type": "string",
+            "pattern": "^[0-9]{3}$"
+          },
+          "benefit_code": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 10
+          },
+          "interstate_basis": {
+            "type": "string",
+            "enum": [
+              "ordinary_goods_2026"
+            ]
+          },
+          "fci": {
+            "type": "string",
+            "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+          },
+          "fci_exemption_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "destination": {
+            "$ref": "#/components/schemas/DestinationTaxClassification"
+          },
+          "simple_credit": {
+            "$ref": "#/components/schemas/SimpleCreditInput"
+          }
+        },
+        "required": [
+          "origin",
+          "icms",
+          "pis",
+          "cofins",
+          "ipi_scope",
+          "fcp_scope"
+        ],
+        "description": "Enquadramento aprovado pelo cliente, sem classificação legal automática. CST60/CSOSN500 restritos a NF-e55 interna CFOP5405, contribuinte/revenda não consumidor final e CEST explícito; exigem item.retained_st com declaração do proprietário. Grupos adicionais preservam os recortes documentados; cobertura nacional/RTC não é presumida."
+      },
+      "InterstateRateSelection": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reference": {
+            "type": "string",
+            "enum": [
+              "ordinary_goods_2026"
+            ]
+          },
+          "rate": {
+            "type": "string"
+          },
+          "origin_uf": {
+            "type": "string"
+          },
+          "destination_uf": {
+            "type": "string"
+          },
+          "product_origin": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string"
+          },
+          "valid_until": {
+            "type": "string"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "required": [
+          "reference",
+          "rate",
+          "origin_uf",
+          "destination_uf",
+          "product_origin",
+          "valid_from",
+          "valid_until",
+          "sources"
+        ]
+      },
+      "GoodsTaxMapping": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "classification": {
+            "$ref": "#/components/schemas/GoodsTaxClassification"
+          },
+          "taxes": {
+            "type": "array",
+            "items": {
+              "$ref": "./fiscal-production.openapi.json#/components/schemas/TaxNode"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+            }
+          },
+          "interstate_reference": {
+            "$ref": "#/components/schemas/InterstateRateSelection"
+          },
+          "simple_credit": {
+            "$ref": "#/components/schemas/SimpleCreditResult"
+          }
+        },
+        "required": [
+          "version",
+          "classification",
+          "taxes",
+          "totals"
+        ]
+      },
+      "ICMSDefermentInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "percent",
+          "legal_reference"
+        ],
+        "properties": {
+          "percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "legal_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "description": "Approved CST51 incidence, domestic NF-e55 CRT2/3 only; full/partial deferment, no reduced-base or FCP deferment in this version."
+      },
+      "ICMSDefermentResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "percent",
+          "operation_amount",
+          "deferred_amount",
+          "due_amount"
+        ],
+        "properties": {
+          "percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "operation_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "deferred_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "due_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          }
+        },
+        "description": "Operation rounded to cents, deferred portion rounded half-up, due = operation - deferred. Not an exemption or automatic legal eligibility."
+      },
+      "SimpleCreditInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "percent",
+          "revenue_period",
+          "recipient_regime",
+          "base_method",
+          "legal_reference"
+        ],
+        "properties": {
+          "percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "revenue_period": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}$"
+          },
+          "recipient_regime": {
+            "type": "string",
+            "enum": [
+              "normal"
+            ]
+          },
+          "base_method": {
+            "type": "string",
+            "enum": [
+              "approved_net_operation"
+            ]
+          },
+          "legal_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "description": "Approved effective ICMS credit percentage for CSOSN101/201. Validity must stay in one operation month and revenue_period must be the previous month. No automatic DAS bracket or initial-activity method. Recipient contributor, nonfinal, resale/industrialization only, CRT1/NF-e55."
+      },
+      "SimpleCreditResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "base",
+          "percent",
+          "amount",
+          "revenue_period"
+        ],
+        "properties": {
+          "base": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "revenue_period": {
+            "type": "string"
+          }
+        },
+        "description": "Credit evidence only; does not add to vICMS, vNF, payments or stock."
+      },
+      "STOwnDeductionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rate",
+          "reduction_percent",
+          "base_method",
+          "legal_reference"
+        ],
+        "properties": {
+          "rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "reduction_percent": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "base_method": {
+            "type": "string",
+            "enum": [
+              "approved_net_operation"
+            ]
+          },
+          "legal_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "description": "Approved theoretical own-operation deduction for SN-ST201/202/203, not own ICMS highlight, recipient credit or DAS. NF-e55, contributor/nonfinal/resale only. No automatic legal applicability, rate, MVA or agreement selection."
+      },
+      "STOwnDeductionResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "base",
+          "rate",
+          "amount"
+        ],
+        "properties": {
+          "base": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          }
+        }
+      },
+      "RetainedSTInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_key",
+          "source_item",
+          "approval_reference",
+          "quantity",
+          "unit",
+          "base",
+          "supported_rate",
+          "substitute_amount",
+          "retained_amount"
+        ],
+        "properties": {
+          "source_key": {
+            "type": "string",
+            "minLength": 44,
+            "maxLength": 44,
+            "description": "Chave NF-e55 com dígito verificado. Sua existência/autorização não é consultada automaticamente."
+          },
+          "source_item": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 990
+          },
+          "approval_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,4})?$"
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
+          },
+          "supported_rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,4})?$"
+          },
+          "substitute_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
+          },
+          "retained_amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
+          },
+          "fcp": {
+            "$ref": "#/components/schemas/RetainedFCPInput"
+          }
+        },
+        "description": "Valores históricos já atribuídos exatamente à quantidade/unidade desta linha, declarados pelo proprietário. Não é apuração nova, alocação automática de lotes, prova de recolhimento, importação/autenticação do XML de compra ou crédito. Não aumenta vNF. Reutilizar uma cotação não confirma disponibilidade histórica da origem."
+      },
+      "RetainedFCPInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "base",
+          "rate",
+          "amount"
+        ],
+        "properties": {
+          "base": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
+          },
+          "rate": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,4})?$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
+          }
+        }
+      }
+    }
+  }
+}

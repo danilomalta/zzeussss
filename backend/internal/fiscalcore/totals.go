@@ -7,15 +7,27 @@ import (
 
 // reconcileTaxTotals checks supported legacy tax sums, not the legal tax
 // classification. Unsupported groups fail explicitly instead of disappearing
-// from the total (notably RTC/IBS/CBS, ISSQN and destination sharing).
+// from the total (notably RTC/IBS/CBS and ISSQN).
 func reconcileTaxTotals(info *etree.Element) error {
 	sums := map[string]*big.Rat{}
 	for _, name := range []string{"vBC", "vICMS", "vICMSDeson", "vFCP", "vBCST", "vST", "vFCPST", "vFCPSTRet", "vII", "vIPI", "vIPIDevol", "vPIS", "vCOFINS"} {
 		sums[name] = zero()
 	}
 	mappings := map[string]map[string]string{
-		"ICMS": {"vBC": "vBC", "vICMS": "vICMS", "vICMSDeson": "vICMSDeson", "vFCP": "vFCP", "vBCST": "vBCST", "vICMSST": "vST", "vFCPST": "vFCPST", "vFCPSTRet": "vFCPSTRet"},
-		"II":   {"vII": "vII"}, "IPI": {"vIPI": "vIPI"}, "PIS": {"vPIS": "vPIS"}, "COFINS": {"vCOFINS": "vCOFINS"},
+		"ICMSUFDest": {"vFCPUFDest": "vFCPUFDest", "vICMSUFDest": "vICMSUFDest", "vICMSUFRemet": "vICMSUFRemet"},
+		"ICMS":       {"vBC": "vBC", "vICMS": "vICMS", "vICMSDeson": "vICMSDeson", "vFCP": "vFCP", "vBCST": "vBCST", "vICMSST": "vST", "vFCPST": "vFCPST", "vFCPSTRet": "vFCPSTRet"},
+		"II":         {"vII": "vII"}, "IPI": {"vIPI": "vIPI"}, "PIS": {"vPIS": "vPIS"}, "COFINS": {"vCOFINS": "vCOFINS"},
+	}
+	sharing := false
+	for _, det := range info.SelectElements("det") {
+		if det.FindElement("imposto/ICMSUFDest") != nil {
+			sharing = true
+		}
+	}
+	if sharing {
+		for _, name := range []string{"vFCPUFDest", "vICMSUFDest", "vICMSUFRemet"} {
+			sums[name] = zero()
+		}
 	}
 	for _, det := range info.SelectElements("det") {
 		imposto := det.SelectElement("imposto")
@@ -57,6 +69,13 @@ func reconcileTaxTotals(info *etree.Element) error {
 	total := info.FindElement("total/ICMSTot")
 	if total == nil {
 		return ErrRule
+	}
+	if !sharing {
+		for _, name := range []string{"vFCPUFDest", "vICMSUFDest", "vICMSUFRemet"} {
+			if total.SelectElement(name) != nil {
+				return ErrRule
+			}
+		}
 	}
 	for name, sum := range sums {
 		e := total.SelectElement(name)

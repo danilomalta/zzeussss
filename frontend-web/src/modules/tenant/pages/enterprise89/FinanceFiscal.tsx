@@ -1,4 +1,6 @@
 import {useState} from 'react';
+import {FiscalCustomer} from './FiscalCustomer';
+import {fiscalWords} from '../../../../core/fiscalCustomer/words';
 import {Link} from 'react-router-dom';
 import {words113} from '../../../../core/payables113/words';
 import {useEnterprise89} from '../../../../core/enterprise89/context';
@@ -22,6 +24,10 @@ export function Finance89Page(){
  </>;
 }
 export function Fiscal89Page(){
+ const {locale}=useEnterprise89(),fw=fiscalWords(locale),[tab,setTab]=useState('customer');
+ return <><nav className="erp89-tabs" aria-label={fw.title}>{['customer','archive'].map(key=><button type="button" key={key} className="brand-secondary" aria-pressed={tab===key} onClick={()=>setTab(key)}>{key==='customer'?fw.title:fw.archive}</button>)}</nav><div hidden={tab!=='customer'}><FiscalCustomer/></div><div hidden={tab!=='archive'}><FiscalArchive89Page/></div></>;
+}
+function FiscalArchive89Page(){
  const {data,w,money,date,act,error,busy}=useEnterprise89(),[preview,setPreview]=useState<Document89[]>([]),[query,setQuery]=useState('');
  async function files(input:FileList){try{if(input.length>20)throw Error('limit');const rows:Document89[]=[];for(const file of Array.from(input)){if(file.size>2000000)throw Error('limit');const v=readInvoice(await file.text());rows.push({id:crypto.randomUUID(),key:v.key,number:v.number,name:v.issuer,date:v.issued.slice(0,10),amount:v.total,model:v.key.slice(20,22),protocol:v.protocol,items:v.items.length});}setPreview(rows);}catch(e){error(e instanceof Error?e.message:'invalid');}}
  const rows=data.documents.filter(r=>(r.name+' '+r.number).toLocaleLowerCase().includes(query.toLocaleLowerCase()));

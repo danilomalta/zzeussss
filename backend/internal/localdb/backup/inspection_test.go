@@ -17,6 +17,10 @@ import (
 func TestInspectionAuthenticatesCountsChangesAndRestoredBusinessDigest(t *testing.T) {
 	db, scope, key, dir := fixture(t)
 	ctx := context.Background()
+	paths, err := filepath.Glob("../migrations/*.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 	first := filepath.Join(dir, "first.tytbak")
 	if e := Create(ctx, db, scope, key, first); e != nil {
 		t.Fatal(e)
@@ -25,7 +29,7 @@ func TestInspectionAuthenticatesCountsChangesAndRestoredBusinessDigest(t *testin
 	if e != nil {
 		t.Fatal(e)
 	}
-	if before.Version != 1 || before.SchemaVersion != 67 || len(before.BusinessSHA256) != 64 || before.Records["cash_sessions"] != 0 || len(before.Unavailable) != 0 {
+	if before.Version != 1 || before.SchemaVersion != len(paths) || len(before.BusinessSHA256) != 64 || before.Records["cash_sessions"] != 0 || len(before.Unavailable) != 0 {
 		t.Fatal("invalid initial inspection", before)
 	}
 	var owner string

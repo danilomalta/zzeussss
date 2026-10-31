@@ -7,12 +7,13 @@ on:
   push:
     branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ "main", "develop", "integration/piloto-main-20261027" ]
 
 jobs:
   backend-checks:
     name: Backend CI (Go)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -31,7 +32,9 @@ jobs:
 
       - name: Run Backend Tests
         working-directory: ./backend
-        run: go test -v ./...
+        # The complete localapi suite outgrew Go's default 10-minute package
+        # budget. Keep a finite deadline; assertions and test scope stay intact.
+        run: go test -timeout=30m -v ./...
 
   frontend-checks:
     name: Frontend CI (React + TypeScript)
