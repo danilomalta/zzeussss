@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+	"titansystem-backend/internal/sqlitewrite"
 
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb"
@@ -29,14 +30,20 @@ type Profile struct {
 // The profile is always a draft, including when environment=production.
 func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ProfileInput, token string) (Profile, error) {
 	var out Profile
+	err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+		var err error
+		out, err = configureTx(ctx, tx, license, a, d, in, token)
+		return err
+	})
+	return out, err
+}
+
+func configureTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ProfileInput, token string) (Profile, error) {
+	var out Profile
 	if !in.valid() {
 		return out, ErrInvalid
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return out, err
-	}
-	defer tx.Rollback()
+	var err error
 	if err = fiscalSessionTx(ctx, tx, a, d, token); err != nil {
 		return out, err
 	}
@@ -70,7 +77,7 @@ func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store,
 		out.Input = in
 		out.Repeated = true
 		out.Readiness = Unavailable()
-		return out, tx.Commit()
+		return out, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return out, err
@@ -96,7 +103,7 @@ func Configure(ctx context.Context, db *sql.DB, license *entitlementstore.Store,
 	if err != nil {
 		return Profile{}, err
 	}
-	return out, tx.Commit()
+	return out, nil
 }
 
 func profileTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string, revision int) (Profile, error) {
@@ -186,14 +193,20 @@ type Intent struct {
 // nor signs/transmits XML. Missing contracts block writes, including replay.
 func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in IntentInput, token string) (Intent, error) {
 	var out Intent
+	err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+		var err error
+		out, err = prepareTx(ctx, tx, license, a, d, in, token)
+		return err
+	})
+	return out, err
+}
+
+func prepareTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in IntentInput, token string) (Intent, error) {
+	var out Intent
 	if !idPattern.MatchString(in.OperationID) || !idPattern.MatchString(in.SaleID) || !idPattern.MatchString(in.ProfileID) || in.ProfileRevision < 1 {
 		return out, ErrInvalid
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return out, err
-	}
-	defer tx.Rollback()
+	var err error
 	if err = fiscalSessionTx(ctx, tx, a, d, token); err != nil {
 		return out, err
 	}
@@ -212,7 +225,7 @@ func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 			return Intent{}, err
 		}
 		out.Repeated = true
-		return out, tx.Commit()
+		return out, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return out, err
@@ -311,7 +324,7 @@ func Prepare(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 	if _, err = tx.ExecContext(ctx, `INSERT INTO fiscal_intent_session_bindings VALUES(?,?,?,?)`, a.TenantID, a.StoreID, out.ID, sessionDigest[:]); err != nil {
 		return Intent{}, err
 	}
-	return out, tx.Commit()
+	return out, nil
 }
 
 func intentTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (Intent, error) {

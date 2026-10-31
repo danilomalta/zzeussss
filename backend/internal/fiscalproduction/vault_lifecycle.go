@@ -7,11 +7,14 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/base64"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"titansystem-backend/internal/deployment"
+	"titansystem-backend/internal/localdb/fiscal"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 var keyCheckPlain = []byte("TitanSystem customer vault key v1")
@@ -44,17 +47,16 @@ func (v *FiscalSecretVault) checkKeyTx(ctx context.Context, tx *sql.Tx) (string,
 	raw, err := openSealed(v.aead, sealed, keyCheckAAD(tenant))
 	defer clear(raw)
 	if err != nil || string(raw) != string(keyCheckPlain) {
-		return "", ErrUnavailable
+		return "", errors.Join(ErrUnavailable, errVaultKeyChanged)
 	}
 	return tenant, nil
 }
 func (v *FiscalSecretVault) initializeKeyControl() error {
 	ctx := context.Background()
-	tx, err := v.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	return sqlitewrite.Run(ctx, v.db, fiscal.ErrConflict, func(tx *sql.Tx) error { return v.initializeKeyControlTx(ctx, tx) })
+}
+func (v *FiscalSecretVault) initializeKeyControlTx(ctx context.Context, tx *sql.Tx) error {
+	var err error
 	if _, err = tx.Exec(`CREATE TABLE IF NOT EXISTS fiscal_vault_control(id INTEGER PRIMARY KEY CHECK(id=1),tenant TEXT NOT NULL,key_check BLOB NOT NULL)`); err != nil {
 		return err
 	}
@@ -108,17 +110,15 @@ func (v *FiscalSecretVault) initializeKeyControl() error {
 	if _, err = v.checkKeyTx(ctx, tx); err != nil {
 		return err
 	}
-	return tx.Commit()
+	return nil
 }
 func (v *FiscalSecretVault) bindTenant(ctx context.Context, tenant string) error {
 	if tenant == "" {
 		return ErrUnavailable
 	}
-	tx, err := v.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	return sqlitewrite.Run(ctx, v.db, fiscal.ErrConflict, func(tx *sql.Tx) error { return v.bindTenantTx(ctx, tx, tenant) })
+}
+func (v *FiscalSecretVault) bindTenantTx(ctx context.Context, tx *sql.Tx, tenant string) error {
 	bound, err := v.checkKeyTx(ctx, tx)
 	if err != nil {
 		return err
@@ -139,7 +139,7 @@ func (v *FiscalSecretVault) bindTenant(ctx context.Context, tenant string) error
 			return err
 		}
 	}
-	return tx.Commit()
+	return nil
 }
 func readMasterKey(path string) ([]byte, error) {
 	raw, err := deployment.PrivateRead(path, 256)
@@ -259,36 +259,78 @@ func RotateCustomerMasterKey(path, oldFile, newFile string, display io.Writer) e
 	if display == nil || oldFile == newFile || newFile == path {
 		return ErrUnavailable
 	}
-	if _, err := os.Lstat(newFile); !os.IsNotExist(err) {
+	if _, err := os.Lstat(newFile); err == nil {
+		return fiscal.ErrConflict
+	} else if !os.IsNotExist(err) {
 		return ErrUnavailable
 	}
-	v, err := OpenCustomerFiscalVault(path, oldFile)
+	v, err := openCustomerFiscalVaultMode(path, oldFile, true)
 	if err != nil {
+		if errors.Is(err, errVaultKeyChanged) || sqlitewrite.Contention(err) {
+			return fiscal.ErrConflict
+		}
 		return err
 	}
 	defer v.Close()
-	ctx := context.Background()
-	tx, err := v.db.BeginTx(ctx, nil)
-	if err != nil {
-		return ErrUnavailable
-	}
-	defer tx.Rollback()
-	tenant, err := v.checkKeyTx(ctx, tx)
+	var output []byte
+	err = sqlitewrite.RunCleanup(context.Background(), v.db, fiscal.ErrConflict, func(tx *sql.Tx) (func(bool), error) {
+		encoded, err := rotateMasterKeyTx(v, tx)
+		if err != nil {
+			if errors.Is(err, errVaultKeyChanged) {
+				err = fiscal.ErrConflict
+			}
+			return nil, err
+		}
+		defer clear(encoded)
+		if err = privateNew(newFile, encoded); err != nil {
+			return nil, err
+		}
+		info, err := os.Lstat(newFile)
+		if err != nil {
+			return nil, err
+		}
+		cleanup := func(committed bool) {
+			if !committed {
+				current, e := os.Lstat(newFile)
+				if e == nil && os.SameFile(info, current) {
+					_ = os.Remove(newFile)
+					if dir, e := os.Open(filepath.Dir(newFile)); e == nil {
+						_ = dir.Sync()
+						dir.Close()
+					}
+				}
+			}
+		}
+		clear(output)
+		output = append([]byte(nil), encoded...)
+		return cleanup, nil
+	})
+	defer clear(output)
 	if err != nil {
 		return err
 	}
+	_, err = display.Write(output)
+	return err
+}
+func rotateMasterKeyTx(v *FiscalSecretVault, tx *sql.Tx) ([]byte, error) {
+	ctx := context.Background()
+
+	tenant, err := v.checkKeyTx(ctx, tx)
+	if err != nil {
+		return nil, err
+	}
 	key := make([]byte, 32)
 	if _, err = rand.Read(key); err != nil {
-		return ErrUnavailable
+		return nil, ErrUnavailable
 	}
 	defer clear(key)
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return ErrUnavailable
+		return nil, ErrUnavailable
 	}
 	next, err := cipher.NewGCM(block)
 	if err != nil {
-		return ErrUnavailable
+		return nil, ErrUnavailable
 	}
 	type row struct {
 		tenant, purpose string
@@ -297,57 +339,50 @@ func RotateCustomerMasterKey(path, oldFile, newFile string, display io.Writer) e
 	records := []row{}
 	rows, err := tx.QueryContext(ctx, `SELECT tenant,purpose,ciphertext FROM fiscal_secret_vault`)
 	if err != nil {
-		return ErrUnavailable
+		return nil, ErrUnavailable
 	}
 	for rows.Next() {
 		var r row
 		if rows.Scan(&r.tenant, &r.purpose, &r.sealed) != nil {
 			rows.Close()
-			return ErrUnavailable
+			return nil, ErrUnavailable
 		}
 		aad, err := vaultAAD(r.tenant, r.purpose)
 		if err != nil {
 			rows.Close()
-			return err
+			return nil, err
 		}
 		raw, err := openSealed(v.aead, r.sealed, aad)
 		if err != nil {
 			rows.Close()
-			return err
+			return nil, err
 		}
 		r.sealed, err = sealVault(next, raw, aad)
 		clear(raw)
 		if err != nil {
 			rows.Close()
-			return err
+			return nil, err
 		}
 		records = append(records, r)
 	}
 	if err = rows.Err(); err != nil {
 		rows.Close()
-		return ErrUnavailable
+		return nil, ErrUnavailable
 	}
 	rows.Close()
 	encoded := []byte(base64.StdEncoding.EncodeToString(key) + "\n")
 	defer clear(encoded)
-	if err = privateNew(newFile, encoded); err != nil {
-		return err
-	}
 	for _, r := range records {
 		if _, err = tx.ExecContext(ctx, `UPDATE fiscal_secret_vault SET ciphertext=? WHERE tenant=? AND purpose=?`, r.sealed, r.tenant, r.purpose); err != nil {
-			return ErrUnavailable
+			return nil, ErrUnavailable
 		}
 	}
 	marker, err := sealVault(next, keyCheckPlain, keyCheckAAD(tenant))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if _, err = tx.ExecContext(ctx, `UPDATE fiscal_vault_control SET key_check=? WHERE id=1`, marker); err != nil {
-		return ErrUnavailable
+		return nil, ErrUnavailable
 	}
-	if err = tx.Commit(); err != nil {
-		return ErrUnavailable
-	}
-	_, err = display.Write(encoded)
-	return err
+	return append([]byte(nil), encoded...), nil
 }

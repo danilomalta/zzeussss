@@ -12,7 +12,12 @@ import (
 
 // Only SQLite contention messages are safe to retain: no SQL, paths or values.
 // Other database errors stay private. Callers can use errors.As for the code.
+var errVaultKeyChanged = errors.New("vault key changed")
+
 func vaultDatabaseError(stage string, err error) error {
+	if errors.Is(err, fiscal.ErrConflict) || errors.Is(err, errVaultKeyChanged) {
+		return err
+	}
 	var cause *sqlite.Error
 	if errors.As(err, &cause) && (cause.Code()&255 == 5 || cause.Code()&255 == 6) {
 		return errors.Join(ErrUnavailable, fmt.Errorf("fiscal vault %s: %w", stage, cause))

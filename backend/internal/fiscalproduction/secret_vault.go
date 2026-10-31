@@ -11,11 +11,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+	"titansystem-backend/internal/localdb/fiscal"
+	"titansystem-backend/internal/sqlitewrite"
 	"unicode/utf8"
 
 	_ "modernc.org/sqlite"
@@ -78,15 +81,14 @@ func openVaultKeyMode(path string, key []byte, immediate bool) (*FiscalSecretVau
 	if !privateReference(path) {
 		return nil, ErrUnavailable
 	}
-	dsn := path
+	u := url.URL{Scheme: "file", Path: path}
+	q := u.Query()
+	q.Set("_pragma", "busy_timeout(1000)")
 	if immediate {
-		u := url.URL{Scheme: "file", Path: path}
-		q := u.Query()
 		q.Set("_txlock", "immediate")
-		q.Set("_pragma", "busy_timeout(1000)")
-		u.RawQuery = q.Encode()
-		dsn = u.String()
 	}
+	u.RawQuery = q.Encode()
+	dsn := u.String()
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, vaultDatabaseError("open", err)
@@ -120,27 +122,25 @@ func (v *FiscalSecretVault) Put(ctx context.Context, tenant, purpose string, sec
 	if err != nil || len(secret) == 0 || len(secret) > 4*fiscalcore.MaxXML {
 		return ErrUnavailable
 	}
-	if err = v.bindTenant(ctx, tenant); err != nil {
-		return ErrUnavailable
-	}
-	tx, err := v.db.BeginTx(ctx, nil)
-	if err != nil {
-		return ErrUnavailable
-	}
-	defer tx.Rollback()
-	if _, err = v.checkKeyTx(ctx, tx); err != nil {
-		return ErrUnavailable
-	}
-	nonce := make([]byte, v.aead.NonceSize())
-	if _, err = rand.Read(nonce); err != nil {
-		return ErrUnavailable
-	}
-	encrypted := v.aead.Seal(nonce, nonce, secret, aad)
-	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_secret_vault (tenant,purpose,ciphertext) VALUES (?,?,?) ON CONFLICT(tenant,purpose) DO UPDATE SET ciphertext=excluded.ciphertext`, tenant, purpose, encrypted)
-	if err != nil {
-		return ErrUnavailable
-	}
-	return tx.Commit()
+	return sqlitewrite.Run(ctx, v.db, fiscal.ErrConflict, func(tx *sql.Tx) error {
+		if err := v.bindTenantTx(ctx, tx, tenant); err != nil {
+			if errors.Is(err, errVaultKeyChanged) {
+				return fiscal.ErrConflict
+			}
+			return vaultDatabaseError("put key", err)
+		}
+
+		nonce := make([]byte, v.aead.NonceSize())
+		if _, err = rand.Read(nonce); err != nil {
+			return ErrUnavailable
+		}
+		encrypted := v.aead.Seal(nonce, nonce, secret, aad)
+		_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_secret_vault (tenant,purpose,ciphertext) VALUES (?,?,?) ON CONFLICT(tenant,purpose) DO UPDATE SET ciphertext=excluded.ciphertext`, tenant, purpose, encrypted)
+		if err != nil {
+			return vaultDatabaseError("put", err)
+		}
+		return nil
+	})
 }
 
 // read is deliberately package-private; request input cannot select a tenant.
