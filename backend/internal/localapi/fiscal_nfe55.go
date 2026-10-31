@@ -80,6 +80,13 @@ func (s *Server) fiscalNFe55Action(c *fiber.Ctx, action string) error {
 		if fiscalcore.DecodeInput(c.Body(), &in) != nil {
 			return fiscalFailure(c, fiscal.ErrInvalid)
 		}
+		preview, err := s.fiscalProviders.PreviewCustomerNFe55(c.UserContext(), a, req.SaleID)
+		if err != nil {
+			return nfe55Failure(c, err)
+		}
+		if !preview.MappingSupported {
+			return nfe55Failure(c, fiscalcore.ErrUnsupported)
+		}
 		r := in.Recipient
 		d := r.Address
 		// This matches only the existing, frozen internal cash consumer-sale contract.

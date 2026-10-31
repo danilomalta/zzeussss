@@ -21296,6 +21296,21 @@
     },
     "/local/v1/company/registration": {
       "$ref": "./company-registration.openapi.json#/paths/~1local~1v1~1company~1registration"
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/preview": {
+      "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfe55~1sales~1{id}~1preview"
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/emit": {
+      "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfe55~1sales~1{id}~1emit"
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/query": {
+      "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfe55~1sales~1{id}~1query"
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/cancel": {
+      "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfe55~1sales~1{id}~1cancel"
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/danfe": {
+      "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfe55~1sales~1{id}~1danfe"
     }
   },
   "components": {

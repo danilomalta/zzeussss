@@ -4,7 +4,7 @@ import type {NFe55Preview,NFe55Status} from '../../../../core/fiscalCustomer/nfe
 
 type Props={token:string;isCurrent:()=>boolean;words:Record<string,string>;locale:string};
 const empty=()=>({nature:'',purpose:'',freight_mode:'',recipient:{cnpj:'',cpf:'',name:'',ie:'',address:{street:'',number:'',district:'',city_code:'',city:'',uf:'',postal_code:''}}});
-export function FiscalNFe55({token,isCurrent,words:w,locale}:Props){
+export function FiscalNFe55({token,isCurrent,words:fw,locale}:Props){
  const api=useMemo(()=>createNFe55Client({token,isCurrent}),[token,isCurrent]);
  const [sale,setSale]=useState(''),[preview,setPreview]=useState<NFe55Preview|null>(null),[input,setInput]=useState(empty),[status,setStatus]=useState<NFe55Status|null>(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[attempted,setAttempted]=useState(false),[reason,setReason]=useState(''),[confirmed,setConfirmed]=useState(false);
@@ -27,22 +27,22 @@ export function FiscalNFe55({token,isCurrent,words:w,locale}:Props){
  const money=(c:number)=>new Intl.NumberFormat(locale,{style:'currency',currency:'BRL'}).format(c/100);
  const states:Record<string,string>={authorized_homologation:'nfeAuthorized',failed:'nfeRejected',cancelled_homologation:'nfeCancelled',cancellation_failed:'nfeCancelError',pending:'nfePending',recovery_required:'nfePending',not_requested:'nfeNotRequested'};
  const disabled=busy||!isCurrent();
- return <section aria-label={w.nfeTitle} className="fiscal-nfe55"><h3>{w.nfeTitle}</h3><p role="note" className="nfe55-banner"><strong>{w.nfeBanner}</strong></p><p>{w.nfeScope}</p><p>{w.nfeUnavailable}</p>
- <form onSubmit={e=>{e.preventDefault();void load();}}><label>{w.nfeSale}<input required autoComplete="off" value={sale} disabled={busy} maxLength={128} onChange={e=>{setSale(e.target.value);setPreview(null);setStatus(null);setInput(empty());setAttempted(false);}}/></label><button disabled={disabled} className="brand-secondary">{w.nfeLoad}</button></form>
- {error&&<p role="alert">{w['nfeError_'+error]||w.nfeFailure}</p>}
- {preview&&<><table><caption>{w.nfeItems}</caption><thead><tr><th>{w.nfeProduct}</th><th>{w.nfeQuantity}</th><th>{w.nfeValue}</th></tr></thead><tbody>{preview.items.map((item,i)=><tr key={i}><td>{item.product_id}</td><td>{(item.quantity_milli/1000).toFixed(3)}</td><td>{money(item.total_cents)}</td></tr>)}</tbody></table><p>{w.nfeTotal}: {money(preview.total_cents)}</p>
- {!preview.mapping_supported&&<p role="alert">{w.nfeError_tax_mapping_unsupported}</p>}
+ return <section aria-label={fw.nfeTitle} className="fiscal-nfe55"><h3>{fw.nfeTitle}</h3><p role="note" className="nfe55-banner"><strong>{fw.nfeBanner}</strong></p><p>{fw.nfeScope}</p><p>{fw.nfeUnavailable}</p>
+ <form onSubmit={e=>{e.preventDefault();void load();}}><label>{fw.nfeSale}<input required autoComplete="off" value={sale} disabled={busy} maxLength={128} onChange={e=>{setSale(e.target.value);setPreview(null);setStatus(null);setInput(empty());setAttempted(false);}}/></label><button disabled={disabled} className="brand-secondary">{fw.nfeLoad}</button></form>
+ {error&&<p role="alert">{fw['nfeError_'+error]||fw.nfeFailure}</p>}
+ {preview&&<><table><caption>{fw.nfeItems}</caption><thead><tr><th>{fw.nfeProduct}</th><th>{fw.nfeQuantity}</th><th>{fw.nfeValue}</th></tr></thead><tbody>{preview.items.map((item,i)=><tr key={i}><td>{item.product_id}</td><td>{(item.quantity_milli/1000).toFixed(3)}</td><td>{money(item.total_cents)}</td></tr>)}</tbody></table><p>{fw.nfeTotal}: {money(preview.total_cents)}</p>
+ {!preview.mapping_supported&&<p role="alert">{fw.nfeError_tax_mapping_unsupported}</p>}
  <form onSubmit={e=>{e.preventDefault();void action('emit');}}><fieldset disabled={disabled||attempted||!preview.mapping_supported}>
- <legend>{w.nfeDetails}</legend><label>{w.nfeNature}<input required value={input.nature} maxLength={60} autoComplete="off" onChange={e=>setInput({...input,nature:e.target.value})}/></label>
- <label>{w.nfePurpose}<select required value={input.purpose} onChange={e=>setInput({...input,purpose:e.target.value})}><option value="">{w.choose}</option><option value="1">{w.nfeNormal}</option></select></label>
- <label>{w.nfeFreight}<select required value={input.freight_mode} onChange={e=>setInput({...input,freight_mode:e.target.value})}><option value="">{w.choose}</option><option value="9">{w.nfeNoFreight}</option></select></label>
- <div className="erp89-form">{(['name','cnpj','cpf','ie'] as const).map(key=><label key={key}>{w['nfe_'+key]}<input required={key==='name'} maxLength={key==='name'?60:14} autoComplete="off" value={input.recipient[key]} onChange={e=>setInput({...input,recipient:{...input.recipient,[key]:e.target.value}})}/></label>)}
- {(['street','number','district','city_code','city','uf','postal_code'] as const).map(key=><label key={key}>{w['nfe_'+key]}<input required={!['city_code','postal_code'].includes(key)} autoComplete="off" maxLength={key==='uf'?2:key==='city_code'?7:key==='postal_code'?8:60} value={input.recipient.address[key]} onChange={e=>setInput({...input,recipient:{...input.recipient,address:{...input.recipient.address,[key]:e.target.value}}})}/></label>)}</div>
- <p>{w.nfePrivacy}</p><button className="brand-primary">{w.nfeEmit}</button></fieldset></form>
- {status&&<section role="status"><h4>{w[states[status.state]]||w.nfePending}</h4>{status.message&&<p>{status.message}</p>}{status.error_code&&<p>{w['nfeError_'+status.error_code]||w.nfeFailure}</p>}</section>}
- <button type="button" disabled={disabled} onClick={()=>void action('query')}>{w.nfeQuery}</button>
- <button type="button" disabled={disabled||status?.state!=='authorized_homologation'} onClick={()=>void action('danfe')}>{w.nfeDanfe}</button>
- {['authorized_homologation','cancellation_failed'].includes(status?.state||'')&&<form onSubmit={e=>{e.preventDefault();void action('cancel');}}><fieldset disabled={disabled}><legend>{w.nfeCancel}</legend><p>{w.nfeCancelOnly}</p><label>{w.nfeReason}<textarea required minLength={15} maxLength={255} value={reason} onChange={e=>setReason(e.target.value)}/></label><label><input type="checkbox" required checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>{w.nfeConfirm}</label><button disabled={!confirmed}>{w.nfeCancel}</button></fieldset></form>}
+ <legend>{fw.nfeDetails}</legend><label>{fw.nfeNature}<input required value={input.nature} maxLength={60} autoComplete="off" onChange={e=>setInput({...input,nature:e.target.value})}/></label>
+ <label>{fw.nfePurpose}<select required value={input.purpose} onChange={e=>setInput({...input,purpose:e.target.value})}><option value="">{fw.choose}</option><option value="1">{fw.nfeNormal}</option></select></label>
+ <label>{fw.nfeFreight}<select required value={input.freight_mode} onChange={e=>setInput({...input,freight_mode:e.target.value})}><option value="">{fw.choose}</option><option value="9">{fw.nfeNoFreight}</option></select></label>
+ <div className="erp89-form">{(['name','cnpj','cpf','ie'] as const).map(key=><label key={key}>{fw['nfe_'+key]}<input required={key==='name'} maxLength={key==='name'?60:14} autoComplete="off" value={input.recipient[key]} onChange={e=>setInput({...input,recipient:{...input.recipient,[key]:e.target.value}})}/></label>)}
+ {(['street','number','district','city_code','city','uf','postal_code'] as const).map(key=><label key={key}>{fw['nfe_'+key]}<input required={!['city_code','postal_code'].includes(key)} autoComplete="off" maxLength={key==='uf'?2:key==='city_code'?7:key==='postal_code'?8:60} value={input.recipient.address[key]} onChange={e=>setInput({...input,recipient:{...input.recipient,address:{...input.recipient.address,[key]:e.target.value}}})}/></label>)}</div>
+ <p>{fw.nfePrivacy}</p><button className="brand-primary">{fw.nfeEmit}</button></fieldset></form>
+ {status&&<section role="status"><h4>{fw[states[status.state]]||fw.nfePending}</h4>{status.message&&<p>{status.message}</p>}{status.error_code&&<p>{fw['nfeError_'+status.error_code]||fw.nfeFailure}</p>}</section>}
+ <button type="button" disabled={disabled} onClick={()=>void action('query')}>{fw.nfeQuery}</button>
+ <button type="button" disabled={disabled||status?.state!=='authorized_homologation'} onClick={()=>void action('danfe')}>{fw.nfeDanfe}</button>
+ {['authorized_homologation','cancellation_failed'].includes(status?.state||'')&&<form onSubmit={e=>{e.preventDefault();void action('cancel');}}><fieldset disabled={disabled}><legend>{fw.nfeCancel}</legend><p>{fw.nfeCancelOnly}</p><label>{fw.nfeReason}<textarea required minLength={15} maxLength={255} value={reason} onChange={e=>setReason(e.target.value)}/></label><label><input type="checkbox" required checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>{fw.nfeConfirm}</label><button disabled={!confirmed}>{fw.nfeCancel}</button></fieldset></form>}
  </>}
  </section>;
 }

@@ -1,0 +1,595 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Customer NF-e 55 screen — homologation only",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/local/v1/fiscal/nfe55/sales/{id}/preview": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "customerNFe55Preview",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "responses": {
+          "200": {
+            "description": "HOMOLOGAÇÃO - SEM VALOR FISCAL. Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown fields, query input or unconfirmed cancellation. No personal data echoed."
+          },
+          "401": {
+            "description": "Missing, expired or revoked human session."
+          },
+          "403": {
+            "description": "Owner role, permissions or active fiscal module denied."
+          },
+          "404": {
+            "description": "Sale/profile not found in authenticated scope."
+          },
+          "409": {
+            "description": "Production blocked, A3 unsupported, incomplete input, unmapped taxes, provider unavailable or revision conflict."
+          },
+          "500": {
+            "description": "Storage unavailable; no private inputs returned."
+          },
+          "503": {
+            "description": "Fiscal contract unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/emit": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "customerNFe55Emit",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "responses": {
+          "200": {
+            "description": "HOMOLOGAÇÃO - SEM VALOR FISCAL. Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FiscalStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown fields, query input or unconfirmed cancellation. No personal data echoed."
+          },
+          "401": {
+            "description": "Missing, expired or revoked human session."
+          },
+          "403": {
+            "description": "Owner role, permissions or active fiscal module denied."
+          },
+          "404": {
+            "description": "Sale/profile not found in authenticated scope."
+          },
+          "409": {
+            "description": "Production blocked, A3 unsupported, incomplete input, unmapped taxes, provider unavailable or revision conflict."
+          },
+          "500": {
+            "description": "Storage unavailable; no private inputs returned."
+          },
+          "503": {
+            "description": "Fiscal contract unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Emission"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/query": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "customerNFe55Query",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "responses": {
+          "200": {
+            "description": "HOMOLOGAÇÃO - SEM VALOR FISCAL. Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FiscalStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown fields, query input or unconfirmed cancellation. No personal data echoed."
+          },
+          "401": {
+            "description": "Missing, expired or revoked human session."
+          },
+          "403": {
+            "description": "Owner role, permissions or active fiscal module denied."
+          },
+          "404": {
+            "description": "Sale/profile not found in authenticated scope."
+          },
+          "409": {
+            "description": "Production blocked, A3 unsupported, incomplete input, unmapped taxes, provider unavailable or revision conflict."
+          },
+          "500": {
+            "description": "Storage unavailable; no private inputs returned."
+          },
+          "503": {
+            "description": "Fiscal contract unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/cancel": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "customerNFe55Cancel",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "responses": {
+          "200": {
+            "description": "HOMOLOGAÇÃO - SEM VALOR FISCAL. Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FiscalStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown fields, query input or unconfirmed cancellation. No personal data echoed."
+          },
+          "401": {
+            "description": "Missing, expired or revoked human session."
+          },
+          "403": {
+            "description": "Owner role, permissions or active fiscal module denied."
+          },
+          "404": {
+            "description": "Sale/profile not found in authenticated scope."
+          },
+          "409": {
+            "description": "Production blocked, A3 unsupported, incomplete input, unmapped taxes, provider unavailable or revision conflict."
+          },
+          "500": {
+            "description": "Storage unavailable; no private inputs returned."
+          },
+          "503": {
+            "description": "Fiscal contract unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Cancellation"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/danfe": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "customerNFe55Danfe",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "responses": {
+          "200": {
+            "description": "HOMOLOGAÇÃO - SEM VALOR FISCAL. Cache-Control: no-store.",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown fields, query input or unconfirmed cancellation. No personal data echoed."
+          },
+          "401": {
+            "description": "Missing, expired or revoked human session."
+          },
+          "403": {
+            "description": "Owner role, permissions or active fiscal module denied."
+          },
+          "404": {
+            "description": "Sale/profile not found in authenticated scope."
+          },
+          "409": {
+            "description": "Production blocked, A3 unsupported, incomplete input, unmapped taxes, provider unavailable or revision conflict."
+          },
+          "500": {
+            "description": "Storage unavailable; no private inputs returned."
+          },
+          "503": {
+            "description": "Fiscal contract unavailable."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "FiscalStatus": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "not_requested",
+              "authorized_homologation",
+              "failed",
+              "pending",
+              "recovery_required",
+              "cancelled_homologation",
+              "cancellation_failed"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "error_code": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "key": {
+            "type": "string",
+            "maxLength": 44
+          },
+          "intent_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "operation_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "can_reprocess": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "Recipient": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cpf": {
+            "type": "string",
+            "maxLength": 11
+          },
+          "cnpj": {
+            "type": "string",
+            "maxLength": 14
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "ie": {
+            "type": "string",
+            "maxLength": 14
+          },
+          "address": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "street": {
+                "type": "string",
+                "maxLength": 60
+              },
+              "number": {
+                "type": "string",
+                "maxLength": 60
+              },
+              "district": {
+                "type": "string",
+                "maxLength": 60
+              },
+              "city": {
+                "type": "string",
+                "maxLength": 60
+              },
+              "city_code": {
+                "type": "string",
+                "maxLength": 7
+              },
+              "uf": {
+                "type": "string",
+                "maxLength": 2
+              },
+              "postal_code": {
+                "type": "string",
+                "maxLength": 8
+              }
+            },
+            "required": [
+              "street",
+              "number",
+              "district",
+              "city",
+              "uf"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "address"
+        ],
+        "oneOf": [
+          {
+            "required": [
+              "cpf"
+            ],
+            "properties": {
+              "cpf": {
+                "minLength": 1
+              },
+              "cnpj": {
+                "maxLength": 0
+              }
+            }
+          },
+          {
+            "required": [
+              "cnpj"
+            ],
+            "properties": {
+              "cnpj": {
+                "minLength": 1
+              },
+              "cpf": {
+                "maxLength": 0
+              }
+            }
+          }
+        ]
+      },
+      "Emission": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "nature": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "1"
+            ]
+          },
+          "freight_mode": {
+            "type": "string",
+            "enum": [
+              "9"
+            ]
+          },
+          "recipient": {
+            "$ref": "#/components/schemas/Recipient"
+          }
+        },
+        "required": [
+          "nature",
+          "purpose",
+          "freight_mode",
+          "recipient"
+        ]
+      },
+      "Cancellation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 15,
+            "maxLength": 255
+          },
+          "confirmed": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "operation_id",
+          "reason",
+          "confirmed"
+        ]
+      },
+      "Preview": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sale_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "intent_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mapping_supported": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "product_id",
+                "quantity_milli",
+                "unit_price_cents",
+                "total_cents"
+              ],
+              "properties": {
+                "product_id": {
+                  "type": "string"
+                },
+                "quantity_milli": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "unit_price_cents": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "total_cents": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "status": {
+            "$ref": "#/components/schemas/FiscalStatus"
+          }
+        },
+        "required": [
+          "sale_id",
+          "intent_id",
+          "total_cents",
+          "items",
+          "mapping_supported",
+          "status"
+        ]
+      }
+    }
+  }
+}

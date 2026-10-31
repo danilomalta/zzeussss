@@ -3916,6 +3916,41 @@
     },
     {
       "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/sales/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/fiscal/nfe55/sales/:id/danfe",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/sales/:id/emit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/sales/:id/preview",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/sales/:id/query",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
       "method": "GET",
       "path": "/local/v1/company/registration",
       "authentication": "session",
