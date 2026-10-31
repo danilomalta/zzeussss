@@ -2,11 +2,14 @@ package fiscalproduction
 
 import (
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,9 +59,14 @@ type keyCandidateRecord struct {
 // An append-only private journal proves this installation created the candidate.
 // Unregistered files (including other clients' keys) are never classified or removed.
 func recordKeyCandidate(vault, file string, encoded []byte) error {
+	_, err := recordKeyCandidateState(vault, file, encoded, false)
+	return err
+}
+
+func recordKeyCandidateState(vault, file string, encoded []byte, pending bool) (string, error) {
 	raw, err := base64.StdEncoding.Strict().DecodeString(strings.TrimSpace(string(encoded)))
 	if err != nil || len(raw) != 32 {
-		return ErrUnavailable
+		return "", ErrUnavailable
 	}
 	defer clear(raw)
 	digest := sha256.Sum256(raw)
@@ -66,18 +74,22 @@ func recordKeyCandidate(vault, file string, encoded []byte) error {
 	body, _ := json.Marshal(record)
 	dir := vault + ".key-candidates"
 	if err = os.MkdirAll(dir, 0700); err != nil {
-		return ErrUnavailable
+		return "", ErrUnavailable
 	}
 	info, err := os.Lstat(dir)
 	if err != nil || !info.IsDir() || info.Mode().Perm() != 0700 || info.Mode()&os.ModeSymlink != 0 {
-		return ErrUnavailable
+		return "", ErrUnavailable
 	}
 	id := sha256.Sum256(body)
-	fileID := filepath.Join(dir, hex.EncodeToString(id[:])+".json")
-	if old, e := deployment.PrivateRead(fileID, 4096); e == nil && string(old) == string(body) {
-		return nil
+	suffix := ".json"
+	if pending {
+		suffix = ".pending"
 	}
-	return privateNew(fileID, body)
+	fileID := filepath.Join(dir, hex.EncodeToString(id[:])+suffix)
+	if old, e := deployment.PrivateRead(fileID, 4096); e == nil && string(old) == string(body) {
+		return fileID, nil
+	}
+	return fileID, privateNew(fileID, body)
 }
 func scanKeyDirectory(vault, directory string) ([]orphanCandidate, error) {
 	dir, err := os.Lstat(directory)
@@ -98,6 +110,9 @@ func scanKeyDirectory(vault, directory string) ([]orphanCandidate, error) {
 	}
 	out := []orphanCandidate{}
 	for _, entry := range entries {
+		if !strings.HasSuffix(entry.Name(), ".json") {
+			continue // In-flight or interrupted rotations are protected, not orphans.
+		}
 		body, err := deployment.PrivateRead(filepath.Join(journal, entry.Name()), 4096)
 		if err != nil {
 			continue
@@ -127,26 +142,63 @@ func scanKeyDirectory(vault, directory string) ([]orphanCandidate, error) {
 	return out, nil
 }
 
+// Maintenance uses an existing read-only database: it cannot initialize controls,
+// bind a tenant, or wait for the BEGIN IMMEDIATE lock held by a rotation.
+func openVaultMaintenance(vault, keyFile string) (*FiscalSecretVault, error) {
+	if !privateReference(vault) || !filepath.IsAbs(vault) || strings.ContainsAny(vault, "?#") {
+		return nil, ErrUnavailable
+	}
+	key, err := readMasterKey(keyFile)
+	if err != nil {
+		return nil, err
+	}
+	defer clear(key)
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, ErrUnavailable
+	}
+	aead, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, ErrUnavailable
+	}
+	u := url.URL{Scheme: "file", Path: vault}
+	q := u.Query()
+	q.Set("mode", "ro")
+	q.Set("_pragma", "busy_timeout(0)")
+	u.RawQuery = q.Encode()
+	db, err := sql.Open("sqlite", u.String())
+	if err != nil {
+		return nil, ErrUnavailable
+	}
+	return &FiscalSecretVault{db: db, aead: aead}, nil
+}
+
+func readOnlyVaultMaintenance(v *FiscalSecretVault, fn func(*sql.Tx) error) error {
+	tx, err := v.db.BeginTx(context.Background(), &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return fiscal.ErrConflict
+	}
+	defer tx.Rollback()
+	if _, err = v.checkKeyTx(context.Background(), tx); err != nil {
+		return fiscal.ErrConflict
+	}
+	return fn(tx)
+}
+
 // ListVaultOrphans is installation-local. Its public shape is IDs/dates only.
 // Historic backup keys not yet registered must be protected explicitly first.
 func ListVaultOrphans(vault, keyFile, directory string) ([]VaultOrphan, error) {
-	v, err := OpenCustomerFiscalVault(vault, keyFile)
+	v, err := openVaultMaintenance(vault, keyFile)
 	if err != nil {
 		return nil, err
 	}
 	defer v.Close()
-	if err = referenceKeyFile(v, keyFile); err != nil {
-		return nil, err
-	}
 	candidates, err := scanKeyDirectory(vault, directory)
 	if err != nil {
 		return nil, err
 	}
 	out := []VaultOrphan{}
-	err = sqlitewrite.Run(context.Background(), v.db, fiscal.ErrConflict, func(tx *sql.Tx) error {
-		if _, err := v.checkKeyTx(context.Background(), tx); err != nil {
-			return err
-		}
+	err = readOnlyVaultMaintenance(v, func(tx *sql.Tx) error {
 		out = out[:0]
 		for _, c := range candidates {
 			var n int
@@ -172,28 +224,23 @@ func ProtectVaultKey(vault, keyFile, backup string) error {
 	return referenceKeyFile(v, backup)
 }
 
-// Cleanup is explicit and local; references and file identity are rechecked
-// under the same writer lock used by rotation. Copies of referenced keys are protected.
+// Cleanup is explicit and local, using a read-only reference snapshot. In-flight
+// candidates are excluded; completed references are append-only, so cleanup
+// never competes for the rotation writer lock. Referenced copies stay protected.
 func RemoveVaultOrphan(vault, keyFile, directory, id, confirmation string) error {
 	if len(id) != 64 || confirmation != "DELETE "+id {
 		return fiscal.ErrInvalid
 	}
-	v, err := OpenCustomerFiscalVault(vault, keyFile)
+	v, err := openVaultMaintenance(vault, keyFile)
 	if err != nil {
 		return err
 	}
 	defer v.Close()
-	if err = referenceKeyFile(v, keyFile); err != nil {
-		return err
-	}
 	candidates, err := scanKeyDirectory(vault, directory)
 	if err != nil {
 		return err
 	}
-	return sqlitewrite.Run(context.Background(), v.db, fiscal.ErrConflict, func(tx *sql.Tx) error {
-		if _, err := v.checkKeyTx(context.Background(), tx); err != nil {
-			return err
-		}
+	return readOnlyVaultMaintenance(v, func(tx *sql.Tx) error {
 		for _, c := range candidates {
 			if c.public.ID != id {
 				continue

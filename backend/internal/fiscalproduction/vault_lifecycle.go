@@ -255,7 +255,8 @@ func CreateCustomerFiscalVault(path, keyFile string, display io.Writer) error {
 	defer clear(key)
 	encoded := []byte(base64.StdEncoding.EncodeToString(key))
 	defer clear(encoded)
-	if err := recordKeyCandidate(path, keyFile, encoded); err != nil {
+	candidate, err := recordKeyCandidateState(path, keyFile, encoded, true)
+	if err != nil {
 		return err
 	}
 	if err := privateNew(keyFile, append(encoded, '\n')); err != nil {
@@ -272,6 +273,8 @@ func CreateCustomerFiscalVault(path, keyFile string, display io.Writer) error {
 		return err
 	}
 	v.Close()
+	// Publish for explicit inspection only after its reference has committed.
+	_ = os.Rename(candidate, strings.TrimSuffix(candidate, ".pending")+".json")
 	_, err = display.Write(append(encoded, '\n'))
 	return err
 }
@@ -305,45 +308,47 @@ func RotateCustomerMasterKey(path, oldFile, newFile string, display io.Writer) e
 		return err
 	}
 	defer v.Close()
-	if err = referenceKeyFile(v, oldFile); err != nil {
+	oldKey, err := readMasterKey(oldFile)
+	if err != nil {
 		return err
 	}
+	defer clear(oldKey)
 	var output []byte
-	err = sqlitewrite.RunCleanup(context.Background(), v.db, fiscal.ErrConflict, func(tx *sql.Tx) (func(bool), error) {
+	var pending []string
+	err = sqlitewrite.Run(context.Background(), v.db, fiscal.ErrConflict, func(tx *sql.Tx) error {
 		encoded, err := rotateMasterKeyTx(v, tx)
 		if err != nil {
 			if errors.Is(err, errVaultKeyChanged) {
 				err = fiscal.ErrConflict
 			}
-			return nil, err
+			return err
 		}
 		defer clear(encoded)
-		if err = recordKeyCandidate(path, newFile, encoded); err != nil {
-			return nil, err
+		// Preserve the old reference in the SAME writer transaction, after the
+		// current key has been checked. A stale contender must only return conflict.
+		if err = referenceKeyTx(context.Background(), tx, oldKey); err != nil {
+			return err
 		}
-		if err = privateNew(newFile, encoded); err != nil {
-			return nil, err
-		}
-		info, err := os.Lstat(newFile)
+		candidate, err := recordKeyCandidateState(path, newFile, encoded, true)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		cleanup := func(committed bool) {
-			if !committed {
-				current, e := os.Lstat(newFile)
-				if e == nil && os.SameFile(info, current) {
-					_ = os.Remove(newFile)
-					if dir, e := os.Open(filepath.Dir(newFile)); e == nil {
-						_ = dir.Sync()
-						dir.Close()
-					}
-				}
-			}
+		pending = append(pending, candidate)
+		if err = privateNew(newFile, encoded); err != nil {
+			return err
 		}
 		clear(output)
 		output = append([]byte(nil), encoded...)
-		return cleanup, nil
+		return nil
 	})
+	// No file deletion or orphan scan belongs to rotation. Only after all writer
+	// attempts have ended may candidates become eligible for explicit inspection.
+	// A process crash leaves a protected .pending record, never a deletable key.
+	for _, candidate := range pending {
+		// If metadata publication fails, retain the protected pending record;
+		// never hide a successful rotation or remove its key.
+		_ = os.Rename(candidate, strings.TrimSuffix(candidate, ".pending")+".json")
+	}
 	defer clear(output)
 	if err != nil {
 		return err
