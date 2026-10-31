@@ -54,6 +54,9 @@ func (r *customerCredentialRecord) clear() { clear(r.Token); clear(r.CSC) }
 var customerOperation = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$`)
 
 func (r *ProviderRegistry) customerVault(a RequestContext) (*FiscalSecretVault, TenantFiscalConfiguration, error) {
+	return r.customerVaultMode(a, false)
+}
+func (r *ProviderRegistry) customerVaultMode(a RequestContext, immediate bool) (*FiscalSecretVault, TenantFiscalConfiguration, error) {
 	if r == nil {
 		return nil, TenantFiscalConfiguration{}, ErrUnavailable
 	}
@@ -63,7 +66,7 @@ func (r *ProviderRegistry) customerVault(a RequestContext) (*FiscalSecretVault, 
 	if !ok || !c.CustomerManaged || c.Provider != "external" || b.StoreID != a.Actor.StoreID || b.DeviceID != a.Device.DeviceID || a.Device.TenantID != a.Actor.TenantID || a.Device.StoreID != a.Actor.StoreID {
 		return nil, c, ErrUnavailable
 	}
-	v, err := openTenantVault(c, r.vaultPath)
+	v, err := openTenantVaultMode(c, r.vaultPath, immediate)
 	return v, c, err
 }
 func authorizeCustomerCredentials(ctx context.Context, a RequestContext) error {
@@ -91,13 +94,24 @@ func authorizeCustomerCredentials(ctx context.Context, a RequestContext) error {
 	return nil
 }
 func readCustomerRecord(ctx context.Context, v *FiscalSecretVault, tenant string) (customerCredentialRecord, []byte, error) {
+	return readCustomerRecordFrom(ctx, v, v.db, tenant)
+}
+
+type customerRecordReader interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+}
+
+func readCustomerRecordFrom(ctx context.Context, v *FiscalSecretVault, reader customerRecordReader, tenant string) (customerCredentialRecord, []byte, error) {
 	var record customerCredentialRecord
 	var sealed []byte
-	err := v.db.QueryRowContext(ctx, `SELECT ciphertext FROM fiscal_secret_vault WHERE tenant=? AND purpose='customer_provider'`, tenant).Scan(&sealed)
+	err := reader.QueryRowContext(ctx, `SELECT ciphertext FROM fiscal_secret_vault WHERE tenant=? AND purpose='customer_provider'`, tenant).Scan(&sealed)
 	if errors.Is(err, sql.ErrNoRows) {
 		return record, nil, nil
 	}
-	if err != nil || len(sealed) < v.aead.NonceSize()+v.aead.Overhead() || len(sealed) > 32768 {
+	if err != nil {
+		return record, nil, vaultDatabaseError("record read", err)
+	}
+	if len(sealed) < v.aead.NonceSize()+v.aead.Overhead() || len(sealed) > 32768 {
 		return record, nil, ErrUnavailable
 	}
 	aad, err := vaultAAD(tenant, "customer_provider")
@@ -168,12 +182,28 @@ func (r *ProviderRegistry) SaveCustomerCredentials(ctx context.Context, a Reques
 	if p.Revision != in.ProfileRevision || (p.Input.Model != "65" && p.Input.Model != "55") {
 		return CustomerCredentialStatus{}, fiscal.ErrConflict
 	}
-	v, c, err := r.customerVault(a)
+	return r.rotateCustomerCredentials(ctx, a, profile, in, p)
+}
+
+func (r *ProviderRegistry) saveCustomerCredentialAttempt(ctx context.Context, a RequestContext, profile string, in CustomerCredentialInput, p fiscal.Profile) (CustomerCredentialStatus, error) {
+	v, c, err := r.customerVaultMode(a, true)
 	if err != nil {
 		return CustomerCredentialStatus{}, err
 	}
 	defer v.Close()
-	old, sealed, err := readCustomerRecord(ctx, v, a.Actor.TenantID)
+	// DSN begins IMMEDIATE: acquire the writer before any credential/revision read.
+	tx, err := v.db.BeginTx(ctx, nil)
+	if err != nil {
+		return CustomerCredentialStatus{}, vaultDatabaseError("rotation begin", err)
+	}
+	defer tx.Rollback()
+	if _, err = v.checkKeyTx(ctx, tx); err != nil {
+		return CustomerCredentialStatus{}, vaultDatabaseError("rotation key", err)
+	}
+	if err = authorizeCustomerCredentials(ctx, a); err != nil {
+		return CustomerCredentialStatus{}, err
+	}
+	old, sealed, err := readCustomerRecordFrom(ctx, v, tx, a.Actor.TenantID)
 	if err != nil {
 		return CustomerCredentialStatus{}, err
 	}
@@ -213,17 +243,9 @@ func (r *ProviderRegistry) SaveCustomerCredentials(ctx context.Context, a Reques
 	aad, _ := vaultAAD(a.Actor.TenantID, "customer_provider")
 	nonce := make([]byte, v.aead.NonceSize())
 	if _, err = rand.Read(nonce); err != nil {
-		return CustomerCredentialStatus{}, ErrUnavailable
+		return CustomerCredentialStatus{}, vaultDatabaseError("rotation", err)
 	}
 	encrypted := v.aead.Seal(nonce, nonce, raw, aad)
-	tx, err := v.db.BeginTx(ctx, nil)
-	if err != nil {
-		return CustomerCredentialStatus{}, ErrUnavailable
-	}
-	defer tx.Rollback()
-	if _, err = v.checkKeyTx(ctx, tx); err != nil {
-		return CustomerCredentialStatus{}, ErrUnavailable
-	}
 	var result sql.Result
 	if sealed == nil {
 		result, err = tx.ExecContext(ctx, `INSERT INTO fiscal_secret_vault(tenant,purpose,ciphertext) VALUES (?,'customer_provider',?) ON CONFLICT(tenant,purpose) DO NOTHING`, a.Actor.TenantID, encrypted)
@@ -231,17 +253,17 @@ func (r *ProviderRegistry) SaveCustomerCredentials(ctx context.Context, a Reques
 		result, err = tx.ExecContext(ctx, `UPDATE fiscal_secret_vault SET ciphertext=? WHERE tenant=? AND purpose='customer_provider' AND ciphertext=?`, encrypted, a.Actor.TenantID, sealed)
 	}
 	if err != nil {
-		return CustomerCredentialStatus{}, ErrUnavailable
+		return CustomerCredentialStatus{}, vaultDatabaseError("rotation", err)
 	}
 	n, err := result.RowsAffected()
 	if err != nil {
-		return CustomerCredentialStatus{}, ErrUnavailable
+		return CustomerCredentialStatus{}, vaultDatabaseError("rotation", err)
 	}
 	if n != 1 {
 		return CustomerCredentialStatus{}, fiscal.ErrConflict
 	}
 	if err = tx.Commit(); err != nil {
-		return CustomerCredentialStatus{}, ErrUnavailable
+		return CustomerCredentialStatus{}, vaultDatabaseError("rotation", err)
 	}
 	return customerStatus(record), nil
 }

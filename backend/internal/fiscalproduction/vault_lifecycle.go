@@ -38,8 +38,8 @@ func openSealed(a cipher.AEAD, raw, aad []byte) ([]byte, error) {
 func (v *FiscalSecretVault) checkKeyTx(ctx context.Context, tx *sql.Tx) (string, error) {
 	var tenant string
 	var sealed []byte
-	if tx.QueryRowContext(ctx, `SELECT tenant,key_check FROM fiscal_vault_control WHERE id=1`).Scan(&tenant, &sealed) != nil {
-		return "", ErrUnavailable
+	if err := tx.QueryRowContext(ctx, `SELECT tenant,key_check FROM fiscal_vault_control WHERE id=1`).Scan(&tenant, &sealed); err != nil {
+		return "", vaultDatabaseError("key check", err)
 	}
 	raw, err := openSealed(v.aead, sealed, keyCheckAAD(tenant))
 	defer clear(raw)
@@ -158,6 +158,9 @@ func readMasterKey(path string) ([]byte, error) {
 // OpenCustomerFiscalVault never exports the key. A wrong/missing key fails even
 // on an empty vault, before a provider can start. Paths are trusted process input.
 func OpenCustomerFiscalVault(path, keyFile string) (*FiscalSecretVault, error) {
+	return openCustomerFiscalVaultMode(path, keyFile, false)
+}
+func openCustomerFiscalVaultMode(path, keyFile string, immediate bool) (*FiscalSecretVault, error) {
 	info, err := os.Lstat(path)
 	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 {
 		return nil, ErrUnavailable
@@ -167,7 +170,7 @@ func OpenCustomerFiscalVault(path, keyFile string) (*FiscalSecretVault, error) {
 		return nil, ErrUnavailable
 	}
 	defer clear(key)
-	return openVaultKey(path, key)
+	return openVaultKeyMode(path, key, immediate)
 }
 func privateNew(path string, raw []byte) error {
 	if !filepath.IsAbs(path) {

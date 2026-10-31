@@ -220,21 +220,24 @@ func LoadProviderRegistry(path string) (*ProviderRegistry, error) {
 }
 
 func openTenantVault(c TenantFiscalConfiguration, fallback string) (*FiscalSecretVault, error) {
+	return openTenantVaultMode(c, fallback, false)
+}
+func openTenantVaultMode(c TenantFiscalConfiguration, fallback string, immediate bool) (*FiscalSecretVault, error) {
 	var v *FiscalSecretVault
 	var err error
 	if c.VaultPath != "" && c.MasterKeyFile != "" {
-		v, err = OpenCustomerFiscalVault(c.VaultPath, c.MasterKeyFile)
+		v, err = openCustomerFiscalVaultMode(c.VaultPath, c.MasterKeyFile, immediate)
 	} else if c.VaultPath == "" && c.MasterKeyFile == "" {
-		v, err = OpenFiscalSecretVault(fallback)
+		v, err = openFiscalSecretVaultMode(fallback, immediate)
 	} else {
 		return nil, ErrUnavailable
 	}
 	if err != nil {
-		return nil, ErrUnavailable
+		return nil, vaultDatabaseError("tenant open", err)
 	}
 	if err = v.bindTenant(context.Background(), c.Binding.TenantID); err != nil {
 		v.Close()
-		return nil, ErrUnavailable
+		return nil, vaultDatabaseError("tenant bind", err)
 	}
 	return v, nil
 }

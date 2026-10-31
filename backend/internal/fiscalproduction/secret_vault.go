@@ -11,6 +11,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,14 +34,20 @@ type FiscalSecretVault struct {
 func (*FiscalSecretVault) String() string   { return "[fiscal secret vault]" }
 func (*FiscalSecretVault) GoString() string { return "[fiscal secret vault]" }
 func OpenFiscalSecretVault(path string) (*FiscalSecretVault, error) {
+	return openFiscalSecretVaultMode(path, false)
+}
+func openFiscalSecretVaultMode(path string, immediate bool) (*FiscalSecretVault, error) {
 	key, err := base64.StdEncoding.Strict().DecodeString(os.Getenv("FISCAL_MASTER_KEY"))
 	defer clear(key)
 	if err != nil {
 		return nil, ErrUnavailable
 	}
-	return openVaultKey(path, key)
+	return openVaultKeyMode(path, key, immediate)
 }
 func openVaultKey(path string, key []byte) (*FiscalSecretVault, error) {
+	return openVaultKeyMode(path, key, false)
+}
+func openVaultKeyMode(path string, key []byte, immediate bool) (*FiscalSecretVault, error) {
 	if len(key) != 32 || !filepath.IsAbs(path) || strings.ContainsAny(path, "?#") {
 		return nil, ErrUnavailable
 	}
@@ -71,18 +78,30 @@ func openVaultKey(path string, key []byte) (*FiscalSecretVault, error) {
 	if !privateReference(path) {
 		return nil, ErrUnavailable
 	}
-	db, err := sql.Open("sqlite", path)
+	dsn := path
+	if immediate {
+		u := url.URL{Scheme: "file", Path: path}
+		q := u.Query()
+		q.Set("_txlock", "immediate")
+		q.Set("_pragma", "busy_timeout(1000)")
+		u.RawQuery = q.Encode()
+		dsn = u.String()
+	}
+	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
-		return nil, ErrUnavailable
+		return nil, vaultDatabaseError("open", err)
+	}
+	if immediate {
+		db.SetMaxOpenConns(1)
 	}
 	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS fiscal_secret_vault (tenant TEXT NOT NULL, purpose TEXT NOT NULL, ciphertext BLOB NOT NULL, PRIMARY KEY (tenant,purpose))`); err != nil {
 		db.Close()
-		return nil, ErrUnavailable
+		return nil, vaultDatabaseError("open", err)
 	}
 	v := &FiscalSecretVault{db: db, aead: aead}
 	if err = v.initializeKeyControl(); err != nil {
 		db.Close()
-		return nil, ErrUnavailable
+		return nil, vaultDatabaseError("open", err)
 	}
 	return v, nil
 }
