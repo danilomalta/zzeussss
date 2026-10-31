@@ -1,4 +1,5 @@
 import {createRegistrationClient,prefillFiscalProfile} from '../../../../core/companyRegistration/client.mjs';
+import {FiscalNFe55} from './FiscalNFe55';
 import {FiscalProviderCredentials} from './FiscalProviderCredentials';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {useEnterprise89} from '../../../../core/enterprise89/context';
@@ -93,10 +94,11 @@ export function FiscalCustomer(){
    <label>{fw.series}<input required type="number" min={0} max={889} step={1} value={input.series} onChange={e=>{setInput({...input,series:Number(e.target.value)});setEdited(true);}}/></label>
   </div><button className="brand-primary" disabled={!edited}>{fw.save}</button><button type="button" className="brand-secondary" disabled={!edited} onClick={()=>{setInput(profile?{...profile.input,expected_revision:profile.revision}:null);setEdited(false);setGuide(null);setMessage('');}}>{fw.discard}</button></fieldset><button type="button" className="brand-secondary" disabled={busy||!current()||!states.includes(input.state)} onClick={()=>void requirements()}>{fw.ufGuide}</button></form>}
   {guide&&<section aria-label={fw.ufGuide}><h3>{guide.uf} · {guide.reference_date}</h3><p>{fw.dated}</p><dl>{(['issuer','developer','limits'] as const).map((key,i)=><div key={key}><dt>{fw[key]}</dt><dd>{[guide.issuer_requirements,guide.developer_requirements,guide.limitations][i]}</dd></div>)}</dl>{guide.sources.filter(s=>{try{const u=new URL(s.url);return u.protocol==='https:'&&u.hostname.endsWith('.gov.br');}catch{return false;}}).map((s,i)=><p key={i}><a href={s.url} target="_blank" rel="noreferrer">{s.title}</a></p>)}</section>}
-  {profile&&owner&&!edited&&profile.input.model==='65'&&<FiscalProviderCredentials key={[scope,profile.input.profile_id,profile.revision].join(':')} api={api} profile={profile} isCurrent={current} words={fw}/>}
+  {profile&&owner&&!edited&&['55','65'].includes(profile.input.model)&&<FiscalProviderCredentials key={[scope,profile.input.profile_id,profile.revision].join(':')} api={api} profile={profile} isCurrent={current} words={fw}/>}
+  {profile&&owner&&!edited&&profile.input.model==='55'&&<FiscalNFe55 key={[scope,profile.input.profile_id,profile.revision].join(':')} token={token} isCurrent={current} words={fw} locale={locale}/>}
   {profile&&<section aria-label={fw.onboardingTitle}><h3>{fw.onboardingTitle}</h3><p>{fw.onboardingIntro}</p><button type="button" className="brand-secondary" disabled={blocked||edited} onClick={()=>void diagnose()}>{fw.onboardingCheck}</button>
    {diagnostic&&!edited&&diagnostic.profile_revision===profile.revision&&<div role="status"><p>{fw.onboardingConfiguration}: {fw[diagnostic.configuration_valid?'yes':'no']}</p>{diagnostic.provider_configuration&&<dl>
-    <div><dt>{fw.onboardingProvider}</dt><dd>Focus NFC-e</dd></div>
+    <div><dt>{fw.onboardingProvider}</dt><dd>Focus NF-e / NFC-e</dd></div>
     <div><dt>{fw.environment}</dt><dd>{fw.homologation}</dd></div>
     <div><dt>{fw.onboardingCertificateType}</dt><dd>{diagnostic.provider_configuration.certificate_type}</dd></div>
     <div><dt>{fw.onboardingTokenPresent}</dt><dd>{fw[diagnostic.provider_configuration.token_present?'yes':'no']}</dd></div>

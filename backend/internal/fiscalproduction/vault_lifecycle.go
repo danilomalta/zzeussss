@@ -110,7 +110,8 @@ func (v *FiscalSecretVault) initializeKeyControlTx(ctx context.Context, tx *sql.
 	if _, err = v.checkKeyTx(ctx, tx); err != nil {
 		return err
 	}
-	return nil
+	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS fiscal_vault_key_references(digest TEXT PRIMARY KEY,created_at TEXT NOT NULL)`)
+	return err
 }
 func (v *FiscalSecretVault) bindTenant(ctx context.Context, tenant string) error {
 	if tenant == "" {
@@ -224,6 +225,29 @@ func CreateCustomerFiscalVault(path, keyFile string, display io.Writer) error {
 			return ErrUnavailable
 		}
 	}
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	if err != nil {
+		return fiscal.ErrConflict
+	}
+	ownedDB, err := file.Stat()
+	file.Close()
+	if err != nil {
+		return ErrUnavailable
+	}
+	complete := false
+	var ownedKey os.FileInfo
+	defer func() {
+		if !complete {
+			if info, e := os.Lstat(path); e == nil && os.SameFile(ownedDB, info) {
+				_ = os.Remove(path)
+			}
+			if ownedKey != nil {
+				if info, e := os.Lstat(keyFile); e == nil && os.SameFile(ownedKey, info) {
+					_ = os.Remove(keyFile)
+				}
+			}
+		}
+	}()
 	key := make([]byte, 32)
 	if _, err := rand.Read(key); err != nil {
 		return ErrUnavailable
@@ -231,11 +255,20 @@ func CreateCustomerFiscalVault(path, keyFile string, display io.Writer) error {
 	defer clear(key)
 	encoded := []byte(base64.StdEncoding.EncodeToString(key))
 	defer clear(encoded)
+	if err := recordKeyCandidate(path, keyFile, encoded); err != nil {
+		return err
+	}
 	if err := privateNew(keyFile, append(encoded, '\n')); err != nil {
 		return err
 	}
+	ownedKey, _ = os.Lstat(keyFile)
 	v, err := openVaultKey(path, key)
 	if err != nil {
+		return err
+	}
+	complete = true
+	if err = referenceKeyFile(v, keyFile); err != nil {
+		v.Close()
 		return err
 	}
 	v.Close()
@@ -272,6 +305,9 @@ func RotateCustomerMasterKey(path, oldFile, newFile string, display io.Writer) e
 		return err
 	}
 	defer v.Close()
+	if err = referenceKeyFile(v, oldFile); err != nil {
+		return err
+	}
 	var output []byte
 	err = sqlitewrite.RunCleanup(context.Background(), v.db, fiscal.ErrConflict, func(tx *sql.Tx) (func(bool), error) {
 		encoded, err := rotateMasterKeyTx(v, tx)
@@ -282,6 +318,9 @@ func RotateCustomerMasterKey(path, oldFile, newFile string, display io.Writer) e
 			return nil, err
 		}
 		defer clear(encoded)
+		if err = recordKeyCandidate(path, newFile, encoded); err != nil {
+			return nil, err
+		}
 		if err = privateNew(newFile, encoded); err != nil {
 			return nil, err
 		}
@@ -383,6 +422,9 @@ func rotateMasterKeyTx(v *FiscalSecretVault, tx *sql.Tx) ([]byte, error) {
 	}
 	if _, err = tx.ExecContext(ctx, `UPDATE fiscal_vault_control SET key_check=? WHERE id=1`, marker); err != nil {
 		return nil, ErrUnavailable
+	}
+	if err = referenceKeyTx(ctx, tx, key); err != nil {
+		return nil, err
 	}
 	return append([]byte(nil), encoded...), nil
 }

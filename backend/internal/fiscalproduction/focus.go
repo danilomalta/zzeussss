@@ -186,6 +186,16 @@ func (p *FocusProvider) claim(ctx context.Context, a RequestContext, sale, ref, 
 	if barriers != 0 {
 		return false, fiscal.ErrRestored
 	}
+	if p.documentModel() == "55" {
+		var role string
+		if err := tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=? AND status='active'`, a.Actor.TenantID, a.Actor.IdentityID).Scan(&role); err != nil {
+			return false, err
+		}
+		if role != "owner" {
+			return false, identity.ErrDenied
+		}
+	}
+
 	if permission == identity.CancelSale {
 		var role string
 		if err = tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=? AND status='active'`, a.Actor.TenantID, a.Actor.IdentityID).Scan(&role); err != nil {

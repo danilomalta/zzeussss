@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -28,10 +29,27 @@ func vaultCommand(args []string, out io.Writer, terminal func() (io.WriteCloser,
 	key := fs.String("key-file", "", "customer private key file")
 	dest := fs.String("out", "", "new customer key backup/file")
 	locale := fs.String("lang", "pt-BR", "language")
+	directory := fs.String("key-directory", "", "customer dedicated key directory")
+	id := fs.String("id", "", "opaque orphan identifier")
+	confirmation := fs.String("confirmation", "", "explicit DELETE followed by orphan ID")
 	confirmed := fs.Bool("backup-confirmed", false, "customer confirms old key backup")
 	if fs.Parse(args[1:]) != nil || fs.NArg() != 0 || *key == "" {
 		return errors.New("invalid customer vault arguments")
 	}
+	if args[0] == "vault-orphans" {
+		items, err := fiscalproduction.ListVaultOrphans(*vault, *key, *directory)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(out).Encode(items)
+	}
+	if args[0] == "vault-orphan-remove" {
+		return fiscalproduction.RemoveVaultOrphan(*vault, *key, *directory, *id, *confirmation)
+	}
+	if args[0] == "vault-protect-key" {
+		return fiscalproduction.ProtectVaultKey(*vault, *key, *dest)
+	}
+
 	words := map[string][2]string{
 		"pt-BR": {"Chave privada exibida uma vez neste terminal. Perder a chave perde os segredos. O provedor não pode recuperar. Faça seu backup privado.", "Operação local concluída. Nenhuma chave foi enviada ao provedor."},
 		"en":    {"Private key shown once in this terminal. Losing the key loses the secrets. The vendor cannot recover it. Make your private backup.", "Local operation completed. No key was sent to the vendor."},
