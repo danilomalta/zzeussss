@@ -149,3 +149,29 @@ func (s *Server) fiscalNFe55DANFE(c *fiber.Ctx) error {
 	c.Type("pdf")
 	return c.Send(data)
 }
+
+func (s *Server) fiscalNFe55Correction(c *fiber.Ctx) error {
+	if !fiscalWrite(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	a := s.productionContext(c)
+	provider, _, err := s.fiscalProviders.CustomerNFe55Provider(c.UserContext(), a)
+	if err != nil {
+		return nfe55Failure(c, err)
+	}
+	var input fiscalproduction.CorrectionInput
+	if fiscalcore.DecodeInput(c.Body(), &input) != nil {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	p, ok := provider.(interface {
+		Correct(context.Context, fiscalproduction.RequestContext, fiscalproduction.DocumentRequest, fiscalproduction.CorrectionInput) (fiscalproduction.CorrectionResult, error)
+	})
+	if !ok {
+		return nfe55Failure(c, fiscalproduction.ErrUnavailable)
+	}
+	out, err := p.Correct(c.UserContext(), a, fiscalproduction.DocumentRequest{SaleID: c.Params("id"), Model: "55", Environment: 2}, input)
+	if err != nil {
+		return nfe55Failure(c, err)
+	}
+	return c.JSON(out)
+}

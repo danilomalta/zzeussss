@@ -145,5 +145,13 @@
   "nfeFreight_2": "Terceros",
   "nfeFreight_3": "Transporte propio del remitente",
   "nfeFreight_4": "Transporte propio del destinatario",
-  "taxAccountantUnapproved": "HOMOLOGACIÓN: clasificación aún sin aprobación contable comprobada. Se exigirá aprobación para producción; producción sigue bloqueada."
+  "taxAccountantUnapproved": "HOMOLOGACIÓN: clasificación aún sin aprobación contable comprobada. Se exigirá aprobación para producción; producción sigue bloqueada.",
+  "cceTitle": "Carta de corrección — homologación",
+  "cceLimits": "No modifica impuestos, identidad de las partes ni fechas. Un intento por nota; resultado incierto exige conciliación en Focus, sin reenvío automático.",
+  "cceText": "Corrección",
+  "cceConfirm": "Confirmo que está permitido y no modifica impuestos, partes ni fechas.",
+  "cceSend": "Enviar CC-e",
+  "correction_authorized_homologation": "CC-e registrada en homologación; no modifica venta, inventario ni caja.",
+  "correction_failed": "CC-e rechazada; consulte el motivo y Focus.",
+  "correction_reconciliation_required": "CC-e pendiente de conciliación. No envíe otro intento."
 }

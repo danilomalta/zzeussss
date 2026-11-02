@@ -322,6 +322,112 @@
           }
         }
       }
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/correction": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "customerNFe55Correction",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "responses": {
+          "200": {
+            "description": "Separate correction status; no sale, stock or payment effect",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "state"
+                  ],
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "correction_authorized_homologation",
+                        "correction_failed",
+                        "correction_reconciliation_required"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "number": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 20
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown fields, query input or unconfirmed cancellation. No personal data echoed."
+          },
+          "401": {
+            "description": "Missing, expired or revoked human session."
+          },
+          "403": {
+            "description": "Owner role, permissions or active fiscal module denied."
+          },
+          "404": {
+            "description": "Sale/profile not found in authenticated scope."
+          },
+          "409": {
+            "description": "Production blocked, A3 unsupported, incomplete input, unmapped taxes, provider unavailable or revision conflict."
+          },
+          "500": {
+            "description": "Storage unavailable; no private inputs returned."
+          },
+          "503": {
+            "description": "Fiscal contract unavailable."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "correction",
+                  "confirmed_allowed_fields"
+                ],
+                "properties": {
+                  "correction": {
+                    "type": "string",
+                    "minLength": 15,
+                    "maxLength": 1000
+                  },
+                  "confirmed_allowed_fields": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Owner-only homologation CC-e; separate from sale and cancellation; uncertain outcome never retries"
+      }
     }
   },
   "components": {

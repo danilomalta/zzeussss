@@ -1,3 +1,4 @@
+import {FiscalCorrection} from './FiscalCorrection';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {createNFe55Client,NFe55Error} from '../../../../core/fiscalCustomer/nfe55.mjs';
 import type {NFe55Preview,NFe55Status} from '../../../../core/fiscalCustomer/nfe55.mjs';
@@ -43,6 +44,7 @@ export function FiscalNFe55({token,isCurrent,words:fw,locale}:Props){
  {status&&<section role="status"><h4>{fw[states[status.state]]||fw.nfePending}</h4>{status.message&&<p>{status.message}</p>}{status.error_code&&<p>{fw['nfeError_'+status.error_code]||fw.nfeFailure}</p>}</section>}
  <button type="button" disabled={disabled} onClick={()=>void action('query')}>{fw.nfeQuery}</button>
  <button type="button" disabled={disabled||status?.state!=='authorized_homologation'} onClick={()=>void action('danfe')}>{fw.nfeDanfe}</button>
+ {status?.state==='authorized_homologation'&&<FiscalCorrection token={token} isCurrent={isCurrent} sale={preview.sale_id} words={fw}/>}
  {['authorized_homologation','cancellation_failed'].includes(status?.state||'')&&<form onSubmit={e=>{e.preventDefault();void action('cancel');}}><fieldset disabled={disabled}><legend>{fw.nfeCancel}</legend><p>{fw.nfeCancelOnly}</p><label>{fw.nfeReason}<textarea required minLength={15} maxLength={255} value={reason} onChange={e=>setReason(e.target.value)}/></label><label><input type="checkbox" required checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>{fw.nfeConfirm}</label><button disabled={!confirmed}>{fw.nfeCancel}</button></fieldset></form>}
  </>}
  </section>;

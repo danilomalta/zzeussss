@@ -145,5 +145,13 @@
   "nfeFreight_2": "Terceiros",
   "nfeFreight_3": "Próprio do remetente",
   "nfeFreight_4": "Próprio do destinatário",
-  "taxAccountantUnapproved": "HOMOLOGAÇÃO: enquadramento ainda não comprovado como aprovado por contador. A aprovação será exigida para habilitar produção; produção permanece bloqueada."
+  "taxAccountantUnapproved": "HOMOLOGAÇÃO: enquadramento ainda não comprovado como aprovado por contador. A aprovação será exigida para habilitar produção; produção permanece bloqueada.",
+  "cceTitle": "Carta de correção — homologação",
+  "cceLimits": "Não corrige imposto, mudança do remetente/destinatário ou data. Uma tentativa por nota neste fluxo; resultado incerto exige conciliação na Focus, sem reenvio automático.",
+  "cceText": "Correção",
+  "cceConfirm": "Confirmo que a alteração é permitida e não muda impostos, partes ou datas.",
+  "cceSend": "Enviar CC-e",
+  "correction_authorized_homologation": "CC-e registrada em homologação; não altera venda, estoque ou caixa.",
+  "correction_failed": "CC-e recusada; consulte o motivo e a Focus.",
+  "correction_reconciliation_required": "CC-e pendente de conciliação. Não envie outra tentativa."
 }

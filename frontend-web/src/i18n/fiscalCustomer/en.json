@@ -145,5 +145,13 @@
   "nfeFreight_2": "Third party",
   "nfeFreight_3": "Sender own transport",
   "nfeFreight_4": "Recipient own transport",
-  "taxAccountantUnapproved": "HOMOLOGATION: classification is not yet evidenced as accountant-approved. Approval will be required to enable production; production remains blocked."
+  "taxAccountantUnapproved": "HOMOLOGATION: classification is not yet evidenced as accountant-approved. Approval will be required to enable production; production remains blocked.",
+  "cceTitle": "Correction letter — homologation",
+  "cceLimits": "Cannot change tax, issuer/recipient identity or dates. One attempt per invoice in this flow; uncertain results require Focus reconciliation, never automatic resend.",
+  "cceText": "Correction",
+  "cceConfirm": "I confirm this is permitted and does not change tax, parties or dates.",
+  "cceSend": "Send CC-e",
+  "correction_authorized_homologation": "CC-e recorded in homologation; sale, stock and cash are unchanged.",
+  "correction_failed": "CC-e rejected; review the reason and Focus.",
+  "correction_reconciliation_required": "CC-e requires reconciliation. Do not submit another attempt."
 }

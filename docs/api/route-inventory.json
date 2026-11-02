@@ -3969,6 +3969,13 @@
       "path": "/local/v1/company/registration",
       "authentication": "session",
       "source": "backend/internal/localapi/server.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/sales/:id/correction",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
     }
   ]
 }

@@ -145,5 +145,13 @@
   "nfeFreight_2": "第三方",
   "nfeFreight_3": "发货方自运",
   "nfeFreight_4": "收货方自运",
-  "taxAccountantUnapproved": "测试环境：税务分类尚无会计师批准证明。启用生产环境将要求该批准；生产环境仍被阻止。"
+  "taxAccountantUnapproved": "测试环境：税务分类尚无会计师批准证明。启用生产环境将要求该批准；生产环境仍被阻止。",
+  "cceTitle": "更正函 — 测试环境",
+  "cceLimits": "不得修改税额、交易方身份或日期。此流程每张发票仅一次尝试；结果不确定时须在 Focus 核对，不自动重发。",
+  "cceText": "更正内容",
+  "cceConfirm": "我确认允许此更正且不改变税额、交易方或日期。",
+  "cceSend": "发送更正函",
+  "correction_authorized_homologation": "已记录测试环境更正函；不改变销售、库存或现金。",
+  "correction_failed": "更正函被拒绝；请检查原因和 Focus。",
+  "correction_reconciliation_required": "更正函待核对，请勿再次提交。"
 }

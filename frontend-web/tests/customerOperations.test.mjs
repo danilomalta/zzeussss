@@ -16,3 +16,7 @@ test('local diagnostics have five complete dictionaries and no transmission or p
  const source=fs.readFileSync(new URL('../src/modules/tenant/pages/CustomerOperations.tsx',import.meta.url),'utf8');
  assert.doesNotMatch(source,/localStorage|sessionStorage|fetch\(|XMLHttpRequest|sendBeacon|console\./);assert.match(source,/generation.current/);assert.match(source,/\[sessionKey\]/);
 });
+test('fiscal corrections stay in memory and have an explicit confirmation',()=>{
+ const source=fs.readFileSync(new URL('../src/modules/tenant/pages/enterprise89/FiscalCorrection.tsx',import.meta.url),'utf8');
+ assert.doesNotMatch(source,/localStorage|sessionStorage|console\.|sendBeacon/);assert.match(source,/confirmed_allowed_fields/);assert.match(source,/generation.current/);
+});
