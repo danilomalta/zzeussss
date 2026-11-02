@@ -83,5 +83,6 @@
   "checkoutFiscalDemo": "Demonstração: nenhuma emissão fiscal real.",
   "checkoutFiscalCancelled": "Nota fiscal cancelada",
   "checkoutFiscalCancellationFailed": "Erro no cancelamento da nota fiscal",
-  "checkoutFiscalContingencyPending": "Contingência informada pela Focus: ainda não efetivada na SEFAZ. Consulte a mesma referência; não emita outra nota."
+  "checkoutFiscalContingencyPending": "Contingência informada pela Focus: ainda não efetivada na SEFAZ. Consulte a mesma referência; não emita outra nota.",
+  "checkoutFiscalAccountantUnapproved": "HOMOLOGAÇÃO: enquadramento ainda não comprovado como aprovado por contador. A aprovação será exigida para habilitar produção; produção permanece bloqueada."
 }

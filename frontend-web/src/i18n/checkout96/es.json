@@ -83,5 +83,6 @@
   "checkoutFiscalDemo": "Demostración: sin emisión fiscal real.",
   "checkoutFiscalCancelled": "Documento fiscal cancelado",
   "checkoutFiscalCancellationFailed": "Error al cancelar el documento fiscal",
-  "checkoutFiscalContingencyPending": "Focus informó contingencia: aún sin confirmar en SEFAZ. Consulte la misma referencia; no emita otra nota."
+  "checkoutFiscalContingencyPending": "Focus informó contingencia: aún sin confirmar en SEFAZ. Consulte la misma referencia; no emita otra nota.",
+  "checkoutFiscalAccountantUnapproved": "HOMOLOGACIÓN: clasificación aún sin aprobación contable comprobada. Se exigirá aprobación para producción; producción sigue bloqueada."
 }

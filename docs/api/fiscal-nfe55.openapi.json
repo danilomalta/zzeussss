@@ -693,6 +693,10 @@
           },
           "status": {
             "$ref": "#/components/schemas/FiscalStatus"
+          },
+          "accountant_approved": {
+            "type": "boolean",
+            "default": false
           }
         },
         "required": [

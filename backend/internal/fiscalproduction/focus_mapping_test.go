@@ -49,3 +49,14 @@ func TestFocusMappingOptionalConsumerAndConflict(t *testing.T) {
 		t.Fatal("unexpected secret field")
 	}
 }
+
+func TestFocusDocumentedSTFieldsPreserveFrozenNumbers(t *testing.T) {
+	nodes := []fiscalcore.TaxNode{{Name: "ICMS", Children: []fiscalcore.TaxNode{{Name: "CST", Value: "10"}, {Name: "modBCST", Value: "4"}, {Name: "pMVAST", Value: "40.0000"}, {Name: "pRedBCST", Value: "0.0000"}, {Name: "vBCST", Value: "140.00"}}}, {Name: "PIS", Children: []fiscalcore.TaxNode{{Name: "CST", Value: "07"}}}, {Name: "COFINS", Children: []fiscalcore.TaxNode{{Name: "CST", Value: "07"}}}}
+	dst := map[string]any{}
+	if err := focusTaxFields(dst, nodes); err != nil {
+		t.Fatal(err)
+	}
+	if dst["icms_base_calculo_st"] != "140.00" || dst["icms_margem_valor_adicionado_st"] != "40.0000" {
+		t.Fatal("frozen amount changed")
+	}
+}

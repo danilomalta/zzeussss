@@ -21,13 +21,14 @@ const CheckoutCancelled = "cancelled_homologation"
 const CheckoutCancellationFailed = "cancellation_failed"
 
 type CheckoutStatus struct {
-	Message      string `json:"message,omitempty"`
-	CanReprocess bool   `json:"can_reprocess"`
-	State        string `json:"state"`
-	IntentID     string `json:"intent_id,omitempty"`
-	OperationID  string `json:"operation_id"`
-	ErrorCode    string `json:"error_code,omitempty"`
-	Key          string `json:"key,omitempty"`
+	AccountantApproved *bool  `json:"accountant_approved,omitempty"`
+	Message            string `json:"message,omitempty"`
+	CanReprocess       bool   `json:"can_reprocess"`
+	State              string `json:"state"`
+	IntentID           string `json:"intent_id,omitempty"`
+	OperationID        string `json:"operation_id"`
+	ErrorCode          string `json:"error_code,omitempty"`
+	Key                string `json:"key,omitempty"`
 }
 
 // RecordCheckoutStatus appends an audit/status event to the existing durable
