@@ -47,6 +47,16 @@ export function createFiscalCustomer({token, isCurrent, fetcher = fetch}) {
     return value;
   }
   return {
+    async list(after = '', limit = 20) {
+      if ((after !== '' && !id(after)) || !Number.isSafeInteger(limit) || limit < 1 || limit > 50) throw new FiscalCustomerError('invalid');
+      const value = await request('profiles?limit=' + limit + (after ? '&after=' + encodeURIComponent(after) : ''));
+      if (Object.keys(value).sort().join() !== ['has_more','next_after','rows'].join() || !Array.isArray(value.rows) || value.rows.length > limit ||
+          typeof value.has_more !== 'boolean' || typeof value.next_after !== 'string') throw new FiscalCustomerError('response');
+      let previous = after;
+      for (const row of value.rows) { validateProfile(row); if (row.input.profile_id <= previous) throw new FiscalCustomerError('response'); previous = row.input.profile_id; }
+      if (value.has_more ? value.rows.length !== limit || value.next_after !== previous : value.next_after !== '') throw new FiscalCustomerError('response');
+      return value;
+    },
     async providerStatus(profileID) {
       if(!id(profileID))throw new FiscalCustomerError('invalid');
       return validateCredentials(await request('onboarding/'+encodeURIComponent(profileID)+'/provider'),profileID);

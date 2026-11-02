@@ -126,5 +126,9 @@
   "nfeError_provider_unavailable": "Configurez Focus pour cette entreprise avec profil NF-e 55 et jeton privé.",
   "nfeError_network": "Réponse incertaine. Consultez la même vente sans renvoyer l’émission.",
   "nfeError_session": "Session ou contexte modifié. Reconnectez-vous.",
-  "nfeError_focus_request_unsupported": "Groupe fiscal non mappé ou calcul fiscal absent. Corrigez la configuration ; aucune taxe inventée."
+  "nfeError_focus_request_unsupported": "Groupe fiscal non mappé ou calcul fiscal absent. Corrigez la configuration ; aucune taxe inventée.",
+  "profileList": "Rechercher les profils enregistrés",
+  "profileListHint": "Profils de cette entreprise et de ce magasin. Un enregistrement ne prouve pas l’autorisation officielle.",
+  "profileListEmpty": "Aucun profil sur cette page.",
+  "profileListNext": "Page suivante"
 }

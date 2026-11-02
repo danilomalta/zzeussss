@@ -126,5 +126,9 @@
   "nfeError_provider_unavailable": "Configure Focus para esta empresa con perfil NF-e 55 y token privado.",
   "nfeError_network": "Respuesta incierta. Consulte la misma venta; no reenvíe la emisión.",
   "nfeError_session": "Sesión o contexto cambiado. Inicie sesión de nuevo.",
-  "nfeError_focus_request_unsupported": "Grupo tributario sin mapeo o cotización ausente. Corrija la configuración; no se inventó ningún impuesto."
+  "nfeError_focus_request_unsupported": "Grupo tributario sin mapeo o cotización ausente. Corrija la configuración; no se inventó ningún impuesto.",
+  "profileList": "Buscar perfiles guardados",
+  "profileListHint": "Perfiles de esta empresa y tienda. El registro guardado no acredita autorización oficial.",
+  "profileListEmpty": "No hay perfiles en esta página.",
+  "profileListNext": "Página siguiente"
 }
