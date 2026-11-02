@@ -77,7 +77,7 @@ func Create(ctx context.Context, db *sql.DB, device identity.DeviceContext, key 
 	if err != nil {
 		return err
 	}
-	dir, err := os.MkdirTemp("", "titan-backup-")
+	dir, err := os.MkdirTemp(filepath.Dir(destination), ".titan-backup-")
 	if err != nil {
 		return err
 	}
@@ -129,6 +129,10 @@ func Restore(ctx context.Context, archive, destination string, device identity.D
 }
 
 func withSnapshot(ctx context.Context, archive string, device identity.DeviceContext, key []byte, destination string, report *Inspection) (bool, error) {
+	return withSnapshotAt(ctx, archive, device, key, destination, report, "", false)
+}
+
+func withSnapshotAt(ctx context.Context, archive string, device identity.DeviceContext, key []byte, destination string, report *Inspection, tempRoot string, allTables bool) (bool, error) {
 	crypt, err := aead(key)
 	if err != nil {
 		return false, err
@@ -141,7 +145,7 @@ func withSnapshot(ctx context.Context, archive string, device identity.DeviceCon
 	if err != nil || len(body) > MaxBytes {
 		return false, ErrBackup
 	}
-	dir, err := os.MkdirTemp("", "titan-restore-")
+	dir, err := os.MkdirTemp(tempRoot, "titan-restore-")
 	if err != nil {
 		return false, err
 	}
@@ -154,7 +158,13 @@ func withSnapshot(ctx context.Context, archive string, device identity.DeviceCon
 		return false, err
 	}
 	if report != nil {
-		result, err := inspectSnapshot(ctx, snapshot, sealed)
+		var result Inspection
+		var err error
+		if allTables {
+			result, err = inspectBusinessSnapshot(ctx, snapshot)
+		} else {
+			result, err = inspectSnapshot(ctx, snapshot, sealed)
+		}
 		if err != nil {
 			return false, err
 		}

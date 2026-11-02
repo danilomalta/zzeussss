@@ -41,6 +41,7 @@ Uso:
   titan-backup verify --key CHAVE --archive BACKUP --tenant EMPRESA --store LOJA --device APARELHO
   titan-backup inspect --key CHAVE --archive BACKUP --tenant EMPRESA --store LOJA --device APARELHO
   titan-backup restore --key CHAVE --archive BACKUP --tenant EMPRESA --store LOJA --device APARELHO --out BANCO_NOVO
+  titan-backup restore-test --key CHAVE --archive BACKUP --tenant EMPRESA --store LOJA --device APARELHO --out DIRETORIO_PRIVADO
   titan-backup watch --key CHAVE --db BANCO --station ESTACAO --out DIRETORIO_PRIVADO --interval 1h
 
 inspect autentica o backup e retorna JSON: contagens e hashes do perfil pilot_cash_v1.
@@ -68,12 +69,12 @@ Snapshot máximo: 128 MiB. Preserve estação e chave em local seguro separado d
 		if command == "watch" {
 			interval = fs.Duration("interval", time.Hour, "backup interval, 1m to 24h")
 		}
-	case "verify", "restore", "inspect":
+	case "verify", "restore", "inspect", "restore-test":
 		archive = fs.String("archive", "", "encrypted backup file")
 		tenant = fs.String("tenant", "", "expected tenant")
 		store = fs.String("store", "", "expected store")
 		device = fs.String("device", "", "expected device")
-		if command == "restore" {
+		if command == "restore" || command == "restore-test" {
 			destination = fs.String("out", "", "new database path")
 		}
 	default:
@@ -150,6 +151,13 @@ Snapshot máximo: 128 MiB. Preserve estação e chave em local seguro separado d
 			return errors.New("missing flags")
 		}
 		scope := identity.DeviceContext{TenantID: *tenant, StoreID: *store, DeviceID: *device}
+		if command == "restore-test" {
+			report, e := backup.TestRestore(ctx, *archive, *destination, scope, key)
+			if e != nil {
+				return e
+			}
+			return json.NewEncoder(out).Encode(report)
+		}
 		if command == "inspect" {
 			report, e := backup.Inspect(ctx, *archive, scope, key)
 			if e != nil {
