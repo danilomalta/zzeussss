@@ -41,13 +41,12 @@ func (r *ProviderRegistry) CustomerNFe55Provider(ctx context.Context, a RequestC
 }
 
 type CustomerNFePreview struct {
-	AccountantApproved bool                  `json:"accountant_approved"`
-	SaleID             string                `json:"sale_id"`
-	IntentID           string                `json:"intent_id"`
-	TotalCents         int64                 `json:"total_cents"`
-	Items              []fiscal.SaleItem     `json:"items"`
-	MappingSupported   bool                  `json:"mapping_supported"`
-	Status             fiscal.CheckoutStatus `json:"status"`
+	SaleID           string                `json:"sale_id"`
+	IntentID         string                `json:"intent_id"`
+	TotalCents       int64                 `json:"total_cents"`
+	Items            []fiscal.SaleItem     `json:"items"`
+	MappingSupported bool                  `json:"mapping_supported"`
+	Status           fiscal.CheckoutStatus `json:"status"`
 }
 
 func (r *ProviderRegistry) PreviewCustomerNFe55(ctx context.Context, a RequestContext, sale string) (CustomerNFePreview, error) {
@@ -65,7 +64,6 @@ func (r *ProviderRegistry) PreviewCustomerNFe55(ctx context.Context, a RequestCo
 			out.MappingSupported = false
 		}
 	}
-	out.AccountantApproved = accountantApprovedIntent(ctx, a, intent)
 	var raw string
 	// No original recipient request is returned, saved to a client, or logged.
 	err = a.DB.QueryRowContext(ctx, `SELECT payload_json FROM outbox WHERE tenant_id=? AND store_id=? AND device_id=? AND aggregate_id=? AND event_type='checkout.fiscal_status' ORDER BY created_at DESC,event_id DESC LIMIT 1`, a.Actor.TenantID, a.Actor.StoreID, a.Device.DeviceID, sale).Scan(&raw)
@@ -78,27 +76,4 @@ func (r *ProviderRegistry) PreviewCustomerNFe55(ctx context.Context, a RequestCo
 		}
 	}
 	return out, nil
-}
-
-// Approval follows the frozen policy revision, never a newer publication.
-// Missing legacy evidence is unapproved; an owner's publication alone is not an
-// accountant's approval. No rule is recalculated during emission or recovery.
-func accountantApprovedIntent(ctx context.Context, a RequestContext, intent fiscal.Intent) bool {
-	if len(intent.Snapshot.Items) == 0 {
-		return false
-	}
-	for _, item := range intent.Snapshot.Items {
-		if item.Tax == nil {
-			return false
-		}
-		q, e := fiscal.ReadTaxQuote(ctx, a.DB, a.Actor, a.Device, item.Tax.QuoteOperationID)
-		if e != nil {
-			return false
-		}
-		policy, e := fiscal.ReadTaxPolicy(ctx, a.DB, a.Actor, a.Device, q.Input.PolicyID, q.Input.PolicyRevision)
-		if e != nil || !policy.Input.AccountantApproved() {
-			return false
-		}
-	}
-	return true
 }

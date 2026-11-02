@@ -393,11 +393,7 @@ func (p *FocusProvider) save(ctx context.Context, a RequestContext, sale, intent
 	out.IntentID = intent
 	durable, cancel := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
 	defer cancel()
-	approved := false
-	if saved, e := fiscal.ReadIntent(durable, a.DB, a.Actor, a.Device, intent, false); e == nil {
-		approved = accountantApprovedIntent(durable, a, saved)
-	}
-	if e := fiscal.RecordCheckoutStatus(durable, a.DB, a.Actor, a.Device, sale, fiscal.CheckoutStatus{AccountantApproved: &approved, State: out.State, OperationID: out.OperationID, IntentID: intent, Key: out.Key, ErrorCode: out.ErrorCode, Message: out.Message}); e != nil {
+	if e := fiscal.RecordCheckoutStatus(durable, a.DB, a.Actor, a.Device, sale, fiscal.CheckoutStatus{State: out.State, OperationID: out.OperationID, IntentID: intent, Key: out.Key, ErrorCode: out.ErrorCode, Message: out.Message}); e != nil {
 		out.ErrorCode = "fiscal_status_persistence_failed"
 		return out, ErrUnavailable
 	}

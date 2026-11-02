@@ -9,7 +9,7 @@ export function checkoutFiscalView(plan,checkout){
  if(!c||c.sale_id!==checkout||!id(c.operation_id)||!cents(c.received_cents)||!id(f.operation_id))throw Error('invalidReply');
  if(f.state==='authorized_homologation'){
   if(!id(f.intent_id)||!/^[0-9A-Z]{44}$/.test(f.key||''))throw Error('invalidReply');
-  return {state:'authorized',...(f.accountant_approved===true?{accountantApproved:true}:{}),plan};
+  return {state:'authorized',plan};
  }
  if(f.state==='cancelled_homologation'||f.state==='cancellation_failed')return {state:f.state==='cancelled_homologation'?'cancelled':'cancellationFailed',message:typeof f.message==='string'?f.message:'',plan};
  if(f.state==='failed')return {state:'failed',plan};
