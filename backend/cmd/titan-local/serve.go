@@ -50,6 +50,7 @@ func serveStationContext(ctx context.Context, args []string, out io.Writer) erro
 	port := options.Int("port", 8181, "porta loopback sem perfil de operação")
 	fiscalPath := options.String("fiscal-production", "", "configuração fiscal privada; desativada por padrão")
 	providersPath := options.String("fiscal-providers", "", "configuração privada de provedores por empresa")
+	reverseProxy := options.Bool("reverse-proxy-tls", false, "TLS terminado por proxy do cliente; backend exclusivamente loopback")
 	profilePath := options.String("deployment", "", "perfil privado de operação local ou servidor")
 	if options.Parse(args) != nil || options.NArg() != 0 || *dbPath == "" || *stationPath == "" {
 		return errors.New("informe banco e aparelho")
@@ -116,6 +117,9 @@ func serveStationContext(ctx context.Context, args []string, out io.Writer) erro
 	}
 	defer db.Close()
 	defer clear(key)
+	if err = profile.CheckExposure(key, *reverseProxy); err != nil {
+		return errors.New("exposição recusada: configure TLS e segredo próprios; proxy somente em loopback")
+	}
 	app, err := localapi.NewWithFiscalProvidersAndGate(db, device, verifier, networkGate(profile), key, fiscalRuntime, providers)
 	if err != nil {
 		return err
