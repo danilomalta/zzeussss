@@ -1,0 +1,355 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Customer fiscal onboarding and encrypted Focus credentials",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/fiscal/onboarding/{id}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      ],
+      "get": {
+        "operationId": "diagnoseCustomerFiscalOnboarding",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Local result; never official authorization. Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Diagnostic"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, secret-in-query or unknown field"
+          },
+          "401": {
+            "description": "Session invalid or revoked"
+          },
+          "403": {
+            "description": "Owner permission or fiscal contract denied"
+          },
+          "404": {
+            "description": "Profile not found in authenticated scope"
+          },
+          "409": {
+            "description": "Profile or credential revision conflict"
+          },
+          "500": {
+            "description": "Private configuration/storage unavailable; no secrets returned"
+          },
+          "503": {
+            "description": "Fiscal contract unavailable"
+          }
+        }
+      }
+    },
+    "/fiscal/onboarding/{id}/provider": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      ],
+      "get": {
+        "operationId": "readCustomerFiscalCredentials",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Local result; never official authorization. Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, secret-in-query or unknown field"
+          },
+          "401": {
+            "description": "Session invalid or revoked"
+          },
+          "403": {
+            "description": "Owner permission or fiscal contract denied"
+          },
+          "404": {
+            "description": "Profile not found in authenticated scope"
+          },
+          "409": {
+            "description": "Profile or credential revision conflict"
+          },
+          "500": {
+            "description": "Private configuration/storage unavailable; no secrets returned"
+          },
+          "503": {
+            "description": "Fiscal contract unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "saveCustomerFiscalCredentials",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Local result; never official authorization. Cache-Control: no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, secret-in-query or unknown field"
+          },
+          "401": {
+            "description": "Session invalid or revoked"
+          },
+          "403": {
+            "description": "Owner permission or fiscal contract denied"
+          },
+          "404": {
+            "description": "Profile not found in authenticated scope"
+          },
+          "409": {
+            "description": "Profile or credential revision conflict"
+          },
+          "500": {
+            "description": "Private configuration/storage unavailable; no secrets returned"
+          },
+          "503": {
+            "description": "Fiscal contract unavailable"
+          }
+        },
+        "description": "Owner only, per-tenant administrator opt-in. AES-GCM at rest. No transmission. Production settings can be saved but production emission remains blocked. Reconcile uncertain writes with GET; never resend automatically.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialInput"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "CredentialInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "profile_revision",
+          "token",
+          "csc"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "profile_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "token": {
+            "type": "string",
+            "writeOnly": true,
+            "pattern": "^[A-Za-z0-9]{1,512}$"
+          },
+          "csc": {
+            "type": "string",
+            "writeOnly": true,
+            "maxLength": 128,
+            "pattern": "^[!-~]*$"
+          }
+        }
+      },
+      "CredentialStatus": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "operation_id",
+          "profile_id",
+          "profile_revision",
+          "environment",
+          "token_present",
+          "csc_present",
+          "production_blocked"
+        ],
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "profile_id": {
+            "type": "string"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "",
+              "homologation",
+              "production"
+            ]
+          },
+          "token_present": {
+            "type": "boolean"
+          },
+          "csc_present": {
+            "type": "boolean"
+          },
+          "production_blocked": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        }
+      },
+      "Diagnostic": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "profile_revision",
+          "configuration_valid",
+          "production_blocked",
+          "transmission_performed",
+          "official_authorization",
+          "blockers"
+        ],
+        "properties": {
+          "profile_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "configuration_valid": {
+            "type": "boolean"
+          },
+          "production_blocked": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "transmission_performed": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "official_authorization": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "onboarding_configuration_required",
+                "onboarding_official_verification_required",
+                "onboarding_production_blocked"
+              ]
+            }
+          },
+          "provider_configuration": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "provider",
+              "environment",
+              "certificate_type",
+              "token_present",
+              "csc_present"
+            ],
+            "properties": {
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "external"
+                ]
+              },
+              "environment": {
+                "type": "string",
+                "enum": [
+                  "homologation"
+                ]
+              },
+              "certificate_type": {
+                "type": "string",
+                "enum": [
+                  "A1"
+                ]
+              },
+              "token_present": {
+                "type": "boolean"
+              },
+              "csc_present": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

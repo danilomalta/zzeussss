@@ -1,0 +1,111 @@
+{
+  "date": "2026-10-29",
+  "base_commit": "bf1ac5b4e6e9944c1cf49bfb8ce9c64ac735ac99",
+  "scope": "CST60 CRT2/3 and CSOSN500 CRT1: explicitly declared prior ST/FCP retention; NF-e55 intra-UF CFOP5405, contributor reseller, non-final-consumer, CEST required. Not a complete national fiscal implementation.",
+  "backend_full": {
+    "packages_passed": 59,
+    "top_level_passed": 1552,
+    "passed_including_subtests": 3625,
+    "failures": [],
+    "skipped_tests": [
+      "TestPostgresCatalogCreationAndDiscountAtomicity",
+      "TestPostgresDurableRotationConcurrencyAndRollback",
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "core_race": {
+    "packages_passed": 2,
+    "top_level_passed": 70,
+    "passed_including_subtests": 431,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "api_race": {
+    "packages_passed": 1,
+    "top_level_passed": 31,
+    "passed_including_subtests": 78,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "python_tests_passed": 85,
+  "vet": "PASS ./...",
+  "commands": {
+    "full_backend": "go -C backend test ./... -count=1 -timeout=20m -json; four TITAN_*_BRIDGE variables and TITAN_FISCAL_CLI enabled",
+    "core_race": "go -C backend test -race ./internal/fiscalcore ./internal/fiscalproduction -count=1 -timeout=5m -json",
+    "api_race": "go -C backend test -race ./internal/localapi -run \"^TestHTTPFiscalRetainedST|^TestHTTPFiscalTaxPricedSale|^TestFiscalTax|^TestHTTPFiscalProductionTax\" -count=1 -timeout=10m -json -args -pilot-backup-cli=/tmp/titan-retained-st-20261029/titan-backup",
+    "python": "python3 -m unittest discover -s tools/tests -v",
+    "contracts": "python3 tools/check_api_contracts.py",
+    "build": "GOFLAGS=-buildvcs=false go -C backend build -trimpath -o /tmp/titan-retained-st-20261029/<name> ./cmd/<name>; titan-local, titan-fiscal, titan-backup"
+  },
+  "contracts": {
+    "route_count": 551,
+    "required_integrations": 25,
+    "status": "PASS"
+  },
+  "tested_source_sha256": {
+    ".github/workflows/backend-pilot.yml": "181efe975f0339a1dbde666c96f61592c6b97961a74a82fab70980061a9754bd",
+    "backend/internal/fiscalcore/goods_tax.go": "c90678fffce9a42babe5ca7df5402b6c6f829456ce1de8aab54e3912fca1752c",
+    "backend/internal/fiscalcore/retained_st.go": "65a04868e9e5c4a51af5959b1e7db7dd7ede0d8b8428d14966eb08e1a90a162f",
+    "backend/internal/fiscalcore/retained_st_test.go": "ffbb1408ca53ef72e7314f345d98e1ef9887d09ec77ebadf67c925931d4cb12f",
+    "backend/internal/fiscalcore/tax.go": "cb7ed3f63701fdd737df10cf029cbdc535c90b9040d60c817fc9bc7f464120d1",
+    "backend/internal/fiscalcore/tax_policy.go": "fc8eeccd4a8bf5ca2dcda51d96924a62c986c1eac0ea88d01afd6acffd674256",
+    "backend/internal/localapi/fiscal_retained_st_test.go": "d010c4a8b15f32ebc75c55972917d6f6e20b77a9cf14aed37f49b617cfa4cece",
+    "backend/internal/localdb/fiscal/tax_policy.go": "316fecc591b653bd34edda259dda58eeb1c200ebe6a0ace0cca45654548a2739",
+    "docs/api/fiscal-tax-policy.openapi.json": "e9cc570ca470b4cb435a7a43d4e588979c3dcc6d079149fecd9e684392261636",
+    "tools/tests/test_verify_backend_acceptance.py": "a0b7b0196eb47725f9d30510d300f912043d1fc4c9aef0f8fdf0d589847394c3",
+    "tools/verify_backend_acceptance.py": "d19608a504b66e1d9e554a5df20457c206c6d382f96d6d8768727e820c7f0f85"
+  },
+  "linux_builds": {
+    "titan-local": "ad6a410b3e4c8094e87a3a2cfb78197c55bb80c892d54a9f4e32d65e20168b46",
+    "titan-fiscal": "42573d68b173a17c2c61ca804e0778143a74c4e4ff0a2d61f9f175a0a36807af",
+    "titan-backup": "443bdd12346c9b00ab4e79fbdc3d3e7840e0e47fed45a480bfb4a939dc692260"
+  },
+  "native_http_requests": 10,
+  "signed_mtls_posts_per_issue": 1,
+  "disposable_authority": true,
+  "official_homologation": false,
+  "example": {
+    "merchandise_cents": 3198,
+    "previous_ST_cents": 230,
+    "previous_FCP_cents": 90,
+    "additional_cents": 0,
+    "cash_cents": 3198
+  },
+  "persistence": {
+    "sqlite_reopen": true,
+    "encrypted_backup_restore": true,
+    "source_receipt_and_XML_preserved": true,
+    "migration_added": false,
+    "previous_76_migrations_unchanged": true
+  },
+  "legacy_cli": {
+    "byte_identical": true,
+    "sha256": "2d5ca4a0570a97d8830e4751a98b87ecd5baf75a49193f4327f13ad3c84f1d86"
+  },
+  "ci_base": {
+    "commit": "bf1ac5b4e6e9944c1cf49bfb8ce9c64ac735ac99",
+    "passed_checks": 7,
+    "new_head": "Verify separately after publication"
+  },
+  "installed": false,
+  "frontend_changed": false,
+  "commercial_data_accessed": false,
+  "services_changed": false,
+  "main_merged": false,
+  "limits": [
+    "Source values are explicitly declared/allocated by the owner, not fetched or verified against an authorized purchase XML.",
+    "No automatic stock-lot attribution, prorating or cumulative fiscal-source allocation ledger; reusing an origin is not proof of remaining rights/availability.",
+    "No new ICMS/FCP charge, automatic credit, collection or tax settlement is asserted.",
+    "Final-consumer effective ICMS, interstate ST adjustments, NFC-e and other CFOPs are outside this addition.",
+    "Frontend checkout still needs integration to the tax-pricing request; no installed option was activated.",
+    "National tax coverage, RTC, special regimes/benefits/additional assessments, other ST/DIFAL, Simples/DAS, ISS/NFS-e, SPED/PVA and official customer homologation remain incomplete."
+  ],
+  "sources": {
+    "MOC": "https://www.confaz.fazenda.gov.br/legislacao/arquivo-manuais/moc7-anexo-i-leiaute-e-rv.pdf",
+    "latest_NT_catalogue_version": "2018.005 v1.52",
+    "latest_NT_direct_fetch": "Redirect loop detected; not claiming full body review",
+    "embedded_XSD_changed": false
+  }
+}

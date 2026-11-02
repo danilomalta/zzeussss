@@ -16,9 +16,15 @@ func (s *Server) quoteSale(c *fiber.Ctx) error {
 	if len(c.Body()) > 128*1024 {
 		return c.SendStatus(fiber.StatusRequestEntityTooLarge)
 	}
-	values, err := exactSaleObject(c.Body(), []string{"cash_session_id", "items"})
+	values, err := exactSaleObject(c.Body(), []string{"cash_session_id", "items"}, "tax_quote_operations")
 	if err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
+	}
+	if raw, ok := values["tax_quote_operations"]; ok {
+		var refs []string
+		if json.Unmarshal(raw, &refs) != nil || len(refs) == 0 || len(refs) > 100 {
+			return c.SendStatus(400)
+		}
 	}
 	var items []json.RawMessage
 	if err = json.Unmarshal(values["items"], &items); err != nil || len(items) == 0 || len(items) > 500 {
@@ -34,7 +40,7 @@ func (s *Server) quoteSale(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 	session := c.Locals("session").(localauth.Session)
-	result, err := sale.QuoteWithContract(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	result, err := sale.QuoteWithContract(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return saleError(c, err)
 	}

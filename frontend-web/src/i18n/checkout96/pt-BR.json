@@ -68,5 +68,19 @@
   "manualProof96": "Registrar comprovante manual",
   "manualRecorded96": "Registrado para conferência",
   "manualHelp96": "Confira valor e meio na maquininha. Este registro não confirma liquidação pela adquirente; os comprovantes serão conferidos no fechamento.",
-  "noCash96": "Sem recebimento em dinheiro: não há troco."
+  "noCash96": "Sem recebimento em dinheiro: não há troco.",
+  "checkoutFiscalTitle": "Situação fiscal",
+  "checkoutFiscalAuthorized": "Autorizada",
+  "checkoutFiscalFailed": "Falhou",
+  "checkoutFiscalPending": "Pendente de reprocesso ou recuperação",
+  "checkoutFiscalNone": "Sem emissão fiscal vinculada ao checkout",
+  "checkoutFiscalHomologation": "Emissão em homologação, sem validade fiscal.",
+  "checkoutFiscalRetry": "Reprocessar",
+  "checkoutFiscalRefresh": "Atualizar status",
+  "checkoutFiscalLoading": "Consultando situação fiscal…",
+  "checkoutFiscalUnavailable": "Não foi possível confirmar o status. Atualize antes de tentar novamente.",
+  "checkoutFiscalMissingRequest": "Reprocessamento indisponível neste aparelho: a solicitação original não está salva. Não será criada outra venda.",
+  "checkoutFiscalDemo": "Demonstração: nenhuma emissão fiscal real.",
+  "checkoutFiscalCancelled": "Nota fiscal cancelada",
+  "checkoutFiscalCancellationFailed": "Erro no cancelamento da nota fiscal"
 }

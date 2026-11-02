@@ -1,0 +1,2 @@
+Automated disposable credential check; no customer identity or credentials.
+production_config_test.go:110: Compiled titan-fiscal loaded protected A1, validated identity/chain/current CRL, returned bounded non-secret JSON, made no fiscal transmission and rejected invalid installation with nonzero exit.

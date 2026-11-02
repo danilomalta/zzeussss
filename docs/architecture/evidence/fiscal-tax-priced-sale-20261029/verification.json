@@ -1,0 +1,151 @@
+{
+  "date": "2026-10-29",
+  "base_commit": "0506eaac06a1c8ac0c88ee4a9ddb31138a8867f3",
+  "scope": "Opt-in authoritative cash sale pricing including supported ST/FCP-ST/IPI before payment, immutable fiscal source and owner-enforced tax pricing mode; not a complete national fiscal implementation",
+  "backend_full": {
+    "packages_passed": 59,
+    "top_level_passed": 1545,
+    "passed_including_subtests": 3574,
+    "failures": [],
+    "skipped_tests": [
+      "TestPostgresCatalogCreationAndDiscountAtomicity",
+      "TestPostgresDurableRotationConcurrencyAndRollback",
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "api_race_native_backup": {
+    "packages_passed": 1,
+    "top_level_passed": 27,
+    "passed_including_subtests": 65,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "stores_race": {
+    "packages_passed": 2,
+    "top_level_passed": 12,
+    "passed_including_subtests": 19,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "python_tests_passed": 85,
+  "vet": "PASS ./...",
+  "contracts": {
+    "routes": 551,
+    "required_ci_integrations": 21,
+    "status": "PASS"
+  },
+  "native": {
+    "tcp_client_requests": 9,
+    "signed_mtls_posts_per_issue": 1,
+    "backup_cli_commands": 11,
+    "real_sqlite": true,
+    "mock_persistence": false,
+    "official_homologation": false,
+    "fixture_authority": true,
+    "backup_final_business_comparison": true
+  },
+  "business_examples": {
+    "SN201_202_203": {
+      "merchandise_cents": 3198,
+      "ST_cents": 230,
+      "FCPST_cents": 90,
+      "paid_cents": 3518
+    },
+    "normal_IPI": {
+      "merchandise_cents": 3198,
+      "IPI_cents": 160,
+      "paid_cents": 3358
+    },
+    "partial_cash_returns_cents": [
+      1759,
+      1759
+    ]
+  },
+  "schema": {
+    "new_migration": 76,
+    "previous_75_unchanged": true,
+    "backup_supported_versions": "25-76",
+    "sale_outbox_legacy_version": 1,
+    "tax_priced_sale_outbox_version": 2,
+    "legacy_quote_unit": "Unknown remains omitted; a fresh quote is required for a new tax-priced sale"
+  },
+  "legacy_cli_compatibility": {
+    "byte_identical": true,
+    "sha256": "2d5ca4a0570a97d8830e4751a98b87ecd5baf75a49193f4327f13ad3c84f1d86",
+    "fixture": "synthetic legacy quote only"
+  },
+  "linux_builds": {
+    "titan-local": "d90966617c08598514f5d8974c3301f63e9b0a2682b1cd875ce312def4c1b257",
+    "titan-fiscal": "5afaad9c4dee632926bad184c00d11a12e3484dea5c2c3e3ed39d728c7fd0d51",
+    "titan-backup": "443bdd12346c9b00ab4e79fbdc3d3e7840e0e47fed45a480bfb4a939dc692260"
+  },
+  "owner_required_mode": {
+    "default": "off; activation not performed in an installation",
+    "missing_binding": "New sales/quotes and alternate finalization blocked when required",
+    "profile_revision_omission": "Cannot disable a required mode; explicit true/false required",
+    "historical_replay": "Recovers original profile revision without changing active configuration"
+  },
+  "ci_base": {
+    "commit": "0506eaac06a1c8ac0c88ee4a9ddb31138a8867f3",
+    "checks_passed": 7,
+    "new_head": "Must check after publication; prior success does not certify this change"
+  },
+  "installed": false,
+  "services_changed": false,
+  "frontend_changed": false,
+  "tested_source_sha256": {
+    ".github/workflows/backend-pilot.yml": "6320b8c932f3112417bc4d12d38312f7eaa42ac651226ade9ccd92838c8e8342",
+    "backend/internal/localapi/customer_return_cross_shift_migration_test.go": "8bfa489ca1bf89f8d5dddf6b4dea488d61e03032b96dc83affd7da46684fed88",
+    "backend/internal/localapi/customer_return_maintenance_test.go": "52e6c2a09da3d8c06105d60f5f531db5bdcea5603c706b70ece6ec25928a35dc",
+    "backend/internal/localapi/fiscal.go": "002e63464bb4880611ea022a04c5e428dcc74b9c334a7196065d095313ba8332",
+    "backend/internal/localapi/fiscal_production_test.go": "44ff5d01e7f5c867e97dc31f591adf89dac976733533a49990974b7937cefe5e",
+    "backend/internal/localapi/fiscal_tax_sale_test.go": "78600cb4a6fffb2666499b03e08e771e2b4bfb1ef26daa0570d7c713adb31737",
+    "backend/internal/localapi/pilot_backup_cli_test.go": "a4db4308849eb2cbb7cfb0448ce7d398202717a23ef540d0845c30eed130278c",
+    "backend/internal/localapi/sale_quote.go": "a6e0356f004addac0995b8b742f8c3a9e52d9700a5357dd480db6f386661cec1",
+    "backend/internal/localapi/sales.go": "d9ad1e62520c239c85d12d886ab654301bf7cfa332dcdbcb46ea1606737c3dac",
+    "backend/internal/localdb/backup/backup.go": "446def4508458f7ead55acd54a55bf616487050072dbb6b46c6d8b11e07925b8",
+    "backend/internal/localdb/backup/compatibility_test.go": "464406afa98cc1beb4b75ffb077cf85942c4aa4404c20c132b1d91163fc9f9b6",
+    "backend/internal/localdb/backup/inspection.go": "d62ca33e38373f43e8da6c497a9b952ce8f3746a7cf38508b7421213b1d53d21",
+    "backend/internal/localdb/backup/inspection_test.go": "430ee6661575366edc03e6d34b9745509d422cb3a60a5582afbec2ffad54701a",
+    "backend/internal/localdb/fiscal/invoice_binding.go": "95c8d8f341c852bc86b2011c9b002ea526ba6e072c0ff3450363b64da37325e0",
+    "backend/internal/localdb/fiscal/production.go": "e4e8d124f2f9ec44aadae138457eb92cd96691c5870586fcb0ceb19a0f77686c",
+    "backend/internal/localdb/fiscal/sale_taxes.go": "a5b731a91fe481609337c99db5fb1517c0374208549d1298192e275e55ef78a3",
+    "backend/internal/localdb/fiscal/store.go": "c5361a4fbe7732b8dae1901b259f9728b104c7f1983fb2bbeee7c345493b0490",
+    "backend/internal/localdb/fiscal/tax_policy.go": "d2c675c7998922464b2abe40a345b851fea7f68f4933dd6b235f793bcc4a5c7e",
+    "backend/internal/localdb/fiscal/validation.go": "2f5ef304f7f22c220b5aacd942d1aef20a9be27ac0c6fe510716d6b535d6d108",
+    "backend/internal/localdb/localdb_test.go": "a1af9a6f6465c19e461de5f9688ec42463a2909d53394282e3f902dc0e035771",
+    "backend/internal/localdb/migrations/0076_sale_tax_bindings.sql": "bb44f9cdd8d618fb4beaa9118bb451cbb0f27eb3a59759b96b0e43318f1ba3d1",
+    "backend/internal/localdb/sale/checkout_cash.go": "36f396c00386343567cafbb3f9a705c4e3c3754596d6810a86bb4e68f36fe533",
+    "backend/internal/localdb/sale/contracts.go": "823c4cde41ad191bd0e26c08efe547ebb3f43a6e81e3dcb625b157de07aefa5e",
+    "backend/internal/localdb/sale/customer_return_read.go": "5cda61baeecac3e1090bf8f73d227e53ea539fe5e80ecc6b66f21f005e8673a8",
+    "backend/internal/localdb/sale/quote.go": "77c18487f181f1ad6d9af62276f26cd1be8b069c9614fcb95fb1d0ac8f695bc0",
+    "backend/internal/localdb/sale/receipt.go": "be43a0707824ea22cdc237efe2d181a89d3e7b96cc69dd468acbb688ba4616b2",
+    "backend/internal/localdb/sale/sale.go": "a313fed29be49466428003c7060d1576daea768bb9680fac0e1eaa4b3ba8b47a",
+    "backend/internal/localdb/sale/taxes.go": "888629bf51f931e92072ce36eaf0b3ee1aac94547273c1a5c419311ae0584320",
+    "docs/api/cash-sales.openapi.json": "8366b3d6797be3fbf09593ee51de28c50530e97ca3a830323bcafe852a2d8f14",
+    "docs/api/fiscal-preparation.openapi.json": "a62fdcb3dbec0ad969d889d76354d92ecfda2fc14c3952c51c778523a24b1487",
+    "docs/api/fiscal-tax-policy.openapi.json": "5cc835ef0498aa5df4ec25338187faae9b7af8060b4cd88363f4a49958628519",
+    "docs/api/sale-quote.openapi.json": "a2c8b68a05b42ed98b54136ce065ce472e74a1a34846bf718d164a1449cf9fac",
+    "tools/tests/test_verify_backend_acceptance.py": "de548609a05bb0c1abe5ae9d744412cf15702988b79dcfc2fe47052632524322",
+    "tools/verify_backend_acceptance.py": "a928d053e6ebf463020eb12fe316f707d2a1ef1f9189e7de8613e6f76207b003"
+  },
+  "covered": [
+    "Price/quantity/unit/current policy/profile, issuer-local day, 10-minute quote age, company/store/device scope and session rechecked within the transaction.",
+    "Whole amount, immutable tax binding, payment, cash, inventory and outbox commit or roll back together.",
+    "Exact replay, concurrency, restart and executable encrypted backup restore preserve identifiers/evidence and one financial effect.",
+    "Recipient/operator context differences, expired/foreign quotes and omitted required references cannot authorize a new sale.",
+    "Full commercial cancellation and cumulative partial returns refund exactly paid amount including additional tax; no automatic fiscal cancellation asserted.",
+    "Signed XML uses the original approved/paid tax groups, amounts and references."
+  ],
+  "limits": [
+    "Frontend checkout is not wired to the opt-in request in this backend task; activation requires a compatible integration.",
+    "Only cash and no commercial discount/freight/insurance/other charges in this path; all tax groups remain limited to implemented classifications.",
+    "No official client homologation, government settlement/GNRE, full tax ledger, production NFS-e or SPED/PVA proof.",
+    "National coverage remains incomplete: RTC IBS/CBS/IS, retained ST, full benefit/classification catalogue, special regimes, other assessments/ST/DIFAL, Simples/DAS and ISS.",
+    "Fiscal emission after a different quote operation day/current profile revision may be blocked instead of silently repricing an already paid sale.",
+    "Version2 tax-priced outbox does not prove commercial cross-device synchronization.",
+    "Original projects, commercial data and installed services preserved; no automatic main merge."
+  ]
+}

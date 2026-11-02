@@ -8,11 +8,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"titansystem-backend/internal/secretconfig"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var ErrConfiguration = errors.New("configuração PostgreSQL inválida; confira host, credenciais e TLS")
+var ErrConfiguration = errors.New("configuração PostgreSQL inválida; use credenciais explícitas não vazias nem de exemplo e confira host/TLS")
 var ErrUnavailable = errors.New("conexão PostgreSQL indisponível")
 
 // Configuration never returns parser errors: those can contain the DSN/password.
@@ -47,7 +48,7 @@ func Configuration(getenv func(string) string) (*pgxpool.Config, error) {
 		return nil, ErrConfiguration
 	}
 	password, supplied := u.User.Password()
-	if !supplied || password == "" || u.User.Username() == "" || u.Path == "" || u.Path == "/" {
+	if !supplied || secretconfig.Unsafe(password) || u.User.Username() == "" || u.Path == "" || u.Path == "/" {
 		return nil, ErrConfiguration
 	}
 	host := u.Hostname()

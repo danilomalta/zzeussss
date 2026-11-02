@@ -988,6 +988,16 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 889
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Owner-approved IANA timezone; Local is refused. Required for opt-in tax-priced sales; legacy profiles may omit it."
+          },
+          "require_tax_pricing": {
+            "type": "boolean",
+            "description": "Explicit owner decision. False/omitted on a new legacy profile preserves legacy mode. When the latest profile requires tax pricing, every new revision must explicitly provide true or false; omission cannot disable enforcement. True requires timezone and new sales cannot omit tax bindings, including alternate checkout writers. Historical replays do not change the active revision."
           }
         }
       },
@@ -1116,6 +1126,9 @@
           "total_cents": {
             "type": "integer",
             "format": "int64"
+          },
+          "tax": {
+            "$ref": "#/components/schemas/SaleTaxBinding"
           }
         }
       },
@@ -1358,13 +1371,15 @@
           "nfse_available",
           "sped_generation_available",
           "transmission_available",
-          "automatic_retry_available"
+          "automatic_retry_available",
+          "homologation_archive_print_available"
         ],
         "properties": {
           "scope": {
             "type": "string",
             "enum": [
-              "durable_preparation_only"
+              "durable_preparation_and_homologation_archive_print",
+              "synchronous_production_emitter"
             ]
           },
           "models": {
@@ -1393,15 +1408,35 @@
           },
           "transmission_available": {
             "type": "boolean",
-            "enum": [
-              false
-            ]
+            "description": "True somente com configuração privada de produção vigente; não substitui revisão/aprovação por documento."
           },
           "automatic_retry_available": {
             "type": "boolean",
             "enum": [
               false
             ]
+          },
+          "homologation_archive_print_available": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Rota de leitura/impressão técnica do modelo65/ambiente2. Exige documento arquivado, protocolo correspondente e sessão autorizada. Não significa emissão ou homologação oficial."
+          },
+          "production_model": {
+            "type": "string",
+            "enum": [
+              "55",
+              "65"
+            ]
+          },
+          "production_configuration_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "production_cancellation_available": {
+            "type": "boolean",
+            "description": "A instalação possui endpoint opcional de cancelamento e credencial/configuração vigentes. Cada decisão ainda depende de sessão, permissão e consulta autorizada recente."
           }
         }
       },
@@ -1416,6 +1451,66 @@
             "type": "string"
           }
         }
+      },
+      "SaleTaxBinding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "context",
+          "case",
+          "quote_operation_id",
+          "result_sha256",
+          "profile_id",
+          "profile_revision",
+          "additional_cents",
+          "taxes",
+          "totals",
+          "catalog_unit"
+        ],
+        "properties": {
+          "context": {
+            "$ref": "fiscal-tax-policy.openapi.json#/components/schemas/Context"
+          },
+          "case": {
+            "$ref": "fiscal-tax-policy.openapi.json#/components/schemas/Case"
+          },
+          "quote_operation_id": {
+            "type": "string"
+          },
+          "result_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "profile_id": {
+            "type": "string"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "additional_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "taxes": {
+            "type": "array",
+            "items": {
+              "$ref": "fiscal-production.openapi.json#/components/schemas/TaxNode"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "catalog_unit": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "description": "Immutable price evidence attached atomically to a completed sale item. Additional ST/FCP-ST/IPI is included in sale/cash/payment total; merchandise remains separately identified. It does not authorize an invoice."
       }
     }
   }

@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-29",
+  "base_commit": "aae03e97b34b599c9883998c72c94bcad809afcf",
+  "scope": "Customer fiscal profile UI, existing authenticated APIs, no new fiscal authorization",
+  "frontend": {
+    "files": 117,
+    "tests": 2505,
+    "passed": 2505,
+    "failed": 0,
+    "skipped": 0,
+    "fiscal_customer_tests": 40,
+    "typecheck": "PASS",
+    "vite_build": "PASS",
+    "build_seconds": 20.48,
+    "warning": "Existing spreadsheet chunks exceed 500 kB; not addressed by this unit"
+  },
+  "backend_existing_profile_regressions": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "includes_real_http_restart_encrypted_restore": true
+  },
+  "frontend_real_api_bridge": {
+    "test": "TestFiscalCustomerFrontendBridge",
+    "race_detector": true,
+    "passed": true,
+    "real_http_requests": 35,
+    "post_requests": 3,
+    "revisions_in_disposable_sqlite": 3,
+    "rejected_conflict_preserves_original": true,
+    "lost_reply_recovered_by_exact_revision_get_without_resend": true,
+    "uf_reference_queries": 27,
+    "official_sefaz_transmission": false
+  },
+  "ci_acceptance_gate_tests": {
+    "passed": 7,
+    "required_integrations_after_change": 6
+  },
+  "api_contract_inventory": {
+    "routes": 547,
+    "result": "PASS",
+    "new_routes": 0
+  },
+  "assisted_visual_fixture": {
+    "production_integration_evidence": false,
+    "synthetic_responses_explicitly_labeled": true,
+    "checked": [
+      "five languages",
+      "light/dark contrast",
+      "owner form",
+      "accountant cannot create",
+      "saved draft is not homologation",
+      "lost response blocks writes and exact revision recovery clears uncertainty"
+    ]
+  },
+  "previous_ci": {
+    "head": "aae03e97b34b599c9883998c72c94bcad809afcf",
+    "passed_checks": 6,
+    "failed_checks": 1,
+    "failure": "Go default package deadline 10m; running test had only 19s elapsed",
+    "url": "https://github.com/danilomalta/zzeussss/actions/runs/40794173171",
+    "correction": "Explicit 30m package timeout, finite 45m main backend job; no assertions removed",
+    "new_commit_ci": "Not yet executed at evidence creation"
+  },
+  "limitations": [
+    "Profile lookup currently requires its identifier; API has no profile-list endpoint.",
+    "Pending write identifiers stay in component memory with navigation warning; closing/reloading requires manual profile/revision lookup. No automatic resend.",
+    "No certificate or secret upload, credential provisioning, official homologation wizard or production activation implemented by this unit.",
+    "27 UF references are dated Portuguese documentation, not complete tax rules or current regulatory approval.",
+    "Production NFS-e, SPED/PVA and complete national tax coverage remain unavailable.",
+    "No installed desktop update, real customer database, original repository modification or main merge."
+  ],
+  "tested_file_sha256": {
+    "frontend-web/src/core/fiscalCustomer/client.d.mts": "b9ac04338513b51e2e7e32c50ca71c5b5ee81d74618b7a33870c6e47716d3b22",
+    "frontend-web/src/core/fiscalCustomer/client.mjs": "6bccef78ccc3f48005d4dfe1c8b0b23b557645b7be47f53a1b5d4d72b2ab8845",
+    "frontend-web/src/core/fiscalCustomer/words.ts": "d991b7996e6cae2888b44845d48c24c634bbe983b593e2a8f3bec696c1450ce9",
+    "frontend-web/src/i18n/fiscalCustomer/en.json": "9bb2b9e78d9dace660f6cd8749855892c48d90f0545e7269b1ef82b3f7b3e8ee",
+    "frontend-web/src/i18n/fiscalCustomer/es.json": "52df307d62df87b6242753e1cde6389e38d04d69bf80828e289d907fbfc6ec99",
+    "frontend-web/src/i18n/fiscalCustomer/fr.json": "c6ce078099748a2e768788f6657f6497360c1f9bed03161bba18b42e80ddd96b",
+    "frontend-web/src/i18n/fiscalCustomer/pt-BR.json": "a84055072a97e2e4e3fee185995bb5772aa7e63980dde6900319c17879dea154",
+    "frontend-web/src/i18n/fiscalCustomer/zh-CN.json": "b549656ad30a29f38eb0420e8151ddc20e3849e6830bddc79cab89a16562225b",
+    "frontend-web/src/modules/tenant/pages/enterprise89/FiscalCustomer.tsx": "93cb45ccb5ce90b477206b0a0f695e604c295484d536ead0e9d54a39d9340078",
+    "frontend-web/src/modules/tenant/pages/enterprise89/FinanceFiscal.tsx": "f9727455bf45ce4fbc8c711bab2b23e6d297b1c68caaebf91608da71ec0b1869",
+    "frontend-web/src/modules/tenant/pages/enterprise89/fiscalCustomer.css": "876b3de3b71e6623fea5d2b85fb5c634ad2fb054df77f555905b6c1c4e600921",
+    "frontend-web/tests/fiscalCustomer.test.mjs": "bf4986ef7b62875b631a6d78f97becb30fc6b0e7e734097a76b8feb5dddb95e4",
+    "backend/internal/localapi/fiscal_customer_frontend_bridge_test.go": "8b1bfaabeb369eb8506ff75f32b5bf8ca036a11c3e92a0a26b9cb51c0a0af06c",
+    "frontend-web/tests/fiscalCustomer.bridge.mjs": "d7b29a31d40862151bb027b1bbdc503e34b544ea0c9e2c8850b213a27cb6b23f",
+    ".github/workflows/ci.yml": "53f8c6a7d20017ca53b944abd1de345a94918b2df4e6ce0fd9a1c2fd9bd7e01e",
+    ".github/workflows/backend-pilot.yml": "52d9b9217b9528d2bbfa32222b7cebbfdef00b46c6e93423a292c2015f7de0fa",
+    "tools/verify_backend_acceptance.py": "0475ac26766ec41b0babe35b5394fe619675ff7a80cf53883bfcd76667ad306b",
+    "tools/tests/test_verify_backend_acceptance.py": "40202aaa98a008de5452179079d542b63b03df2aafb69b22ef7d98f1e071327f"
+  }
+}

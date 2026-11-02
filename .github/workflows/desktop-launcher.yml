@@ -5,7 +5,7 @@ on:
     branches: [feat/backend-checkout-authority]
     paths: ['desktop/**', '.github/workflows/desktop-launcher.yml']
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, integration/piloto-main-20261027]
   workflow_dispatch:
 
 permissions:

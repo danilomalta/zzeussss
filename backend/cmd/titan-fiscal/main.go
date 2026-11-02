@@ -1,5 +1,5 @@
-// titan-fiscal is an offline technical tool, not a production fiscal emitter.
-// It does not accept credentials or transmit documents.
+// titan-fiscal validates offline fiscal inputs and private installation
+// configuration. It never accepts inline credentials or transmits documents.
 package main
 
 import (
@@ -10,8 +10,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"titansystem-backend/internal/fiscalcore"
+	"titansystem-backend/internal/fiscalproduction"
 )
 
 func main() {
@@ -71,11 +73,14 @@ func decode(raw []byte, target any) error {
 	return fiscalcore.DecodeInput(raw, target)
 }
 func run(args []string, stdout io.Writer) error {
+	if len(args) > 0 && strings.HasPrefix(args[0], "vault-") {
+		return vaultCommand(args, stdout, privateTerminal)
+	}
 	if len(args) == 1 && args[0] == "capabilities" {
 		return json.NewEncoder(stdout).Encode(fiscalcore.ComponentCapabilities())
 	}
 	if len(args) < 1 {
-		return errors.New("use capabilities, tax-quote, build-nfe, build-dps, build-dps-homolog or validate; offline only")
+		return errors.New("use capabilities, check-production-config, tax-quote, build-nfe, build-dps, build-dps-homolog or validate; offline only")
 	}
 	fs := flag.NewFlagSet("titan-fiscal", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
@@ -86,6 +91,15 @@ func run(args []string, stdout io.Writer) error {
 		return errors.New("invalid arguments; --in is required")
 	}
 	switch args[0] {
+	case "check-production-config":
+		if *output != "" || *kind != "" {
+			return errors.New("check-production-config requires only --in; it never writes or transmits")
+		}
+		report, err := fiscalproduction.InspectConfiguration(*input)
+		if err != nil {
+			return fiscalproduction.ErrUnavailable
+		}
+		return json.NewEncoder(stdout).Encode(report)
 	case "tax-quote", "build-nfe", "build-dps", "build-dps-homolog":
 		if *output == "" || *kind != "" {
 			return errors.New("--out is required; --kind is not used")

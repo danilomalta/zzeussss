@@ -256,3 +256,60 @@ func TestFiscalProtocolExactAssociationAndNoSOAPFault(t *testing.T) {
 		t.Fatal("wrong environment")
 	}
 }
+
+type deniedSendRecorder struct {
+	*FileRecorder
+	calls int
+}
+
+func (r *deniedSendRecorder) BeforeSend(context.Context, string) error {
+	r.calls++
+	return ErrCredential
+}
+func TestFiscalTransportRechecksAuthorityAfterJournalAndBeforePOST(t *testing.T) {
+	c := testCredential(t)
+	dir := t.TempDir()
+	if err := os.Chmod(dir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	disk, err := NewFileRecorder(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	recorder := &deniedSendRecorder{FileRecorder: disk}
+	var calls atomic.Int32
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls.Add(1); w.WriteHeader(200) }))
+	clientRoots := x509.NewCertPool()
+	clientRoots.AddCert(c.certificate)
+	server.TLS = &tls.Config{ClientAuth: tls.RequireAndVerifyClientCert, ClientCAs: clientRoots, MinVersion: tls.VersionTLS12}
+	server.StartTLS()
+	defer server.Close()
+	roots := x509.NewCertPool()
+	roots.AddCert(server.Certificate())
+	client, err := newClient(server.URL, "synthetic-scope", c, recorder, roots, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+	raw, _, err := BuildInvoice(testInvoice())
+	if err != nil {
+		t.Fatal(err)
+	}
+	signed, err := c.SignXML("nfe", raw, time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = client.SubmitNFe(context.Background(), "guarded-op", "1", signed); !errors.Is(err, ErrCredential) {
+		t.Fatal(err)
+	}
+	request, result, err := disk.Read("guarded-op")
+	if err != nil || len(request.Body) == 0 || result.State != "uncertain" {
+		t.Fatal("reservation lost", err)
+	}
+	if calls.Load() != 0 || recorder.calls != 1 {
+		t.Fatal("HTTP occurred despite guard", calls.Load(), recorder.calls)
+	}
+	if _, err = client.SubmitNFe(context.Background(), "guarded-op", "1", signed); !errors.Is(err, ErrRecorded) {
+		t.Fatal("guard refusal allowed retry", err)
+	}
+}

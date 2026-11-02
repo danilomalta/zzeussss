@@ -29,7 +29,7 @@ var pilotTables = []string{
 	"cash_movements", "cash_sessions", "payable_cash_payments",
 	"purchase_deliveries", "purchase_order_items", "purchase_orders",
 	"purchase_receipts", "purchase_receiving_cases", "purchase_supplier_decisions",
-	"sale_payments", "sales", "stock_movements",
+	"sale_payments", "sale_tax_bindings", "sales", "stock_movements",
 	"supplier_payable_installments", "supplier_payables",
 }
 

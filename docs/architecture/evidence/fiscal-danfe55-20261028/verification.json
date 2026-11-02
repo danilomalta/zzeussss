@@ -1,0 +1,117 @@
+{
+  "base": "a790b660d2a7bc2c27c0ae707c73ca65c462c4f8",
+  "branch": "feat/fiscal-homolog-journal-20261027",
+  "scope": "Archived normal portrait NF-e55 A4 technical homologation print; NFC-e58/80 preserved",
+  "production_enabled": false,
+  "official_homologation": false,
+  "installed": false,
+  "sources_sha256": {
+    "backend/internal/fiscalcore/danfe.go": "f6ad7f575f0c189ec497a99d4095de67c9ca7b4647fe4510fee58afc61295e30",
+    "backend/internal/fiscalcore/danfe55.go": "a40d9cda7355ac157878448201aa000cfc04b5aec7288eebc0f6e3e3ea5fe37f",
+    "backend/internal/fiscalcore/danfe55_test.go": "c73138936058ac7f4adc5969db73aaa72ef9e2cabe482b3fd23a2d8b0d78e712",
+    "backend/internal/localapi/fiscal_danfe.go": "6894f4f833480ff1a606266cbe78e11d880c12f0c9ba5574d05d2866e364539b",
+    "backend/internal/localapi/fiscal_danfe_test.go": "02273b0c99cd61fe2920fae78db2c7692c3c7702dd6d5dec5443521288d3d2bf",
+    "backend/internal/localapi/fiscal_query_test.go": "60621792e4b9e4f14e8397917b0354821b0550f1892f4d14ad7be8de52222804",
+    "backend/internal/localapi/fiscal_test.go": "5e9b033b123318ad071db50035036c08af00d46f9de736c1c704bee00cfa0d62",
+    "backend/internal/localdb/fiscal/danfe.go": "337fb462dc6d388d9a3c9d6189e36578611bd88ce32b78e8b9bc6f1d9df3c6fd",
+    "docs/api/fiscal-danfe.openapi.json": "aef0c25fb2657eeefab01ed5ef2aea3dc7db605c6096bba8b9dc1e4e85fc8f95"
+  },
+  "backend_full": {
+    "log_sha256": "94f3eafb8c8021abedab76fd67e5e0bd4d850e9c2fcd36f57e460ab6bae86145",
+    "counts": {
+      "pass_package": 58,
+      "pass_subtest": 1745,
+      "pass_test": 1461,
+      "skip_package": 16,
+      "skip_test": 8
+    },
+    "skips": [
+      "TestPostgresCatalogCreationAndDiscountAtomicity",
+      "TestPostgresDurableRotationConcurrencyAndRollback",
+      "TestMigrationCrashChild",
+      "TestCashJournalFrontendBridge",
+      "TestDeliveryFrontendBridge",
+      "TestMaintenanceFrontendBridge",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ],
+    "backup_cli_commands": 0
+  },
+  "core_race": {
+    "log_sha256": "021d21de872a3c77e2d23e848be3b007360190dfa4c8772758c226a33873266e",
+    "counts": {
+      "pass_package": 1,
+      "pass_subtest": 25,
+      "pass_test": 10
+    },
+    "skips": [],
+    "backup_cli_commands": 0
+  },
+  "api_race_real_http_and_backup_cli": {
+    "log_sha256": "a3c531cb4341281b401453985e1d1091fc7c4e71387ee1b0f9696cbb04e75885",
+    "counts": {
+      "pass_package": 1,
+      "pass_subtest": 26,
+      "pass_test": 6
+    },
+    "skips": [],
+    "backup_cli_commands": 22
+  },
+  "initial_full_failure": {
+    "reason": "8 compiled trade tests could not obtain VCS status (exit128); no fiscal regression failure",
+    "log_sha256": "6577e1476f4ce6ee84bfc4451cc41ffd9d46b5ddf44cc8ed51c8f23b59f58336",
+    "counts": {
+      "fail_package": 1,
+      "fail_test": 8,
+      "pass_package": 57,
+      "pass_subtest": 1738,
+      "pass_test": 1453,
+      "skip_package": 16,
+      "skip_test": 8
+    },
+    "skips": [
+      "TestPostgresCatalogCreationAndDiscountAtomicity",
+      "TestPostgresDurableRotationConcurrencyAndRollback",
+      "TestMigrationCrashChild",
+      "TestCashJournalFrontendBridge",
+      "TestDeliveryFrontendBridge",
+      "TestMaintenanceFrontendBridge",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ],
+    "backup_cli_commands": 0
+  },
+  "final_environment": {
+    "GOCACHE": "/tmp/titan-fiscal-go-cache",
+    "GOFLAGS_full_and_subprocesses": "-buildvcs=false"
+  },
+  "vet_exit": 0,
+  "built_commands": [
+    "titan-backup",
+    "titan-local",
+    "titan-fiscal"
+  ],
+  "validators_passed": 17,
+  "routes_checked": 538,
+  "schema_migration_count": 72,
+  "xsd_count": 42,
+  "migrations_and_xsd_unchanged": true,
+  "visual_qa": {
+    "browser": "Chromium",
+    "normal_document_pages": 1,
+    "hundred_item_document_pages": 9,
+    "cell_overflows": 0,
+    "max_print_page_height_mm": 258.8658528645833,
+    "physical_printer_or_scanner_tested": false
+  },
+  "ci_this_delta": "not executed yet",
+  "remaining": [
+    "production emitter",
+    "complete approved national tax rules and RTC",
+    "official model55 layout/printer acceptance",
+    "contingency lifecycle",
+    "SPED/PVA",
+    "production NFSe",
+    "official issuer homologation"
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-29",
+  "base_commit": "0b91281ab2055b46e7d0532ab0ef21af3ad1aed2",
+  "scope": "Approved SN-ST CSOSN201/202/203, theoretical own-operation deduction and separate optional recipient credit; not all Brazilian tax rules",
+  "backend_full": {
+    "packages_passed": 59,
+    "top_level_passed": 1533,
+    "passed_including_subtests": 3549,
+    "failures": [],
+    "skipped_tests": [
+      "TestPostgresCatalogCreationAndDiscountAtomicity",
+      "TestPostgresDurableRotationConcurrencyAndRollback",
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "core_race": {
+    "packages_passed": 1,
+    "top_level_passed": 20,
+    "passed_including_subtests": 191,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "api_race": {
+    "packages_passed": 1,
+    "top_level_passed": 10,
+    "passed_including_subtests": 35,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "python_tests_passed": 85,
+  "vet": "PASS ./...",
+  "contracts": {
+    "routes": 551,
+    "required_ci_integrations": 15,
+    "status": "PASS"
+  },
+  "compatibility_legacy": {
+    "byte_identical": true,
+    "sha256": "2d5ca4a0570a97d8830e4751a98b87ecd5baf75a49193f4327f13ad3c84f1d86",
+    "fixture": "synthetic legacy input only"
+  },
+  "compatibility_mappings": {
+    "3-00": {
+      "byte_identical": true,
+      "sha256": "e67464e94f1282c3838b67bb5e8bcb14070e6894960036ff896dbf06999ca07d"
+    },
+    "3-10": {
+      "byte_identical": true,
+      "sha256": "696b1144c4b81f5b3a4fd44381c17b604624d1237bb6fdbee90cd08dab75c4b3"
+    },
+    "3-20": {
+      "byte_identical": true,
+      "sha256": "b10da8bf4522f83c10203799ff252c819b6a4245a15f5d428439c4493af6936e"
+    },
+    "3-70": {
+      "byte_identical": true,
+      "sha256": "c104fbabaa106f5f4a2e0c0e10462555bc8105cea487843f3178762ea283a75f"
+    },
+    "3-51": {
+      "byte_identical": true,
+      "sha256": "33915a189f68f8797482624a8a1ac03f574fc9b785b159c26e0e4a5fca05b0e2"
+    },
+    "1-102": {
+      "byte_identical": true,
+      "sha256": "b2225b7b4d52adb54a537569f4acca138c2d4819f68390c137c08642704aaa25"
+    },
+    "1-101": {
+      "byte_identical": true,
+      "sha256": "9f238619e3c1a0012492612f936a42ca814a178594fd746de706098684d93823"
+    }
+  },
+  "linux_builds": {
+    "titan-local": "350162e044ceb12df00823d924b2dd4f2e281990d42fbbcba34e8bc19fc27eb1",
+    "titan-fiscal": "61a9b51c8e86da53cc608222616117838c56ec50e48f1a1f6f490a74b4c6061e"
+  },
+  "migration_added": false,
+  "installed": false,
+  "official_homologation": false,
+  "covered": [
+    "Separate theoretical own-operation deduction, ST and recipient credit; no own-tax highlight or DAS assessment inferred.",
+    "201/202/203 with and without FCP-ST, exact cents and declared reductions/rates.",
+    "Embedded official XSD and real signatures; optional zero percentages omitted only in new SN-ST groups.",
+    "API with real SQLite persistence, refusal/rollback before number/send for additional tax outside the original sale contract.",
+    "Quote reopen/encrypted backup-library restore preserve original deduction and hashes.",
+    "Real mTLS fixture emission/idempotent repeat with zero additional ST; no official authority or taxpayer involved.",
+    "Entire suite runs four frontend bridges and native fiscal CLI enabled; no frontend files changed."
+  ],
+  "limits": [
+    "No national benefit/rate/agreement catalogue or automatic determination of legal applicability.",
+    "No complete tax engine, RTC IBS/CBS/IS, prior retention, other special regimes, DAS/ISS/NFS-e/ledgers acceptance.",
+    "Nonzero extra ST/FCP-ST remains blocked by original commercial sale/payment contract; the required upstream priced-quote/snapshot contract is not implemented here.",
+    "No new official homologation, DANFE/contingency, SPED/PVA or production NFS-e proof.",
+    "Local PostgreSQL environment absent; mandatory CI integrations remain enforced."
+  ],
+  "tested_source_sha256": {
+    "backend/internal/fiscalcore/goods_tax.go": "f96032e1ec37a9e438f3483c940b0c40d11ac2d40515decec983b2159d58a28b",
+    "backend/internal/fiscalcore/simple_credit.go": "26ee534730504443e3a2bf9366f19a3ba6f6333c5cd9b093a3324175ccac0d09",
+    "backend/internal/fiscalcore/simple_st_test.go": "b6c44749a1cac47a406dad93019d96c38e3f2735bf97d4262913f43d048a3759",
+    "backend/internal/fiscalcore/st_own_deduction.go": "e9dfca5192e686bcd5f3e8c3a665e9cd7ac5cefdba4ab59b4289bcbbfb1314cf",
+    "backend/internal/fiscalcore/tax.go": "63c073b574843ae190c0eabe284d2d123b04c9b4cffe9f969783e8e3fd56bae3",
+    "backend/internal/fiscalcore/tax_policy.go": "2ee68dd9ef1d36458b4cbc30709f6db1b960199954c8898510e2727f0a3db835",
+    "backend/internal/localapi/fiscal_production_simple_st_test.go": "e302351b8013e98e73b49c53a49854f78e83cf8e397fad05c19b097f69e3c2c7",
+    "docs/api/fiscal-tax-policy.openapi.json": "6bdbec5809832391f5904cd0f032f57af54110e3dd0c5311db0d3ddaf14c031a",
+    "tools/tests/test_verify_backend_acceptance.py": "c5eb602358499f994d98f1f39b93f78a4a61758d1d02318c3a0616953fe60133",
+    "tools/verify_backend_acceptance.py": "2495e1444a561a3aa5be1e694448bb44b764d52813a3183bf9502f68ecf8d722"
+  },
+  "ci": "Check this new HEAD after publication; prior success does not certify this delta."
+}
