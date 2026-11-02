@@ -37,6 +37,18 @@ Base: `feat/ci-green`, `1bf33ba1fb9628c198750fed708c2d710d0d4bed`. Reauditoria d
 
 O commit inicial C1 `f6ee2b5` passou cofre/rotação 20 vezes e contratos, mas o teste existente `enterprise89.test.mjs` identificou namespace de traduções incorreto no novo picker. Foi revertido sozinho em `2dba972`. A reapresentação usa o namespace fiscal `fw`, preservando o teste, os cinco idiomas e as demais mudanças da unidade.
 
-## Validação
+## Estado após as duas entregas
 
-C1 corrigida (`e83adfc`): cofre/rotação `-count=20` passaram (fiscalproduction 61,733s; CLI 0,424s), contratos de 564 rotas passaram, frontend 2.543/2.543, TypeScript e testes Go novos passaram. C2: testes novos, TypeScript e frontend pré-commit 2.547/2.547 passaram. Pendentes: regressões após C2 e uma execução final completa de aceitação com PostgreSQL/CLIs/bridges e verificador, mais frontend completo. Comparação: base verde `feat/ci-green`. Nenhum teste existente foi alterado.
+- Pré-cadastro e cadastro central manual: PRONTO no recorte dos campos centrais e da retomada por API; agora o roteiro reúne as etapas e os acessos diretos. `CompanySetupSteps.tsx`, `LocalCompanyRegistration.tsx`, `TestHTTPCompanyRegistrationManualStagesRecoveryAndIsolation`, `tests/companySetup.test.mjs`. Não significa RH completo nem preenchimento automático de todos os módulos.
+- Funcionários/permissões, cofre por cliente e isolamento: permanecem PRONTO nos recortes e evidências da tabela. O ciclo de chaves é operacional pelo CLI existente, não por recebimento de chave no navegador.
+- Meios fiscais e implantação permanecem PARCIAL pela comprovação externa delimitada acima. A descoberta de perfis deixou de depender de um ID anotado, mas não autoriza uma nota nem provisiona infraestrutura.
+
+## Validação executada — 02/11/2026
+
+- C1 corrigida `e83adfc`: cofre/rotação `-count=20 -timeout 120s` passaram (fiscalproduction 61,733s; CLI 0,424s), testes de contratos e mapa de 564 rotas passaram; frontend 2.543/2.543, TypeScript, testes Go novos e pacote localdb/fiscal passaram.
+- C2 `3366b9a`: cofre/rotação com as mesmas 20 repetições passaram (58,999s; CLI 0,613s), contratos passaram e frontend pós-commit 2.547/2.547. Testes existentes preservados; nenhuma regressão em C2.
+- Final: uma execução de `go test ./... -count=1 -timeout=30m -json`, com PostgreSQL 17 descartável, os oito executáveis compilados e as variáveis/bridges do workflow; seguida de `tools/verify_backend_acceptance.py` sem alterações. PASS em 721,11s: 1.619 testes principais, 3.741 incluindo subtestes, 25 integrações obrigatórias aprovadas.
+- Os quatro pulos opcionais do workflow são `TestFocusSandboxRealNFCe` (sem token/CNPJ), `TestMigrationCrashChild` e `TestPilotCashProcess` (auxiliares chamados pelos respectivos pais), `TestPilotCashScreenFlow` (ensaio visual opt-in). Nenhuma integração obrigatória pulada. Nenhuma emissão real executada.
+- Frontend final: 2.547 testes aprovados, zero falhas/pulos, TypeScript e `npm run build` passaram. O estágio compilado do desktop também passou (37,25s); não é prova de instalação em máquina limpa nem atualização automática da instalação do cliente.
+- Comparação com `feat/ci-green` / `1bf33ba`: ZERO falhas novas na validação final. A regressão intermediária foi revertida e corrigida sem enfraquecer testes. Não houve mudança em cofre, rotação, travas de produção, `.github/` ou `tools/`, nem migração nova ou esquema numérico fixo.
+- Logs locais preservados em `/tmp/titan-fase5-final-wrzuh2sa/` e `/tmp/titan-fase5-c*-*.log`; não publicados com dados de ambiente. CI remoto e aceite oficial da Focus não foram aferidos.
