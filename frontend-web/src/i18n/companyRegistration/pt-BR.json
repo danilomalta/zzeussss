@@ -34,5 +34,20 @@
   "unsaved": "Há dados não salvos ou uma tentativa pendente. Sair mesmo assim?",
   "keyCustody": "Chaves sob controle do cliente",
   "lostKey": "Perder a chave mestra torna os segredos inacessíveis. O provedor do ERP não consegue recuperá-los. Gere e exporte seu backup privado na instalação.",
-  "dataDestination": "O destino é escolhido na configuração da instalação: local, servidor próprio ou nuvem do cliente. Selecionar uma conexão não migra dados nem envia chaves ao provedor."
+  "dataDestination": "O destino é escolhido na configuração da instalação: local, servidor próprio ou nuvem do cliente. Selecionar uma conexão não migra dados nem envia chaves ao provedor.",
+  "setupTitle": "Primeiros passos do proprietário",
+  "setupScope": "Este roteiro não executa instalação, não lê suas chaves e não comprova autorização fiscal. Os dados ficam na infraestrutura escolhida por você.",
+  "setupStorage": "Instalação e destino dos dados",
+  "setupStorageHelp": "Use o instalador na máquina escolhida pelo cliente. O caminho --db define o arquivo de dados. Servidor e nuvem do cliente exigem perfil privado, TLS e redes autorizadas; confira o modo antes de conectar o desktop. Não há migração automática.",
+  "setupKeyHelp": "Faça estas operações somente no terminal privado da instalação. A chave é exibida uma vez nesse terminal, nunca nesta tela. Mantenha o backup da chave separado do cofre.",
+  "setupCommands": "Comandos locais existentes",
+  "setupCommandHelp": "Exemplos para o terminal: substitua os caminhos absolutos pelos seus. Inicialize apenas um cofre novo. Exporte o backup antes de confirmar uma rotação; nunca sobrescreva uma instalação existente.",
+  "setupRestore": "Para recuperar, use uma cópia consistente do cofre e a chave correspondente àquela cópia, sob seu controle. Após rotação, preserve backups antigos com suas respectivas chaves e atualize a configuração privada para a nova chave. Sem uma chave correspondente, o provedor não recupera os segredos.",
+  "setupRegistration": "Cadastro manual em duas etapas",
+  "setupSavedOnly": "Os estados abaixo vêm apenas da revisão lida da API. Alterar um formulário ainda não salvo não conclui uma etapa.",
+  "setupPersisted": "Salvo na API",
+  "setupNotConfirmed": "Sem revisão salva confirmada",
+  "setupEditRegistration": "Ir ao formulário",
+  "setupFocus": "Na sua conta Focus, configure o emitente de homologação, A1 e CSC quando exigido. Aqui, salve o perfil fiscal, localize-o na lista e cadastre token/CSC no cofre habilitado pela sua instalação. Leia o diagnóstico. Token presente ou configuração válida não comprovam que a Focus ou a SEFAZ aceitaram uma nota.",
+  "setupStaffHelp": "Abra o cadastro operacional de funcionários, com módulo e permissão ativos. Funcionário e credencial de acesso são distintos. Não conceda papel de proprietário para liberar telas: a emissão NF-e 55 continua exclusiva do proprietário autorizado."
 }

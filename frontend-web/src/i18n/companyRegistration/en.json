@@ -34,5 +34,20 @@
   "unsaved": "Unsaved data or a pending attempt remains. Leave anyway?",
   "keyCustody": "Customer-controlled keys",
   "lostKey": "Losing the master key makes secrets inaccessible. The ERP vendor cannot recover them. Generate and export your private backup at installation.",
-  "dataDestination": "Choose the destination in installation configuration: local, own server or customer cloud. Selecting a connection does not migrate data or send keys to the vendor."
+  "dataDestination": "Choose the destination in installation configuration: local, own server or customer cloud. Selecting a connection does not migrate data or send keys to the vendor.",
+  "setupTitle": "Owner getting started",
+  "setupScope": "This guide does not install software, read your keys or prove fiscal authorization. Data stays on the infrastructure you choose.",
+  "setupStorage": "Installation and data destination",
+  "setupStorageHelp": "Install on the customer-selected machine. The --db path selects the data file. Customer server and cloud modes require private configuration, TLS and allowed networks; inspect the mode before connecting the desktop. No automatic migration occurs.",
+  "setupKeyHelp": "Run these operations only in the installation’s private terminal. The key is shown once in that terminal, never on this screen. Keep its backup separate from the vault.",
+  "setupCommands": "Existing local commands",
+  "setupCommandHelp": "Terminal examples: replace absolute paths with your own. Initialize only a new vault. Export a backup before confirming rotation; never overwrite an existing installation.",
+  "setupRestore": "To recover, use a consistent vault copy and its matching key under your control. After rotation, retain old backups with their respective keys and update private configuration to the new key. Without a matching key, the vendor cannot recover secrets.",
+  "setupRegistration": "Two-stage manual registration",
+  "setupSavedOnly": "These states come only from the revision read from the API. Editing an unsaved form does not complete a step.",
+  "setupPersisted": "Saved by the API",
+  "setupNotConfirmed": "No saved revision confirmed",
+  "setupEditRegistration": "Go to form",
+  "setupFocus": "In your Focus account, configure the homologation issuer, A1 and CSC when required. Here, save the fiscal profile, find it in the list and store token/CSC in the vault enabled by your installation. Read the diagnosis. A present token or valid configuration does not prove Focus or SEFAZ accepted an invoice.",
+  "setupStaffHelp": "Open employee management with an active module and permission. Employee records and access credentials are distinct. Do not grant ownership to unlock screens: NF-e 55 issuance remains restricted to the authorized owner."
 }

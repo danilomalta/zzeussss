@@ -31,10 +31,12 @@ Base: `feat/ci-green`, `1bf33ba1fb9628c198750fed708c2d710d0d4bed`. Reauditoria d
 
 - C1 implementada: `localdb/fiscal/profiles.go`, `localapi/fiscal_profiles.go`, `FiscalProfilePicker.tsx`; `TestHTTPFiscalProfilesLatestPaginationIsolationAndNoAuthority`, `TestHTTPFiscalProfilesRejectOverridesRolesExpiredContractAndSession`, `tests/fiscalProfiles.test.mjs`. Paginação por ID e revisão corrente; sem total fictício, sem armazenamento no navegador. O alias OpenAPI de onboarding continua exclusivamente POST.
 
+- C2 implementada: `CompanySetupSteps.tsx`, `companyRegistration/journey.mjs`, `tests/companySetup.test.mjs`, contrato de navegação `docs/api/customer-installation-flow.md`. Progresso apenas do registro persistido; roteiros de infraestrutura/chaves não são execução nem prova de backup. Acesso a funcionários corrigido para `/local/staff`; nenhuma permissão ampliada e nenhuma rota HTTP nova.
+
 ## Regressão e reversão delimitada
 
 O commit inicial C1 `f6ee2b5` passou cofre/rotação 20 vezes e contratos, mas o teste existente `enterprise89.test.mjs` identificou namespace de traduções incorreto no novo picker. Foi revertido sozinho em `2dba972`. A reapresentação usa o namespace fiscal `fw`, preservando o teste, os cinco idiomas e as demais mudanças da unidade.
 
 ## Validação
 
-Pendente nesta branch: testes novos; após cada lacuna, cofre/rotação `-count=20`, contratos e suíte frontend. Ao final, uma execução completa de aceitação com PostgreSQL/CLIs/bridges e verificador, e frontend completo; comparação com a base verde `feat/ci-green`. Nenhum teste existente será enfraquecido.
+C1 corrigida (`e83adfc`): cofre/rotação `-count=20` passaram (fiscalproduction 61,733s; CLI 0,424s), contratos de 564 rotas passaram, frontend 2.543/2.543, TypeScript e testes Go novos passaram. C2: testes novos, TypeScript e frontend pré-commit 2.547/2.547 passaram. Pendentes: regressões após C2 e uma execução final completa de aceitação com PostgreSQL/CLIs/bridges e verificador, mais frontend completo. Comparação: base verde `feat/ci-green`. Nenhum teste existente foi alterado.

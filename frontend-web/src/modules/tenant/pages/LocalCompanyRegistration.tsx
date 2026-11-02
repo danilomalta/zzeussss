@@ -1,3 +1,4 @@
+import {CompanySetupSteps} from './CompanySetupSteps';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {Link,useBlocker} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
@@ -23,11 +24,11 @@ export default function LocalCompanyRegistration(){
  catch(e){if(alive.current&&current()){if(e instanceof RegistrationError&&e.status>=400&&e.status<500){setPending(null);setMessage(e.code);}else setMessage('uncertain');}}finally{writing.current=false;if(alive.current)setBusy(false);}}
  function stage(value:'pre_registration'|'company_profile'){if(!input)return;if(value==='pre_registration'&&saved?.input.stage==='company_profile')return;setInput(value==='pre_registration'?{...input,stage:value,cnpj:'',legal_name:'',uf:'',state_registration:'',municipality_ibge:'',crt:'',provider:'',environment:''}:{...input,stage:value});}
  const full=input?.stage==='company_profile';
- return <main className="brand-app-content"><h1>{w.title}</h1><p>{w.intro}</p><p>{w.manual}</p><section className="brand-panel" aria-label={w.keyCustody}><h2>{w.keyCustody}</h2><p role="note">{w.lostKey}</p><p>{w.dataDestination}</p></section>
- <nav><Link to="/local/enterprise?area=fiscal">{w.fiscal}</Link> · <Link to="/local/enterprise?area=access">{w.staff}</Link> · <Link to="/local/settings">{w.settings}</Link></nav>
+ return <main className="brand-app-content"><h1>{w.title}</h1><p>{w.intro}</p><p>{w.manual}</p><CompanySetupSteps record={saved} words={w} locale={i18n.resolvedLanguage||i18n.language}/>
+ <nav><Link to="/local/enterprise?area=fiscal">{w.fiscal}</Link> · <Link to="/local/staff">{w.staff}</Link> · <Link to="/local/settings">{w.settings}</Link></nav>
  <button className="brand-secondary" disabled={busy||writing.current||!current()} onClick={()=>void read()}>{pending?w.recover:w.load}</button>
  {message&&<p role="status">{w[message]||w.error}</p>}{pending&&<p>{w.uncertain} · {pending.operation_id}</p>}
- {input&&<form onSubmit={e=>{e.preventDefault();void save();}}><fieldset disabled={busy||!!pending||!current()}>
+ {input&&<form id="company-registration-form" onSubmit={e=>{e.preventDefault();void save();}}><fieldset disabled={busy||!!pending||!current()}>
  <label>{w.stage}<select value={input.stage} onChange={e=>stage(e.target.value as RegistrationInput['stage'])}><option value="pre_registration" disabled={saved?.input.stage==='company_profile'}>{w.pre_registration}</option><option value="company_profile">{w.company_profile}</option></select></label>
  {(['company_name','responsible'] as const).map(k=><label key={k}>{w[k]}<input required maxLength={180} value={input[k]} onChange={e=>setInput({...input,[k]:e.target.value})}/></label>)}
  {full&&<><p>{w.fiscalNote}</p>{(['cnpj','legal_name','uf','state_registration','municipality_ibge','crt'] as const).map(k=><label key={k}>{w[k]}<input required maxLength={k==='legal_name'?180:k==='cnpj'?14:k==='uf'?2:k==='municipality_ibge'?7:k==='crt'?1:20} value={input[k]} onChange={e=>setInput({...input,[k]:e.target.value})}/></label>)}
