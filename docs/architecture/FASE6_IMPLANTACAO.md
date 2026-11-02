@@ -39,3 +39,13 @@ O cliente escolhe e opera host, rede, certificado/proxy, destino montado, superv
 Windows e instalação em máquina Windows limpa: NÃO VALIDADO. Nenhuma emissão real Focus/SEFAZ, credenciamento ou habilitação de produção nesta entrega. Os novos comandos não foram instalados na instalação ativa do usuário e nenhum serviço existente foi reiniciado. A integração automática do novo executável com instaladores existentes não foi alterada; o comando de compilação/instalação acima é explícito e local.
 
 Validação dirigida D: `TestDiagnosticsLocalOnlyReadOnlyBackupKeyAndTLSEvidence`, `TestDiagnosticsRejectsUnsafeFlagsAndDoesNotCreateMissingDatabase`, `TestCustomerVaultDiagnosticReadOnlyAndNeverConfusesOtherKeys` aprovados. Cofre/rotação 20 vezes: fiscalproduction 58,682s, CLI 0,423s. Frontend 2.550/2.550; TypeScript/build e contratos (564 rotas) aprovados. Race nos testes novos de exposição, restauração, diagnóstico e leitura do cofre aprovado. Sem mudanças nas escritas do cofre/rotação, travas fiscais, .github/ ou tools/.
+
+## Validação final — 02/11/2026
+
+Uma execução completa dos comandos do job de aceitação: `go test ./... -count=1 -timeout=30m -json`, seguida do verificador original `tools/verify_backend_acceptance.py`. PostgreSQL 17 descartável, os oito executáveis e todas as variáveis/bridges obrigatórios do workflow. PASS em 730.67s: 1624 testes principais, 3746 incluindo subtestes, 25 integrações obrigatórias aprovadas. **ZERO falhas novas** comparadas com a base `feat/fase5-lacunas` / `d34dcd0`, cuja execução também passou. Nenhuma integração obrigatória pulada.
+
+Os quatro pulos opcionais são os mesmos da base: Focus real sem token/CNPJ; MigrationCrashChild e PilotCashProcess (auxiliares executados pelos pais); PilotCashScreenFlow (ensaio visual opt-in). Nenhuma emissão real.
+
+Após cada item, cofre/rotação `-count=20 -timeout 120s` aprovados (fiscalproduction: A 65,915s; B 60,819s; C 56,706s; D 58,682s), assim como o frontend completo. Final: 2.550 testes frontend, zero falhas/pulos; TypeScript, build frontend, `go build ./...`, contratos de 564 rotas e race dos testes novos aprovados. Build do estágio desktop Linux aprovado em 37,58s; não é ensaio de instalação em máquina limpa. Windows permanece NÃO VALIDADO.
+
+Commits por item: A `6658f20`; B `376862f`; C `1ce2a4c`; D `160537d`. Fonte e instruções publicados na branch `feat/fase6-implantacao`; nenhum merge. Logs locais preservados em `/tmp/titan-fase6-final-4lnfrj_y/runner` e `/tmp/titan-fase6-*.log`; apenas resultados agregados entram no Git. CI remoto não foi conferido. Nenhum banco, segredo, cache ou distribuição foi adicionado à entrega.
