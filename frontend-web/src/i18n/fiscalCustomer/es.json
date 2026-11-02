@@ -153,5 +153,6 @@
   "cceSend": "Enviar CC-e",
   "correction_authorized_homologation": "CC-e registrada en homologación; no modifica venta, inventario ni caja.",
   "correction_failed": "CC-e rechazada; consulte el motivo y Focus.",
-  "correction_reconciliation_required": "CC-e pendiente de conciliación. No envíe otro intento."
+  "correction_reconciliation_required": "CC-e pendiente de conciliación. No envíe otro intento.",
+  "nfseMunicipalBlocked": "NFS-e no disponible en este emisor: contrato municipal, registro del servicio y clasificación requieren revisión específica. No es nota de mercancías."
 }

@@ -153,5 +153,6 @@
   "cceSend": "Envoyer CC-e",
   "correction_authorized_homologation": "CC-e enregistrée en homologation ; vente, stock et caisse inchangés.",
   "correction_failed": "CC-e refusée ; consultez le motif et Focus.",
-  "correction_reconciliation_required": "CC-e à rapprocher. Ne soumettez pas une autre tentative."
+  "correction_reconciliation_required": "CC-e à rapprocher. Ne soumettez pas une autre tentative.",
+  "nfseMunicipalBlocked": "NFS-e indisponible dans cet émetteur : contrat municipal, service et classification fiscale nécessitent une vérification spécifique. Ce n’est pas une facture de marchandises."
 }

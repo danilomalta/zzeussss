@@ -153,5 +153,6 @@
   "cceSend": "Enviar CC-e",
   "correction_authorized_homologation": "CC-e registrada em homologação; não altera venda, estoque ou caixa.",
   "correction_failed": "CC-e recusada; consulte o motivo e a Focus.",
-  "correction_reconciliation_required": "CC-e pendente de conciliação. Não envie outra tentativa."
+  "correction_reconciliation_required": "CC-e pendente de conciliação. Não envie outra tentativa.",
+  "nfseMunicipalBlocked": "NFS-e indisponível neste emissor: contrato municipal, cadastro do serviço e enquadramento precisam de conferência específica. Não é NF-e de mercadoria."
 }

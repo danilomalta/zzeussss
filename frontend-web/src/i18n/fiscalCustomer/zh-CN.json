@@ -153,5 +153,6 @@
   "cceSend": "发送更正函",
   "correction_authorized_homologation": "已记录测试环境更正函；不改变销售、库存或现金。",
   "correction_failed": "更正函被拒绝；请检查原因和 Focus。",
-  "correction_reconciliation_required": "更正函待核对，请勿再次提交。"
+  "correction_reconciliation_required": "更正函待核对，请勿再次提交。",
+  "nfseMunicipalBlocked": "此开票器不提供 NFS-e：须核对市政接口、服务登记和税务分类。它不是商品发票。"
 }

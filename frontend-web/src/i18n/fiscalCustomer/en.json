@@ -153,5 +153,6 @@
   "cceSend": "Send CC-e",
   "correction_authorized_homologation": "CC-e recorded in homologation; sale, stock and cash are unchanged.",
   "correction_failed": "CC-e rejected; review the reason and Focus.",
-  "correction_reconciliation_required": "CC-e requires reconciliation. Do not submit another attempt."
+  "correction_reconciliation_required": "CC-e requires reconciliation. Do not submit another attempt.",
+  "nfseMunicipalBlocked": "NFS-e is unavailable in this emitter: the municipal contract, service registration and tax classification require specific review. It is not a goods invoice."
 }
