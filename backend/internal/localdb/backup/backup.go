@@ -129,7 +129,7 @@ func Restore(ctx context.Context, archive, destination string, device identity.D
 }
 
 func withSnapshot(ctx context.Context, archive string, device identity.DeviceContext, key []byte, destination string, report *Inspection) (bool, error) {
-	return withSnapshotAt(ctx, archive, device, key, destination, report, "", false)
+	return withSnapshotAt(ctx, archive, device, key, destination, report, filepath.Dir(archive), false)
 }
 
 func withSnapshotAt(ctx context.Context, archive string, device identity.DeviceContext, key []byte, destination string, report *Inspection, tempRoot string, allTables bool) (bool, error) {
