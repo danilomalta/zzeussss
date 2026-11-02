@@ -1,3 +1,4 @@
+import {CustomerOperations} from './CustomerOperations';
 import {CompanySetupSteps} from './CompanySetupSteps';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {Link,useBlocker} from 'react-router-dom';
@@ -25,7 +26,7 @@ export default function LocalCompanyRegistration(){
  function stage(value:'pre_registration'|'company_profile'){if(!input)return;if(value==='pre_registration'&&saved?.input.stage==='company_profile')return;setInput(value==='pre_registration'?{...input,stage:value,cnpj:'',legal_name:'',uf:'',state_registration:'',municipality_ibge:'',crt:'',provider:'',environment:''}:{...input,stage:value});}
  const full=input?.stage==='company_profile';
  return <main className="brand-app-content"><h1>{w.title}</h1><p>{w.intro}</p><p>{w.manual}</p><CompanySetupSteps record={saved} words={w} locale={i18n.resolvedLanguage||i18n.language}/>
- <nav><Link to="/local/enterprise?area=fiscal">{w.fiscal}</Link> · <Link to="/local/staff">{w.staff}</Link> · <Link to="/local/settings">{w.settings}</Link></nav>
+ <CustomerOperations locale={i18n.resolvedLanguage||i18n.language} sessionKey={JSON.stringify([token,session])}/><nav><Link to="/local/enterprise?area=fiscal">{w.fiscal}</Link> · <Link to="/local/staff">{w.staff}</Link> · <Link to="/local/settings">{w.settings}</Link></nav>
  <button className="brand-secondary" disabled={busy||writing.current||!current()} onClick={()=>void read()}>{pending?w.recover:w.load}</button>
  {message&&<p role="status">{w[message]||w.error}</p>}{pending&&<p>{w.uncertain} · {pending.operation_id}</p>}
  {input&&<form id="company-registration-form" onSubmit={e=>{e.preventDefault();void save();}}><fieldset disabled={busy||!!pending||!current()}>
