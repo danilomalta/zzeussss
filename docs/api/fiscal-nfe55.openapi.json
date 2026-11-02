@@ -428,6 +428,74 @@
         },
         "summary": "Owner-only homologation CC-e; separate from sale and cancellation; uncertain outcome never retries"
       }
+    },
+    "/local/v1/fiscal/accounting-export": {
+      "get": {
+        "operationId": "fiscalAccountingExport",
+        "summary": "Owner-only local archived homologation XML and CSV; UTC local-record period; missing documents explicit",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pt-BR",
+                "en",
+                "es",
+                "fr",
+                "zh-CN"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ZIP with original XML, summary.csv and READ_ME; unavailable records listed, not SPED",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid period/query or limits: 366 days, 500 records, 50 MiB XML"
+          },
+          "401": {
+            "description": "Current session required"
+          },
+          "403": {
+            "description": "Owner required"
+          }
+        }
+      }
     }
   },
   "components": {

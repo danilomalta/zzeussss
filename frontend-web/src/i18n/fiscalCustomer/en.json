@@ -154,5 +154,13 @@
   "correction_authorized_homologation": "CC-e recorded in homologation; sale, stock and cash are unchanged.",
   "correction_failed": "CC-e rejected; review the reason and Focus.",
   "correction_reconciliation_required": "CC-e requires reconciliation. Do not submit another attempt.",
-  "nfseMunicipalBlocked": "NFS-e is unavailable in this emitter: the municipal contract, service registration and tax classification require specific review. It is not a goods invoice."
+  "nfseMunicipalBlocked": "NFS-e is unavailable in this emitter: the municipal contract, service registration and tax classification require specific review. It is not a goods invoice.",
+  "exportTitle": "Local accountant export",
+  "exportScope": "HOMOLOGATION. UTC local-record period, not fiscal competence. Up to 500 records and 50 MiB XML; missing/uncertain records appear in CSV. Not SPED/EFD/PVA or complete Focus coverage.",
+  "exportPrivacy": "ZIP contains personal data. Choose your folder; without a picker, browser settings apply. Nothing is automatically sent to an accountant.",
+  "exportFrom": "Start (UTC)",
+  "exportUntil": "Last day (UTC)",
+  "exportDownload": "Choose destination and export",
+  "exportSaved": "File delivered to the destination or download manager. Check READ_ME.txt and missing records in CSV.",
+  "exportFailed": "Export cancelled or unavailable. Check session, permission, destination and limits."
 }

@@ -14,6 +14,7 @@ import (
 )
 
 func (s *Server) mountFiscal(r fiber.Router) {
+	r.Get("/fiscal/accounting-export", s.fiscalAccountingExport)
 	r.Post("/fiscal/nfe55/sales/:id/preview", s.fiscalNFe55Preview)
 	r.Post("/fiscal/nfe55/sales/:id/emit", s.fiscalNFe55Emit)
 	r.Post("/fiscal/nfe55/sales/:id/query", s.fiscalNFe55Query)

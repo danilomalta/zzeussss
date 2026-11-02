@@ -154,5 +154,13 @@
   "correction_authorized_homologation": "CC-e enregistrée en homologation ; vente, stock et caisse inchangés.",
   "correction_failed": "CC-e refusée ; consultez le motif et Focus.",
   "correction_reconciliation_required": "CC-e à rapprocher. Ne soumettez pas une autre tentative.",
-  "nfseMunicipalBlocked": "NFS-e indisponible dans cet émetteur : contrat municipal, service et classification fiscale nécessitent une vérification spécifique. Ce n’est pas une facture de marchandises."
+  "nfseMunicipalBlocked": "NFS-e indisponible dans cet émetteur : contrat municipal, service et classification fiscale nécessitent une vérification spécifique. Ce n’est pas une facture de marchandises.",
+  "exportTitle": "Export local pour le comptable",
+  "exportScope": "HOMOLOGATION. Période UTC du registre local, pas compétence fiscale. Jusqu’à 500 registres et 50 Mio XML ; absents/incertains dans le CSV. Ni SPED/EFD/PVA ni couverture complète Focus.",
+  "exportPrivacy": "ZIP contient des données personnelles. Choisissez votre dossier ; sans sélecteur, réglage du navigateur. Aucun envoi automatique au comptable.",
+  "exportFrom": "Début (UTC)",
+  "exportUntil": "Dernier jour (UTC)",
+  "exportDownload": "Choisir le dossier et exporter",
+  "exportSaved": "Fichier remis au dossier ou gestionnaire de téléchargements. Vérifiez READ_ME.txt et absences dans le CSV.",
+  "exportFailed": "Export annulé ou indisponible. Vérifiez session, permission, dossier et limites."
 }

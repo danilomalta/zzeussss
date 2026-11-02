@@ -154,5 +154,13 @@
   "correction_authorized_homologation": "已记录测试环境更正函；不改变销售、库存或现金。",
   "correction_failed": "更正函被拒绝；请检查原因和 Focus。",
   "correction_reconciliation_required": "更正函待核对，请勿再次提交。",
-  "nfseMunicipalBlocked": "此开票器不提供 NFS-e：须核对市政接口、服务登记和税务分类。它不是商品发票。"
+  "nfseMunicipalBlocked": "此开票器不提供 NFS-e：须核对市政接口、服务登记和税务分类。它不是商品发票。",
+  "exportTitle": "本地会计资料导出",
+  "exportScope": "测试环境。按本地登记 UTC 时间筛选，不代表税务所属期。最多 500 条和 50 MiB XML；缺失或不确定的文档列在 CSV。不是 SPED/EFD/PVA，也不保证覆盖全部 Focus 文档。",
+  "exportPrivacy": "ZIP 含个人数据。请选择您的目录；没有选择器时使用浏览器配置。不会自动发给会计师。",
+  "exportFrom": "开始（UTC）",
+  "exportUntil": "最后一天（UTC）",
+  "exportDownload": "选择目录并导出",
+  "exportSaved": "文件已交付到所选目录或下载管理器。请检查 READ_ME.txt 和 CSV 中缺失的记录。",
+  "exportFailed": "导出取消或不可用。请检查会话、权限、目录及限制。"
 }
