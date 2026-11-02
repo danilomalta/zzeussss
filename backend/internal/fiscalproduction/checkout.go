@@ -19,6 +19,9 @@ func (r *Runtime) ValidateCheckoutHomologation(ctx context.Context, a RequestCon
 	if r == nil {
 		return ErrUnavailable
 	}
+	if err := authorizeCustomerCredentials(ctx, a); err != nil {
+		return err
+	}
 	p, err := fiscal.ReadProfile(ctx, a.DB, a.Actor, a.Device, r.binding.ProfileID, 0)
 	if err != nil {
 		return err
@@ -34,10 +37,14 @@ func (r *Runtime) ValidateCheckoutHomologation(ctx context.Context, a RequestCon
 
 type checkoutGuard struct {
 	*fiscal.HomologationRecorder
-	runtime *Runtime
+	runtime   *Runtime
+	authority RequestContext
 }
 
 func (g *checkoutGuard) BeforeSend(ctx context.Context, id string) error {
+	if err := authorizeCustomerCredentials(ctx, g.authority); err != nil {
+		return err
+	}
 	if err := g.runtime.Validate(); err != nil {
 		return err
 	}
@@ -53,6 +60,9 @@ func (r *Runtime) EmitCheckoutHomologation(ctx context.Context, a RequestContext
 	}
 	if r == nil {
 		return state, ErrUnavailable
+	}
+	if err := authorizeCustomerCredentials(ctx, a); err != nil {
+		return state, err
 	}
 	sum := sha256.Sum256([]byte(a.Actor.TenantID + "/" + a.Actor.StoreID + "/" + a.Device.DeviceID + "/" + saleID))
 	op := "checkout-" + hex.EncodeToString(sum[:])
@@ -137,7 +147,7 @@ func (r *Runtime) EmitCheckoutHomologation(ctx context.Context, a RequestContext
 	if err != nil {
 		return
 	}
-	client, e := fiscalcore.NewClientWithServerTrust(r.binding.AuthorizationURL, recorder.Scope(), r.credential, &checkoutGuard{recorder, r}, r.network.ServerRoots, r.network.DialContext)
+	client, e := fiscalcore.NewClientWithServerTrust(r.binding.AuthorizationURL, recorder.Scope(), r.credential, &checkoutGuard{recorder, r, a}, r.network.ServerRoots, r.network.DialContext)
 	if e != nil {
 		err = e
 		return
