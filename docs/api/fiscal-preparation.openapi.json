@@ -334,6 +334,111 @@
             }
           }
         }
+      },
+      "get": {
+        "summary": "Listar revisões correntes da empresa/loja; proprietário, sessão e contrato fiscal ativos; sem transmissão",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta/repetição",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfilePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada ambígua ou inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão ou módulo fiscal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Registro não encontrado neste contexto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito de operação/revisão ou integridade",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno sem conteúdo sensível",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Contrato fiscal indisponível",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/fiscal/profiles/{id}": {
@@ -1511,6 +1616,31 @@
           }
         },
         "description": "Immutable price evidence attached atomically to a completed sale item. Additional ST/FCP-ST/IPI is included in sale/cash/payment total; merchandise remains separately identified. It does not authorize an invoice."
+      },
+      "ProfilePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rows",
+          "has_more",
+          "next_after"
+        ],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Profile"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_after": {
+            "type": "string",
+            "description": "Último ID da página somente quando has_more=true; vazio ao terminar. Ordenação binária por ID, sem total inventado."
+          }
+        }
       }
     }
   }

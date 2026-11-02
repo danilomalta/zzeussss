@@ -1,3 +1,4 @@
+import {FiscalProfilePicker} from './FiscalProfilePicker';
 import {createRegistrationClient,prefillFiscalProfile} from '../../../../core/companyRegistration/client.mjs';
 import {FiscalNFe55} from './FiscalNFe55';
 import {FiscalProviderCredentials} from './FiscalProviderCredentials';
@@ -45,9 +46,9 @@ export function FiscalCustomer(){
   catch(error){if(mounted.current&&n===sequence.current)failure(error);}
   finally{if(mounted.current&&n===sequence.current)setBusy(false);}
  }
- async function load(){
+ async function load(profileID=lookup){
   const n=++sequence.current;setBusy(true);setMessage('');setProfile(null);setInput(null);setGuide(null);setDiagnostic(null);
-  try{const value=await api.read(lookup);if(mounted.current&&n===sequence.current&&current()){setDiagnostic(null);setProfile(value);setInput({...value.input,expected_revision:value.revision});setEdited(false);}}
+  try{const value=await api.read(profileID);if(mounted.current&&n===sequence.current&&current()){setDiagnostic(null);setProfile(value);setInput({...value.input,expected_revision:value.revision});setEdited(false);}}
   catch(error){if(mounted.current&&n===sequence.current)failure(error);}
   finally{if(mounted.current&&n===sequence.current)setBusy(false);}
  }
@@ -85,6 +86,7 @@ export function FiscalCustomer(){
   <p>{fw.scope}: {scope}</p>{!owner&&<p>{fw.readonly}</p>}
   <div className="erp89-actions"><button type="button" className="brand-secondary" disabled={busy||!current()} onClick={()=>void refresh()}>{fw.refresh}</button></div>
   {capabilities&&<section aria-label={fw.installed}><h3>{fw.installed}</h3><dl>{(['transmission','nfse','sped'] as const).map((key,i)=><div key={key}><dt>{fw[key]}</dt><dd>{fw[[capabilities.transmission_available,capabilities.nfse_available,capabilities.sped_generation_available][i]?'yes':'no']}</dd></div>)}</dl></section>}
+  {owner&&<FiscalProfilePicker api={api} isCurrent={current} disabled={blocked||edited} words={fw} onChoose={id=>{setLookup(id);void load(id);}}/>}
   <form onSubmit={e=>{e.preventDefault();void load();}} className="erp89-filters"><label>{fw.lookup}<input required pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,127}" maxLength={128} value={lookup} disabled={blocked||edited} onChange={e=>setLookup(e.target.value)}/></label><button className="brand-secondary" disabled={blocked||edited}>{fw.load}</button><button type="button" className="brand-secondary" disabled={blocked||edited||!owner} onClick={create}>{fw.create}</button></form>
   {busy&&<p role="status">{fw.loading}</p>}{message&&<p role={message==='saved'?'status':'alert'}>{fw[message]||fw.request}</p>}
   {pending&&<section role="status"><p>{pending.scope!==scope?fw.session:fw.uncertain}</p><p>{fw.profile_id}: {pending.input.profile_id} · {pending.input.operation_id} · {fw.revision}: {pending.input.expected_revision+1}</p><button type="button" className="brand-secondary" disabled={busy||pending.scope!==scope||!current()} onClick={()=>void recover()}>{fw.recover}</button></section>}
