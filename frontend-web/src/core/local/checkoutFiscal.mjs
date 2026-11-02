@@ -13,7 +13,7 @@ export function checkoutFiscalView(plan,checkout){
  }
  if(f.state==='cancelled_homologation'||f.state==='cancellation_failed')return {state:f.state==='cancelled_homologation'?'cancelled':'cancellationFailed',message:typeof f.message==='string'?f.message:'',plan};
  if(f.state==='failed')return {state:'failed',plan};
- if(['pending','recovery_required','uncertain','reserved','sending','response_received','not_sent','recovery_pending','protocol_received_homologation'].includes(f.state))return {state:'pending',plan};
+ if(['pending','recovery_required','uncertain','reserved','sending','response_received','not_sent','recovery_pending','protocol_received_homologation'].includes(f.state))return {state:'pending',...(f.error_code==='focus_contingency_pending'?{contingencyPending:true}:{}),plan};
  throw Error('invalidReply');
 }
 

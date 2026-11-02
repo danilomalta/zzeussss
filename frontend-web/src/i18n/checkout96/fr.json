@@ -82,5 +82,6 @@
   "checkoutFiscalMissingRequest": "Retraitement indisponible sur cet appareil : la demande originale n’est pas enregistrée. Aucune nouvelle vente ne sera créée.",
   "checkoutFiscalDemo": "Démonstration : aucune émission fiscale réelle.",
   "checkoutFiscalCancelled": "Document fiscal annulé",
-  "checkoutFiscalCancellationFailed": "Échec de l’annulation du document fiscal"
+  "checkoutFiscalCancellationFailed": "Échec de l’annulation du document fiscal",
+  "checkoutFiscalContingencyPending": "Contingence signalée par Focus : pas encore confirmée à la SEFAZ. Consultez la même référence ; n’émettez pas une autre facture."
 }

@@ -82,5 +82,6 @@
   "checkoutFiscalMissingRequest": "Reprocessamento indisponível neste aparelho: a solicitação original não está salva. Não será criada outra venda.",
   "checkoutFiscalDemo": "Demonstração: nenhuma emissão fiscal real.",
   "checkoutFiscalCancelled": "Nota fiscal cancelada",
-  "checkoutFiscalCancellationFailed": "Erro no cancelamento da nota fiscal"
+  "checkoutFiscalCancellationFailed": "Erro no cancelamento da nota fiscal",
+  "checkoutFiscalContingencyPending": "Contingência informada pela Focus: ainda não efetivada na SEFAZ. Consulte a mesma referência; não emita outra nota."
 }

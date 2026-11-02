@@ -82,5 +82,6 @@
   "checkoutFiscalMissingRequest": "此设备未保存原始请求，无法重新处理。系统不会创建新销售。",
   "checkoutFiscalDemo": "演示模式：不会进行真实税务开票。",
   "checkoutFiscalCancelled": "税务票据已取消",
-  "checkoutFiscalCancellationFailed": "税务票据取消失败"
+  "checkoutFiscalCancellationFailed": "税务票据取消失败",
+  "checkoutFiscalContingencyPending": "Focus 已报告应急开票，但尚未在 SEFAZ 完成。请查询同一引用，不要另开一张发票。"
 }

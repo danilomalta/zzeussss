@@ -82,5 +82,6 @@
   "checkoutFiscalMissingRequest": "Reproceso no disponible en este dispositivo: falta la solicitud original guardada. No se creará otra venta.",
   "checkoutFiscalDemo": "Demostración: sin emisión fiscal real.",
   "checkoutFiscalCancelled": "Documento fiscal cancelado",
-  "checkoutFiscalCancellationFailed": "Error al cancelar el documento fiscal"
+  "checkoutFiscalCancellationFailed": "Error al cancelar el documento fiscal",
+  "checkoutFiscalContingencyPending": "Focus informó contingencia: aún sin confirmar en SEFAZ. Consulte la misma referencia; no emita otra nota."
 }

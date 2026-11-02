@@ -227,16 +227,18 @@ func (p *FocusProvider) claim(ctx context.Context, a RequestContext, sale, ref, 
 }
 
 type focusReply struct {
-	CNPJ         string `json:"cnpj_emitente"`
-	Reference    string `json:"ref"`
-	Status       string `json:"status"`
-	StatusSEFAZ  string `json:"status_sefaz"`
-	MessageSEFAZ string `json:"mensagem_sefaz"`
-	Key          string `json:"chave_nfe"`
-	DANFE        string `json:"caminho_danfe"`
-	Message      string `json:"mensagem"`
-	Code         string `json:"codigo"`
-	Errors       []struct {
+	Offline          *bool  `json:"contingencia_offline"`
+	OfflineFinalized *bool  `json:"contingencia_offline_efetivada"`
+	CNPJ             string `json:"cnpj_emitente"`
+	Reference        string `json:"ref"`
+	Status           string `json:"status"`
+	StatusSEFAZ      string `json:"status_sefaz"`
+	MessageSEFAZ     string `json:"mensagem_sefaz"`
+	Key              string `json:"chave_nfe"`
+	DANFE            string `json:"caminho_danfe"`
+	Message          string `json:"mensagem"`
+	Code             string `json:"codigo"`
+	Errors           []struct {
 		Message string `json:"mensagem"`
 	} `json:"erros"`
 }
@@ -352,8 +354,21 @@ func (p *FocusProvider) exchangeModel(ctx context.Context, method, ref, cnpj str
 		if !fiscalcore.ValidAccessKey(key) || key[6:20] != cnpj || key[20:22] != model {
 			return out, errFocusUncertain
 		}
-		out.State = "authorized_homologation"
 		out.Key = key
+		if reply.OfflineFinalized != nil && *reply.OfflineFinalized && (reply.Offline == nil || !*reply.Offline) {
+			return out, errFocusUncertain
+		}
+		if reply.Offline != nil && *reply.Offline {
+			if model != "65" {
+				return out, errFocusUncertain
+			}
+			if reply.OfflineFinalized == nil || !*reply.OfflineFinalized {
+				out.State = "pending"
+				out.ErrorCode = "focus_contingency_pending"
+				return out, nil
+			}
+		}
+		out.State = "authorized_homologation"
 		if model == "55" && safeFocusDANFEPath(reply.DANFE, cnpj, key) && p.safeMessage(reply.DANFE) == reply.DANFE {
 			out.Evidence, _ = json.Marshal(map[string]string{"danfe_path": reply.DANFE})
 		}
