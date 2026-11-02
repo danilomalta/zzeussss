@@ -3,7 +3,7 @@ import {createNFe55Client,NFe55Error} from '../../../../core/fiscalCustomer/nfe5
 import type {NFe55Preview,NFe55Status} from '../../../../core/fiscalCustomer/nfe55.mjs';
 
 type Props={token:string;isCurrent:()=>boolean;words:Record<string,string>;locale:string};
-const empty=()=>({nature:'',purpose:'',freight_mode:'',recipient:{cnpj:'',cpf:'',name:'',ie:'',address:{street:'',number:'',district:'',city_code:'',city:'',uf:'',postal_code:''}}});
+const empty=()=>({nature:'',purpose:'',freight_mode:'',transport:{cnpj:'',cpf:'',name:'',ie:'',address:'',city:'',uf:''},recipient:{cnpj:'',cpf:'',name:'',ie:'',address:{street:'',number:'',district:'',city_code:'',city:'',uf:'',postal_code:''}}});
 export function FiscalNFe55({token,isCurrent,words:fw,locale}:Props){
  const api=useMemo(()=>createNFe55Client({token,isCurrent}),[token,isCurrent]);
  const [sale,setSale]=useState(''),[preview,setPreview]=useState<NFe55Preview|null>(null),[input,setInput]=useState(empty),[status,setStatus]=useState<NFe55Status|null>(null);
@@ -17,7 +17,7 @@ export function FiscalNFe55({token,isCurrent,words:fw,locale}:Props){
   try{
    if(kind==='danfe'){const blob=await api.danfe(preview.sale_id);if(n!==sequence.current||!isCurrent())return;const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='nfe55-homologacao.pdf';a.click();URL.revokeObjectURL(url);return;}
    let result:NFe55Status;
-   if(kind==='emit'){setAttempted(true);result=await api.emit(preview.sale_id,input);}
+   if(kind==='emit'){setAttempted(true);result=await api.emit(preview.sale_id,{...input,transport:input.freight_mode==='9'?undefined:input.transport});}
    else if(kind==='query')result=await api.query(preview.sale_id);
    else{cancelID.current||=crypto.randomUUID();result=await api.cancel(preview.sale_id,{operation_id:cancelID.current,reason,confirmed});}
    if(n===sequence.current&&isCurrent()){setStatus(result);if(result.error_code==='focus_request_unsupported')setAttempted(false);if(kind==='emit')setInput(empty());}
@@ -27,7 +27,7 @@ export function FiscalNFe55({token,isCurrent,words:fw,locale}:Props){
  const money=(c:number)=>new Intl.NumberFormat(locale,{style:'currency',currency:'BRL'}).format(c/100);
  const states:Record<string,string>={authorized_homologation:'nfeAuthorized',failed:'nfeRejected',cancelled_homologation:'nfeCancelled',cancellation_failed:'nfeCancelError',pending:'nfePending',recovery_required:'nfePending',not_requested:'nfeNotRequested'};
  const disabled=busy||!isCurrent();
- return <section aria-label={fw.nfeTitle} className="fiscal-nfe55"><h3>{fw.nfeTitle}</h3><p role="note" className="nfe55-banner"><strong>{fw.nfeBanner}</strong></p><p>{fw.nfeScope}</p><p>{fw.nfeUnavailable}</p>
+ return <section aria-label={fw.nfeTitle} className="fiscal-nfe55"><h3>{fw.nfeTitle}</h3><p role="note" className="nfe55-banner"><strong>{fw.nfeBanner}</strong></p><p>{fw.nfeScope}</p><p>{fw.nfeUnavailable}</p><p role="note">{fw.taxAccountantUnapproved}</p>
  <form onSubmit={e=>{e.preventDefault();void load();}}><label>{fw.nfeSale}<input required autoComplete="off" value={sale} disabled={busy} maxLength={128} onChange={e=>{setSale(e.target.value);setPreview(null);setStatus(null);setInput(empty());setAttempted(false);}}/></label><button disabled={disabled} className="brand-secondary">{fw.nfeLoad}</button></form>
  {error&&<p role="alert">{fw['nfeError_'+error]||fw.nfeFailure}</p>}
  {preview&&<><table><caption>{fw.nfeItems}</caption><thead><tr><th>{fw.nfeProduct}</th><th>{fw.nfeQuantity}</th><th>{fw.nfeValue}</th></tr></thead><tbody>{preview.items.map((item,i)=><tr key={i}><td>{item.product_id}</td><td>{(item.quantity_milli/1000).toFixed(3)}</td><td>{money(item.total_cents)}</td></tr>)}</tbody></table><p>{fw.nfeTotal}: {money(preview.total_cents)}</p>
@@ -35,7 +35,8 @@ export function FiscalNFe55({token,isCurrent,words:fw,locale}:Props){
  <form onSubmit={e=>{e.preventDefault();void action('emit');}}><fieldset disabled={disabled||attempted||!preview.mapping_supported}>
  <legend>{fw.nfeDetails}</legend><label>{fw.nfeNature}<input required value={input.nature} maxLength={60} autoComplete="off" onChange={e=>setInput({...input,nature:e.target.value})}/></label>
  <label>{fw.nfePurpose}<select required value={input.purpose} onChange={e=>setInput({...input,purpose:e.target.value})}><option value="">{fw.choose}</option><option value="1">{fw.nfeNormal}</option></select></label>
- <label>{fw.nfeFreight}<select required value={input.freight_mode} onChange={e=>setInput({...input,freight_mode:e.target.value})}><option value="">{fw.choose}</option><option value="9">{fw.nfeNoFreight}</option></select></label>
+ <label>{fw.nfeFreight}<select required value={input.freight_mode} onChange={e=>setInput({...input,freight_mode:e.target.value})}><option value="">{fw.choose}</option>{['0','1','2','3','4'].map(code=><option key={code} value={code}>{fw['nfeFreight_'+code]}</option>)}<option value="9">{fw.nfeNoFreight}</option></select></label>
+ {input.freight_mode&&input.freight_mode!=='9'&&<fieldset><legend>{fw.nfeTransport}</legend><p>{fw.nfeFrozenFreight}</p>{(['name','cnpj','cpf','ie','address','city','uf'] as const).map(key=><label key={key}>{fw['nfeTransport_'+key]}<input autoComplete="off" required={key==='name'} maxLength={key==='uf'?2:key==='cnpj'||key==='cpf'||key==='ie'?14:60} value={input.transport[key]} onChange={e=>setInput({...input,transport:{...input.transport,[key]:e.target.value}})}/></label>)}</fieldset>}
  <div className="erp89-form">{(['name','cnpj','cpf','ie'] as const).map(key=><label key={key}>{fw['nfe_'+key]}<input required={key==='name'} maxLength={key==='name'?60:14} autoComplete="off" value={input.recipient[key]} onChange={e=>setInput({...input,recipient:{...input.recipient,[key]:e.target.value}})}/></label>)}
  {(['street','number','district','city_code','city','uf','postal_code'] as const).map(key=><label key={key}>{fw['nfe_'+key]}<input required={!['city_code','postal_code'].includes(key)} autoComplete="off" maxLength={key==='uf'?2:key==='city_code'?7:key==='postal_code'?8:60} value={input.recipient.address[key]} onChange={e=>setInput({...input,recipient:{...input.recipient,address:{...input.recipient.address,[key]:e.target.value}}})}/></label>)}</div>
  <p>{fw.nfePrivacy}</p><button className="brand-primary">{fw.nfeEmit}</button></fieldset></form>

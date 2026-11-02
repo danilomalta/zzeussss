@@ -28,7 +28,7 @@ func (p *FocusProvider) documentModel() string {
 }
 
 func validateFocusNFeInput(t fiscalcore.Invoice, in DocumentRequest, p fiscal.ProfileInput) error {
-	if t.Presence != "1" || in.Purpose != "1" || in.FreightMode != "9" || t.Direction != "1" || t.Destination != "1" || t.FinalConsumer != "1" || strings.TrimSpace(t.Nature) != t.Nature || utf8.RuneCountInString(t.Nature) < 1 || utf8.RuneCountInString(t.Nature) > 60 {
+	if t.Presence != "1" || in.Purpose != "1" || focusTransportFields(map[string]any{}, in) != nil || t.Direction != "1" || t.Destination != "1" || t.FinalConsumer != "1" || strings.TrimSpace(t.Nature) != t.Nature || utf8.RuneCountInString(t.Nature) < 1 || utf8.RuneCountInString(t.Nature) > 60 {
 		return ErrFocusNFeIncomplete
 	}
 	r := t.Recipient

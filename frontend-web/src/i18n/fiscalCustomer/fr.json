@@ -130,5 +130,20 @@
   "profileList": "Rechercher les profils enregistrés",
   "profileListHint": "Profils de cette entreprise et de ce magasin. Un enregistrement ne prouve pas l’autorisation officielle.",
   "profileListEmpty": "Aucun profil sur cette page.",
-  "profileListNext": "Page suivante"
+  "profileListNext": "Page suivante",
+  "nfeTransport": "Transporteur",
+  "nfeFrozenFreight": "Fret et taxes proviennent du devis enregistré ; ce formulaire n’ajoute pas de frais. Le fret taxé reste indisponible dans ce flux.",
+  "nfeTransport_name": "Nom",
+  "nfeTransport_cnpj": "CNPJ",
+  "nfeTransport_cpf": "CPF",
+  "nfeTransport_ie": "Inscription fiscale",
+  "nfeTransport_address": "Adresse",
+  "nfeTransport_city": "Ville",
+  "nfeTransport_uf": "État",
+  "nfeFreight_0": "Expéditeur",
+  "nfeFreight_1": "Destinataire",
+  "nfeFreight_2": "Tiers",
+  "nfeFreight_3": "Transport propre à l’expéditeur",
+  "nfeFreight_4": "Transport propre au destinataire",
+  "taxAccountantUnapproved": "HOMOLOGATION : classification sans preuve d’approbation comptable. Cette approbation sera exigée pour la production ; celle-ci reste bloquée."
 }

@@ -130,5 +130,20 @@
   "profileList": "Find saved profiles",
   "profileListHint": "Profiles for this company and store. A saved registration does not prove official authorization.",
   "profileListEmpty": "No profiles on this page.",
-  "profileListNext": "Next page"
+  "profileListNext": "Next page",
+  "nfeTransport": "Carrier",
+  "nfeFrozenFreight": "Freight and taxes come from the persisted quote; this form adds no charges. Taxed freight is not yet supported in this flow.",
+  "nfeTransport_name": "Name",
+  "nfeTransport_cnpj": "CNPJ",
+  "nfeTransport_cpf": "CPF",
+  "nfeTransport_ie": "State registration",
+  "nfeTransport_address": "Address",
+  "nfeTransport_city": "City",
+  "nfeTransport_uf": "State",
+  "nfeFreight_0": "Sender",
+  "nfeFreight_1": "Recipient",
+  "nfeFreight_2": "Third party",
+  "nfeFreight_3": "Sender own transport",
+  "nfeFreight_4": "Recipient own transport",
+  "taxAccountantUnapproved": "HOMOLOGATION: classification is not yet evidenced as accountant-approved. Approval will be required to enable production; production remains blocked."
 }

@@ -130,5 +130,20 @@
   "profileList": "Localizar perfis salvos",
   "profileListHint": "Perfis desta empresa e loja. Cadastro salvo não comprova autorização oficial.",
   "profileListEmpty": "Nenhum perfil nesta página.",
-  "profileListNext": "Próxima página"
+  "profileListNext": "Próxima página",
+  "nfeTransport": "Transportador",
+  "nfeFrozenFreight": "Valores de frete e impostos vêm da cotação persistida; esta tela não acrescenta cobranças. Frete tributado ainda não suportado neste fluxo.",
+  "nfeTransport_name": "Nome",
+  "nfeTransport_cnpj": "CNPJ",
+  "nfeTransport_cpf": "CPF",
+  "nfeTransport_ie": "Inscrição estadual",
+  "nfeTransport_address": "Endereço",
+  "nfeTransport_city": "Município",
+  "nfeTransport_uf": "UF",
+  "nfeFreight_0": "Remetente",
+  "nfeFreight_1": "Destinatário",
+  "nfeFreight_2": "Terceiros",
+  "nfeFreight_3": "Próprio do remetente",
+  "nfeFreight_4": "Próprio do destinatário",
+  "taxAccountantUnapproved": "HOMOLOGAÇÃO: enquadramento ainda não comprovado como aprovado por contador. A aprovação será exigida para habilitar produção; produção permanece bloqueada."
 }

@@ -489,11 +489,19 @@
           "freight_mode": {
             "type": "string",
             "enum": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
               "9"
             ]
           },
           "recipient": {
             "$ref": "#/components/schemas/Recipient"
+          },
+          "transport": {
+            "$ref": "#/components/schemas/Transport"
           }
         },
         "required": [
@@ -588,6 +596,43 @@
           "items",
           "mapping_supported",
           "status"
+        ]
+      },
+      "Transport": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cnpj": {
+            "type": "string",
+            "maxLength": 14
+          },
+          "cpf": {
+            "type": "string",
+            "maxLength": 11
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "ie": {
+            "type": "string",
+            "maxLength": 14
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "uf": {
+            "type": "string",
+            "maxLength": 2
+          }
+        },
+        "required": [
+          "name"
         ]
       }
     }

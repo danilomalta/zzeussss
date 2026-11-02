@@ -125,6 +125,9 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 	}
 	payload := map[string]any{"cnpj_emitente": p.CNPJ, "serie": fmt.Sprint(p.Series), "inscricao_estadual_emitente": p.StateRegistration, "regime_tributario_emitente": p.CRT, "data_emissao": time.Now().UTC().Format(time.RFC3339), "natureza_operacao": template.Nature, "tipo_documento": "1", "finalidade_emissao": "1", "local_destino": "1", "consumidor_final": "1", "presenca_comprador": template.Presence, "indicador_inscricao_estadual_destinatario": "9", "modalidade_frete": "9", "valor_total": focusMoney(snapshot.TotalCents), "items": items, "formas_pagamento": payments}
 	if p.Model == "55" {
+		if err := focusTransportFields(payload, in); err != nil {
+			return nil, err
+		}
 		payload["finalidade_emissao"] = in.Purpose
 		payload["modalidade_frete"] = in.FreightMode
 		payload["tipo_documento"] = template.Direction

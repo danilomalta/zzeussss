@@ -72,10 +72,11 @@ func (s *Server) fiscalNFe55Action(c *fiber.Ctx, action string) error {
 	req := fiscalproduction.DocumentRequest{SaleID: c.Params("id"), Model: "55", Environment: 2}
 	if action == "emit" {
 		var in struct {
-			Nature      string            `json:"nature"`
-			Purpose     string            `json:"purpose"`
-			FreightMode string            `json:"freight_mode"`
-			Recipient   nfeRecipientInput `json:"recipient"`
+			Nature      string                           `json:"nature"`
+			Purpose     string                           `json:"purpose"`
+			FreightMode string                           `json:"freight_mode"`
+			Transport   *fiscalproduction.FocusTransport `json:"transport,omitempty"`
+			Recipient   nfeRecipientInput                `json:"recipient"`
 		}
 		if fiscalcore.DecodeInput(c.Body(), &in) != nil {
 			return fiscalFailure(c, fiscal.ErrInvalid)
@@ -94,6 +95,7 @@ func (s *Server) fiscalNFe55Action(c *fiber.Ctx, action string) error {
 		req.Invoice, _ = json.Marshal(invoice)
 		req.Purpose = in.Purpose
 		req.FreightMode = in.FreightMode
+		req.Transport = in.Transport
 	} else if action == "cancel" {
 		var in struct {
 			OperationID string `json:"operation_id"`

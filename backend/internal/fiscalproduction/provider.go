@@ -12,6 +12,7 @@ import (
 // With SaleID empty, Emit uses the already prepared/approved fiscal intent.
 type DocumentRequest struct {
 	// Purpose and FreightMode are explicit NF-e inputs; no fiscal defaults.
+	Transport         *FocusTransport
 	Purpose           string
 	FreightMode       string
 	Model             string

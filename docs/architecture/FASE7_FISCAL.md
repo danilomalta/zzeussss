@@ -1,0 +1,8 @@
+# Fase 7 — homologação, limites por etapa
+
+Base: feat/fase6-implantacao / f26b46c. Nenhuma emissão real ou aceitação oficial comprovada. Nenhuma habilitação de produção, A3 ou alteração no cofre/rotação. Testes de transporte usam autoridade HTTP descartável e não demonstram autorização Focus/SEFAZ.
+
+## E1 — PARCIAL
+Fonte: https://campos.focusnfe.com.br/nfe_homologacao/NotaFiscalXML.html (modalidade_frete e grupo transportador), consultada em 02/11/2026. Modalidades explícitas 0/1/2/3/4/9 e identificação/endereço do transportador passam pelo contrato existente, formulário em memória e validação sem defaults. Nenhuma alíquota, CFOP ou cobrança é inferida. Valor de frete tributado não pode ser criado nessa tela: a cotação imutável e o pagamento da venda precisam reconciliar.
+BLOQUEIO de entrada/devolução/complemento/ajuste: os intents existentes possuem FK para sales e snapshot de venda confirmada; não há origem de entrada/devolução com cotação fiscal correspondente neste fluxo. Alterar tipo/finalidade ou anexar chave a uma venda não cria a operação de origem e poderia reutilizar CFOP/imposto incompatível. Permanecem recusados, incluindo finalidades de crédito/débito sem classificação e campos específicos. Não se inventa a origem ou referência fiscal. Emissão/cancelamento da tela continuam somente proprietário com sessão e contrato ativos. Demais campos e operações não mapeados continuam explicitamente recusados.
+Evidência E1: TestFocusTransportDocumentedFieldsWithoutFreightOrTaxDefaults, testes Focus e TestHTTPNFe55OwnerContractPrivacyAndStates existentes. Cinco idiomas: transporte, limite de frete e aviso de revisão contábil não comprovada; aprovação por contador será requisito da habilitação de produção, que não é implementada.

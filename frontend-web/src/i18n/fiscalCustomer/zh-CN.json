@@ -130,5 +130,20 @@
   "profileList": "查找已保存的税务配置",
   "profileListHint": "仅显示本企业和门店的配置。保存登记不代表获得官方授权。",
   "profileListEmpty": "本页没有配置。",
-  "profileListNext": "下一页"
+  "profileListNext": "下一页",
+  "nfeTransport": "承运人",
+  "nfeFrozenFreight": "运费和税额来自已保存的报价；此表单不添加费用。此流程暂不支持计税运费。",
+  "nfeTransport_name": "名称",
+  "nfeTransport_cnpj": "CNPJ",
+  "nfeTransport_cpf": "CPF",
+  "nfeTransport_ie": "州税登记",
+  "nfeTransport_address": "地址",
+  "nfeTransport_city": "城市",
+  "nfeTransport_uf": "州",
+  "nfeFreight_0": "发货方",
+  "nfeFreight_1": "收货方",
+  "nfeFreight_2": "第三方",
+  "nfeFreight_3": "发货方自运",
+  "nfeFreight_4": "收货方自运",
+  "taxAccountantUnapproved": "测试环境：税务分类尚无会计师批准证明。启用生产环境将要求该批准；生产环境仍被阻止。"
 }

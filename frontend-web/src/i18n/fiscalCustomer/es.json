@@ -130,5 +130,20 @@
   "profileList": "Buscar perfiles guardados",
   "profileListHint": "Perfiles de esta empresa y tienda. El registro guardado no acredita autorización oficial.",
   "profileListEmpty": "No hay perfiles en esta página.",
-  "profileListNext": "Página siguiente"
+  "profileListNext": "Página siguiente",
+  "nfeTransport": "Transportista",
+  "nfeFrozenFreight": "Flete e impuestos provienen de la cotización guardada; este formulario no añade cargos. Flete gravado aún no soportado en este flujo.",
+  "nfeTransport_name": "Nombre",
+  "nfeTransport_cnpj": "CNPJ",
+  "nfeTransport_cpf": "CPF",
+  "nfeTransport_ie": "Inscripción estatal",
+  "nfeTransport_address": "Dirección",
+  "nfeTransport_city": "Municipio",
+  "nfeTransport_uf": "Estado",
+  "nfeFreight_0": "Remitente",
+  "nfeFreight_1": "Destinatario",
+  "nfeFreight_2": "Terceros",
+  "nfeFreight_3": "Transporte propio del remitente",
+  "nfeFreight_4": "Transporte propio del destinatario",
+  "taxAccountantUnapproved": "HOMOLOGACIÓN: clasificación aún sin aprobación contable comprobada. Se exigirá aprobación para producción; producción sigue bloqueada."
 }
