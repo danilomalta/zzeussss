@@ -126,9 +126,5 @@
   "nfeError_provider_unavailable": "Configure o provedor Focus da empresa com perfil NF-e 55 e token privado.",
   "nfeError_network": "Resposta incerta. Consulte a mesma venda; não reenvie a emissão.",
   "nfeError_session": "Sessão ou contexto alterado. Entre novamente.",
-  "nfeError_focus_request_unsupported": "Grupo tributário sem mapeamento ou cotação fiscal ausente. Corrija o cadastro fiscal; nenhum imposto foi inventado.",
-  "profileList": "Localizar perfis salvos",
-  "profileListHint": "Perfis desta empresa e loja. Cadastro salvo não comprova autorização oficial.",
-  "profileListEmpty": "Nenhum perfil nesta página.",
-  "profileListNext": "Próxima página"
+  "nfeError_focus_request_unsupported": "Grupo tributário sem mapeamento ou cotação fiscal ausente. Corrija o cadastro fiscal; nenhum imposto foi inventado."
 }

@@ -126,9 +126,5 @@
   "nfeError_provider_unavailable": "Configure this company’s Focus provider with NF-e 55 profile and private token.",
   "nfeError_network": "Uncertain response. Consult the same sale; do not resend issuance.",
   "nfeError_session": "Session or context changed. Sign in again.",
-  "nfeError_focus_request_unsupported": "Unmapped tax group or missing tax quote. Correct fiscal configuration; no tax was invented.",
-  "profileList": "Find saved profiles",
-  "profileListHint": "Profiles for this company and store. A saved registration does not prove official authorization.",
-  "profileListEmpty": "No profiles on this page.",
-  "profileListNext": "Next page"
+  "nfeError_focus_request_unsupported": "Unmapped tax group or missing tax quote. Correct fiscal configuration; no tax was invented."
 }

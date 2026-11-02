@@ -21228,9 +21228,7 @@
       "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-quotes~1{id}"
     },
     "/local/v1/fiscal/onboarding": {
-      "post": {
-        "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1profiles/post"
-      }
+      "$ref": "./fiscal-preparation.openapi.json#/paths/~1fiscal~1profiles"
     },
     "/local/v1/fiscal/onboarding/{id}": {
       "$ref": "./fiscal-onboarding.openapi.json#/paths/~1fiscal~1onboarding~1{id}"

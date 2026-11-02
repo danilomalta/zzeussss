@@ -30,7 +30,6 @@ func (s *Server) mountFiscal(r fiber.Router) {
 	r.Get("/fiscal/onboarding/:id/provider", s.fiscalCustomerCredentials)
 	r.Post("/fiscal/onboarding/:id/provider", s.fiscalCustomerCredentials)
 	r.Get("/fiscal/onboarding/:id", s.fiscalOnboarding)
-	r.Get("/fiscal/profiles", s.listFiscalProfiles)
 	r.Post("/fiscal/profiles", s.configureFiscal)
 	r.Get("/fiscal/profiles/:id", s.readFiscalProfile)
 	r.Post("/fiscal/intents", s.prepareFiscal)

@@ -126,9 +126,5 @@
   "nfeError_provider_unavailable": "请为本公司配置 NF-e 55 档案和私密 Focus 令牌。",
   "nfeError_network": "响应不确定。请查询同一销售，不要重新发送开票请求。",
   "nfeError_session": "会话或上下文已变更，请重新登录。",
-  "nfeError_focus_request_unsupported": "税种尚未映射或缺少税费报价。请修正财政配置；系统不会编造税款。",
-  "profileList": "查找已保存的税务配置",
-  "profileListHint": "仅显示本企业和门店的配置。保存登记不代表获得官方授权。",
-  "profileListEmpty": "本页没有配置。",
-  "profileListNext": "下一页"
+  "nfeError_focus_request_unsupported": "税种尚未映射或缺少税费报价。请修正财政配置；系统不会编造税款。"
 }
