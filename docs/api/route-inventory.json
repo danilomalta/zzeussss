@@ -3990,6 +3990,13 @@
       "path": "/local/v1/fiscal/tax-tables/import",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/checkout/plans/:id/fiscal/danfe",
+      "authentication": "session",
+      "source": "backend/internal/localapi/checkout_plans.go"
     }
   ]
 }

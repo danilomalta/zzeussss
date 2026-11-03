@@ -153,7 +153,11 @@ func (r *Runtime) EmitCheckoutHomologation(ctx context.Context, a RequestContext
 		return
 	}
 	defer client.Close()
-	evidence, e := client.IssueHomologationNFe(ctx, op, "1", in)
+	if r.qr == nil {
+		err = fiscalcore.ErrInput
+		return
+	}
+	evidence, e := client.IssueHomologationNFe(ctx, op, "1", in, fiscalcore.HomologationSupplement{QR: *r.qr, Consultation: r.consultation})
 	err = e
 	state.State = evidence.State
 	if e == nil && len(evidence.ProcessedXML) > 0 {

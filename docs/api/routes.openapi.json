@@ -21322,6 +21322,9 @@
     },
     "/local/v1/fiscal/tax-tables/import": {
       "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-tables~1import"
+    },
+    "/local/v1/checkout/plans/{id}/fiscal/danfe": {
+      "$ref": "./checkout-plans.openapi.json#/paths/~1local~1v1~1checkout~1plans~1{id}~1fiscal~1danfe"
     }
   },
   "components": {

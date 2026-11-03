@@ -52,6 +52,20 @@ export function createCheckoutFiscalClient({fetcher=globalThis.fetch,getCurrent}
    if(!view.canRetry)throw Error('missingRequest');
    return request(checkout,{},signal,true);
   });}
-  return {read,finalize,retry};
+  async function document(checkout,options,signal){
+   if(!id(checkout)||![58,80].includes(options?.width)||typeof options?.timezone!=='string'||options.timezone.length>100)throw Error('invalidReply');
+   assertCurrent();const abort=new AbortController(),onAbort=()=>abort.abort();signal?.addEventListener('abort',onAbort,{once:true});if(signal?.aborted)abort.abort();
+   const timer=setTimeout(()=>abort.abort(),15000);
+   try{
+    if(abort.signal.aborted)throw Error('aborted');
+    const params=new URLSearchParams({width_mm:String(options.width),timezone:options.timezone});
+    const response=await fetcher(`/local/v1/checkout/plans/${encodeURIComponent(checkout)}/fiscal/danfe?${params}`,{method:'GET',credentials:'omit',cache:'no-store',signal:abort.signal,headers:{Authorization:`Bearer ${token}`}});
+    assertCurrent();if(abort.signal.aborted)throw Error('aborted');
+    if(!response.ok||response.headers.get('X-Titan-Fiscal-Scope')!=='homologation'||!/^text\/html(?:;|$)/i.test(response.headers.get('Content-Type')||''))throw Error('unavailable');
+    const html=await response.text();assertCurrent();if(abort.signal.aborted)throw Error('aborted');
+    if(!html||html.length>2000000)throw Error('invalidReply');return html;
+   }finally{clearTimeout(timer);signal?.removeEventListener('abort',onAbort);}
+  }
+  return {read,finalize,retry,document};
  }};
 }

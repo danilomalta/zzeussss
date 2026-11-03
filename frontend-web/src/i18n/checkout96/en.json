@@ -85,5 +85,9 @@
   "checkoutFiscalCancellationFailed": "Fiscal document cancellation failed",
   "checkoutFiscalContingencyPending": "Focus reported contingency: not yet finalized at SEFAZ. Consult the same reference; do not issue another invoice.",
   "checkoutFiscalAccountantUnapproved": "HOMOLOGATION: classification is not yet evidenced as accountant-approved. Approval will be required to enable production; production remains blocked.",
-  "checkoutFiscalArchivePending": "XML is not yet archived locally. Check the private backup key and query the same invoice; do not issue another sale or invoice."
+  "checkoutFiscalArchivePending": "XML is not yet archived locally. Check the private backup key and query the same invoice; do not issue another sale or invoice.",
+  "checkoutFiscalPrint": "Print sandbox NFC-e",
+  "checkoutFiscalPaper": "NFC-e paper",
+  "checkoutFiscalPrintHelp": "The document uses the archived authorized XML, including QR code and access key. SANDBOX — NO FISCAL VALUE. Select the same paper in the printer driver.",
+  "checkoutFiscalPrintUnavailable": "The fiscal document could not be opened. Check its archive, your session and popup permissions. The sale remains recorded."
 }

@@ -21,6 +21,7 @@ func (s *Server) mountCheckoutPlans(r fiber.Router) {
 	r.Post("/checkout/plans/:id/cancel", s.cancelCheckoutPlan)
 	r.Post("/checkout/plans/:id/finalize-cash", s.finalizeCashCheckoutPlan)
 	r.Post("/checkout/plans/:id/fiscal/reprocess", s.reprocessCheckoutFiscal)
+	r.Get("/checkout/plans/:id/fiscal/danfe", s.readCheckoutFiscalDANFE)
 }
 
 func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
@@ -262,4 +263,22 @@ func (s *Server) cancelCheckoutPlan(c *fiber.Ctx) error {
 		return saleError(c, err)
 	}
 	return c.JSON(v)
+}
+
+// Reads the archived fiscal artifact. Printing never emits, retries or changes a sale.
+func (s *Server) readCheckoutFiscalDANFE(c *fiber.Ctx) error {
+	if !fiscalRead(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	opts, valid := fiscalPrintOptions(c)
+	if !valid || (opts.WidthMM != 58 && opts.WidthMM != 80) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	a := fiscalproduction.RequestContext{DB: s.DB, License: s.contracts, Actor: ss.Actor, Device: ss.Device, Token: ss.Token}
+	out, err := s.fiscalProviders.CheckoutNFCeDANFE(c.UserContext(), a, c.Params("id"), opts)
+	if err != nil {
+		return fiscalFailure(c, err)
+	}
+	return sendFiscalDANFE(c, out)
 }

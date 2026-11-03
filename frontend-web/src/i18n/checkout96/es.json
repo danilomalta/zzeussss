@@ -85,5 +85,9 @@
   "checkoutFiscalCancellationFailed": "Error al cancelar el documento fiscal",
   "checkoutFiscalContingencyPending": "Focus informó contingencia: aún sin confirmar en SEFAZ. Consulte la misma referencia; no emita otra nota.",
   "checkoutFiscalAccountantUnapproved": "HOMOLOGACIÓN: clasificación aún sin aprobación contable comprobada. Se exigirá aprobación para producción; producción sigue bloqueada.",
-  "checkoutFiscalArchivePending": "El XML aún no está archivado localmente. Verifique la clave privada de respaldo y consulte la misma nota; no emita otra venta o nota."
+  "checkoutFiscalArchivePending": "El XML aún no está archivado localmente. Verifique la clave privada de respaldo y consulte la misma nota; no emita otra venta o nota.",
+  "checkoutFiscalPrint": "Imprimir NFC-e de homologación",
+  "checkoutFiscalPaper": "Papel de la NFC-e",
+  "checkoutFiscalPrintHelp": "El documento usa el XML autorizado archivado, con código QR y clave de acceso. HOMOLOGACIÓN — SIN VALOR FISCAL. Configure el mismo papel en la impresora.",
+  "checkoutFiscalPrintUnavailable": "No se pudo abrir el documento fiscal. Revise el archivo, la sesión y los permisos de ventanas emergentes. La venta sigue registrada."
 }

@@ -36,10 +36,17 @@ type IssuanceEvidence struct {
 // build, official XSD/signature checks, durable reserve, send guard and mTLS.
 // A number must already have been selected by the trusted installation. This
 // method neither allocates it nor selects/approves taxes. No automatic retries.
-func (c *Client) IssueHomologationNFe(ctx context.Context, operationID, lot string, in Invoice) (IssuanceEvidence, error) {
+// HomologationSupplement supplies the existing NFC-e QR completion mechanism.
+// It is installation configuration, never a caller-selected URL from checkout.
+type HomologationSupplement struct {
+	QR           QRConfiguration
+	Consultation string
+}
+
+func (c *Client) IssueHomologationNFe(ctx context.Context, operationID, lot string, in Invoice, supplement ...HomologationSupplement) (IssuanceEvidence, error) {
 	var out IssuanceEvidence
 	r, ok := c.recorder.(InvoiceRecorder)
-	if !ok || in.Environment != 2 || in.Key.Emission != 1 {
+	if !ok || in.Environment != 2 || in.Key.Emission != 1 || len(supplement) > 1 || len(supplement) == 1 && in.Key.Model != "65" {
 		return out, ErrUnsupported
 	}
 	if err := r.ValidateInvoice(ctx, in); err != nil {
@@ -52,6 +59,12 @@ func (c *Client) IssueHomologationNFe(ctx context.Context, operationID, lot stri
 	signed, err := c.credential.SignXML("nfe", raw, time.Now())
 	if err != nil {
 		return out, err
+	}
+	if len(supplement) == 1 {
+		signed, err = c.credential.CompleteNFCeXML(supplement[0].QR, supplement[0].Consultation, signed, time.Now())
+		if err != nil {
+			return out, err
+		}
 	}
 	out = IssuanceEvidence{State: "not_sent", Key: key, SignedXML: signed}
 	exchange, err := c.SubmitNFe(ctx, operationID, lot, signed)

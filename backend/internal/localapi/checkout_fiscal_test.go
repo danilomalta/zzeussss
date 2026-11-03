@@ -184,6 +184,25 @@ func TestHTTPCheckoutNFCeHomologationIntegration(t *testing.T) {
 		if completed.Fiscal.State != "authorized_homologation" {
 			t.Fatalf("not authorized: %+v", completed.Fiscal)
 		}
+
+		// Printing reads the authorized archive and never reaches the issuer.
+		beforePrint := p.issues.Load()
+		for _, width := range []string{"58", "80"} {
+			printPath := planPath + "/" + id + "/fiscal/danfe?width_mm=" + width + "&timezone=America%2FSao_Paulo"
+			code, html := request(t, p.f.app, "GET", printPath, "", p.f.token)
+			if code != 200 || !bytes.Contains(html, []byte("SEM VALOR FISCAL")) || !bytes.Contains(html, []byte("data:image/png;base64,")) {
+				t.Fatalf("checkout fiscal print: %d %s", code, html)
+			}
+			if code, _ := request(t, p.f.app, "GET", printPath, "", other.f.token); code != 401 {
+				t.Fatal("foreign print allowed", code)
+			}
+		}
+		if code, _ := request(t, p.f.app, "GET", planPath+"/"+id+"/fiscal/danfe?width_mm=210&timezone=UTC", "", p.f.token); code != 400 {
+			t.Fatal("NFC-e A4 accepted", code)
+		}
+		if p.issues.Load() != beforePrint {
+			t.Fatal("printing resent invoice")
+		}
 		before := p.issues.Load()
 		code, raw = request(t, p.f.app, "POST", path, planJSON(t, payload), p.f.token)
 		if code != 200 || p.issues.Load() != before || !bytes.Contains(raw, []byte(`"authorized_homologation"`)) {
