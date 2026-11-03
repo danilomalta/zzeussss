@@ -1,5 +1,29 @@
 # Continuidade do TitanSystem
 
+## Lacunas — entrega incremental de 03/11/2026
+
+Branch `feat/lacunas-implementacao`, preservando a base auditada `fbbf2bc` e o documento `6d99eb3`. Esta entrega NÃO encerra os dez itens do backlog.
+
+- `bc591aa`: impressão NFC-e 58/80 mm pelo ID da venda, lendo journal nativo ou XML Focus cifrado já arquivado. Nova rota GET `/local/v1/checkout/plans/:id/fiscal/danfe`, contratos atualizados. Reutiliza o renderizador, a validação e o suplemento QR existentes; não emite para imprimir. Corrigida a chamada do checkout nativo para anexar o suplemento antes da transmissão de homologação. XML antigo sem QR continua explicitamente não imprimível, sem adulteração/reenvio automático. Cancelamento/estado incerto/arquivo adulterado/produção recusados para cópia ativa. UI em cinco idiomas, sem guardar token/XML na janela de impressão ou no armazenamento persistente do navegador; abortar a sessão fecha preparação de impressão.
+- `9b2655a`: contas inexistentes executam bcrypt também no login local e online, com verificador aleatório que não pertence a nenhuma conta. Testes comparam falhas de contas existentes/inexistentes, recuperação e sexta tentativa local recusada com 429. Não implementa bloqueio persistente/distribuído por conta nem prova igualdade absoluta de tempo.
+- Instalação Linux com seis executáveis reais, destino novo e dados descartáveis: inicialização e leitura por segundo processo passaram; nenhum serviço instalado foi substituído/iniciado. Isso não é ensaio de máquina/OS limpo nem Windows.
+- Executável `titan-backup` real: key-init/create/verify/restore-test passaram sobre banco e chave sintéticos novos; 188 tabelas conferidas, data_matches/sessions_revoked verdadeiros, cópias temporárias removidas. Testes existentes de restauração corrente e snapshot cifrado também passaram. Nenhum banco comercial ou segredo instalado foi aberto.
+- Validação: pacotes fiscalcore, fiscalproduction, localauth, core/security e auth/usecase passaram com `-timeout 120s -count=1`; localapi apenas seleção fiscal/login/recuperação. Seleção HTTP final passou com `-race`; novo arquivo cifrado também passou no teste pontual com `-race`. Frontend: 2.562 testes, zero falhas/pulados; TypeScript e builds frontend/desktop passaram; `go build ./...` passou. Mapa de 568 rotas conferido. Builds ainda avisam sobre chunks grandes da planilha. Nenhuma emissão real, CI remoto ou impressora física foi validada.
+
+Pendências preservadas, sem confundir código com dependência externa:
+1. Cupom: código integrado, prova local; Focus/SEFAZ real e impressão física continuam externas ao ensaio sintético.
+2. Instalação: ensaios Linux descartáveis e restauração por CLI comprovados; GUI instalada em OS limpo, Windows e periféricos NÃO VALIDADOS. Runtime Electron não encontrado no caminho do node_modules local; apenas o estágio desktop foi construído.
+3. Autenticação: reforço e testes entregues; política durável/distribuída por conta e medição temporal completa permanecem pendentes.
+4. Credenciais históricas: revogação NÃO comprovada. Os titulares precisam revogar/trocar; não foram lidas ou trocadas chaves de clientes/provedor nesta entrega.
+5. TEF: integração autorizadora real continua AUSENTE; exige contrato/protocolo de adquirente, não é resolvida por seleção manual de modalidade.
+6. Hardware: decisão do criador nesta sessão: cada cliente configura os seus equipamentos; não exigir que o criador cadastre periféricos próprios. Impressão usa o driver do SO; drivers/protocolos adicionais de balança/gaveta/leitor ainda exigem código e ensaio. Não prometer compatibilidade universal sem protocolo/teste.
+7. Contas a receber/faturamento: implementação completa ainda pendente, não alterada nesta entrega.
+8. Mobile operacional/offline: implementação ainda pendente, não alterada nesta entrega.
+9. Operação multiloja completa: ainda pendente além do isolamento existente, não alterada nesta entrega.
+10. Fidelidade transacional: ainda pendente, não alterada nesta entrega.
+
+O criador continua sendo o fornecedor do ERP, não o emitente. Clientes escolhem implantação, dados, chaves e equipamentos. Sem conta mestra, telemetria fiscal ou produção habilitada. Não transformar testes sintéticos em prova de aceitação oficial.
+
 ## Cadastro em duas etapas — decisão do criador em 30/10/2026
 
 - Haverá pré-cadastro com o mínimo necessário para concluir a entrada inicial no sistema; os campos mínimos ainda devem ser definidos, sem inventar exigências nesta decisão.
