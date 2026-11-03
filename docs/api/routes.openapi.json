@@ -21325,6 +21325,27 @@
     },
     "/local/v1/checkout/plans/{id}/fiscal/danfe": {
       "$ref": "./checkout-plans.openapi.json#/paths/~1local~1v1~1checkout~1plans~1{id}~1fiscal~1danfe"
+    },
+    "/local/v1/finance/receivables": {
+      "$ref": "./receivables.openapi.json#/paths/~1local~1v1~1finance~1receivables"
+    },
+    "/local/v1/finance/receivables/operations/{id}": {
+      "$ref": "./receivables.openapi.json#/paths/~1local~1v1~1finance~1receivables~1operations~1{id}"
+    },
+    "/local/v1/finance/receivables/{id}": {
+      "$ref": "./receivables.openapi.json#/paths/~1local~1v1~1finance~1receivables~1{id}"
+    },
+    "/local/v1/finance/receivables/{id}/receive-cash": {
+      "$ref": "./receivables.openapi.json#/paths/~1local~1v1~1finance~1receivables~1{id}~1receive-cash"
+    },
+    "/local/v1/finance/receivables/{id}/cancel": {
+      "$ref": "./receivables.openapi.json#/paths/~1local~1v1~1finance~1receivables~1{id}~1cancel"
+    },
+    "/local/v1/finance/receivables/operations/{id}/reconcile": {
+      "$ref": "receivables.openapi.json#/paths/~1local~1v1~1finance~1receivables~1operations~1{id}~1reconcile"
+    },
+    "/local/v1/finance/receivables/customer-orders/{id}": {
+      "$ref": "receivables.openapi.json#/paths/~1local~1v1~1finance~1receivables~1customer-orders~1{id}"
     }
   },
   "components": {

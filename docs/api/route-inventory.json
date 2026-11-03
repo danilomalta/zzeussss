@@ -3997,6 +3997,62 @@
       "path": "/local/v1/checkout/plans/:id/fiscal/danfe",
       "authentication": "session",
       "source": "backend/internal/localapi/checkout_plans.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/receivables",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receivables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/receivables",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receivables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/receivables/operations/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receivables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/receivables/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receivables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/receivables/:id/receive-cash",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receivables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/receivables/:id/cancel",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receivables.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/finance/receivables/operations/:id/reconcile",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receivables.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/finance/receivables/customer-orders/:id",
+      "authentication": "session",
+      "source": "backend/internal/localapi/receivables.go"
     }
   ]
 }

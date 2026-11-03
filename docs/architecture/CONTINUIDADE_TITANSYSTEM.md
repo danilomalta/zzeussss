@@ -1,5 +1,192 @@
 # Continuidade do TitanSystem
 
+## Recebíveis vinculados a pedidos autenticados — 03/11/2026, 16:01 -03
+
+Repositório `/home/danillo-malta/projetos/zzeussss`; branch inicial/final `feat/lacunas-implementacao`; HEAD inicial/final `05518e9ccb087928e84a620903d6ad697f846e13`. Todas as alterações locais anteriores, inclusive a reconciliação, foram preservadas. **Sem commit/push/merge, troca de branch, reset/clean, pacote, instalação ou deploy.** Esta é uma unidade de integração ao financeiro existente; **A continua PARCIAL e B/C/D continuam pendentes no alcance completo** do pedido atual.
+
+### Implementado e limites exatos
+
+- O documento/recebível existente aceita `customer_order` opcional: ID da mensagem, referência das condições comerciais documentadas e confirmação explícita do operador. Não foi criado outro fluxo de cobrança ou banco de faturas paralelo. O modo manual continua compatível; a inclusão opcional não altera o hash dos comandos manuais antigos. Não cria outra venda, entrada/baixa de estoque ou movimento de caixa ao registrar o documento.
+- `supplycycle.CustomerBillingOrderTx` reaproveita a verificação de envelopes/assinaturas já existente. Exige pedido **recebido** de parceiro cliente ativo e decisão **confirmada** assinada pelo vendedor local, vinculada ao mesmo envelope, contraparte, pedido, produto, unidade e aparelho destinatário. Pedido de compra de saída, ausência/recusa de confirmação, contexto indevido ou origem inexistente não viram recebível.
+- A mensagem comercial v1 **não contém preços, vencimentos nem aceite monetário do comprador**. A tela exige referência e confirmação explícita das condições que o operador documentou; não inventa preço, prazo, imposto, entrega física ou autorização bancária. A origem autenticada prova pedido/quantidade, não liquidação ou recebimento físico. O contrato e a tela nos cinco idiomas tornam essa diferença explícita. Não foi implementado protocolo bilateral de condições monetárias.
+- Criação exige ManageCash/Finance e, quando vinculada ao pedido, também ViewOrders/Orders na mesma transação com sessão atual. Proprietário/gerente autorizados usam o modelo existente; caixa não recebe nova permissão. `BEGIN IMMEDIATE` e o helper de contenção existente protegem documento, origem, parcelas, operação e auditoria. Uma disputa tem um documento ativo e um 409, sem escrita parcial.
+- Migração incremental `0080_receivable_customer_orders.sql`: vínculo/snapshot imutáveis e unicidade do documento ativo pela identidade **empresa/loja do cliente + pedido**, não apenas pelo ID da mensagem de transporte. Cancelar documento sem recebimentos libera esse vínculo na mesma transação, preservando o documento e origem antigos; um documento corrigido exige ação explícita com novos IDs/referência. Documento com recebimento não pode ser cancelado para simular estorno. A origem comercial e suas decisões não são alteradas.
+- Recebimentos parciais/totais reutilizam a integração atômica ao caixa, auditoria, idempotência e recuperação/reconciliação anteriores. A tela diferencia recebido parcialmente, liquidado e cancelado. Não há reenvio automático. A nova origem aparece no detalhe; token, corpo da operação e condições comerciais não são gravados em armazenamento persistente do navegador.
+- Nova consulta autenticada `GET /local/v1/finance/receivables/customer-orders/:id`, registrada nos contratos/inventário. Requer ViewAccounting e ViewOrders e mantém todos os filtros de escopo. Uma segunda loja **autorizada**, no mesmo SQLite e com sessão/aparelho próprios, não lê o documento, recibo ou origem da primeira, não fatura sua origem e não recebe seu dinheiro. Listagem dessa loja é vazia; o token do primeiro aparelho é recusado no segundo. Isto comprova isolamento deste fluxo, **não** seleção, filas, relatórios e sincronização multiloja de todos os módulos.
+
+### Arquivos desta unidade
+
+Novos: `backend/internal/localdb/supplycycle/billing_order.go`; `backend/internal/localdb/receivables/customer_order.go`; `backend/internal/localdb/migrations/0080_receivable_customer_orders.sql`; `backend/internal/localapi/receivables_customer_order_test.go`.
+
+Atualizados sobre o trabalho local: `backend/internal/localdb/receivables/store.go`; `backend/internal/localapi/receivables.go`; `frontend-web/src/core/receivables/client.mjs`, `client.d.mts` e `words.mjs`; `frontend-web/src/modules/financial/pages/LocalReceivables.tsx`; `frontend-web/tests/receivables.test.mjs` e `receivables.bridge.mjs`; `docs/api/receivables.openapi.json`, `routes.openapi.json`, `route-inventory.json`; este registro. Nenhuma alteração em cofre, rotação, travas fiscais, tools, workflows ou dependências.
+
+### Evidências e comandos reais
+
+**Integração:** duas APIs HTTP reais em loopback, bancos SQLite descartáveis e autoridades/chaves sintéticas distintas executam vínculo entre empresas, exportação/importação do pedido e confirmação assinada. No vendedor: documento → parcelas → recebimento de 300 + 300 + 400 centavos → liquidação. O replay não duplica dinheiro; caixa soma 1.000 centavos em três movimentos. Backup cifrado/restaurado preserva documento, origem, IDs, auditoria e liquidação. A ponte Node usa `receivables/client.mjs` contra a API real com origem verificada; perde artificialmente só a resposta já efetivada, recupera por GET e liquida sem duplicar caixa. Não se trata de Focus/SEFAZ, TEF ou comunicação monetária oficial entre empresas.
+
+**Código/testes:** concorrência de faturamento, cancelamento/reemissão sem recebimento, preservação do histórico, rollback na origem/auditoria/cancelamento inclusive trigger IGNORE, recusa de condição não confirmada/cliente incorreto/JSON forjado/pedido pendente ou declinado, proteção imutável das mensagens, licença/papel, contexto do cliente trocado e segunda loja autorizada. As respostas e o pedido de criação também foram conferidos com o schema do contrato. O formulário foi tipado/compilado; não foi alegado ensaio visual completo de cliques React.
+
+**Checks finais, todos passaram:**
+1. Com `TITAN_RECEIVABLES_BRIDGE=/home/danillo-malta/projetos/zzeussss/frontend-web/tests/receivables.bridge.mjs` e `TITAN_RECEIVABLES_BROWSER_BRIDGE=/home/danillo-malta/projetos/zzeussss/frontend-web/tests/receivables.browser.mjs`: `go test ./internal/localapi -run '^(TestHTTPReceivables|TestReceivablesFrontendRealHTTPBridge|TestReceivablesBrowserRestartRecovery|TestReceivablesCustomerOrderFrontendBridge)' -timeout 120s -count=1`: 22,837 s; `/tmp/titan-ar-order-final-api.log`. Inclui regressões de recebíveis/reconciliação e ponte Chrome/IndexedDB real já existente; as pontes opt-in foram explicitamente habilitadas, inclusive a nova de pedido.
+2. `go test -race ./internal/localapi -run '^(TestHTTPReceivablesCustomerOrderConcurrentBilling|TestHTTPReceivablesCustomerOrderRollback|TestHTTPReceivablesCustomerOrderAuthorizedSecondStoreCannotAdoptOrigin)$' -timeout 120s -count=1`: 55,959 s, sem corrida detectada; `/tmp/titan-ar-order-final-race.log`.
+3. `go test ./internal/localdb ./internal/localdb/receivables ./internal/localdb/supplycycle -timeout 120s -count=1`: localdb 8,829 s e supplycycle 0,021 s passaram; receivables compila, com testes de integração no localapi e sem arquivo de teste próprio. `/tmp/titan-ar-order-final-packages.log`.
+4. `go test ./internal/localdb/backup -run '^(TestCurrentSchemaBackupRestoresDataAndRevokesSessions|TestAuthenticatedFutureSchemaSnapshotIsRefused)$' -timeout 120s -count=1`: 1,032 s; `/tmp/titan-ar-order-final-backup.log`. A nova migração está incluída no esquema corrente derivado por `LatestSchemaVersion()`; não há teto novo escrito à mão. O upgrade com documentos populados do teste de migração existente também passou.
+5. `node tests/receivables.test.mjs`: 25 passaram; `/tmp/titan-ar-order-client.log`. `node --test tests/*.test.mjs`: **2.587 passaram, zero falhas e zero pulados**, 3,698 s; `/tmp/titan-ar-order-final-front.log`.
+6. `npm run build`: TypeScript/Vite passaram, Vite 21,68 s; `/tmp/titan-ar-order-final-build.log`. Persiste aviso pré-existente dos chunks grandes da planilha. `go build ./...`: passou; `/tmp/titan-ar-order-final-go-build.log`.
+7. `python3 tools/check_api_contracts.py`: **576 rotas conferidas**. `git diff --check`: passou. Não foi executada a suíte backend inteira nem CI remoto. Nos testes novos, o DTO inicialmente enviava um campo somente de resposta (`received_cents`) e foi corrigido para o contrato estrito; a proteção imutável da mensagem também foi mantida e afirmada, não desativada. Nenhum teste preexistente foi enfraquecido.
+
+### Retomada e pendências preservadas
+
+Próximo ponto: **continuar A, não anunciar seu encerramento.** Faltam venda a prazo/origem autoritativa do checkout (hoje a conclusão local é dinheiro), vinculação financeira dessa venda, faturamento parcial por quantidade/origem e estorno/compensação com efeito financeiro explicitamente definido. Não converter venda já paga em dívida nem considerar parcelamento de recebimento como faturamento parcial por quantidade. Conferir `sale/checkout_plan.go`, `checkout_cash.go`, `sale.go`, cancelamentos/devoluções e seus contratos antes de ampliar efeitos. O pedido comercial atual também não inclui aprovação monetária bilateral; essa ampliação exige contrato e ação humana próprios, sem inventar condições aceitas pelo comprador.
+
+B permanece parcial além da prova de isolamento deste fluxo: seleção/operação multiloja, filas e relatórios de todos os módulos e replicação comercial entre bancos independentes ainda precisam de integração. Nenhum tipo novo de evento foi colocado em fila para um receptor que não o entende; auditoria da origem é local. C (mobile/offline com consistência) e D (fidelidade conforme regras aprovadas) não foram implementados nesta unidade. Não foram inventados direitos de venda offline, resgate ou política de pontos.
+
+TEF, Windows limpo, periféricos/instalação física e homologação fiscal continuam bloqueios externos: exigem contrato/SDK e sandbox autorizado, executor/equipamentos e emitente/credenciais privados do **cliente**, conforme o caso. Nenhum segredo ou banco de produção foi lido/usado. Não houve emissão ou pagamento externo, teste físico ou atualização da instalação em uso. **Produção permanece BLOQUEADA; o sistema e o pedido amplo não estão encerrados.**
+
+## Reconciliação explícita dos recebíveis — 03/11/2026, 06:00 -03
+
+**Unidade 1 implementada e testada no ambiente descartável abaixo.** Repositório `/home/danillo-malta/projetos/zzeussss`, branch `feat/lacunas-implementacao`, HEAD inicial/final `05518e9ccb087928e84a620903d6ad697f846e13`. Foram preservadas as alterações não commitadas das duas entradas anteriores. Não houve commit, push, merge, troca de branch, reset/clean, deploy, instalação ou alteração de serviço/banco do cliente. Esta entrada encerra a pendência anterior de resolução explícita de ponteiro sem recibo, dentro do fluxo local de recebíveis; não encerra o pedido inteiro.
+
+### Semântica e autorização implementadas
+
+- Novo `POST /local/v1/finance/receivables/operations/:id/reconcile`, com `{document_id, action, confirmed:true}`. Nenhum campo de empresa/loja/ator/aparelho é aceito do corpo. Exige sessão atual validada novamente na transação, Finance ativo e ManageCash (modelo existente de proprietário/gerente); consulta e resultado ficam limitados ao ator/aparelho/empresa/loja originais. Contador/caixa não reconciliam. Sem confirmação explícita: 400; outro ator tentando adotar resolução existente: 409; consulta por outro ator: 404; contrato ausente: 403; runtime ausente: 503.
+- Dentro de `sqlitewrite.Run` (BEGIN IMMEDIATE antes de consultar, timeout de contenção e retentativa limitada do helper existente): se já existe recibo compatível, devolve o resultado original. Não cancela ou estorna venda, dinheiro, documento ou estoque. Se não existe, registra resolução imutável `not_applied` na migração incremental `0079_receivable_reconciliation.sql`, com IDs originais, ator, ação e data. A tentativa fica permanentemente impedida de executar depois; um novo lançamento legítimo tem outro ID e exige decisão explícita do operador, não reenvio automático.
+- Toda mutação de recebível verifica a resolução antes do trabalho financeiro. Triggers também impedem coexistência de resolução sem efeito e operação aplicada. Recebimento e reconciliação concorrentes são serializados: ou o recibo original vence e é recuperado, ou a resolução vence e o comando atrasado recebe 409 sem movimentar caixa. Não há cancelamento fiscal ou reembolso implícito.
+- Se existe movimento físico com o ID derivado do comando, mas falta seu recibo financeiro, a resolução é recusada com 409: inconsistência exige investigação, não declaração automática de ausência de efeito. Inserção da auditoria abortada/ignorada não confirma resolução e não bloqueia indevidamente o comando original. Auditoria/resolução não podem ser atualizadas/apagadas pelo mecanismo normal.
+- GET da operação também devolve a resolução terminal. O cliente consulta antes do POST explícito de reconciliação, valida IDs/ação/resultado e somente então remove seu ponteiro durável. Perda da resposta ou falha ao limpar armazenamento conserva a possibilidade de recuperação por GET. Mudança de sessão durante a consulta impede POST e não descarta a tentativa.
+- Tela real de recebíveis: botão separado com confirmação, explicação e resultado “sem efeito financeiro”, nos cinco idiomas. Não há envio automático, token/corpo de comando/dados de destinatário em armazenamento persistente. A reserva IndexedDB continua protegendo abas concorrentes. Nenhuma fila comercial nova foi inventada; a resolução é local ao banco e não foi declarada replicada entre bancos independentes.
+
+### Arquivos desta unidade
+
+Novos: `backend/internal/localdb/migrations/0079_receivable_reconciliation.sql`; `backend/internal/localdb/receivables/reconciliation.go`; `backend/internal/localdb/receivable_reconciliation_migration_test.go`; `backend/internal/localapi/receivables_reconciliation_test.go`.
+
+Atualizados sobre o trabalho local existente: `backend/internal/localdb/receivables/store.go`; `backend/internal/localapi/receivables.go`; `frontend-web/src/core/receivables/client.mjs`; `client.d.mts` e `words.mjs` no mesmo diretório; `frontend-web/src/modules/financial/pages/LocalReceivables.tsx`; `frontend-web/tests/receivables.test.mjs`; `frontend-web/tests/receivables.browser.mjs`; `docs/api/receivables.openapi.json`; `docs/api/routes.openapi.json`; `docs/api/route-inventory.json`; este registro. Nenhuma dependência, tools, workflow, cofre, rotação ou trava de produção alterados.
+
+### Evidências realmente executadas
+
+**Código/testes focados:** novos testes SQLite/API cobrem ausência/recibo existente, duplicidade da reconciliação, disputa com recebimento, bloqueio de recebimento/cancelamento atrasados, rejeição de ator/contexto incompatível e sessão revogada entre a guarda HTTP e a transação, confirmação e JSON estritos, inconsistência de caixa, rollback inclusive trigger IGNORE e preservação/restauração da auditoria. O teste de upgrade popula documentos no esquema anterior, migra duas vezes e verifica dados/IDs e a versão via `LatestSchemaVersion()`, além da exclusão por trigger. Não usa teto numérico fixo.
+
+**Integração real:** `TestReceivablesBrowserRestartRecovery` usa Chrome 145 headless, IndexedDB persistente e API/SQLite reais descartáveis. Agora são quatro reinícios completos do processo. Depois de um ponteiro sem recibo, faz reconciliação explícita, perde artificialmente só a resposta já efetivada, fecha o Chrome, reabre e recupera `not_applied` por GET; enviar o comando antigo recebe 409. Duas entradas de caixa continuam somando exatamente 1.000 centavos, sem duplicação. Não é ensaio de cliques/visual da tela React, de instalação do cliente ou de Windows/periféricos.
+
+**Checks finais (todos passaram):**
+1. `TITAN_RECEIVABLES_BRIDGE=/home/danillo-malta/projetos/zzeussss/frontend-web/tests/receivables.bridge.mjs TITAN_RECEIVABLES_BROWSER_BRIDGE=/home/danillo-malta/projetos/zzeussss/frontend-web/tests/receivables.browser.mjs go test ./internal/localapi -run '^(TestHTTPReceivables|TestReceivablesFrontendRealHTTPBridge|TestReceivablesBrowserRestartRecovery)' -timeout 120s -count=1`: 17,314 s; `/tmp/titan-ar-reconcile-all-api.log`. Inclui regressões financeiras afetadas e as duas pontes reais habilitadas, sem alegar execução do localapi inteiro.
+2. `go test -race ./internal/localapi -run '^TestHTTPReceivablesReconcile' -timeout 120s -count=1`: 48,913 s, sem achado de corrida; `/tmp/titan-ar-reconcile-race.log`.
+3. `go test ./internal/localdb ./internal/localdb/receivables -timeout 120s -count=1`: localdb passou em 9,639 s; receivables compila e não possui arquivo de teste próprio (integrações estão no localapi). `/tmp/titan-ar-reconcile-db.log`.
+4. `go test ./internal/localdb/backup -run '^(TestCurrentSchemaBackupRestoresDataAndRevokesSessions|TestAuthenticatedFutureSchemaSnapshotIsRefused)$' -timeout 120s -count=1`: 1,041 s; `/tmp/titan-ar-reconcile-backup.log`. Rodados porque a nova migração altera o esquema corrente. Restauração com resolução nova também passou no teste HTTP específico.
+5. `node tests/receivables.test.mjs`: 21 passaram; `/tmp/titan-ar-reconcile-front.log`. `node --test tests/*.test.mjs`: **2.583 passaram, zero falhas e zero pulados**, 5,151 s; `/tmp/titan-ar-reconcile-all-front.log`.
+6. `npm run build`: TypeScript e Vite passaram, Vite 22,37 s; `/tmp/titan-ar-reconcile-build.log`. Persiste aviso anterior de chunks grandes da planilha. `go build ./...`: passou; `/tmp/titan-ar-reconcile-go-build.log`.
+7. `python3 tools/check_api_contracts.py`: **575 rotas conferidas**. `git diff --check`: passou. Não foi repetida a suíte backend inteira ou ensaios independentes não afetados. Nenhum CI remoto foi executado/alegado.
+
+### Retomada exata e pendências
+
+Esta rodada termina uma unidade funcional, conforme a alternativa de orçamento/contexto do pedido. **Itens 2, 3, 4 e 5 não foram iniciados nem marcados como concluídos.** Próximo: item 2, faturamento a partir de origem autoritativa de venda/pedido, começando por `backend/internal/localdb/sale/checkout_plan.go`, `checkout_cash.go`, `supplycycle/trade_protocol.go` e contratos correspondentes, para definir/vincular a origem e condições financeiras sem transformar venda paga em dívida nem inventar preço/prazo. O fluxo atual em dinheiro e o pedido comercial assinado sem condições monetárias não bastam, por si sós, para faturamento a prazo. Permanecem código a implementar os estados/reversões/parcelas dessas origens, operação multiloja comercial, fidelidade segundo política aprovada e mobile/offline com direitos consistentes. Antes de implementar pontos, conferir as decisões/política existentes, sem presumir parâmetros comerciais.
+
+A resolução é comprovada em SQLite local e sobrevive ao backup/restauração e reinício; não resolve perda/evicção do perfil do navegador ou replicação para bancos independentes. As mudanças ainda precisam ser aplicadas à instalação que o cliente usa, em etapa própria autorizada; não foi afirmado que o software instalado já as contém.
+
+Bloqueios externos preservados: TEF (contrato/protocolo/SDK e sandbox autorizado); Windows limpo; periféricos/protocolos e impressão física do cliente; revogação histórica pelos titulares com evidência do provedor; emitente cliente autorizado e Focus/A1/CSC/token privados para homologação real. Não foram lidos segredos nem bancos de produção, e nenhuma dessas validações foi declarada concluída. **Produção permanece BLOQUEADA.**
+
+## Recuperação durável dos recebíveis — 03/11/2026
+
+Repositório `/home/danillo-malta/projetos/zzeussss`, branch `feat/lacunas-implementacao`, HEAD `05518e9ccb087928e84a620903d6ad697f846e13` confirmado antes e depois. As alterações locais dos recebíveis da entrada abaixo foram preservadas; **sem troca de branch, commit, push, instalação, publicação ou deploy**. Esta entrada substitui somente o limite anterior de recuperação exclusivamente em memória; o restante da entrada anterior continua válido.
+
+### Código e integração
+
+- Novo `frontend-web/src/core/receivables/recovery.mjs`: journal IndexedDB `titan-receivables-recovery`, reservado em transação readwrite **antes do POST**. Guarda somente IDs de empresa/loja/ator/aparelho como escopo e IDs de operação/documento/ação como valor. Não guarda corpo, referências/descrição do cliente, valores, token, senha ou objeto de sessão. Não usa localStorage. Falha do armazenamento impede o POST.
+- `client.mjs`/`client.d.mts`: hidratação das pendências, reserva exclusiva entre abas, consulta da operação original pela API e remoção somente após resultado coerente confirmado (ou rejeição definitiva do primeiro envio ainda não incerto). Falha ao remover não anuncia sucesso e conserva pendência recuperável por GET. Mudança de sessão durante a gravação impede POST e preserva o ponteiro. Permissões e isolamento no servidor continuam os mesmos.
+- Reenvio explícito só é admitido quando ainda existem o corpo original e **a mesma sessão** em memória. Depois de reabrir/entrar novamente, permite somente consulta: nem mesmo o botão de reenvio envia um POST sem essa prova. Não há reenvio automático nem descarte por logout/mudança de contexto. Outra empresa/loja/ator/aparelho não carrega o ponteiro anterior.
+- `LocalReceivables.tsx`: aguarda hidratação antes de permitir mutações; erro na leitura mantém escrita bloqueada. A área de recuperação explica, nos cinco idiomas de `words.mjs`, a restrição após reabrir e a necessidade de reconciliação se a tentativa não for encontrada. Nenhuma rota nova ou contrato HTTP foi introduzido nesta unidade.
+
+### Evidências executadas, separadas
+
+**Integração real descartável:** novo `TestReceivablesBrowserRestartRecovery` em `backend/internal/localapi/receivables_frontend_bridge_test.go` executa `frontend-web/tests/receivables.browser.mjs` com Google Chrome 145 headless real, via CDP da biblioteca padrão Node. Perfil em pasta temporária, IndexedDB real e API/SQLite real em loopback. Fecha o processo por completo e reabre o mesmo perfil três vezes. Perda artificial apenas da resposta já confirmada pela API, na criação e no primeiro recebimento: GET recupera, sem novo POST. Dois recebimentos de 500 centavos produzem exatamente duas entradas e 1.000 centavos no caixa, conferidos também em SQL no teste Go. Duas abas disputam a reserva IndexedDB: exatamente uma vence. Ponteiro sem recibo continua depois de reiniciar e não pode ser reenviado. Perfil descartável é removido ao terminar. Isto **não** é ensaio de navegação visual da tela React ou de equipamento/instalação do cliente.
+
+**Comandos e resultados:**
+1. `TITAN_RECEIVABLES_BROWSER_BRIDGE=/home/danillo-malta/projetos/zzeussss/frontend-web/tests/receivables.browser.mjs go test ./internal/localapi -run '^TestReceivablesBrowserRestartRecovery$' -v -timeout 120s -count=1`: passou, pacote 1,599 s; log `/tmp/titan-ar-browser.log`.
+2. Com `TITAN_RECEIVABLES_BRIDGE` e `TITAN_RECEIVABLES_BROWSER_BRIDGE` apontando aos scripts correspondentes: `go test -race ./internal/localapi -run '^(TestHTTPReceivables|TestReceivablesFrontendRealHTTPBridge|TestReceivablesBrowserRestartRecovery)' -timeout 120s -count=1`: passou, 69,059 s; `/tmp/titan-ar-durable-race.log`. Inclui todos os cenários atuais de recebíveis, a ponte Node/API e o navegador real. Não foi executado o pacote localapi inteiro.
+3. `node tests/receivables.test.mjs`: 16 testes passaram, sem falhas/pulados; `/tmp/titan-ar-recovery-unit.log`. Seis regressões novas cobrem hidratação, 404 durável, novo login sem reenvio, falha de gravação, troca de sessão durante reserva e falha de limpeza após confirmação.
+4. `node --test tests/*.test.mjs`: **2.578 passaram, zero falhas e zero pulados**, 4,720 s; `/tmp/titan-ar-durable-all-frontend.log`.
+5. `npm run build`: TypeScript e Vite passaram, Vite 21,59 s; aviso pré-existente de chunks grandes da planilha permanece. `/tmp/titan-ar-durable-build.log`. `go build ./...`: passou; `/tmp/titan-ar-durable-go-build.log`.
+6. `python3 tools/check_api_contracts.py`: 574 rotas conferidas. `git diff --check`: passou. Nenhuma dependência instalada, nenhuma emissão real, banco comercial ou credencial de cliente usados. Nenhum workflow/tools/cofre/trava fiscal alterado.
+
+### Pendências e próximo ponto exato
+
+**B permanece PARCIAL**, não encerrada: resultado confirmado no servidor é recuperável após fechamento completo do navegador. Se o recibo não existir (por exemplo, fechamento entre reservar o ID e alcançar a API), o ponteiro permanece bloqueando novas mutações; não existe ainda resolução terminal auditada dessa tentativa. Não apagar nem reenviar cegamente. Próximo incremento: reconciliação explícita no servidor com exclusão transacional contra o comando original, preservando a trilha/IDs, antes de liberar uma tentativa sem efeito. Não persistir o corpo com dados pessoais no navegador para contornar isso. A durabilidade depende de o cliente preservar o perfil; exclusão/evicção do armazenamento pelo navegador não foi resolvida.
+
+**A permanece CÓDIGO:** o checkout local (`sale/checkout_cash.go`, `FinalizeCashPlan`) só conclui partes em dinheiro e recusa crédito não comprovado. `supplycycle.TradeMessage` contém produto/quantidade/decisão, mas não preço, parcelas nem condições financeiras assinadas. Não há, nesses contratos, saldo autoritativo a prazo para converter em recebível. Necessário implementar a origem e suas condições comerciais explícitas/autorizadas e vinculá-la transacionalmente ao documento, com reversões e recuperação. Não faturar novamente uma venda já paga nem inventar preços/prazos de pedidos. Nenhum faturamento de venda/pedido foi anunciado como entregue.
+
+**C/D/E permanecem CÓDIGO:** mobile operacional/direitos offline, operação multiloja comercial e fidelidade transacional não foram alterados. Não houve promessa de pagamento/venda offline, crédito ou política de pontos. **F permanece EXTERNA nos ensaios reais:** contrato/SDK e sandbox TEF; Windows limpo; equipamentos/protocolos do cliente; prova de revogação pelos titulares; emitente cliente autorizado e Focus/A1/CSC/token privados para homologação fiscal. Os procedimentos/responsáveis da entrada anterior continuam aplicáveis. Nada disso foi marcado como resolvido por testes sintéticos.
+
+Produção fiscal **BLOQUEADA**; sistema sem liberação de produção. O conjunto do pedido não está encerrado.
+
+## Estado atual — recebíveis manuais integrados, 03/11/2026
+
+Branch preservada: `feat/lacunas-implementacao`. HEAD/base inicial e final: `05518e9ccb087928e84a620903d6ad697f846e13`. Working tree inicialmente limpa; esta tarefa deixa alterações locais revisáveis. **Sem commit, push, merge, publicação, instalação no cliente ou deploy**, conforme o pedido atual. As entradas anteriores são históricas; o backlog inteiro NÃO foi encerrado.
+
+### Unidade implementada e evidências
+
+- Recebíveis de **documentos comerciais externos registrados manualmente**, com referência do cliente/documento, descrição, emissão, até 120 parcelas, centavos BRL exatos, consulta paginada, histórico e cancelamento apenas sem recebimento. Não emite documento fiscal, não cria venda/estoque e não converte venda já paga em nova dívida. Faturamento de pedidos/vendas, parcelamento de venda a crédito, juros, boleto, banco e estornos de valores recebidos NÃO foram implementados por esta unidade.
+- Recebimento parcial/total em dinheiro integrado a `register.MoveTxWithContract`: caixa aberto, contrato POS e financeiro, permissão ManageCash; a baixa, o suprimento físico correspondente, a operação e a auditoria local são atômicos. Não criar um suprimento adicional para a mesma cobrança. Caixa físico contabiliza esse dinheiro como suprimento vinculado, não como nova venda. Fechamento testado: 5.000 iniciais + 1.000 recebidos = 6.000 centavos, diferença zero. Replay após fechar o caixa mantém o recibo original sem novo movimento.
+- Escrita usa `sqlitewrite.Run`: BEGIN IMMEDIATE antes das leituras, busy_timeout/até quatro tentativas do helper existente. `expected_received_cents` é por parcela; uma disputa da mesma revisão tem um vencedor e um conflito. Valores acima do saldo/parâmetro seguro são recusados. Escrita ignorada por trigger não confirma dinheiro: RowsAffected verificado e rollback de toda a operação.
+- IDs/payload/ator/aparelho preservados na idempotência. `GET /local/v1/finance/receivables/operations/:id` recupera o snapshot original; tenant/loja/aparelho/ator vêm da sessão. Consulta histórica exige ViewAccounting; proprietário e gerente autorizados escrevem com contrato ativo; contador consulta e recebe 403 ao tentar receber; caixa sem permissão financeira recebe 403. Sem runtime do verificador: 503, sem efeito. Revogação entre guarda HTTP e transação também impede escrita.
+- Proteção cruzada com contas a pagar: entrada originada no cliente não pode virar devolução de fornecedor; candidatos excluem fonte já classificada, e triggers preservam a exclusividade em ambos os sentidos. Não foi alterada a autorização de contas a pagar.
+- Auditoria em `receivable_operations`/`receivable_events`, com ator, aparelho, horário, ação, motivo e resultado. Parcelas, recebimentos, operações/eventos são imutáveis. Nenhum tipo de mensagem novo foi colocado na fila de sincronização: somente o movimento de caixa gera seu evento já existente. **Sincronização comercial dos recebíveis entre bancos independentes ainda não foi implementada.**
+- Tela real em `/local/receivables`, acessível pelo link em contas a pagar; validação de valores/parcelas, consulta, recebimento, cancelamento sem baixa, histórico, permissões, estados de carregamento/vazio/erro e cinco idiomas. Mostra contagem de documentos separada de dinheiro e não mostra snapshot antigo de operação como saldo atual. Resposta 401 invalida somente a sessão que a recebeu.
+- Cliente não envia POST automaticamente depois de erro: primeiro consulta a operação; reenvio é explícito e mantém o corpo/IDs originais. Mudanças de sessão/empresa/loja/usuário/aparelho bloqueiam a consulta antiga antes de qualquer POST. Operação incerta fica em memória por escopo e não é apagada por logout. **Não há persistência do corpo incerto no armazenamento do navegador**; após fechar totalmente o navegador, consultar lista/histórico do servidor antes de qualquer novo lançamento. Recuperação guiada por ID após esse fechamento ainda precisa ser concluída. Não há token/nome/valor de cliente em localStorage ou log.
+- Migração incremental `0078_receivables.sql`; runtime/teto de backup continuam derivados de `LatestSchemaVersion()`. Nenhum banco instalado foi migrado nesta tarefa; só bancos descartáveis dos testes.
+
+### Validação executada nesta tarefa
+
+1. `TITAN_RECEIVABLES_BRIDGE=/home/danillo-malta/projetos/zzeussss/frontend-web/tests/receivables.bridge.mjs go test ./internal/localapi -run '^(TestHTTPReceivables|TestReceivablesFrontendRealHTTPBridge)' -timeout 120s -count=1`: passou, última execução 5,660 s. Inclui recebimentos, fechamento, reabertura do SQLite, restauração, rejeições, concorrência, isolamento, 401/403/503, limites e escrita ignorada.
+2. Ponte Node **real via TCP loopback**: cliente `receivables/client.mjs` chama a API/SQLite reais; simula somente a perda da resposta depois do commit. Recupera criação por GET, reenvia recebimento idempotente sem duplicação e liquida 1.000 centavos em duas parcelas. Código em `receivables_frontend_bridge_test.go` e `tests/receivables.bridge.mjs`. O teste é opt-in no mesmo padrão dos bridges existentes; foi explicitamente habilitado aqui. CI não foi alterado nem executado remotamente.
+3. `go test -race ./internal/localapi -run '^(TestHTTPReceivables|TestReceivablesFrontendRealHTTPBridge)' -timeout 120s -count=1`, com a mesma variável da ponte: passou em 55,971 s nos cenários então presentes (núcleo financeiro e ponte). As novas verificações finais de runtime/401 também passaram normalmente. Não foi afirmada execução com race da suíte inteira.
+4. Regressões `TestHTTPPayableCash*` e checkout NFC-e selecionado: passaram; regressões finais com recebíveis/bridge/contas a pagar passaram em 12,346 s. Não houve emissão real ou uso de banco comercial.
+5. `go test ./internal/localdb ./internal/localdb/payables ./internal/localdb/receivables -timeout 120s -count=1`: localdb 9,129 s e payables 0,012 s passaram; receivables compila, com seus testes de integração no pacote localapi, não em arquivo de teste próprio.
+6. `go test ./internal/localdb/backup -run '^(TestCurrentSchemaBackupRestoresDataAndRevokesSessions|TestAuthenticatedFutureSchemaSnapshotIsRefused|TestRestoreCommandChecksAllBusinessTablesAndCleansPrivateCopies)$' -timeout 120s -count=1`: passou em 3,030 s. Restauração com os registros novos também é verificada no cenário HTTP financeiro.
+7. `node --test tests/*.test.mjs`: **2.572 passaram, zero falhas e zero pulados**, última rodada 2,927 s. `tests/receivables.test.mjs` tem dez testes, incluindo centavos, respostas inconsistentes, perda de resposta, troca de sessão/contexto, consulta antiga sem POST, concorrência e cinco idiomas/SSR dos totais.
+8. `npm run build`: TypeScript e Vite passaram, 21,24 s; persiste aviso de chunks grandes. `go build ./...`: passou. `python3 tools/check_api_contracts.py`: 574 rotas conferidas. `git diff --check`: passou. Não foi executada a suíte completa do backend, repetição de ensaios Windows ou instalação anterior.
+
+### Limites e próximo ponto exato
+
+O circuito cliente JavaScript/API foi ensaiado de ponta a ponta em loopback; a tela React foi tipada, compilada e teve seus totais renderizados em teste. **Não houve navegação visual completa/cliques em navegador nesta tarefa.** O software instalado do cliente não foi atualizado. Esta evidência não autoriza produção.
+
+Próxima unidade: concluir recuperação guiada de comando financeiro depois do fechamento total do navegador, preservando IDs e consulta ao servidor, sem gravar dados pessoais/segredos no armazenamento do cliente; depois integrar faturamento a origem autoritativa de pedido/venda ainda não liquidada. Confirmar o contrato dessa origem antes de escrever; o checkout em dinheiro não pode ser afrouxado ou transformado em crédito por seleção visual.
+
+Continuam como CÓDIGO: faturamento de pedidos/vendas e demais contas a receber além deste escopo manual; mobile operacional e direitos offline duráveis; operação multiloja completa/replicação comercial; fidelidade transacional; política de autenticação durável/distribuída e demais pendências anteriores. Não foram alterados nem marcados como concluídos.
+
+Dependências externas preservadas, com responsável e ensaio pendente:
+- TEF: integrador/adquirente e cliente fornecem protocolo/SDK contratado e sandbox autorizado; falta autorização/consulta/desfazimento/reconciliação reais. Nenhuma confirmação manual foi chamada de TEF.
+- Windows: executor/VM limpa e cliente/testador; falta instalar o pacote e exercer GUI e backend no Windows. Build Linux não comprova isso.
+- Periféricos: cliente define equipamentos/protocolos, com drivers do SO ou adaptadores documentados; faltam impressão física (inclusive leitura de QR), gaveta, leitor e balança em cada combinação suportada. Compatibilidade universal não foi prometida.
+- Credenciais históricas: titulares de GitHub/provedores/banco devem revogar/trocar e provar a recusa dos valores antigos. Nenhum segredo foi lido/trocado; backups cifrados precisam preservar recuperação durante rotação.
+- Fiscal real: emitente **cliente** autorizado, Focus, A1/CSC/token privados do próprio cliente; executar `TestFocusSandboxRealNFCe` com as variáveis privadas exigidas, somente em homologação e com autorização. Não é exigido certificado ou CNPJ do criador do ERP. Nenhuma emissão foi feita nesta tarefa.
+
+**Produção fiscal continua BLOQUEADA e não há liberação do sistema para produção.** Sem alteração de cofre, rotação, travas fiscais, `.github/`, `tools/`, mobile ou credenciais. A ausência de dependência externa não é usada para marcar código faltante como concluído.
+
+### Arquivos alterados nesta unidade
+
+- `backend/internal/localapi/receivables.go`
+- `backend/internal/localapi/receivables_frontend_bridge_test.go`
+- `backend/internal/localapi/receivables_test.go`
+- `backend/internal/localapi/server.go`
+- `backend/internal/localdb/migrations/0078_receivables.sql`
+- `backend/internal/localdb/payables/cash_write.go`
+- `backend/internal/localdb/payables/readiness.go`
+- `backend/internal/localdb/receivables/store.go`
+- `docs/api/receivables.openapi.json`
+- `docs/api/route-inventory.json`
+- `docs/api/routes.openapi.json`
+- `docs/architecture/CONTINUIDADE_TITANSYSTEM.md`
+- `frontend-web/src/core/receivables/client.d.mts`
+- `frontend-web/src/core/receivables/client.mjs`
+- `frontend-web/src/core/receivables/words.d.mts`
+- `frontend-web/src/core/receivables/words.mjs`
+- `frontend-web/src/core/router/index.tsx`
+- `frontend-web/src/modules/financial/pages/LocalPayables113.tsx`
+- `frontend-web/src/modules/financial/pages/LocalReceivables.tsx`
+- `frontend-web/tests/receivables.bridge.mjs`
+- `frontend-web/tests/receivables.test.mjs`
+
+
 ## Lacunas — entrega incremental de 03/11/2026
 
 Branch `feat/lacunas-implementacao`, preservando a base auditada `fbbf2bc` e o documento `6d99eb3`. Esta entrega NÃO encerra os dez itens do backlog.
