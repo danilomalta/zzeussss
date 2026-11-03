@@ -227,7 +227,7 @@ func candidates(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.De
 		if kind == "withdrawal" {
 			e = tx.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM cash_bags WHERE tenant_id=? AND device_id=? AND withdrawal_operation_id=?)+(SELECT count(*) FROM payable_cash_payments WHERE tenant_id=? AND device_id=? AND withdrawal_operation_id=?)`, a.TenantID, d.DeviceID, op, a.TenantID, d.DeviceID, op).Scan(&used)
 		} else {
-			e = tx.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM cash_vault_entries WHERE tenant_id=? AND device_id=? AND cash_movement_id=?)+(SELECT count(*) FROM payable_cash_returns WHERE tenant_id=? AND device_id=? AND supply_operation_id=?)`, a.TenantID, d.DeviceID, s.MovementID, a.TenantID, d.DeviceID, op).Scan(&used)
+			e = tx.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM cash_vault_entries WHERE tenant_id=? AND device_id=? AND cash_movement_id=?)+(SELECT count(*) FROM payable_cash_returns WHERE tenant_id=? AND device_id=? AND supply_operation_id=?)+(SELECT count(*) FROM receivable_cash_receipts WHERE tenant_id=? AND store_id=? AND device_id=? AND movement_operation_id=?)`, a.TenantID, d.DeviceID, s.MovementID, a.TenantID, d.DeviceID, op, a.TenantID, a.StoreID, d.DeviceID, op).Scan(&used)
 		}
 		if e != nil {
 			return CashCandidates{}, e

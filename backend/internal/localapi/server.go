@@ -173,6 +173,7 @@ func NewWithFiscalProvidersAndGate(db *sql.DB, device identity.DeviceContext, ve
 	s.mountCheckoutProofs(protected)
 	s.mountCashAccounting(protected)
 	s.mountPayables(protected)
+	s.mountReceivables(protected)
 	s.mountPayableCash(protected)
 	s.mountPayableReadiness(protected)
 	s.mountSupplyCycle(protected)
