@@ -1,0 +1,373 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P05 production materials",
+    "version": "P05",
+    "description": "Tenant/store are obtained from the verified session. Writes require manage_production and a valid Production contract; reserve/consume also recheck the assigned responsible identity. No floating quantities or caller-selected ingredient amounts. No finished-goods output in this phase. Query parameters are refused."
+  },
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/local/v1/production/material-reservations": {
+      "post": {
+        "operationId": "reserveProductionMaterials",
+        "description": "Atomically hold all ingredients of an approved immutable order snapshot. Same physical stock cannot fund multiple simultaneous holds. Explicit reason and scoped idempotency required.",
+        "responses": {
+          "400": {
+            "description": "Invalid, duplicate, missing, extra or null JSON field; unknown query or action"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission, responsible identity or contract denied"
+          },
+          "404": {
+            "description": "Reference not found within tenant/store scope"
+          },
+          "409": {
+            "description": "Insufficient free material, altered historic unit, state or idempotency conflict"
+          },
+          "500": {
+            "description": "Internal failure; entire transaction rolled back"
+          },
+          "200": {
+            "description": "Success or historical replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Reserved; no stock movement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialResult"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 8192 bytes"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReserveInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/material-reservations/state": {
+      "post": {
+        "operationId": "changeProductionMaterials",
+        "description": "active -> released without movement, or active -> consumed with one exact negative movement per ingredient. Replays return their original result and require current write authorization. Consumed orders cannot be cancelled or reserved again.",
+        "responses": {
+          "400": {
+            "description": "Invalid, duplicate, missing, extra or null JSON field; unknown query or action"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission, responsible identity or contract denied"
+          },
+          "404": {
+            "description": "Reference not found within tenant/store scope"
+          },
+          "409": {
+            "description": "Insufficient free material, altered historic unit, state or idempotency conflict"
+          },
+          "500": {
+            "description": "Internal failure; entire transaction rolled back"
+          },
+          "200": {
+            "description": "Success or historical replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialResult"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 8192 bytes"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/material-reservations/{id}": {
+      "get": {
+        "operationId": "getProductionMaterials",
+        "description": "Read scoped reservation and exact ingredient snapshots; expired contract does not block an otherwise authorized historical read.",
+        "responses": {
+          "400": {
+            "description": "Invalid, duplicate, missing, extra or null JSON field; unknown query or action"
+          },
+          "401": {
+            "description": "Session required"
+          },
+          "403": {
+            "description": "Permission, responsible identity or contract denied"
+          },
+          "404": {
+            "description": "Reference not found within tenant/store scope"
+          },
+          "409": {
+            "description": "Insufficient free material, altered historic unit, state or idempotency conflict"
+          },
+          "500": {
+            "description": "Internal failure; entire transaction rolled back"
+          },
+          "200": {
+            "description": "Success or historical replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reservation"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "ReserveInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reservation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "operation_id",
+          "reservation_id",
+          "order_id",
+          "reason"
+        ]
+      },
+      "ChangeInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reservation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "release",
+              "consume"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "operation_id",
+          "reservation_id",
+          "action",
+          "reason"
+        ]
+      },
+      "MaterialResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reservation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "released",
+              "consumed"
+            ]
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "reservation_id",
+          "order_id",
+          "status",
+          "repeated"
+        ]
+      },
+      "Ingredient": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "product_id",
+          "unit",
+          "quantity_milli"
+        ]
+      },
+      "Reservation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "released",
+              "consumed"
+            ]
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Ingredient"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "order_id",
+          "location_id",
+          "status",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "items"
+        ]
+      }
+    }
+  }
+}

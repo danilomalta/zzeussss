@@ -7,12 +7,13 @@ on:
   push:
     branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ "main", "develop", "integration/piloto-main-20261027" ]
 
 jobs:
   backend-checks:
     name: Backend CI (Go)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -20,10 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.25.0' # Alinhado à versão 1.25 do projeto
-
-      - name: Install golangci-lint
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+          go-version-file: backend/go.mod
 
       - name: Run Backend Lint
         working-directory: ./backend
@@ -34,7 +32,9 @@ jobs:
 
       - name: Run Backend Tests
         working-directory: ./backend
-        run: go test -v ./...
+        # The complete localapi suite outgrew Go's default 10-minute package
+        # budget. Keep a finite deadline; assertions and test scope stay intact.
+        run: go test -timeout=30m -v ./...
 
   frontend-checks:
     name: Frontend CI (React + TypeScript)
@@ -46,7 +46,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install Dependencies
         working-directory: ./frontend-web
@@ -59,7 +59,7 @@ jobs:
       - name: Run Frontend Tests
         working-directory: ./frontend-web
         run: |
-          npm run test:local
+          npm run test:all
           npm run build
 
       - name: Test Isolated Demo Helper

@@ -1,0 +1,22 @@
+{
+  "cause": "Ubuntu AppArmor userns restriction causes Electron fatal SUID sandbox error in actual desktop session",
+  "profile_installed": true,
+  "profile_sha256": "f91aafc1a78777bcdea5eb4cc1510a971014b1964f8a33f0ec07967bc500f680",
+  "global_restriction_changed": false,
+  "suid_helper_added": false,
+  "sandbox_disabled": false,
+  "new_desktop_id": "com.titansystem.ERP.desktop",
+  "ubuntu_service_first_mapped_ms": 704.59,
+  "gtk_window_mapped_ms": 684.49,
+  "gnome_scope": "app-gnome-com.titansystem.ERP-2396946.scope",
+  "gnome_scope_active": true,
+  "window_state": "Normal",
+  "sandboxed_children_with_seccomp2_no_new_privs1": 3,
+  "commercial_credentials_read": false,
+  "business_services_restarted": false,
+  "limitations": [
+    "No commercial authentication performed",
+    "Launch timing within Codex alone did not establish GNOME behavior",
+    "Runtime path changes require scoped AppArmor profile update"
+  ]
+}

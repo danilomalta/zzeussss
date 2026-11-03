@@ -1,0 +1,1532 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Production immutable operation receipts",
+    "version": "P55",
+    "description": "Read-only original receipt scoped to authenticated tenant/store/device/operator. No implicit retry. Existing production permission and approved-device checks apply; historical reads are independent of active license. Result repeated is false in the stored original receipt."
+  },
+  "paths": {
+    "/local/v1/production/operations/{kind}/{id}": {
+      "get": {
+        "security": [
+          {
+            "localBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "recipe",
+                "order",
+                "state",
+                "recipe_state",
+                "reserve",
+                "materials",
+                "result",
+                "stage_plan",
+                "stage_state",
+                "loss",
+                "loss_void",
+                "lot",
+                "lot_void",
+                "quality"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Original immutable operation receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "recipe"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "required": [
+                            "operation_id",
+                            "recipe_id",
+                            "version_id",
+                            "expected_revision",
+                            "name",
+                            "output_product_id",
+                            "output_unit",
+                            "yield_milli",
+                            "ingredients"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "recipe_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "version_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "expected_revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 2147483646
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "output_product_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "output_unit": {
+                              "type": "string",
+                              "enum": [
+                                "unit",
+                                "kg",
+                                "g",
+                                "liter",
+                                "ml",
+                                "meter"
+                              ]
+                            },
+                            "yield_milli": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "ingredients": {
+                              "type": "array",
+                              "minItems": 1,
+                              "maxItems": 100,
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "product_id",
+                                  "unit",
+                                  "quantity_milli"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                  "product_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "enum": [
+                                      "unit",
+                                      "kg",
+                                      "g",
+                                      "liter",
+                                      "ml",
+                                      "meter"
+                                    ]
+                                  },
+                                  "quantity_milli": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "required": [
+                            "recipe_id",
+                            "version_id",
+                            "revision",
+                            "repeated"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "recipe_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "version_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2147483647
+                            },
+                            "repeated": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "order"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "required": [
+                            "operation_id",
+                            "order_id",
+                            "version_id",
+                            "location_id",
+                            "responsible_id",
+                            "planned_batches"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "version_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "location_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "responsible_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "planned_batches": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "required": [
+                            "order_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2147483647
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "planned"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "state"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "required": [
+                            "operation_id",
+                            "order_id",
+                            "expected_revision",
+                            "status",
+                            "reason"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "expected_revision": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2147483646
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "approved",
+                                "cancelled"
+                              ]
+                            },
+                            "reason": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "required": [
+                            "order_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2147483647
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "approved",
+                                "cancelled"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "recipe_state"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "recipe_id",
+                            "expected_revision",
+                            "status",
+                            "reason"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "recipe_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "expected_revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 2147483646
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "active",
+                                "inactive"
+                              ]
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "recipe_id",
+                            "status",
+                            "revision",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "recipe_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "active",
+                                "inactive"
+                              ]
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2147483647
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "reserve"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "reservation_id",
+                            "order_id",
+                            "reason"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reservation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "reservation_id",
+                            "order_id",
+                            "status",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "reservation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "active"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "materials"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "reservation_id",
+                            "action",
+                            "reason"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reservation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "action": {
+                              "type": "string",
+                              "enum": [
+                                "release",
+                                "consume"
+                              ]
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "reservation_id",
+                            "order_id",
+                            "status",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "reservation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "released",
+                                "consumed"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "result"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "result_id",
+                            "order_id",
+                            "expected_revision",
+                            "produced_milli",
+                            "reason"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "expected_revision": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2147483646
+                            },
+                            "produced_milli": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "result_id",
+                            "order_id",
+                            "reservation_id",
+                            "product_id",
+                            "location_id",
+                            "unit",
+                            "planned_milli",
+                            "produced_milli",
+                            "shortfall_milli",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reservation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "product_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "location_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "unit": {
+                              "type": "string",
+                              "enum": [
+                                "unit",
+                                "kg",
+                                "g",
+                                "liter",
+                                "ml",
+                                "meter"
+                              ]
+                            },
+                            "planned_milli": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "produced_milli": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "shortfall_milli": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2147483647
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "completed"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "stage_plan"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "order_id",
+                            "reason",
+                            "stages"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            },
+                            "stages": {
+                              "type": "array",
+                              "minItems": 1,
+                              "maxItems": 20,
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "stage_id",
+                                  "name",
+                                  "responsible_id"
+                                ],
+                                "properties": {
+                                  "stage_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 120
+                                  },
+                                  "responsible_id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "order_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "enum": [
+                                1
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "configured"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "stage_state"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "order_id",
+                            "reason",
+                            "stage_id",
+                            "expected_revision",
+                            "status"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            },
+                            "stage_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "expected_revision": {
+                              "type": "integer",
+                              "enum": [
+                                1,
+                                2
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "running",
+                                "completed"
+                              ]
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "order_id",
+                            "revision",
+                            "status",
+                            "repeated",
+                            "stage_id"
+                          ],
+                          "properties": {
+                            "order_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "enum": [
+                                2,
+                                3
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "running",
+                                "completed"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "stage_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "loss"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "loss_id",
+                            "reason",
+                            "result_id",
+                            "quantity_milli"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "loss_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            },
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "quantity_milli": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "loss_id",
+                            "result_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "loss_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "enum": [
+                                1
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "recorded"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "loss_void"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "loss_id",
+                            "reason",
+                            "expected_revision"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "loss_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            },
+                            "expected_revision": {
+                              "type": "integer",
+                              "enum": [
+                                1
+                              ]
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "loss_id",
+                            "result_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "loss_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "enum": [
+                                2
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "voided"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "lot"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "lot_id",
+                            "reason",
+                            "result_id",
+                            "quantity_milli",
+                            "code",
+                            "manufactured_on",
+                            "expires_on"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            },
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "quantity_milli": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 9007199254740991
+                            },
+                            "code": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64,
+                              "description": "Até 64 bytes UTF8, sem caracteres de controle"
+                            },
+                            "manufactured_on": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "expires_on": {
+                              "type": "string",
+                              "description": "Vazia quando desconhecida; caso informada, YYYY-MM-DD não anterior à fabricação"
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "lot_id",
+                            "result_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "enum": [
+                                1
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "recorded"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "lot_void"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "operation_id",
+                            "lot_id",
+                            "reason",
+                            "expected_revision"
+                          ],
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255
+                            },
+                            "expected_revision": {
+                              "type": "integer",
+                              "enum": [
+                                1
+                              ]
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "lot_id",
+                            "result_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "properties": {
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "result_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "enum": [
+                                2
+                              ]
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "voided"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "kind",
+                        "input",
+                        "result"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "quality"
+                          ]
+                        },
+                        "input": {
+                          "type": "object",
+                          "required": [
+                            "operation_id",
+                            "lot_id",
+                            "expected_revision",
+                            "status",
+                            "criterion",
+                            "reason"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "operation_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "expected_revision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 2147483646
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "passed",
+                                "failed"
+                              ]
+                            },
+                            "criterion": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255,
+                              "description": "Até 255 bytes UTF8"
+                            },
+                            "reason": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 255,
+                              "description": "Até 255 bytes UTF8"
+                            }
+                          }
+                        },
+                        "result": {
+                          "type": "object",
+                          "required": [
+                            "lot_id",
+                            "revision",
+                            "status",
+                            "repeated"
+                          ],
+                          "additionalProperties": false,
+                          "properties": {
+                            "lot_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2147483647
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "passed",
+                                "failed"
+                              ]
+                            },
+                            "repeated": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid path kind/ID or any query parameter"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Operator/device not authorized"
+          },
+          "404": {
+            "description": "No operation owned by this context"
+          },
+          "409": {
+            "description": "Inconsistent durable receipt"
+          }
+        },
+        "description": "Additional execution receipts retain original input and result after later transitions. recipe_state uses independent revision; materials have no revision. See component schemas. All requests and results are scoped to original company/store/device/operator. Stage plan and progress use original immutable event receipts; revisions are stage revisions, not order revisions. Loss declaration receipts remain recorded after a void; all quantities and immutable loss/result references are checked. No stock writes."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

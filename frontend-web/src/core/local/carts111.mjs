@@ -1,0 +1,11 @@
+import {preview104,suspendedList104} from './suspended104.mjs';
+import {isID,isCents,cartTotal} from './posModel.mjs';
+export function inspectCarts111(rows,products){
+ suspendedList104(rows);if(!Array.isArray(products)||products.length>20000)throw Error('invalid104');const catalog=new Map();for(const p of products){if(!p||!isID(p.id)||catalog.has(p.id)||typeof p.unit!=='string'||!isCents(p.price_cents))throw Error('invalid104');catalog.set(p.id,p);}
+ return rows.map(row=>{if(!isID(row.id)||!isID(row.actor)||typeof row.reference!=='string'||row.reference.length>140000||row.cart.length>200)throw Error('invalid104');for(const item of row.cart){if(!isID(item.location_id)||!isID(item.product?.id)||typeof item.product.name!=='string'||item.product.name.length>500||typeof item.product.sku!=='string')throw Error('invalid104');}cartTotal(row.cart);const subset=[...new Set(row.cart.map(i=>i.product.id))].flatMap(id=>catalog.has(id)?[catalog.get(id)]:[]),preview=preview104(row,subset);return {row,preview,missing:preview.lines.filter(i=>!i.loaded).length,changed:preview.lines.filter(i=>i.changed).length,difference:preview.current===null?null:preview.current-preview.old,signature:JSON.stringify([row,preview.fingerprint])};});
+}
+export function filterCarts111(views,{query='',state='active',issues=false}={}){
+ if(!Array.isArray(views)||views.length>30||typeof query!=='string'||query.length>200||!['all','active','suspended','resumed','completed'].includes(state)||typeof issues!=='boolean')throw Error('invalid104');const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase(),q=norm(query.trim());
+ return views.filter(v=>(state==='all'||state==='active'&&v.row.state!=='completed'||v.row.state===state)&&(!issues||v.missing>0||v.changed>0)&&(!q||norm(v.row.reference+' '+v.row.cart.map(i=>i.product.name+' '+i.product.sku).join(' ')).includes(q))).slice().sort((a,b)=>Date.parse(b.row.at)-Date.parse(a.row.at)||a.row.id.localeCompare(b.row.id));
+}
+export function confirmCart111(row,products,signature,ack,blocked){const view=inspectCarts111([row],products)[0];if(blocked||view.row.state==='completed'||!view.preview.complete||view.signature!==signature||ack!==true)throw Error('changed111');return view.row.id;}

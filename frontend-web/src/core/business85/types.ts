@@ -1,3 +1,4 @@
+import type {MaintenanceState} from '../fleetMaintenance/model.mjs';
 export type Area85='fleet'|'food'|'documents'|'purchasing'|'commercial';
 export interface Vehicle85{id:string;plate:string;name:string;kind:string;capacity:number;odometer:number;state:'available'|'maintenance';nextService:number;driver:string}
 export interface Expense85{id:string;vehicleId:string;at:string;kind:'fuel'|'service';amount:number;litres:number;odometer:number;note:string}
@@ -14,6 +15,6 @@ export interface Quote85{id:string;supplierId:string;sku:string;unit:string;quan
 export interface Customer85{id:string;name:string;taxId:string;kind:'person'|'company';email:string;phone:string;address:string;segment:string;state:'active'|'inactive';consent:boolean;notes:string}
 export interface Deal85{id:string;customerId:string;title:string;stage:'lead'|'qualified'|'proposal'|'won'|'lost';at:string;validUntil:string;nextAction:string;owner:string;items:Line85[];discount:number;freight:number;note:string;orderId:string;reason:string}
 export interface Audit85{id:string;at:string;area:Area85;action:string;reference:string;actor:string}
-export interface Workspace85{version:1;scope:string;mode:'draft'|'demo';revision:number;updated:string;forms:Record<string,Record<string,string>>;vehicles:Vehicle85[];expenses:Expense85[];trips:Trip85[];products:Product85[];tickets:Ticket85[];documents:Document85[];suppliers:Supplier85[];purchases:Purchase85[];quotes:Quote85[];customers:Customer85[];deals:Deal85[];audit:Audit85[]}
+export interface Workspace85{version:1;scope:string;mode:'draft'|'demo';revision:number;updated:string;forms:Record<string,Record<string,string>>;vehicles:Vehicle85[];expenses:Expense85[];trips:Trip85[];products:Product85[];tickets:Ticket85[];documents:Document85[];suppliers:Supplier85[];purchases:Purchase85[];quotes:Quote85[];customers:Customer85[];deals:Deal85[];audit:Audit85[];maintenance?:MaintenanceState}
 export interface SourceContext85{tenant_id:string;store_id:string;identity_id:string;device_id:string}
 export interface Adapter85<T>{read(context:SourceContext85,signal:AbortSignal):Promise<{state:'unavailable'|'forbidden'|'ready';rows:T[];asOf?:string}>}

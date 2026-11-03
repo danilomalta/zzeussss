@@ -1,0 +1,292 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P14 — vinculos do produto com producao",
+    "version": "P14",
+    "description": "Leitura de vinculos para orientar catalogo, sem mudar produto, unidade, versao ou ordem. SQLite 35 sem nova migracao. Contagens limitadas a loja autorizada, nao empresa inteira; nao autoriza alteracao da unidade. Sem precos/custos."
+  },
+  "paths": {
+    "/local/v1/catalog/products/{id}/production-usage": {
+      "get": {
+        "operationId": "getProductProductionUsage",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "versions",
+                "orders"
+              ],
+              "default": "versions"
+            },
+            "description": "Tipo da pagina; contagens incluem ambos os tipos independentemente da pagina."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 0
+            },
+            "description": "Posicao no tipo selecionado; somente digitos decimais, sem sinal. Sem query vazia, repetida ou desconhecida."
+          }
+        ],
+        "description": "Versoes ordenadas por recipe_id,revision; ordens por created_at DESC,id DESC. Cada quantidade pertence ao produto/unidade historicos: per_batch por versao ou planned_total por ordem. Nao representa saldo, reserva ou consumo efetivo. unit_matches_catalog compara strings, nao faz conversao. Empresa/loja vem da sessao. Requisicoes distintas podem ver novas publicacoes. latest_version nao presume ativacao; todos os estados de ordens preservados.",
+        "responses": {
+          "200": {
+            "description": "Contagens de toda a loja autorizada e pagina coerente do tipo selecionado, no mesmo snapshot. Items [] quando vazio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID, query, tipo ou offset invalidos."
+          },
+          "401": {
+            "description": "Sessao ausente ou invalida."
+          },
+          "403": {
+            "description": "Sem view_catalog e manage_production atuais, ou aparelho nao autorizado."
+          },
+          "404": {
+            "description": "Produto inexistente na empresa autorizada."
+          },
+          "409": {
+            "description": "Snapshot ou quantidade inconsistente nas validacoes do modulo."
+          },
+          "500": {
+            "description": "Falha interna de armazenamento."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Link": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "versions",
+              "orders"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "recipe_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "version_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "output",
+              "ingredient"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "quantity_basis": {
+            "type": "string",
+            "enum": [
+              "per_batch",
+              "planned_total"
+            ]
+          },
+          "unit_matches_catalog": {
+            "type": "boolean",
+            "description": "Igualdade literal com unidade atual, nao valida compatibilidade/conversao."
+          },
+          "latest_version": {
+            "type": "boolean",
+            "description": "Somente kind=versions; ultima revisao publicada, nao ativacao."
+          },
+          "order_status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "approved",
+              "cancelled",
+              "completed"
+            ],
+            "description": "Somente kind=orders; estado efetivo conforme P06."
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "recipe_id",
+          "version_id",
+          "role",
+          "unit",
+          "quantity_milli",
+          "quantity_basis",
+          "unit_matches_catalog"
+        ]
+      },
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+              },
+              "name": {
+                "type": "string"
+              },
+              "unit": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "unit"
+            ]
+          },
+          "store_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "ID exato ate 128 bytes UTF-8, sem espacos nas bordas, NUL, CR ou LF."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "versions",
+              "orders"
+            ]
+          },
+          "recipe_version_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "latest_recipe_version_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "order_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "enum": [
+              50
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          }
+        },
+        "required": [
+          "product",
+          "store_id",
+          "kind",
+          "recipe_version_count",
+          "latest_recipe_version_count",
+          "order_count",
+          "offset",
+          "limit",
+          "has_more",
+          "items"
+        ]
+      }
+    }
+  }
+}

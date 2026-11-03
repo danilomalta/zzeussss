@@ -1,0 +1,6 @@
+.official-cash-bags {max-height:80dvh;overflow:auto;grid-column:1/-1;min-width:0;}
+.official-cash-bags form,.official-cash-bags fieldset,.official-cash-bags nav {display:flex;flex-wrap:wrap;gap:.75rem;align-items:end;margin:.8rem 0;}
+.official-cash-bags label {display:flex;flex-direction:column;gap:.3rem;max-width:100%;}
+.official-cash-bags button,.official-cash-bags input,.official-cash-bags select,.official-cash-bags textarea {min-height:44px;max-width:100%;}
+.official-cash-bags :focus-visible {outline:2px solid currentColor;outline-offset:3px;}
+.official-cash-bags dl {display:flex;flex-wrap:wrap;gap:1rem;}.official-cash-bags dd {margin:.3rem 0;overflow-wrap:anywhere;}.official-cash-bags li,.official-cash-bags p {overflow-wrap:anywhere;}.cash-bags-table {overflow:auto;}.cash-bags-table th,.cash-bags-table td {padding:.6rem;text-align:start;}

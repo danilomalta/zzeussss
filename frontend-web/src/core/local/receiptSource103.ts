@@ -1,0 +1,3 @@
+import type {Gateway95} from './service95';import {localClient} from './useLocalSession';import {receipt103} from './workspace103.mjs';
+// Only existing receipt routes. No charge, mutation, guessed endpoint or successful fallback.
+export async function readSale103(gateway:Gateway95,token:string,id:string,cash:string,signal:AbortSignal){if(signal.aborted)throw Error('aborted');if(!token||!id||id.length>128||/[\u0000\r\n]/.test(id))throw Error('invalid103');if(gateway.mode==='demo'&&!gateway.checkout96?.receipt)throw Error('unavailable');const result=gateway.checkout96?.receipt?await gateway.checkout96.receipt(token,id,signal):await localClient.receipt(token,id);if(signal.aborted)throw Error('aborted');return receipt103(result,id,cash);}

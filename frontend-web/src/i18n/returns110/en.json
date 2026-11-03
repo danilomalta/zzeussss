@@ -1,0 +1,16 @@
+{
+ "reviewTitle110":"Check before recording",
+ "reviewHelp110":"Review the product, quantity, amount and requested resolution.",
+ "reviewEffect110":"A request will be created for review. No refund, credit, stock or tax document will be changed now.",
+ "ack110":"I checked the data and understand that this request still requires review and authorized execution.",
+ "back110":"Back to fields",
+ "confirm110":"Confirm request recording",
+ "saving110":"Checking and recording…",
+ "changed110":"The data changed. Review it again before confirming.",
+ "saveFailed110":"The request could not be saved. Your fields were preserved; check and try again.",
+ "queueTitle110":"Request tracking",
+ "queueScope110":"These numbers follow the filters below and include only records on this computer.",
+ "pendingValue110":"Requested amount awaiting review",
+ "pendingNote110":"A requested amount is not a realized loss or a completed refund. Local approval does not execute payment or stock changes.",
+ "prepare110":"Review before recording"
+}

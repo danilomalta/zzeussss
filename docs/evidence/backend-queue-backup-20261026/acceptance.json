@@ -1,0 +1,87 @@
+{
+  "source_commit": "64eff3d27498329e87a0336f47b2d34adcc9409f",
+  "ci_url": "https://github.com/danilomalta/zzeussss/actions/runs/40277261085",
+  "installed_at_utc": "2026-10-26T06:20:02.255223+00:00",
+  "release": "/home/danillo-malta/.local/opt/titansystem/backend/64eff3d27498329e87a0336f47b2d34adcc9409f",
+  "previous_release": "/home/danillo-malta/.local/opt/titansystem/backend/246691c6d68ff5d64920224c411a11f5d04f7ca5",
+  "current": "/home/danillo-malta/.local/opt/titansystem/backend/current",
+  "files_sha256": {
+    "titan-local": "d5ccc75c6838f4ab7394b20737e92b862c5592a8d1ef3c21550c54d7621f806e",
+    "titan-backup": "b2d15486d5ddccd2d5508f482188718c7ccce6d4482b5619db122b1e49f24ee5",
+    "titan-access": "4e4af0377e94415a516fa4922ed9b0120826719f09b32c8709baa23343aa684f",
+    "titan-peer": "53b9695526aaf8ad1a6177086f7e1cf05b820ee0a9ff3c6c1bd049bb4bf2d4cf",
+    "titan-receive": "10fbbf1837f56cbea24be91f2da25a34aa179bc8dd643ac79db7fdda43c52034",
+    "titan-sync": "f5c7cdc8d174de4bd369be75407a6e378394ce21cd40e38b4e8d1c6e3f960ce8",
+    "titan-trade": "fc1d379a8b5408640edc4a1263463f24d9b9651ec7c66ab34e925fd7ba57c3d8"
+  },
+  "services_restarted": false,
+  "commercial_database_or_keys_read": false,
+  "ci_acceptance": {
+    "status": "PASS",
+    "required_integrations": 5,
+    "top_level_passed": 1311,
+    "passed_including_subtests": 2779,
+    "skipped": 3,
+    "skipped_tests": [
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "race_pilots_seconds": 566.887,
+  "installed_smoke": {
+    "result": "PASS",
+    "compiled_binary_api_lifecycles": 3,
+    "http_assertions": 12,
+    "schema_version": 65,
+    "restart_identity_preserved": true,
+    "restored_identity_preserved": true,
+    "backup_executable_roundtrip": true,
+    "unlicensed_writes_refused": true,
+    "commercial_data": false
+  },
+  "installed_pilots": {
+    "result": "PASS",
+    "seconds": 5.811,
+    "full_cash_pilot_http": 200,
+    "queue_backup_cases": 4,
+    "commercial_data": false
+  },
+  "local_summary": {
+    "source_commit": "64eff3d27498329e87a0336f47b2d34adcc9409f",
+    "local_acceptance": {
+      "status": "PASS",
+      "required_integrations": 5,
+      "top_level_passed": 1311,
+      "passed_including_subtests": 2779,
+      "skipped": 3,
+      "skipped_tests": [
+        "TestMigrationCrashChild",
+        "TestPilotCashProcess",
+        "TestPilotCashScreenFlow"
+      ]
+    },
+    "unit_race": "PASS",
+    "queue_real_executable_cases": [
+      "unsent",
+      "delivered-after-backup",
+      "uncertain-delivered",
+      "confirmed"
+    ],
+    "cross_compile_windows": "PASS; operation intentionally blocked without equivalent locks/publication; not Windows acceptance",
+    "services_restarted": false,
+    "commercial_data": false
+  },
+  "preserved_services": {
+    "8182": {
+      "pid": 1362657,
+      "health_status": 200,
+      "executable": "/home/danillo-malta/.local/share/titansystem-tests/pdv-zt69por7/bin/titan-local"
+    },
+    "8282": {
+      "pid": 3855147,
+      "health_status": 200,
+      "executable": "/home/danillo-malta/.local/share/titansystem-tests/pdv-023hym2n/bin/titan-local"
+    }
+  }
+}

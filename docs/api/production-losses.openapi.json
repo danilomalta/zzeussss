@@ -1,0 +1,656 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P07 declared production losses",
+    "version": "P07",
+    "description": "Explicitly classify shortfall from a completed P06 result. Does not withdraw stock, reverse consumption, alter good output or reopen orders. Current manage_production permission and device authorization are always required; writes also require a valid Production contract. Tenant/store derive only from the session. Query parameters are refused except a single offset on the result summary."
+  },
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/local/v1/production/losses": {
+      "post": {
+        "operationId": "recordProductionLoss",
+        "description": "Record an exact quantity and reason within the remaining unclassified shortfall. Scoped idempotency includes author, store, device, action and normalized request. Same-operation replay returns the original status even if later voided.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous input or query"
+          },
+          "401": {
+            "description": "Verified session required"
+          },
+          "403": {
+            "description": "Human/device permission or write contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "State/revision/idempotency conflict, declaration beyond remaining shortfall or inconsistent aggregate"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Success or authorized historical replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 8192 bytes"
+          },
+          "503": {
+            "description": "Contract store unavailable"
+          },
+          "201": {
+            "description": "Declaration recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/losses/void": {
+      "post": {
+        "operationId": "voidProductionLoss",
+        "description": "recorded revision 1 -> voided revision 2, with a new reason, immutable audit and outbox. Never deletes or restores stock. Quantity becomes unclassified again. Cannot reactivate or reuse a voided loss ID.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoidInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous input or query"
+          },
+          "401": {
+            "description": "Verified session required"
+          },
+          "403": {
+            "description": "Human/device permission or write contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "State/revision/idempotency conflict, declaration beyond remaining shortfall or inconsistent aggregate"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Success or authorized historical replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 8192 bytes"
+          },
+          "503": {
+            "description": "Contract store unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/production/losses/{id}": {
+      "get": {
+        "operationId": "getProductionLoss",
+        "description": "Current declaration and its original reason. Use history for the void reason. Authorized reads remain available after contract expiry.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous input or query"
+          },
+          "401": {
+            "description": "Verified session required"
+          },
+          "403": {
+            "description": "Human/device permission or write contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "State/revision/idempotency conflict, declaration beyond remaining shortfall or inconsistent aggregate"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Scoped historical data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Loss"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/losses/{id}/history": {
+      "get": {
+        "operationId": "getProductionLossHistory",
+        "description": "Creation and optional void event ordered by revision; authors, device IDs and reasons are preserved.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous input or query"
+          },
+          "401": {
+            "description": "Verified session required"
+          },
+          "403": {
+            "description": "Human/device permission or write contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "State/revision/idempotency conflict, declaration beyond remaining shortfall or inconsistent aggregate"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Scoped historical data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/results/{id}/losses": {
+      "get": {
+        "operationId": "listProductionLosses",
+        "description": "Returns up to 50 declarations including voided records, ordered by created_at,id. Global totals remain consistent across all pages, including an empty page, in a single transaction. Uses historical result unit even if catalog unit later changes.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous input or query"
+          },
+          "401": {
+            "description": "Verified session required"
+          },
+          "403": {
+            "description": "Human/device permission or write contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "State/revision/idempotency conflict, declaration beyond remaining shortfall or inconsistent aggregate"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Scoped historical data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "RecordInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "loss_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Thousandths of the historical result unit. Unit products require multiples of 1000. Cannot exceed unclassified shortfall."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          }
+        },
+        "required": [
+          "operation_id",
+          "loss_id",
+          "result_id",
+          "quantity_milli",
+          "reason"
+        ]
+      },
+      "VoidInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "loss_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Only revision 1 can be voided; other positive revisions conflict."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          }
+        },
+        "required": [
+          "operation_id",
+          "loss_id",
+          "expected_revision",
+          "reason"
+        ]
+      },
+      "WriteResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "loss_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "loss_id",
+          "result_id",
+          "status",
+          "revision",
+          "repeated"
+        ]
+      },
+      "Loss": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "result_id",
+          "product_id",
+          "unit",
+          "quantity_milli",
+          "reason",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Event": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "operation_id",
+          "device_id",
+          "actor_id",
+          "kind",
+          "revision",
+          "reason",
+          "created_at"
+        ]
+      },
+      "History": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "Summary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "At most 128 UTF-8 bytes, without surrounding whitespace."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "planned_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "produced_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "shortfall_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "recorded_loss_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "All recorded declarations, excluding voided, regardless of this page."
+          },
+          "unclassified_shortfall_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Shortfall minus all recorded declarations."
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Loss"
+            }
+          }
+        },
+        "required": [
+          "result_id",
+          "product_id",
+          "unit",
+          "planned_milli",
+          "produced_milli",
+          "shortfall_milli",
+          "recorded_loss_milli",
+          "unclassified_shortfall_milli",
+          "items"
+        ]
+      }
+    }
+  }
+}

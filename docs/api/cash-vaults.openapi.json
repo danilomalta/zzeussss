@@ -1,0 +1,1292 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem local physical cash vaults",
+    "version": "B02B7",
+    "description": "Two workflows: received-bag cash destinations/transfers/statements; atomic cofre-to-open-drawer supply. ManageCash everywhere, POS contract for writes. Reads need no current license. Scope from session tenant/store/device. Vaults start at zero; no manual arbitrary credit. Only original bag receiver credits counted amount, once, including zero. Transfers have two equal opposite legs. Supply debits vault and calls the existing cash movement service in SAME transaction; never adopts an earlier cash operation. No expected open-drawer balance exposed. Archive only at zero; history is retained. Statements validate full account ledger and sources independently of pagination. Replies to replay/operation queries are historical snapshots, not current balances; use GET vault for current state. Local-only physical declarations, not bank accounts or statutory ledger. No query on writes or singular GET; list/statement/pending only limit/offset; duplicate/extra parameters and GET bodies rejected. No frontend integration or new legacy wire messages."
+  },
+  "paths": {
+    "/local/v1/cash/vaults": {
+      "post": {
+        "operationId": "createCashVault",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/body/query or missing/duplicate/extra fields"
+          },
+          "401": {
+            "description": "Session/device missing or revoked"
+          },
+          "403": {
+            "description": "ManageCash/POS denied; bag credit requires its original receiver"
+          },
+          "404": {
+            "description": "Resource outside session scope, missing or operation owned by another actor"
+          },
+          "409": {
+            "description": "Insufficient funds, inactive destination, conflicting operation/source, source inconsistency or closed drawer"
+          },
+          "413": {
+            "description": "Request exceeds8192 bytes"
+          },
+          "422": {
+            "description": "Exact amount/balance range exceeded"
+          },
+          "500": {
+            "description": "Storage failed; transaction rolls back"
+          },
+          "503": {
+            "description": "Writes have no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVault"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listCashVaults",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/body/query or missing/duplicate/extra fields"
+          },
+          "401": {
+            "description": "Session/device missing or revoked"
+          },
+          "403": {
+            "description": "ManageCash/POS denied; bag credit requires its original receiver"
+          },
+          "404": {
+            "description": "Resource outside session scope, missing or operation owned by another actor"
+          },
+          "409": {
+            "description": "Insufficient funds, inactive destination, conflicting operation/source, source inconsistency or closed drawer"
+          },
+          "413": {
+            "description": "Request exceeds8192 bytes"
+          },
+          "422": {
+            "description": "Exact amount/balance range exceeded"
+          },
+          "500": {
+            "description": "Storage failed; transaction rolls back"
+          },
+          "503": {
+            "description": "Writes have no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultPage"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/vaults/pending-bags": {
+      "get": {
+        "operationId": "pendingVaultBags",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/body/query or missing/duplicate/extra fields"
+          },
+          "401": {
+            "description": "Session/device missing or revoked"
+          },
+          "403": {
+            "description": "ManageCash/POS denied; bag credit requires its original receiver"
+          },
+          "404": {
+            "description": "Resource outside session scope, missing or operation owned by another actor"
+          },
+          "409": {
+            "description": "Insufficient funds, inactive destination, conflicting operation/source, source inconsistency or closed drawer"
+          },
+          "413": {
+            "description": "Request exceeds8192 bytes"
+          },
+          "422": {
+            "description": "Exact amount/balance range exceeded"
+          },
+          "500": {
+            "description": "Storage failed; transaction rolls back"
+          },
+          "503": {
+            "description": "Writes have no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingBagPage"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/vaults/operations/{id}": {
+      "get": {
+        "operationId": "readVaultOperation",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/body/query or missing/duplicate/extra fields"
+          },
+          "401": {
+            "description": "Session/device missing or revoked"
+          },
+          "403": {
+            "description": "ManageCash/POS denied; bag credit requires its original receiver"
+          },
+          "404": {
+            "description": "Resource outside session scope, missing or operation owned by another actor"
+          },
+          "409": {
+            "description": "Insufficient funds, inactive destination, conflicting operation/source, source inconsistency or closed drawer"
+          },
+          "413": {
+            "description": "Request exceeds8192 bytes"
+          },
+          "422": {
+            "description": "Exact amount/balance range exceeded"
+          },
+          "500": {
+            "description": "Storage failed; transaction rolls back"
+          },
+          "503": {
+            "description": "Writes have no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/vaults/{id}": {
+      "get": {
+        "operationId": "readCashVault",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/body/query or missing/duplicate/extra fields"
+          },
+          "401": {
+            "description": "Session/device missing or revoked"
+          },
+          "403": {
+            "description": "ManageCash/POS denied; bag credit requires its original receiver"
+          },
+          "404": {
+            "description": "Resource outside session scope, missing or operation owned by another actor"
+          },
+          "409": {
+            "description": "Insufficient funds, inactive destination, conflicting operation/source, source inconsistency or closed drawer"
+          },
+          "413": {
+            "description": "Request exceeds8192 bytes"
+          },
+          "422": {
+            "description": "Exact amount/balance range exceeded"
+          },
+          "500": {
+            "description": "Storage failed; transaction rolls back"
+          },
+          "503": {
+            "description": "Writes have no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vault"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/vaults/{id}/statement": {
+      "get": {
+        "operationId": "readVaultStatement",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/body/query or missing/duplicate/extra fields"
+          },
+          "401": {
+            "description": "Session/device missing or revoked"
+          },
+          "403": {
+            "description": "ManageCash/POS denied; bag credit requires its original receiver"
+          },
+          "404": {
+            "description": "Resource outside session scope, missing or operation owned by another actor"
+          },
+          "409": {
+            "description": "Insufficient funds, inactive destination, conflicting operation/source, source inconsistency or closed drawer"
+          },
+          "413": {
+            "description": "Request exceeds8192 bytes"
+          },
+          "422": {
+            "description": "Exact amount/balance range exceeded"
+          },
+          "500": {
+            "description": "Storage failed; transaction rolls back"
+          },
+          "503": {
+            "description": "Writes have no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultStatement"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/vaults/{id}/deposit": {
+      "post": {
+        "operationId": "depositCashVault",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/body/query or missing/duplicate/extra fields"
+          },
+          "401": {
+            "description": "Session/device missing or revoked"
+          },
+          "403": {
+            "description": "ManageCash/POS denied; bag credit requires its original receiver"
+          },
+          "404": {
+            "description": "Resource outside session scope, missing or operation owned by another actor"
+          },
+          "409": {
+            "description": "Insufficient funds, inactive destination, conflicting operation/source, source inconsistency or closed drawer"
+          },
+          "413": {
+            "description": "Request exceeds8192 bytes"
+          },
+          "422": {
+            "description": "Exact amount/balance range exceeded"
+          },
+          "500": {
+            "description": "Storage failed; transaction rolls back"
+          },
+          "503": {
+            "description": "Writes have no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepositVault"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/vaults/{id}/transfer": {
+      "post": {
+        "operationId": "transferCashVault",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/body/query or missing/duplicate/extra fields"
+          },
+          "401": {
+            "description": "Session/device missing or revoked"
+          },
+          "403": {
+            "description": "ManageCash/POS denied; bag credit requires its original receiver"
+          },
+          "404": {
+            "description": "Resource outside session scope, missing or operation owned by another actor"
+          },
+          "409": {
+            "description": "Insufficient funds, inactive destination, conflicting operation/source, source inconsistency or closed drawer"
+          },
+          "413": {
+            "description": "Request exceeds8192 bytes"
+          },
+          "422": {
+            "description": "Exact amount/balance range exceeded"
+          },
+          "500": {
+            "description": "Storage failed; transaction rolls back"
+          },
+          "503": {
+            "description": "Writes have no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferVault"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/vaults/{id}/supply": {
+      "post": {
+        "operationId": "supplyCashVault",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/body/query or missing/duplicate/extra fields"
+          },
+          "401": {
+            "description": "Session/device missing or revoked"
+          },
+          "403": {
+            "description": "ManageCash/POS denied; bag credit requires its original receiver"
+          },
+          "404": {
+            "description": "Resource outside session scope, missing or operation owned by another actor"
+          },
+          "409": {
+            "description": "Insufficient funds, inactive destination, conflicting operation/source, source inconsistency or closed drawer"
+          },
+          "413": {
+            "description": "Request exceeds8192 bytes"
+          },
+          "422": {
+            "description": "Exact amount/balance range exceeded"
+          },
+          "500": {
+            "description": "Storage failed; transaction rolls back"
+          },
+          "503": {
+            "description": "Writes have no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplyVault"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/cash/vaults/{id}/archive": {
+      "post": {
+        "operationId": "archiveCashVault",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/body/query or missing/duplicate/extra fields"
+          },
+          "401": {
+            "description": "Session/device missing or revoked"
+          },
+          "403": {
+            "description": "ManageCash/POS denied; bag credit requires its original receiver"
+          },
+          "404": {
+            "description": "Resource outside session scope, missing or operation owned by another actor"
+          },
+          "409": {
+            "description": "Insufficient funds, inactive destination, conflicting operation/source, source inconsistency or closed drawer"
+          },
+          "413": {
+            "description": "Request exceeds8192 bytes"
+          },
+          "422": {
+            "description": "Exact amount/balance range exceeded"
+          },
+          "500": {
+            "description": "Storage failed; transaction rolls back"
+          },
+          "503": {
+            "description": "Writes have no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipts; current validated state for reads. All values exact integer cents. No bank or fiscal confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveVault"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Vault": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "creation_operation_id",
+          "last_operation_id",
+          "state",
+          "balance_cents"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "creation_operation_id": {
+            "type": "string"
+          },
+          "last_operation_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ]
+          },
+          "balance_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "VaultEntry": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "vault_id",
+          "operation_id",
+          "actor_id",
+          "reason",
+          "created_at",
+          "kind",
+          "delta_cents",
+          "bag_id",
+          "cash_session_id",
+          "cash_movement_id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "vault_id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "deposit",
+              "transfer_out",
+              "transfer_in",
+              "cash_supply"
+            ]
+          },
+          "delta_cents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "bag_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "cash_session_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "cash_movement_id": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "VaultResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "kind",
+          "reason",
+          "created_at",
+          "repeated",
+          "vaults",
+          "entries",
+          "bag_id",
+          "cash_movement_id"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "create",
+              "deposit",
+              "transfer",
+              "supply",
+              "archive"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "vaults": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/Vault"
+            }
+          },
+          "entries": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/VaultEntry"
+            }
+          },
+          "bag_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "cash_movement_id": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "VaultPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total_count",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Vault"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "VaultStatement": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "vault",
+          "items",
+          "total_count",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "vault": {
+            "$ref": "#/components/schemas/Vault"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/VaultEntry"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Bag": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "session_id",
+          "withdrawal_operation_id",
+          "movement_id",
+          "sender_id",
+          "operator_id",
+          "seal_id",
+          "created_at",
+          "updated_at",
+          "state",
+          "declared_cents",
+          "counted_cents",
+          "difference_cents",
+          "receiver_id",
+          "received_at",
+          "history"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "withdrawal_operation_id": {
+            "type": "string"
+          },
+          "movement_id": {
+            "type": "string"
+          },
+          "sender_id": {
+            "type": "string"
+          },
+          "operator_id": {
+            "type": "string"
+          },
+          "seal_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "prepared",
+              "in_transit",
+              "received",
+              "rejected",
+              "cancelled"
+            ]
+          },
+          "declared_cents": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "counted_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "difference_cents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "receiver_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "received_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "history": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": {
+              "$ref": "#/components/schemas/BagEvent"
+            }
+          }
+        }
+      },
+      "BagEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "actor_id",
+          "from_state",
+          "to_state",
+          "reason",
+          "created_at",
+          "action"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "from_state": {
+            "type": "string"
+          },
+          "to_state": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "dispatch",
+              "receive",
+              "reject",
+              "cancel"
+            ]
+          }
+        }
+      },
+      "PendingBagPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total_count",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Bag"
+            }
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateVault": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "vault_id",
+          "name"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "vault_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        }
+      },
+      "DepositVault": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "bag_id"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "bag_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          }
+        }
+      },
+      "TransferVault": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "destination_id",
+          "amount_cents",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "destination_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "SupplyVault": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "cash_session_id",
+          "amount_cents",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "cash_session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "ArchiveVault": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      }
+    }
+  }
+}

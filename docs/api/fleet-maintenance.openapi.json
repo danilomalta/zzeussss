@@ -1,0 +1,5951 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — Frota e Manutenção interna",
+    "version": "2026-10-23.1"
+  },
+  "paths": {
+    "/local/v1/fleet/assets": {
+      "get": {
+        "operationId": "fleet_asset_list",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Stable ID page; total counts whole filtered set, integrity validates returned page only. No GET body/duplicate/unknown query.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "fleet_asset_create",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. All envelope/data fields required, including empty strings. reason mandatory. <=24576 body bytes, data<=16384. IDs chosen before first send. Same operation+canonical JSON returns original result repeated=true; never replace uncertain operation ID.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}": {
+      "get": {
+        "operationId": "fleet_asset_get",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Current record and latest receipt/contiguous revision evidence.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/history": {
+      "get": {
+        "operationId": "fleet_asset_history",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Revision-ordered result snapshots, actor/device and mandatory reasons. Current proof + each returned receipt checked.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/actions": {
+      "post": {
+        "operationId": "fleet_asset_action",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Path ID equals body ID; exact expected_revision; action/resource field matrix in architecture guide. Immutable quote has no valid update action. Expense/income/impact only void, never delete. Release manager only; cancellation after approval retains safety hold.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetsAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/requests": {
+      "get": {
+        "operationId": "fleet_request_list",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Stable ID page; total counts whole filtered set, integrity validates returned page only. No GET body/duplicate/unknown query.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "fleet_request_create",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. All envelope/data fields required, including empty strings. reason mandatory. <=24576 body bytes, data<=16384. IDs chosen before first send. Same operation+canonical JSON returns original result repeated=true; never replace uncertain operation ID.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/requests/{id}": {
+      "get": {
+        "operationId": "fleet_request_get",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Current record and latest receipt/contiguous revision evidence.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/requests/{id}/history": {
+      "get": {
+        "operationId": "fleet_request_history",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Revision-ordered result snapshots, actor/device and mandatory reasons. Current proof + each returned receipt checked.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/requests/{id}/actions": {
+      "post": {
+        "operationId": "fleet_request_action",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Path ID equals body ID; exact expected_revision; action/resource field matrix in architecture guide. Immutable quote has no valid update action. Expense/income/impact only void, never delete. Release manager only; cancellation after approval retains safety hold.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestsAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/trips": {
+      "get": {
+        "operationId": "fleet_trip_list",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Stable ID page; total counts whole filtered set, integrity validates returned page only. No GET body/duplicate/unknown query.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "fleet_trip_create",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. All envelope/data fields required, including empty strings. reason mandatory. <=24576 body bytes, data<=16384. IDs chosen before first send. Same operation+canonical JSON returns original result repeated=true; never replace uncertain operation ID.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/trips/{id}": {
+      "get": {
+        "operationId": "fleet_trip_get",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Current record and latest receipt/contiguous revision evidence.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/trips/{id}/history": {
+      "get": {
+        "operationId": "fleet_trip_history",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Revision-ordered result snapshots, actor/device and mandatory reasons. Current proof + each returned receipt checked.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/trips/{id}/actions": {
+      "post": {
+        "operationId": "fleet_trip_action",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Path ID equals body ID; exact expected_revision; action/resource field matrix in architecture guide. Immutable quote has no valid update action. Expense/income/impact only void, never delete. Release manager only; cancellation after approval retains safety hold.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripsAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/plans": {
+      "get": {
+        "operationId": "fleet_plan_list",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Stable ID page; total counts whole filtered set, integrity validates returned page only. No GET body/duplicate/unknown query.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "fleet_plan_create",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. All envelope/data fields required, including empty strings. reason mandatory. <=24576 body bytes, data<=16384. IDs chosen before first send. Same operation+canonical JSON returns original result repeated=true; never replace uncertain operation ID.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlansCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/plans/{id}": {
+      "get": {
+        "operationId": "fleet_plan_get",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Current record and latest receipt/contiguous revision evidence.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/plans/{id}/history": {
+      "get": {
+        "operationId": "fleet_plan_history",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Revision-ordered result snapshots, actor/device and mandatory reasons. Current proof + each returned receipt checked.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/plans/{id}/actions": {
+      "post": {
+        "operationId": "fleet_plan_action",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Path ID equals body ID; exact expected_revision; action/resource field matrix in architecture guide. Immutable quote has no valid update action. Expense/income/impact only void, never delete. Release manager only; cancellation after approval retains safety hold.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlansAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/providers": {
+      "get": {
+        "operationId": "fleet_provider_list",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Stable ID page; total counts whole filtered set, integrity validates returned page only. No GET body/duplicate/unknown query.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "fleet_provider_create",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. All envelope/data fields required, including empty strings. reason mandatory. <=24576 body bytes, data<=16384. IDs chosen before first send. Same operation+canonical JSON returns original result repeated=true; never replace uncertain operation ID.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProvidersCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/providers/{id}": {
+      "get": {
+        "operationId": "fleet_provider_get",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Current record and latest receipt/contiguous revision evidence.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/providers/{id}/history": {
+      "get": {
+        "operationId": "fleet_provider_history",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Revision-ordered result snapshots, actor/device and mandatory reasons. Current proof + each returned receipt checked.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/providers/{id}/actions": {
+      "post": {
+        "operationId": "fleet_provider_action",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Path ID equals body ID; exact expected_revision; action/resource field matrix in architecture guide. Immutable quote has no valid update action. Expense/income/impact only void, never delete. Release manager only; cancellation after approval retains safety hold.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProvidersAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/quotes": {
+      "get": {
+        "operationId": "fleet_quote_list",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Stable ID page; total counts whole filtered set, integrity validates returned page only. No GET body/duplicate/unknown query.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "fleet_quote_create",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. All envelope/data fields required, including empty strings. reason mandatory. <=24576 body bytes, data<=16384. IDs chosen before first send. Same operation+canonical JSON returns original result repeated=true; never replace uncertain operation ID.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuotesCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/quotes/{id}": {
+      "get": {
+        "operationId": "fleet_quote_get",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Current record and latest receipt/contiguous revision evidence.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/quotes/{id}/history": {
+      "get": {
+        "operationId": "fleet_quote_history",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Revision-ordered result snapshots, actor/device and mandatory reasons. Current proof + each returned receipt checked.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/quotes/{id}/actions": {
+      "post": {
+        "operationId": "fleet_quote_action",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Path ID equals body ID; exact expected_revision; action/resource field matrix in architecture guide. Immutable quote has no valid update action. Expense/income/impact only void, never delete. Release manager only; cancellation after approval retains safety hold.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuotesAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/expenses": {
+      "get": {
+        "operationId": "fleet_expense_list",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Stable ID page; total counts whole filtered set, integrity validates returned page only. No GET body/duplicate/unknown query.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "fleet_expense_create",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. All envelope/data fields required, including empty strings. reason mandatory. <=24576 body bytes, data<=16384. IDs chosen before first send. Same operation+canonical JSON returns original result repeated=true; never replace uncertain operation ID.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExpensesCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/expenses/{id}": {
+      "get": {
+        "operationId": "fleet_expense_get",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Current record and latest receipt/contiguous revision evidence.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/expenses/{id}/history": {
+      "get": {
+        "operationId": "fleet_expense_history",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Revision-ordered result snapshots, actor/device and mandatory reasons. Current proof + each returned receipt checked.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/expenses/{id}/actions": {
+      "post": {
+        "operationId": "fleet_expense_action",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Path ID equals body ID; exact expected_revision; action/resource field matrix in architecture guide. Immutable quote has no valid update action. Expense/income/impact only void, never delete. Release manager only; cancellation after approval retains safety hold.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExpensesAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/income": {
+      "get": {
+        "operationId": "fleet_income_list",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Stable ID page; total counts whole filtered set, integrity validates returned page only. No GET body/duplicate/unknown query.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "fleet_income_create",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. All envelope/data fields required, including empty strings. reason mandatory. <=24576 body bytes, data<=16384. IDs chosen before first send. Same operation+canonical JSON returns original result repeated=true; never replace uncertain operation ID.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncomeCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/income/{id}": {
+      "get": {
+        "operationId": "fleet_income_get",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Current record and latest receipt/contiguous revision evidence.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/income/{id}/history": {
+      "get": {
+        "operationId": "fleet_income_history",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Revision-ordered result snapshots, actor/device and mandatory reasons. Current proof + each returned receipt checked.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/income/{id}/actions": {
+      "post": {
+        "operationId": "fleet_income_action",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Path ID equals body ID; exact expected_revision; action/resource field matrix in architecture guide. Immutable quote has no valid update action. Expense/income/impact only void, never delete. Release manager only; cancellation after approval retains safety hold.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncomeAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/impacts": {
+      "get": {
+        "operationId": "fleet_impact_list",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Stable ID page; total counts whole filtered set, integrity validates returned page only. No GET body/duplicate/unknown query.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "fleet_impact_create",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. All envelope/data fields required, including empty strings. reason mandatory. <=24576 body bytes, data<=16384. IDs chosen before first send. Same operation+canonical JSON returns original result repeated=true; never replace uncertain operation ID.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImpactsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/impacts/{id}": {
+      "get": {
+        "operationId": "fleet_impact_get",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Current record and latest receipt/contiguous revision evidence.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/impacts/{id}/history": {
+      "get": {
+        "operationId": "fleet_impact_history",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Revision-ordered result snapshots, actor/device and mandatory reasons. Current proof + each returned receipt checked.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/impacts/{id}/actions": {
+      "post": {
+        "operationId": "fleet_impact_action",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Path ID equals body ID; exact expected_revision; action/resource field matrix in architecture guide. Immutable quote has no valid update action. Expense/income/impact only void, never delete. Release manager only; cancellation after approval retains safety hold.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImpactsAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/profiles": {
+      "get": {
+        "operationId": "fleet_profile_list",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Stable ID page; total counts whole filtered set, integrity validates returned page only. No GET body/duplicate/unknown query.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "fleet_profile_create",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. All envelope/data fields required, including empty strings. reason mandatory. <=24576 body bytes, data<=16384. IDs chosen before first send. Same operation+canonical JSON returns original result repeated=true; never replace uncertain operation ID.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfilesCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/profiles/{id}": {
+      "get": {
+        "operationId": "fleet_profile_get",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Current record and latest receipt/contiguous revision evidence.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/profiles/{id}/history": {
+      "get": {
+        "operationId": "fleet_profile_history",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Revision-ordered result snapshots, actor/device and mandatory reasons. Current proof + each returned receipt checked.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/profiles/{id}/actions": {
+      "post": {
+        "operationId": "fleet_profile_action",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Path ID equals body ID; exact expected_revision; action/resource field matrix in architecture guide. Immutable quote has no valid update action. Expense/income/impact only void, never delete. Release manager only; cancellation after approval retains safety hold.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfilesAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/operations/{id}": {
+      "get": {
+        "operationId": "fleet_operation",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Recovery bound to original user/device, even if newer record revision exists; reads do not require contract renewal, current permission still applies.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/availability": {
+      "get": {
+        "operationId": "fleet_availability",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Manual status + all request/trip evidence; planned/departed trip reserves asset. Failure never silently unlocks. Not live GPS. Max5000 operational records for asset.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Availability"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/preventive": {
+      "get": {
+        "operationId": "fleet_preventive",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Active plan due by date OR effective meter=max(manual, returned trips). Due never automatically creates purchase/service. Max5000 plans/trips each.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreventivePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/costs": {
+      "get": {
+        "operationId": "fleet_costs",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Explicit half-open <=366d UTC whole-second period. All expense/income/impact/profile/trip source<=5000. Current recorded annotations; void excluded. Estimated impact kept separate. Period linear depreciation, residual floor, latest profile assumptions. Partial contribution is NOT net profit. Trips attributed wholly by returned_at. Exact rational unit cost: numerator cents / denominator milli; denominator0 means unavailable. CSV escapes formula-leading cells.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "required": true
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CostReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/assets/{id}/costs.csv": {
+      "get": {
+        "operationId": "fleet_costs_csv",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Explicit half-open <=366d UTC whole-second period. All expense/income/impact/profile/trip source<=5000. Current recorded annotations; void excluded. Estimated impact kept separate. Period linear depreciation, residual floor, latest profile assumptions. Partial contribution is NOT net profit. Trips attributed wholly by returned_at. Exact rational unit cost: numerator cents / denominator milli; denominator0 means unavailable. CSV escapes formula-leading cells.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "required": true
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/notices": {
+      "get": {
+        "operationId": "fleet_notices",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Durable cursor feed; broadcast unassigned, assigned recipient/request creator/manager. Polling only: no delivered push/sound assertion. Cursor follows last returned visible notice; empty page retains cursor.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoticePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/notices/{id}/ack": {
+      "post": {
+        "operationId": "fleet_notice_ack",
+        "description": "Current authenticated tenant/store/user + approved device, ViewOrders; no context accepted from body. Financial resources/report additionally ViewAccounting. Writes require signed active Logistics module with its dependencies, and owner/manager except authorized request/trip actions. Body ID decimal notice ID. One ack per notice/user/device. Records client acknowledgment only; no assertion OS displayed/played sound. Replay same op idempotent; second distinct operation409.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped result. Managerial data, not external settlement/GPS/push confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, missing, duplicate, extra or null fields, malformed query/body/action"
+          },
+          "401": {
+            "description": "Session missing/revoked"
+          },
+          "403": {
+            "description": "Current user/device/permission/contract/manager/assignment denied"
+          },
+          "404": {
+            "description": "Scoped record absent; operation receipt also actor/device bound"
+          },
+          "409": {
+            "description": "Changed operation payload, stale revision, state/uniqueness/evidence conflict"
+          },
+          "422": {
+            "description": "Source exceeds5000; no partial aggregate or automatic unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticeAckInput"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Amount": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "asset_id": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "incurred_at": {
+            "type": "string"
+          },
+          "provider_id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "category",
+          "amount_cents",
+          "incurred_at",
+          "provider_id",
+          "request_id",
+          "reference"
+        ],
+        "type": "object"
+      },
+      "Asset": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "truck",
+              "car",
+              "motorcycle",
+              "van",
+              "machine",
+              "forklift",
+              "other"
+            ]
+          },
+          "location": {
+            "type": "string"
+          },
+          "meter_basis": {
+            "type": "string",
+            "enum": [
+              "km",
+              "hour",
+              "none"
+            ]
+          },
+          "meter_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "plate": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference",
+          "name",
+          "category",
+          "plate",
+          "location",
+          "meter_basis",
+          "meter_milli",
+          "note"
+        ],
+        "type": "object"
+      },
+      "Availability": {
+        "additionalProperties": false,
+        "properties": {
+          "active_trip_id": {
+            "type": "string"
+          },
+          "asset_id": {
+            "type": "string"
+          },
+          "available_for_dispatch": {
+            "type": "boolean"
+          },
+          "blocking_requests": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "live_position": {
+            "type": "boolean"
+          },
+          "manual_state": {
+            "type": "string"
+          },
+          "measured_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "manual_state",
+          "available_for_dispatch",
+          "blocking_requests",
+          "active_trip_id",
+          "live_position",
+          "measured_at"
+        ],
+        "type": "object"
+      },
+      "CostReport": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "attributed_income_cents_exact": {
+            "type": "string",
+            "description": "Exact decimal integer string, including totals above JavaScript safe integer. Do not parse as floating point."
+          },
+          "book_value_cents_exact": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true,
+            "description": "Exact decimal integer string, including totals above JavaScript safe integer. Do not parse as floating point."
+          },
+          "cash_confirmed": {
+            "type": "boolean"
+          },
+          "cost_per_meter_denominator_milli": {
+            "type": "string"
+          },
+          "cost_per_meter_numerator_cents": {
+            "type": "string"
+          },
+          "distance_milli_exact": {
+            "type": "string",
+            "description": "Exact decimal integer string, including totals above JavaScript safe integer. Do not parse as floating point."
+          },
+          "estimated_impact_cents_exact": {
+            "type": "string",
+            "description": "Exact decimal integer string, including totals above JavaScript safe integer. Do not parse as floating point."
+          },
+          "expense_cents_exact": {
+            "type": "string",
+            "description": "Exact decimal integer string, including totals above JavaScript safe integer. Do not parse as floating point."
+          },
+          "from": {
+            "type": "string"
+          },
+          "hours_milli_exact": {
+            "type": "string",
+            "description": "Exact decimal integer string, including totals above JavaScript safe integer. Do not parse as floating point."
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "meter_basis": {
+            "type": "string"
+          },
+          "net_profit": {
+            "type": "boolean"
+          },
+          "partial_contribution_cents_exact": {
+            "type": "string",
+            "description": "Exact decimal integer string, including totals above JavaScript safe integer. Do not parse as floating point."
+          },
+          "period_depreciation_cents_exact": {
+            "type": "string",
+            "description": "Exact decimal integer string, including totals above JavaScript safe integer. Do not parse as floating point."
+          },
+          "profile_present": {
+            "type": "boolean"
+          },
+          "returned_trips": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "source_records": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "to_exclusive": {
+            "type": "string"
+          },
+          "voided_records": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "asset_id",
+          "from",
+          "to_exclusive",
+          "measured_at",
+          "expense_cents_exact",
+          "attributed_income_cents_exact",
+          "estimated_impact_cents_exact",
+          "period_depreciation_cents_exact",
+          "book_value_cents_exact",
+          "partial_contribution_cents_exact",
+          "distance_milli_exact",
+          "hours_milli_exact",
+          "cost_per_meter_numerator_cents",
+          "cost_per_meter_denominator_milli",
+          "meter_basis",
+          "source_records",
+          "voided_records",
+          "returned_trips",
+          "cash_confirmed",
+          "net_profit",
+          "profile_present"
+        ],
+        "type": "object"
+      },
+      "History": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryItem"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "HistoryItem": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "result": {
+            "$ref": "#/components/schemas/Result"
+          }
+        },
+        "required": [
+          "action",
+          "actor_id",
+          "device_id",
+          "reason",
+          "result"
+        ],
+        "type": "object"
+      },
+      "Input": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "expected_revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "Notice": {
+        "additionalProperties": false,
+        "properties": {
+          "acknowledged": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "recipient_id": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "request_id",
+          "revision",
+          "recipient_id",
+          "created_at",
+          "acknowledged"
+        ],
+        "type": "object"
+      },
+      "NoticeAck": {
+        "additionalProperties": false,
+        "properties": {
+          "client_acknowledged_at": {
+            "type": "string"
+          },
+          "notice_id": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "notice_id",
+          "client_acknowledged_at"
+        ],
+        "type": "object"
+      },
+      "NoticePage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Notice"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "next_cursor": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "push_delivered": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor",
+          "limit",
+          "push_delivered"
+        ],
+        "type": "object"
+      },
+      "OpenRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "blocks": {
+            "type": "boolean"
+          },
+          "impact": {
+            "type": "string"
+          },
+          "issue": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "urgent",
+              "emergency"
+            ]
+          },
+          "reference": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "issue",
+          "priority",
+          "location",
+          "blocks",
+          "impact",
+          "reference"
+        ],
+        "type": "object"
+      },
+      "Page": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "measured_at"
+        ],
+        "type": "object"
+      },
+      "Plan": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "due_at": {
+            "type": "string"
+          },
+          "due_meter_milli": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "label": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "label",
+          "due_at",
+          "due_meter_milli",
+          "note"
+        ],
+        "type": "object"
+      },
+      "PreventiveItem": {
+        "additionalProperties": false,
+        "properties": {
+          "due_by_date": {
+            "type": "boolean"
+          },
+          "due_by_meter": {
+            "type": "boolean"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/Record"
+          }
+        },
+        "required": [
+          "plan",
+          "due_by_date",
+          "due_by_meter"
+        ],
+        "type": "object"
+      },
+      "PreventivePage": {
+        "additionalProperties": false,
+        "properties": {
+          "automatic_request": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PreventiveItem"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "measured_at",
+          "automatic_request"
+        ],
+        "type": "object"
+      },
+      "Profile": {
+        "additionalProperties": false,
+        "properties": {
+          "acquisition_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "asset_id": {
+            "type": "string"
+          },
+          "in_service_on": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "residual_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "useful_months": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "asset_id",
+          "acquisition_cents",
+          "residual_cents",
+          "useful_months",
+          "in_service_on",
+          "note"
+        ],
+        "type": "object"
+      },
+      "Provider": {
+        "additionalProperties": false,
+        "properties": {
+          "contact": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "services": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "contact",
+          "services",
+          "note"
+        ],
+        "type": "object"
+      },
+      "Quote": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "labor_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          },
+          "other_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "parts_cents": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "provider_id": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "request_id",
+          "provider_id",
+          "parts_cents",
+          "labor_cents",
+          "other_cents",
+          "note"
+        ],
+        "type": "object"
+      },
+      "Record": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "assigned_to": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Asset"
+              },
+              {
+                "$ref": "#/components/schemas/Request"
+              },
+              {
+                "$ref": "#/components/schemas/Provider"
+              },
+              {
+                "$ref": "#/components/schemas/Plan"
+              },
+              {
+                "$ref": "#/components/schemas/Trip"
+              },
+              {
+                "$ref": "#/components/schemas/Quote"
+              },
+              {
+                "$ref": "#/components/schemas/Amount"
+              },
+              {
+                "$ref": "#/components/schemas/Profile"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "asset_id",
+          "state",
+          "assigned_to",
+          "revision",
+          "data",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "Request": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "blocks": {
+            "type": "boolean"
+          },
+          "impact": {
+            "type": "string"
+          },
+          "issue": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "quote_id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "requester_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "issue",
+          "priority",
+          "location",
+          "blocks",
+          "impact",
+          "reference",
+          "requester_id",
+          "quote_id"
+        ],
+        "type": "object"
+      },
+      "RequestAction": {
+        "additionalProperties": false,
+        "properties": {
+          "assigned_to": {
+            "type": "string"
+          },
+          "quote_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assigned_to",
+          "quote_id"
+        ],
+        "type": "object"
+      },
+      "Result": {
+        "additionalProperties": false,
+        "properties": {
+          "ack": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NoticeAck"
+              }
+            ],
+            "nullable": true
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "record": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Record"
+              }
+            ],
+            "nullable": true
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "operation_id",
+          "repeated"
+        ],
+        "type": "object"
+      },
+      "Trip": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "departed_at": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "end_meter_milli": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "reference": {
+            "type": "string"
+          },
+          "returned_at": {
+            "type": "string"
+          },
+          "start_meter_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "asset_id",
+          "driver_id",
+          "reference",
+          "description",
+          "start_meter_milli",
+          "end_meter_milli",
+          "departed_at",
+          "returned_at"
+        ],
+        "type": "object"
+      },
+      "TripAction": {
+        "additionalProperties": false,
+        "properties": {
+          "end_meter_milli": {
+            "allOf": [
+              {
+                "format": "int64",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            ],
+            "nullable": true
+          },
+          "loaded": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "loaded",
+          "end_meter_milli"
+        ],
+        "type": "object"
+      },
+      "TripOpen": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "driver_id",
+          "reference",
+          "description"
+        ],
+        "type": "object"
+      },
+      "Empty": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "AssetsCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Asset"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "AssetsAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Asset"
+              },
+              {
+                "$ref": "#/components/schemas/Empty"
+              }
+            ]
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "RequestsCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/OpenRequest"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "RequestsAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RequestAction"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "TripsCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/TripOpen"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "TripsAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TripAction"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "PlansCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Plan"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "PlansAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Plan"
+              },
+              {
+                "$ref": "#/components/schemas/Empty"
+              }
+            ]
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ProvidersCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Provider"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ProvidersAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Provider"
+              },
+              {
+                "$ref": "#/components/schemas/Empty"
+              }
+            ]
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "QuotesCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Quote"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "QuotesAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Empty"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ExpensesCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ExpensesAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Empty"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "IncomeCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "IncomeAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Empty"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ImpactsCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ImpactsAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Empty"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ProfilesCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Profile"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ProfilesAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Profile"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "NoticeAckInput": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "ack"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Empty"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P64 — recibo original do cancelamento",
+    "version": "P64",
+    "description": "GET somente leitura, SQLite 44, sem nova migração. Escritor existente documentado em purchase-cancel.openapi.json. Consulta consolidada existente em purchase-trace.openapi.json. Empresa, loja, operador e aparelho vêm da sessão; datas são registros dos aparelhos, sem garantia de relógio global."
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/purchase-cancellation-operations/{operation_id}/receipt": {
+      "get": {
+        "operationId": "getPurchaseCancelOriginalReceipt",
+        "summary": "Consultar cancelamento original no contexto do operador e aparelho que o registraram.",
+        "description": "Não aceita query string. Exige ViewOrders e aparelho validado. JSON canônico e correspondência entre entrada e auditoria são conferidos, assim como estado do documento original e ausência de autorização contraditória. Nenhum estado, estoque, outbox ou relógio de contrato é alterado.",
+        "parameters": [
+          {
+            "name": "operation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Até 128 bytes UTF-8, sem espaços nas bordas, NUL, CR ou LF."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recibo original, repeated=false",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID ou query inválida"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão ou aparelho negado"
+          },
+          "404": {
+            "description": "Operação ausente no contexto autorizado"
+          },
+          "409": {
+            "description": "JSON ou auditoria inconsistente"
+          },
+          "503": {
+            "description": "Serviço local indisponível"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "OriginalInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "order_id",
+          "expected_status",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Até 128 bytes UTF-8, sem espaços nas bordas, NUL, CR ou LF."
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Até 128 bytes UTF-8, sem espaços nas bordas, NUL, CR ou LF."
+          },
+          "expected_status": {
+            "type": "string",
+            "enum": [
+              "local_not_sent"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Até 255 bytes UTF-8, motivo exato, sem espaços nas bordas, NUL, CR ou LF."
+          }
+        }
+      },
+      "Cancellation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "device_id",
+          "actor_id",
+          "reason",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Até 128 bytes UTF-8, sem espaços nas bordas, NUL, CR ou LF."
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Até 128 bytes UTF-8, sem espaços nas bordas, NUL, CR ou LF."
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Até 128 bytes UTF-8, sem espaços nas bordas, NUL, CR ou LF."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Até 255 bytes UTF-8, motivo exato, sem espaços nas bordas, NUL, CR ou LF."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OriginalResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "order_id",
+          "status",
+          "repeated",
+          "cancellation"
+        ],
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Até 128 bytes UTF-8, sem espaços nas bordas, NUL, CR ou LF."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "cancelled"
+            ]
+          },
+          "repeated": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "cancellation": {
+            "$ref": "#/components/schemas/Cancellation"
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "input",
+          "result"
+        ],
+        "properties": {
+          "input": {
+            "$ref": "#/components/schemas/OriginalInput"
+          },
+          "result": {
+            "$ref": "#/components/schemas/OriginalResult"
+          }
+        }
+      }
+    }
+  }
+}

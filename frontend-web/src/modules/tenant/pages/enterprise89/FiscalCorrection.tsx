@@ -1,0 +1,8 @@
+import {useEffect,useRef,useState} from 'react';
+import {createNFe55Client,NFe55Error} from '../../../../core/fiscalCustomer/nfe55.mjs';
+export function FiscalCorrection({token,isCurrent,sale,words:fw}:{token:string;isCurrent:()=>boolean;sale:string;words:Record<string,string>}){
+ const [text,setText]=useState(''),[confirmed,setConfirmed]=useState(false),[result,setResult]=useState(''),[busy,setBusy]=useState(false);const generation=useRef(0);
+ useEffect(()=>{generation.current++;setText('');setConfirmed(false);setResult('');setBusy(false);return()=>{generation.current++;};},[token,isCurrent,sale]);
+ async function send(){if(!isCurrent()||busy)return;const g=++generation.current;setBusy(true);try{const out=await createNFe55Client({token,isCurrent}).correction(sale,{correction:text,confirmed_allowed_fields:confirmed});if(g===generation.current&&isCurrent()){setResult(out.state);setText('');}}catch(e){if(g===generation.current&&isCurrent())setResult(e instanceof NFe55Error?e.code:'network');}finally{if(g===generation.current)setBusy(false);}}
+ return <form onSubmit={e=>{e.preventDefault();void send();}}><fieldset disabled={busy||!isCurrent()||!!result}><legend>{fw.cceTitle}</legend><p>{fw.cceLimits}</p><label>{fw.cceText}<textarea required minLength={15} maxLength={1000} autoComplete="off" value={text} onChange={e=>setText(e.target.value)}/></label><label><input type="checkbox" required checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>{fw.cceConfirm}</label><button>{fw.cceSend}</button></fieldset>{result&&<p role="status">{fw[result]||fw.nfeFailure}</p>}</form>;
+}

@@ -1,0 +1,6 @@
+import type {FinalReview108} from './finalClose108.mjs';
+import {download103} from '../../modules/pos/pages/workspace103/UI103';
+import {print95} from './print95';
+export function closingRows108(v:FinalReview108,w:Record<string,string>,money:(n:number)=>string):[string,string][]{const rows:[string,string][]=[[w.counted,money(v.counted.total)],[w.total97,v.review.total===null?'—':money(v.review.total)],[w.sales97,String(v.review.rows.length)],[w.toReview97,String(v.review.issues.length)],[w.status,v.gate?w[v.gate]||w.blockedC108:v.exceptionApproved?w.exceptionC108:w.readyC108]];for(const m of v.review.methods){rows.push([w[m.method]+' · '+w.expected97,m.expected===null?'—':money(m.expected)]);if(m.method!=='cash'){rows.push([w[m.method]+' · '+w.paper97,money(m.documented)],[w[m.method]+' · '+w.electronic97,money(m.confirmed)],[w[m.method]+' · '+w.pending97,m.pending===null?'—':money(m.pending)]);}}return rows;}
+export function exportClosing108(v:FinalReview108,w:Record<string,string>,money:(n:number)=>string){download103('titan-previa-fechamento.csv',[[w.titleC108,w.previewC108],...closingRows108(v,w,money),[w.warning97,w.localC108]]);}
+export function printClosing108(v:FinalReview108,w:Record<string,string>,money:(n:number)=>string,lang:string){print95(w.titleC108,closingRows108(v,w,money),w.previewC108+'\n'+w.localC108,{lang});}

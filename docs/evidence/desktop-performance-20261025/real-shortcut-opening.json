@@ -1,0 +1,11 @@
+{
+  "launcher": "titansystem-erp-atual.desktop",
+  "launch_status": 0,
+  "launcher_return_ms": 9.04,
+  "real_profile": true,
+  "credentials_read": false,
+  "window_id": "0x5800004",
+  "pid": 2383798,
+  "window_available_ms": 631.63,
+  "properties": "_NET_WM_PID(CARDINAL) = 2383798\nWM_CLASS(STRING) = \"titansystem-desktop\", \"titansystem-desktop\"\nWM_STATE(WM_STATE):\n\t\twindow state: Normal\n\t\ticon window: 0x0"
+}

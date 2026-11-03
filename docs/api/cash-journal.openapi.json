@@ -1,0 +1,308 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem operational cash journal",
+    "version": "B02B4",
+    "description": "Read only, closed local drawer, original operator/store/device; Sell permission, no active POS license required for history. Control counterpart accounts are not a statutory ledger or bank settlement. Two balanced deterministic legs per immutable posting. Backfilled unclassified records retain null actor/operation. source_complete covers the whole local drawer, not pages already fetched or remote devices. summary covers all postings independently of pagination. No GET body, unknown or repeated query parameters. No usable partial totals on failure. No frontend adapter supplied."
+  },
+  "paths": {
+    "/local/v1/cash/sessions/{id}/journal": {
+      "get": {
+        "operationId": "readClosedCashJournal",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Closed LOCAL cash journal page and whole-session summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid ID, query or GET body"
+          },
+          "401": {
+            "description": "Session or device unauthorized"
+          },
+          "403": {
+            "description": "Sell permission denied"
+          },
+          "404": {
+            "description": "Outside original operator/store/device scope or not found"
+          },
+          "409": {
+            "description": "Drawer still open or journal/source/closure inconsistent"
+          },
+          "422": {
+            "description": "Exact JavaScript integer range exceeded"
+          },
+          "500": {
+            "description": "Storage unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "JournalLeg": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "account",
+          "side",
+          "amount_cents"
+        ],
+        "properties": {
+          "account": {
+            "type": "string",
+            "enum": [
+              "cash_drawer",
+              "opening_control",
+              "cash_sales_control",
+              "supply_control",
+              "withdrawal_control",
+              "unclassified_control"
+            ]
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "debit",
+              "credit"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "JournalEntry": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "source_kind",
+          "source_id",
+          "category",
+          "operation_id",
+          "actor_id",
+          "occurred_at",
+          "cash_delta_cents",
+          "legs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source_kind": {
+            "type": "string",
+            "enum": [
+              "opening",
+              "movement"
+            ]
+          },
+          "source_id": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "opening",
+              "sale",
+              "sale_reversal",
+              "supply",
+              "withdrawal",
+              "unclassified"
+            ]
+          },
+          "operation_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "actor_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "occurred_at": {
+            "type": "string"
+          },
+          "cash_delta_cents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "legs": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/JournalLeg"
+            }
+          }
+        }
+      },
+      "JournalSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cash_balance_cents",
+          "expected_cents",
+          "declared_cents",
+          "debit_cents",
+          "credit_cents",
+          "unclassified_count",
+          "difference_cents"
+        ],
+        "properties": {
+          "cash_balance_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expected_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "declared_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "debit_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "credit_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "unclassified_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "difference_cents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "JournalPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "session_id",
+          "scope",
+          "source_complete",
+          "offset",
+          "limit",
+          "total_count",
+          "has_more",
+          "next_offset",
+          "summary",
+          "items"
+        ],
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "cash_operational"
+            ]
+          },
+          "source_complete": {
+            "type": "boolean"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "summary": {
+            "$ref": "#/components/schemas/JournalSummary"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/JournalEntry"
+            }
+          }
+        }
+      }
+    }
+  }
+}

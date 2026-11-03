@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Titan backup inspection: pilot_cash_v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "profile",
+    "schema_version",
+    "archive_sha256",
+    "business_sha256",
+    "records",
+    "unavailable"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "profile": {
+      "const": "pilot_cash_v1"
+    },
+    "schema_version": {
+      "type": "integer",
+      "minimum": 25,
+      "maximum": 63
+    },
+    "archive_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "business_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "records": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cash_movements": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cash_sessions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "payable_cash_payments": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "purchase_deliveries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "purchase_order_items": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "purchase_orders": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "purchase_receipts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "purchase_receiving_cases": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "purchase_supplier_decisions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sale_payments": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sales": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stock_movements": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supplier_payable_installments": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supplier_payables": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "unavailable": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "cash_movements",
+          "cash_sessions",
+          "payable_cash_payments",
+          "purchase_deliveries",
+          "purchase_order_items",
+          "purchase_orders",
+          "purchase_receipts",
+          "purchase_receiving_cases",
+          "purchase_supplier_decisions",
+          "sale_payments",
+          "sales",
+          "stock_movements",
+          "supplier_payable_installments",
+          "supplier_payables"
+        ]
+      }
+    }
+  },
+  "description": "Contagens e resumo criptografico somente das tabelas nomeadas do piloto. Nao exporta registros. Tabelas de schema antigo ausentes em records aparecem em unavailable, nunca como saldo zero."
+}

@@ -1,0 +1,201 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan B02B14 — recibo de origem de caixa",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/local/v1/cash/movements/operations/{id}": {
+      "get": {
+        "operationId": "readOwnAuditedCashMovementReceipt",
+        "summary": "Recupera o movimento auditado original do próprio ator",
+        "description": "ViewAccounting. Sem licença ativa exigida. Contexto da sessão. GET sem corpo/query; id percent-encoded uma vez, até128bytes UTF-8. Retorna apenas o próprio ator, em turno aberto ou fechado. Valida fonte/journal. Não cria, reserva ou vincula dinheiro. repeated=false representa o movimento original e não autoriza novo envio.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recibo auditado; Cache-Control: no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovementReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID/query/corpo inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ViewAccounting ausente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ausente ou pertence a outro ator/contexto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Fonte ou journal inconsistente/incompatível com inteiros seguros",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha interna; estado desconhecido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./http-errors.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "MovementReceipt": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "operation_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "supply",
+              "withdrawal"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string"
+          },
+          "movement_id": {
+            "type": "string",
+            "description": "Identificador opaco; limites e escopo conforme a operação."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "repeated": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "session_id",
+          "operation_id",
+          "kind",
+          "amount_cents",
+          "reason",
+          "movement_id",
+          "created_at",
+          "repeated"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

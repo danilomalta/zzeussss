@@ -1,0 +1,1042 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem local cash bags and counted custody",
+    "version": "B02B6",
+    "description": "Two workflows: durable preparation/dispatch/cancellation from existing audited withdrawal; independent receiver count/rejection and per-closed-turn coverage. All endpoints ManageCash; writes also POS contract. Reads require no current license. Store/device derived from session. Receiver must differ from sender AND drawer operator. Declared amount is null for other managers until receipt is committed; never supplied in receive input. Same local SQLite only, no remote-delivery guarantee. Each withdrawal has at most one active/received bag; canceled/rejected history remains and permits new bag with new seal. No cash/stock/journal movements created by custody. Count differences remain recorded, not automatic expenses or bank settlement. Operations return original snapshot on replay; GET bag returns current state. Operation receipts accessible only to their actor. GET rejects body; unknown/repeated query parameters rejected. Coverage is only audited local withdrawals, not all outflows or a bank balance; only closed original drawer operator with ManageCash. B02B12: supplier_paid_cents classifica sangrias vinculadas a fornecedor e sai de unassigned; supplier_returned_cents informativo,nao subtrair da sangria original nem somar de novo ao caixa. Devolucao tem suprimento proprio. Sangria com qualquer historico de malote nao pode virar pagamento."
+  },
+  "paths": {
+    "/local/v1/cash/bags": {
+      "post": {
+        "operationId": "createCashBag",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/query/body, missing/duplicate/extra fields or unsafe counted amount"
+          },
+          "401": {
+            "description": "Session/device unauthorized or revoked"
+          },
+          "403": {
+            "description": "ManageCash denied, invalid POS contract for writes or self/drawer-operator receipt"
+          },
+          "404": {
+            "description": "Missing/out-of-scope source/bag/operation or receipt owned by another actor"
+          },
+          "409": {
+            "description": "State, seal, duplicate source/seal/ID, changed operation input or inconsistent history"
+          },
+          "413": {
+            "description": "Body above8192 bytes"
+          },
+          "422": {
+            "description": "Source or summary outside exact integer range"
+          },
+          "500": {
+            "description": "Storage failure rolls back entire operation"
+          },
+          "503": {
+            "description": "Write path has no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipt, current state for bag/list. No extra cash movement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BagResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Original operation snapshot for writes/receipt, current state for bag/list. No extra cash movement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BagResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBag"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listCashBags",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/query/body, missing/duplicate/extra fields or unsafe counted amount"
+          },
+          "401": {
+            "description": "Session/device unauthorized or revoked"
+          },
+          "403": {
+            "description": "ManageCash denied, invalid POS contract for writes or self/drawer-operator receipt"
+          },
+          "404": {
+            "description": "Missing/out-of-scope source/bag/operation or receipt owned by another actor"
+          },
+          "409": {
+            "description": "State, seal, duplicate source/seal/ID, changed operation input or inconsistent history"
+          },
+          "413": {
+            "description": "Body above8192 bytes"
+          },
+          "422": {
+            "description": "Source or summary outside exact integer range"
+          },
+          "500": {
+            "description": "Storage failure rolls back entire operation"
+          },
+          "503": {
+            "description": "Write path has no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipt, current state for bag/list. No extra cash movement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BagPage"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "prepared",
+                "in_transit",
+                "received",
+                "rejected",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "session_id",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/bags/operations/{id}": {
+      "get": {
+        "operationId": "readCashBagOperationReceipt",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/query/body, missing/duplicate/extra fields or unsafe counted amount"
+          },
+          "401": {
+            "description": "Session/device unauthorized or revoked"
+          },
+          "403": {
+            "description": "ManageCash denied, invalid POS contract for writes or self/drawer-operator receipt"
+          },
+          "404": {
+            "description": "Missing/out-of-scope source/bag/operation or receipt owned by another actor"
+          },
+          "409": {
+            "description": "State, seal, duplicate source/seal/ID, changed operation input or inconsistent history"
+          },
+          "413": {
+            "description": "Body above8192 bytes"
+          },
+          "422": {
+            "description": "Source or summary outside exact integer range"
+          },
+          "500": {
+            "description": "Storage failure rolls back entire operation"
+          },
+          "503": {
+            "description": "Write path has no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipt, current state for bag/list. No extra cash movement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BagResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/bags/{id}": {
+      "get": {
+        "operationId": "readCashBag",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/query/body, missing/duplicate/extra fields or unsafe counted amount"
+          },
+          "401": {
+            "description": "Session/device unauthorized or revoked"
+          },
+          "403": {
+            "description": "ManageCash denied, invalid POS contract for writes or self/drawer-operator receipt"
+          },
+          "404": {
+            "description": "Missing/out-of-scope source/bag/operation or receipt owned by another actor"
+          },
+          "409": {
+            "description": "State, seal, duplicate source/seal/ID, changed operation input or inconsistent history"
+          },
+          "413": {
+            "description": "Body above8192 bytes"
+          },
+          "422": {
+            "description": "Source or summary outside exact integer range"
+          },
+          "500": {
+            "description": "Storage failure rolls back entire operation"
+          },
+          "503": {
+            "description": "Write path has no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipt, current state for bag/list. No extra cash movement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bag"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/bags/{id}/dispatch": {
+      "post": {
+        "operationId": "dispatchCashBag",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/query/body, missing/duplicate/extra fields or unsafe counted amount"
+          },
+          "401": {
+            "description": "Session/device unauthorized or revoked"
+          },
+          "403": {
+            "description": "ManageCash denied, invalid POS contract for writes or self/drawer-operator receipt"
+          },
+          "404": {
+            "description": "Missing/out-of-scope source/bag/operation or receipt owned by another actor"
+          },
+          "409": {
+            "description": "State, seal, duplicate source/seal/ID, changed operation input or inconsistent history"
+          },
+          "413": {
+            "description": "Body above8192 bytes"
+          },
+          "422": {
+            "description": "Source or summary outside exact integer range"
+          },
+          "500": {
+            "description": "Storage failure rolls back entire operation"
+          },
+          "503": {
+            "description": "Write path has no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipt, current state for bag/list. No extra cash movement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BagResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DispatchBag"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/bags/{id}/cancel": {
+      "post": {
+        "operationId": "cancelCashBag",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/query/body, missing/duplicate/extra fields or unsafe counted amount"
+          },
+          "401": {
+            "description": "Session/device unauthorized or revoked"
+          },
+          "403": {
+            "description": "ManageCash denied, invalid POS contract for writes or self/drawer-operator receipt"
+          },
+          "404": {
+            "description": "Missing/out-of-scope source/bag/operation or receipt owned by another actor"
+          },
+          "409": {
+            "description": "State, seal, duplicate source/seal/ID, changed operation input or inconsistent history"
+          },
+          "413": {
+            "description": "Body above8192 bytes"
+          },
+          "422": {
+            "description": "Source or summary outside exact integer range"
+          },
+          "500": {
+            "description": "Storage failure rolls back entire operation"
+          },
+          "503": {
+            "description": "Write path has no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipt, current state for bag/list. No extra cash movement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BagResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonBag"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/bags/{id}/receive": {
+      "post": {
+        "operationId": "receiveCashBag",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/query/body, missing/duplicate/extra fields or unsafe counted amount"
+          },
+          "401": {
+            "description": "Session/device unauthorized or revoked"
+          },
+          "403": {
+            "description": "ManageCash denied, invalid POS contract for writes or self/drawer-operator receipt"
+          },
+          "404": {
+            "description": "Missing/out-of-scope source/bag/operation or receipt owned by another actor"
+          },
+          "409": {
+            "description": "State, seal, duplicate source/seal/ID, changed operation input or inconsistent history"
+          },
+          "413": {
+            "description": "Body above8192 bytes"
+          },
+          "422": {
+            "description": "Source or summary outside exact integer range"
+          },
+          "500": {
+            "description": "Storage failure rolls back entire operation"
+          },
+          "503": {
+            "description": "Write path has no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipt, current state for bag/list. No extra cash movement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BagResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiveBag"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/bags/{id}/reject": {
+      "post": {
+        "operationId": "rejectCashBag",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/query/body, missing/duplicate/extra fields or unsafe counted amount"
+          },
+          "401": {
+            "description": "Session/device unauthorized or revoked"
+          },
+          "403": {
+            "description": "ManageCash denied, invalid POS contract for writes or self/drawer-operator receipt"
+          },
+          "404": {
+            "description": "Missing/out-of-scope source/bag/operation or receipt owned by another actor"
+          },
+          "409": {
+            "description": "State, seal, duplicate source/seal/ID, changed operation input or inconsistent history"
+          },
+          "413": {
+            "description": "Body above8192 bytes"
+          },
+          "422": {
+            "description": "Source or summary outside exact integer range"
+          },
+          "500": {
+            "description": "Storage failure rolls back entire operation"
+          },
+          "503": {
+            "description": "Write path has no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipt, current state for bag/list. No extra cash movement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BagResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonBag"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/cash/sessions/{id}/custody": {
+      "get": {
+        "operationId": "readWithdrawalCustodyCoverage",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid ID/query/body, missing/duplicate/extra fields or unsafe counted amount"
+          },
+          "401": {
+            "description": "Session/device unauthorized or revoked"
+          },
+          "403": {
+            "description": "ManageCash denied, invalid POS contract for writes or self/drawer-operator receipt"
+          },
+          "404": {
+            "description": "Missing/out-of-scope source/bag/operation or receipt owned by another actor"
+          },
+          "409": {
+            "description": "State, seal, duplicate source/seal/ID, changed operation input or inconsistent history"
+          },
+          "413": {
+            "description": "Body above8192 bytes"
+          },
+          "422": {
+            "description": "Source or summary outside exact integer range"
+          },
+          "500": {
+            "description": "Storage failure rolls back entire operation"
+          },
+          "503": {
+            "description": "Write path has no contract verifier"
+          },
+          "200": {
+            "description": "Original operation snapshot for writes/receipt, current state for bag/list. No extra cash movement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustodyCoverage"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "BagEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "actor_id",
+          "from_state",
+          "to_state",
+          "reason",
+          "created_at",
+          "action"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "from_state": {
+            "type": "string"
+          },
+          "to_state": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "dispatch",
+              "receive",
+              "reject",
+              "cancel"
+            ]
+          }
+        }
+      },
+      "Bag": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "session_id",
+          "withdrawal_operation_id",
+          "movement_id",
+          "sender_id",
+          "operator_id",
+          "seal_id",
+          "created_at",
+          "updated_at",
+          "state",
+          "declared_cents",
+          "counted_cents",
+          "difference_cents",
+          "receiver_id",
+          "received_at",
+          "history"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "withdrawal_operation_id": {
+            "type": "string"
+          },
+          "movement_id": {
+            "type": "string"
+          },
+          "sender_id": {
+            "type": "string"
+          },
+          "operator_id": {
+            "type": "string"
+          },
+          "seal_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "prepared",
+              "in_transit",
+              "received",
+              "rejected",
+              "cancelled"
+            ]
+          },
+          "declared_cents": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "counted_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "difference_cents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "receiver_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "received_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "history": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": {
+              "$ref": "#/components/schemas/BagEvent"
+            }
+          }
+        }
+      },
+      "BagResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "repeated",
+          "bag"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "bag": {
+            "$ref": "#/components/schemas/Bag"
+          }
+        }
+      },
+      "BagPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "limit",
+          "offset",
+          "total_count",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Bag"
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CustodyCoverage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "session_id",
+          "scope",
+          "complete",
+          "withdrawal_count",
+          "withdrawn_cents",
+          "unassigned_cents",
+          "prepared_cents",
+          "in_transit_cents",
+          "received_declared_cents",
+          "received_counted_cents",
+          "divergent_count",
+          "cancelled_bags",
+          "rejected_bags",
+          "difference_cents",
+          "supplier_paid_cents",
+          "supplier_returned_cents"
+        ],
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "audited_local_withdrawals"
+            ]
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "withdrawal_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "withdrawn_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "unassigned_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "prepared_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "in_transit_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "received_declared_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "received_counted_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "divergent_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "cancelled_bags": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "rejected_bags": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "difference_cents": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "supplier_paid_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "supplier_returned_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "CreateBag": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "bag_id",
+          "withdrawal_operation_id",
+          "seal_id"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "bag_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "withdrawal_operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "seal_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "DispatchBag": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          }
+        }
+      },
+      "ReasonBag": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "ReceiveBag": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "seal_id",
+          "counted_cents"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "seal_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "counted_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      }
+    }
+  }
+}

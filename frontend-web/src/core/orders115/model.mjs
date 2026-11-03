@@ -1,0 +1,10 @@
+import {csv97} from '../local/closingReview97.mjs';
+export function access115(cap){const p=new Set(cap?.permissions||[]),modules=cap?.license?.modules||[],active=cap?.license?.state==='active'&&modules.includes('core')&&modules.includes('orders'),read=p.has('view_orders'),stock=read&&p.has('manage_stock');return {read,stock,manage:read&&p.has('manage_replenishment'),write:read&&p.has('manage_replenishment')&&active,calculate:stock&&active};}
+export function quantity115(value,locale='pt-BR'){if(!Number.isSafeInteger(value)||value<0)throw Error('quantity');const b=BigInt(value),decimal=new Intl.NumberFormat(locale).formatToParts(1.1).find(p=>p.type==='decimal')?.value||'.';return new Intl.NumberFormat(locale).format(b/1000n)+decimal+String(b%1000n).padStart(3,'0');}
+export function normalize115(value){return String(value).normalize('NFD').replace(/\p{Diacritic}/gu,'').toLocaleLowerCase();}
+export function filter115(rows,query,fields){const q=normalize115(query.trim());return rows.filter(row=>!q||fields.some(field=>normalize115(row[field]??'').includes(q)));}
+export function page115(rows){if(!Array.isArray(rows)||rows.length>50||new Set(rows.map(r=>r.id??r.suggestion_id)).size!==rows.length)throw Error('response');return rows;}
+export function error115(error){const status=Number(error?.status);return status===401?'expired':status===403?'denied':status===404?'missing':status===409?'conflict':status===400||status===413?'invalid':'unavailable';}
+export function orderPreview115(suppliers,approvals,supplierID,suggestionID){const supplier=suppliers.find(s=>s.id===supplierID&&s.status==='active'),approval=approvals.find(a=>a.suggestion_id===suggestionID);if(!supplier||!approval||!Number.isSafeInteger(approval.quantity_milli)||approval.quantity_milli<=0)throw Error('selection');return {supplier,approval};}
+// The paginated endpoint returns summaries without items. Do not fabricate quantities.
+export function ordersCSV115(rows,labels){return csv97([labels.headers,...rows.map(o=>[o.supplier_name,o.created_at,o.status==='cancelled'?(labels.cancelled||o.status):labels.local])]);}

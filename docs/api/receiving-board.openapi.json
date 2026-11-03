@@ -1,0 +1,490 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan local — receiving backlog board",
+    "version": "2026-10-22.1"
+  },
+  "paths": {
+    "/local/v1/management/purchases/receiving-board": {
+      "get": {
+        "operationId": "purchase_receiving_board",
+        "description": "Single authorized read snapshot for current tenant/store: ViewOrders+ManageStock and approved device. Order-creation cohort [from,to), max366days, whole-second RFC3339 input normalized UTC. Persisted creation timestamps canonical UTC RFC3339Nano; starting fractions included, ending second excluded. Orders sorted chronologically, then ID. Optional supplier/product filter applied before source limits. All cohort evidence validated BEFORE state filter and pagination. Limits200orders,2000combined receipt+rejection+void+appointment evidence rows,1000perorder; exceeding yields422 with no partial summary. State pending excludes cancelled/fully received; received noncancelled with zero remainder; review any advisory flag, not proof of fault. Summary groups all MATCHING orders by supplier_id+product_id+unit; no mixing units. Integer milli aggregates as exact decimal strings, never float. remaining_milli_exact includes preserved remainder of cancelled orders; pending_milli_exact excludes cancelled. CohortOrders/SourceEvidence include states later excluded. Items current page only; groups independent of page. No confirmation, payment, stock mutation, purchase approval, automatic notification or contract renewal for historical read.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "all",
+                "received",
+                "cancelled",
+                "review"
+              ],
+              "default": "pending"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot with group totals independent of item pagination",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivingBoard"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing/unknown/duplicate/empty/invalid query or GET body"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device denied"
+          },
+          "409": {
+            "description": "Contradictory evidence in ANY cohort order, even excluded state/page"
+          },
+          "422": {
+            "description": "Source cap exceeded; narrow period/supplier/product, not page/state. A single order above1000cannot be fixed by shorter board period"
+          },
+          "500": {
+            "description": "Read failure"
+          }
+        }
+      }
+    },
+    "/local/v1/management/purchases/receiving-board.csv": {
+      "get": {
+        "operationId": "purchase_receiving_board_csv",
+        "description": "Single authorized read snapshot for current tenant/store: ViewOrders+ManageStock and approved device. Order-creation cohort [from,to), max366days, whole-second RFC3339 input normalized UTC. Persisted creation timestamps canonical UTC RFC3339Nano; starting fractions included, ending second excluded. Orders sorted chronologically, then ID. Optional supplier/product filter applied before source limits. All cohort evidence validated BEFORE state filter and pagination. Limits200orders,2000combined receipt+rejection+void+appointment evidence rows,1000perorder; exceeding yields422 with no partial summary. State pending excludes cancelled/fully received; received noncancelled with zero remainder; review any advisory flag, not proof of fault. Summary groups all MATCHING orders by supplier_id+product_id+unit; no mixing units. Integer milli aggregates as exact decimal strings, never float. remaining_milli_exact includes preserved remainder of cancelled orders; pending_milli_exact excludes cancelled. CohortOrders/SourceEvidence include states later excluded. Items current page only; groups independent of page. No confirmation, payment, stock mutation, purchase approval, automatic notification or contract renewal for historical read.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "all",
+                "received",
+                "cancelled",
+                "review"
+              ],
+              "default": "pending"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV header+summary+all matching groups+orders of current page; textual formulas escaped",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing/unknown/duplicate/empty/invalid query or GET body"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device denied"
+          },
+          "409": {
+            "description": "Contradictory evidence in ANY cohort order, even excluded state/page"
+          },
+          "422": {
+            "description": "Source cap exceeded; narrow period/supplier/product, not page/state. A single order above1000cannot be fixed by shorter board period"
+          },
+          "500": {
+            "description": "Read failure"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "BoardGroup": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_milli_exact": {
+            "type": "string"
+          },
+          "cancelled_orders": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "orders": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "pending_milli_exact": {
+            "type": "string"
+          },
+          "pending_orders": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "planned_milli_exact": {
+            "type": "string"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "received_orders": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "remaining_milli_exact": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_id",
+          "product_id",
+          "unit",
+          "orders",
+          "pending_orders",
+          "received_orders",
+          "cancelled_orders",
+          "planned_milli_exact",
+          "accepted_milli_exact",
+          "remaining_milli_exact",
+          "pending_milli_exact"
+        ],
+        "type": "object"
+      },
+      "BoardOrder": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "commercial_status": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "planned_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "receiving_status": {
+            "type": "string"
+          },
+          "remaining_milli": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "review_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id",
+          "supplier_id",
+          "product_id",
+          "unit",
+          "created_at",
+          "commercial_status",
+          "receiving_status",
+          "planned_milli",
+          "accepted_milli",
+          "remaining_milli",
+          "review_flags"
+        ],
+        "type": "object"
+      },
+      "ReceivingBoard": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "type": "string"
+          },
+          "cohort_orders": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "from": {
+            "type": "string"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/BoardGroup"
+            },
+            "type": "array"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BoardOrder"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "matched_orders": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "source_evidence": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "measured_at",
+          "state",
+          "supplier_id",
+          "product_id",
+          "basis",
+          "cohort_orders",
+          "source_evidence",
+          "matched_orders",
+          "limit",
+          "offset",
+          "groups",
+          "items"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "official98": "Resultado oficial de caja",
+  "payments98": "Conciliación de pagos",
+  "local98": "Recuento y bolsas en este equipo",
+  "noOfficial98": "Sin cierre oficial disponible",
+  "refresh98": "Actualizar",
+  "loading98": "Consultando informe…",
+  "partial98": "Algunas fuentes no están disponibles. Los datos consultados siguen visibles.",
+  "noCount98": "No hay conciliación local guardada para esta caja.",
+  "noBag98": "No hay bolsas registradas en este equipo.",
+  "unverified98": "Importe aún sin verificar",
+  "updated98": "Datos consultados a las",
+  "scope98": "Las ventas consultadas no sustituyen el saldo oficial de caja.",
+  "choose98": "Seleccione una caja.",
+  "overlap98": "Ambos valores pueden incluir la misma parte del pago. No sume la confirmación electrónica y el comprobante.",
+  "countSaved98": "Conciliación local guardada",
+  "bagsEmpty98": "Sin registro local de bolsas",
+  "sources98": "Consultar fuentes",
+  "invalid98": "No se pudieron validar los datos recibidos.",
+  "same98": "La vista previa y la impresión usan los mismos valores de esta pantalla."
+}

@@ -127,3 +127,13 @@ Entrega44: `online-replenishment.openapi.json` documenta resumo, recomendações
 - `online-purchase-queries.openapi.json`: entrega50, resumo, lista, histórico, conferência e CSV das compras internas49; consultas sem mutação.
 
 - `online-purchase-documents.openapi.json`: entrega51, cinco funções de documento interno com JSON imutável, cancelamento auditado e recuperação; sem envio externo.
+
+- `payable-readiness.openapi.json`: B02B13, saldos por parcela e fontes próprias elegíveis de sangria/suprimento. Consultas não reservam recursos nem autorizam pagamento. Sem nova migração ou frontend.
+
+- `payables-flow.openapi.json`: B02B14, contrato consolidado do fluxo local de contas a pagar em espécie com exemplos HTTP/CSV verificados. `cash-movement-receipt.openapi.json` acrescenta recuperação da origem sem novo movimento.
+
+## Ciclo de compras e origem financeira (2026-10-22)
+
+Contrato autocontido: `purchase-supply-cycle.openapi.json`; exemplos executados: `examples/purchase-supply-cycle.json`. Registro manual de fornecedor, entregas e estoque não comprovam efeitos externos. Consulte `../architecture/BACKEND_CICLO_COMPRAS_20261022.md`.
+
+Coletas e devoluções: contrato supplier-returns.openapi.json; evidência manual, sem efeito financeiro automático.

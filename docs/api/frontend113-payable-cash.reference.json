@@ -1,0 +1,658 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan pagamento e devolucao em especie de fornecedor",
+    "version": "1.0.0",
+    "description": "Pagamento declarado pelo ator da sangria, valor integral da fonte; pode quitar parcialmente a parcela. Devolucao integral de cada pagamento exige suprimento posterior de mesmo valor,nao financiado por cofre. Mesmo dinheiro nao financia malote e pagamento. Fontes/reservas historicas nunca reutilizadas,mesmo apos devolucao."
+  },
+  "paths": {
+    "/local/v1/finance/payables/{id}/cash-payments": {
+      "post": {
+        "operationId": "payable_cash_post__local_v1_finance_payables_id_cash-payments",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator.",
+        "responses": {
+          "200": {
+            "description": "Consulta ou recibo original em replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CashResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Permissao/licenca ausente ou ator da fonte diferente"
+          },
+          "404": {
+            "description": "Registro fora do escopo ou inexistente"
+          },
+          "409": {
+            "description": "Fonte/estado/valor/conflito/integridade"
+          },
+          "413": {
+            "description": "Corpo acima de8KiB"
+          },
+          "422": {
+            "description": "Limites numericos/historicos"
+          },
+          "500": {
+            "description": "Falha interna,sem escrita parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "201": {
+            "description": "Vinculo registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CashResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CashInput"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "payable_cash_get__local_v1_finance_payables_id_cash-payments",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          }
+        ],
+        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator.",
+        "responses": {
+          "200": {
+            "description": "Consulta ou recibo original em replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CashPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Permissao/licenca ausente ou ator da fonte diferente"
+          },
+          "404": {
+            "description": "Registro fora do escopo ou inexistente"
+          },
+          "409": {
+            "description": "Fonte/estado/valor/conflito/integridade"
+          },
+          "413": {
+            "description": "Corpo acima de8KiB"
+          },
+          "422": {
+            "description": "Limites numericos/historicos"
+          },
+          "500": {
+            "description": "Falha interna,sem escrita parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          }
+        }
+      }
+    },
+    "/local/v1/finance/payable-cash/{id}/return": {
+      "post": {
+        "operationId": "payable_cash_post__local_v1_finance_payable-cash_id_return",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator.",
+        "responses": {
+          "200": {
+            "description": "Consulta ou recibo original em replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CashResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Permissao/licenca ausente ou ator da fonte diferente"
+          },
+          "404": {
+            "description": "Registro fora do escopo ou inexistente"
+          },
+          "409": {
+            "description": "Fonte/estado/valor/conflito/integridade"
+          },
+          "413": {
+            "description": "Corpo acima de8KiB"
+          },
+          "422": {
+            "description": "Limites numericos/historicos"
+          },
+          "500": {
+            "description": "Falha interna,sem escrita parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          },
+          "201": {
+            "description": "Vinculo registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CashResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CashReturnInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/finance/payable-cash/operations/{id}": {
+      "get": {
+        "operationId": "payable_cash_get__local_v1_finance_payable-cash_operations_id",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator.",
+        "responses": {
+          "200": {
+            "description": "Consulta ou recibo original em replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CashResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Permissao/licenca ausente ou ator da fonte diferente"
+          },
+          "404": {
+            "description": "Registro fora do escopo ou inexistente"
+          },
+          "409": {
+            "description": "Fonte/estado/valor/conflito/integridade"
+          },
+          "413": {
+            "description": "Corpo acima de8KiB"
+          },
+          "422": {
+            "description": "Limites numericos/historicos"
+          },
+          "500": {
+            "description": "Falha interna,sem escrita parcial"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "CashReturn": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "supply_operation_id",
+          "actor_id",
+          "reason",
+          "created_at",
+          "operation_id"
+        ],
+        "properties": {
+          "supply_operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "CashSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "paid_cents",
+          "returned_cents",
+          "applied_cents",
+          "outstanding_cents",
+          "basis"
+        ],
+        "properties": {
+          "paid_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returned_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "applied_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outstanding_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "declared_cash_audited_sources"
+            ]
+          }
+        }
+      },
+      "CashPayment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "payable_id",
+          "installment_id",
+          "withdrawal_operation_id",
+          "amount_cents",
+          "actor_id",
+          "recipient",
+          "reference",
+          "created_at",
+          "operation_id",
+          "return"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "payable_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "installment_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "withdrawal_operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "recipient": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "return": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "supply_operation_id",
+              "actor_id",
+              "reason",
+              "created_at",
+              "operation_id"
+            ],
+            "properties": {
+              "supply_operation_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "actor_id": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "operation_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "nullable": true
+          }
+        }
+      },
+      "CashResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "repeated",
+          "payment"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/CashPayment"
+          }
+        }
+      },
+      "CashPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "summary",
+          "total_count",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CashPayment"
+            },
+            "maxItems": 100
+          },
+          "summary": {
+            "$ref": "#/components/schemas/CashSummary"
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CashInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "payment_id",
+          "installment_id",
+          "withdrawal_operation_id",
+          "recipient",
+          "reference"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "payment_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "installment_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "withdrawal_operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "recipient": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "CashReturnInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "supply_operation_id",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "supply_operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "official98": "Résultat officiel de caisse",
+  "payments98": "Rapprochement des paiements",
+  "local98": "Comptage et sacs sur cet ordinateur",
+  "noOfficial98": "Aucune clôture officielle disponible",
+  "refresh98": "Actualiser",
+  "loading98": "Chargement du rapport…",
+  "partial98": "Certaines sources sont indisponibles. Les données récupérées restent visibles.",
+  "noCount98": "Aucun rapprochement local enregistré pour cette caisse.",
+  "noBag98": "Aucun sac enregistré sur cet ordinateur.",
+  "unverified98": "Montant restant à vérifier",
+  "updated98": "Données consultées à",
+  "scope98": "Les ventes consultées ne remplacent pas le solde officiel de caisse.",
+  "choose98": "Choisissez une caisse.",
+  "overlap98": "Les deux montants peuvent inclure le même paiement. Ne cumulez pas confirmation électronique et justificatif.",
+  "countSaved98": "Rapprochement local enregistré",
+  "bagsEmpty98": "Aucun enregistrement local de sac",
+  "sources98": "Consulter les sources",
+  "invalid98": "Les données reçues ne peuvent pas être validées.",
+  "same98": "L’aperçu et l’impression utilisent les mêmes valeurs que cet écran."
+}

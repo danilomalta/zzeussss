@@ -1,0 +1,1182 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem supplier collections and returns",
+    "version": "2026.10.22.1",
+    "description": "Local manual external evidence, never authenticated supplier approval. All request properties required; unused fields empty/zero. Exact unit thousandths. Physical stock atomic with private immutable return history and existing stock.operation outbox. No automatic fiscal or financial effects. Dispatch exactly authorized quantity; partial supplier receipt and recovery supported."
+  },
+  "paths": {
+    "/local/v1/purchase-receiving-cases/{id}/returns": {
+      "post": {
+        "operationId": "returns_post__local_v1_purchase_receiving_cases__id__returns",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative local record or exact original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict input/query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not visible in context/original actor or missing source"
+          },
+          "409": {
+            "description": "State/revision/source/idempotency/free stock conflict"
+          },
+          "413": {
+            "description": "Body exceeds8192bytes"
+          },
+          "422": {
+            "description": "Source exceeds1000returns or10000events"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Contracts unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnOpenInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns": {
+      "get": {
+        "operationId": "returns_get__local_v1_purchase_supplier_returns",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "case_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "order_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative local record or exact original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict input/query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not visible in context/original actor or missing source"
+          },
+          "409": {
+            "description": "State/revision/source/idempotency/free stock conflict"
+          },
+          "413": {
+            "description": "Body exceeds8192bytes"
+          },
+          "422": {
+            "description": "Source exceeds1000returns or10000events"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Contracts unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns/{id}": {
+      "get": {
+        "operationId": "returns_get__local_v1_purchase_supplier_returns__id_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative local record or exact original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierReturn"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict input/query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not visible in context/original actor or missing source"
+          },
+          "409": {
+            "description": "State/revision/source/idempotency/free stock conflict"
+          },
+          "413": {
+            "description": "Body exceeds8192bytes"
+          },
+          "422": {
+            "description": "Source exceeds1000returns or10000events"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Contracts unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns/{id}/history": {
+      "get": {
+        "operationId": "returns_get__local_v1_purchase_supplier_returns__id__history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative local record or exact original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict input/query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not visible in context/original actor or missing source"
+          },
+          "409": {
+            "description": "State/revision/source/idempotency/free stock conflict"
+          },
+          "413": {
+            "description": "Body exceeds8192bytes"
+          },
+          "422": {
+            "description": "Source exceeds1000returns or10000events"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Contracts unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns/{id}/actions": {
+      "post": {
+        "operationId": "returns_post__local_v1_purchase_supplier_returns__id__actions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative local record or exact original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict input/query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not visible in context/original actor or missing source"
+          },
+          "409": {
+            "description": "State/revision/source/idempotency/free stock conflict"
+          },
+          "413": {
+            "description": "Body exceeds8192bytes"
+          },
+          "422": {
+            "description": "Source exceeds1000returns or10000events"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Contracts unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnActionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns/{id}/dispatch": {
+      "post": {
+        "operationId": "returns_post__local_v1_purchase_supplier_returns__id__dispatch",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative local record or exact original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict input/query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not visible in context/original actor or missing source"
+          },
+          "409": {
+            "description": "State/revision/source/idempotency/free stock conflict"
+          },
+          "413": {
+            "description": "Body exceeds8192bytes"
+          },
+          "422": {
+            "description": "Source exceeds1000returns or10000events"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Contracts unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnStockInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-returns/{id}/recover": {
+      "post": {
+        "operationId": "returns_post__local_v1_purchase_supplier_returns__id__recover",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative local record or exact original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict input/query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not visible in context/original actor or missing source"
+          },
+          "409": {
+            "description": "State/revision/source/idempotency/free stock conflict"
+          },
+          "413": {
+            "description": "Body exceeds8192bytes"
+          },
+          "422": {
+            "description": "Source exceeds1000returns or10000events"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Contracts unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReturnStockInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/purchase-supplier-return-operations/{id}": {
+      "get": {
+        "operationId": "returns_get__local_v1_purchase_supplier_return_operations__id_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative local record or exact original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict input/query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not visible in context/original actor or missing source"
+          },
+          "409": {
+            "description": "State/revision/source/idempotency/free stock conflict"
+          },
+          "413": {
+            "description": "Body exceeds8192bytes"
+          },
+          "422": {
+            "description": "Source exceeds1000returns or10000events"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Contracts unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/finance/receiving-return-review/{id}": {
+      "get": {
+        "operationId": "returns_get__local_v1_finance_receiving_return_review__id_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative local record or exact original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivingReturnReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict input/query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not visible in context/original actor or missing source"
+          },
+          "409": {
+            "description": "State/revision/source/idempotency/free stock conflict"
+          },
+          "413": {
+            "description": "Body exceeds8192bytes"
+          },
+          "422": {
+            "description": "Source exceeds1000returns or10000events"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolled back"
+          },
+          "503": {
+            "description": "Contracts unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "SupplierReturn": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "case_id",
+          "receipt_id",
+          "order_id",
+          "supplier_id",
+          "product_id",
+          "unit",
+          "requested_milli",
+          "authorized_milli",
+          "dispatched_milli",
+          "supplier_received_milli",
+          "recovered_milli",
+          "state",
+          "revision",
+          "collection_mode",
+          "paired_delivery_id",
+          "route_reference",
+          "deadline",
+          "financial_instruction",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "last_reason",
+          "external_verified"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "case_id": {
+            "type": "string"
+          },
+          "receipt_id": {
+            "type": "string"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "requested_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "authorized_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "dispatched_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "supplier_received_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "recovered_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "requested",
+              "approved",
+              "scheduled",
+              "dispatched",
+              "completed",
+              "declined",
+              "cancelled"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "collection_mode": {
+            "type": "string"
+          },
+          "paired_delivery_id": {
+            "type": "string"
+          },
+          "route_reference": {
+            "type": "string"
+          },
+          "deadline": {
+            "type": "string"
+          },
+          "financial_instruction": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "last_reason": {
+            "type": "string"
+          },
+          "external_verified": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        }
+      },
+      "ReturnOpenInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "return_id",
+          "receipt_id",
+          "quantity_milli",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "return_id": {
+            "type": "string"
+          },
+          "receipt_id": {
+            "type": "string"
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "ReturnActionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "action",
+          "quantity_milli",
+          "contact",
+          "evidence_reference",
+          "observed_at",
+          "collection_mode",
+          "paired_delivery_id",
+          "route_reference",
+          "deadline",
+          "financial_instruction",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "decline",
+              "schedule",
+              "cancel",
+              "supplier_receive"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "contact": {
+            "type": "string"
+          },
+          "evidence_reference": {
+            "type": "string"
+          },
+          "observed_at": {
+            "type": "string"
+          },
+          "collection_mode": {
+            "type": "string"
+          },
+          "paired_delivery_id": {
+            "type": "string"
+          },
+          "route_reference": {
+            "type": "string"
+          },
+          "deadline": {
+            "type": "string"
+          },
+          "financial_instruction": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "ReturnStockInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "location_id",
+          "quantity_milli",
+          "handover_reference",
+          "observed_at",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "handover_reference": {
+            "type": "string"
+          },
+          "observed_at": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "ReturnResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "repeated",
+          "return",
+          "action",
+          "stock_operation_id"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "return": {
+            "$ref": "#/components/schemas/SupplierReturn"
+          },
+          "action": {
+            "type": "string"
+          },
+          "stock_operation_id": {
+            "type": "string"
+          },
+          "action_evidence": {
+            "$ref": "#/components/schemas/ReturnActionInput"
+          },
+          "stock_evidence": {
+            "$ref": "#/components/schemas/ReturnStockInput"
+          }
+        }
+      },
+      "ReturnPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SupplierReturn"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReturnHistory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReturnResult"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReceivingReturnItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "return_id",
+          "case_id",
+          "state",
+          "requested_milli",
+          "authorized_milli",
+          "dispatched_milli",
+          "supplier_received_milli",
+          "recovered_milli",
+          "financial_instruction"
+        ],
+        "properties": {
+          "return_id": {
+            "type": "string"
+          },
+          "case_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "requested",
+              "approved",
+              "scheduled",
+              "dispatched",
+              "completed",
+              "declined",
+              "cancelled"
+            ]
+          },
+          "requested_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "authorized_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "dispatched_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "supplier_received_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "recovered_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "financial_instruction": {
+            "type": "string"
+          }
+        }
+      },
+      "ReceivingReturnReview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "payable_id",
+          "receipt_id",
+          "unit",
+          "payable_state",
+          "total_cents",
+          "cash_applied_cents",
+          "outstanding_cents",
+          "financial_effect_recorded",
+          "external_verified",
+          "review_required",
+          "source_complete",
+          "items"
+        ],
+        "properties": {
+          "payable_id": {
+            "type": "string"
+          },
+          "receipt_id": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "payable_state": {
+            "type": "string"
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "cash_applied_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outstanding_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "financial_effect_recorded": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "external_verified": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "review_required": {
+            "type": "boolean"
+          },
+          "source_complete": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReceivingReturnItem"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2270 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan synchronous NF-e55 / NFC-e65 production issuer",
+    "version": "1.0.0",
+    "description": "Emissão normal com configuração privada, CRL vigente, número durável, revisão/aprovação, envio único e recuperação. Desativado por padrão. Testes usam autoridade sintética; não são homologação SEFAZ."
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/fiscal/intents/{id}/production/prepare": {
+      "post": {
+        "operationId": "prepareProductionFiscalDocument",
+        "summary": "Preparar revisão do documento e reservar número de produção",
+        "description": "Sessão atual e contexto verificados no servidor. Não aceita endpoint, certificado, CSC ou caminho de arquivo pelo cliente. Sem retry automático. Sem efeito em dinheiro/estoque.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Resultado real do diário fiscal; HTTP200 não transforma rejeição em autorização.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preparation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/intents/{id}/production/approve": {
+      "post": {
+        "operationId": "approveProductionFiscalDocument",
+        "summary": "Aprovar hash/referência tributária por dono ou contador",
+        "description": "Sessão atual e contexto verificados no servidor. Não aceita endpoint, certificado, CSC ou caminho de arquivo pelo cliente. Sem retry automático. Sem efeito em dinheiro/estoque.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Aprovação imutável gravada."
+          },
+          "400": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/intents/{id}/production/emit": {
+      "post": {
+        "operationId": "emitProductionFiscalDocument",
+        "summary": "Assinar e enviar uma vez o documento aprovado",
+        "description": "Sessão atual e contexto verificados no servidor. Não aceita endpoint, certificado, CSC ou caminho de arquivo pelo cliente. Sem retry automático. Sem efeito em dinheiro/estoque.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado real do diário fiscal; HTTP200 não transforma rejeição em autorização.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evidence"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Pedido durável, resultado incerto; consultar. Não criar outro ID para reenviar.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evidence"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmitInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/intents/{id}/production/query": {
+      "post": {
+        "operationId": "queryProductionFiscalDocument",
+        "summary": "Consultar explicitamente a chave original sem reemitir",
+        "description": "Sessão atual e contexto verificados no servidor. Não aceita endpoint, certificado, CSC ou caminho de arquivo pelo cliente. Sem retry automático. Sem efeito em dinheiro/estoque.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado real do diário fiscal; HTTP200 não transforma rejeição em autorização.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/intents/{id}/production": {
+      "get": {
+        "operationId": "readProductionFiscalDocument",
+        "summary": "Ler preparação, revisão, estado e evidência reais",
+        "description": "Sessão atual e contexto verificados no servidor. Não aceita endpoint, certificado, CSC ou caminho de arquivo pelo cliente. Sem retry automático. Sem efeito em dinheiro/estoque.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado real do diário fiscal; HTTP200 não transforma rejeição em autorização.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/intents/{id}/production/xml": {
+      "get": {
+        "operationId": "downloadProductionFiscalXML",
+        "summary": "Baixar nfeProc associado à autorização original",
+        "description": "Sessão atual e contexto verificados no servidor. Não aceita endpoint, certificado, CSC ou caminho de arquivo pelo cliente. Sem retry automático. Sem efeito em dinheiro/estoque.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "XML validado e associado ao protocolo; download autenticado sem cache.",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro estruturado sem credenciais ou caminhos privados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/intents/{id}/production/cancel": {
+      "post": {
+        "operationId": "cancelProductionFiscalDocument",
+        "summary": "Solicitar cancelamento110111/sequência1 com decisão explícita",
+        "description": "Sem estorno de dinheiro, estoque ou venda. Não infere prazos por UF. Requer consulta autorizada mais recente e permissão atual para envio; leitura histórica não exige credencial ativa.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Evidência real; status desconhecido/136/573 não confirma cancelamento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancellationEvidence"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Resultado incerto; requisição original preservada. Consultar, sem repetir o evento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancellationEvidence"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancellationDecision"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/intents/{id}/production/cancellation": {
+      "get": {
+        "operationId": "readProductionFiscalCancellation",
+        "summary": "Ler evidência arquivada do cancelamento",
+        "description": "Sem estorno de dinheiro, estoque ou venda. Não infere prazos por UF. Requer consulta autorizada mais recente e permissão atual para envio; leitura histórica não exige credencial ativa.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Evidência real; status desconhecido/136/573 não confirma cancelamento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancellationEvidence"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fiscal/intents/{id}/production/cancellation/xml": {
+      "get": {
+        "operationId": "readProductionFiscalCancellationXML",
+        "summary": "Baixar procEventoNFe confirmado",
+        "description": "Sem estorno de dinheiro, estoque ou venda. Não infere prazos por UF. Requer consulta autorizada mais recente e permissão atual para envio; leitura histórica não exige credencial ativa.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Erro real de entrada, sessão/permissão, conflito, integridade ou indisponibilidade. Nenhum retry implícito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./fiscal-preparation.openapi.json#/components/schemas/Error"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "XML do evento original e registro correspondente. Não é uma NF-e ativa.",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Address": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "Street": {
+            "type": "string"
+          },
+          "Number": {
+            "type": "string"
+          },
+          "District": {
+            "type": "string"
+          },
+          "CityCode": {
+            "type": "string"
+          },
+          "City": {
+            "type": "string"
+          },
+          "UF": {
+            "type": "string"
+          },
+          "PostalCode": {
+            "type": "string"
+          }
+        },
+        "required": []
+      },
+      "Party": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "CNPJ": {
+            "type": "string"
+          },
+          "CPF": {
+            "type": "string"
+          },
+          "Name": {
+            "type": "string"
+          },
+          "IE": {
+            "type": "string"
+          },
+          "IEDestination": {
+            "type": "string"
+          },
+          "Address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        },
+        "required": []
+      },
+      "TaxNode": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "Name": {
+            "type": "string"
+          },
+          "Value": {
+            "type": "string"
+          },
+          "Children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxNode"
+            }
+          }
+        },
+        "required": [
+          "Name"
+        ]
+      },
+      "Line": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ProductID": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Unit": {
+            "type": "string"
+          },
+          "NCM": {
+            "type": "string"
+          },
+          "CFOP": {
+            "type": "string"
+          },
+          "GTIN": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "UnitPrice": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Discount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Freight": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Insurance": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Other": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Taxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxNode"
+            },
+            "minItems": 1
+          },
+          "TaxQuoteOperationID": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "CEST": {
+            "type": "string",
+            "pattern": "^[0-9]{7}$"
+          },
+          "BenefitCode": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 10
+          },
+          "FCI": {
+            "type": "string",
+            "pattern": "^[0-9A-Fa-f-]{36}$"
+          }
+        },
+        "required": [
+          "ProductID",
+          "Description",
+          "Unit",
+          "Quantity",
+          "UnitPrice",
+          "Discount",
+          "Freight",
+          "Insurance",
+          "Other",
+          "NCM",
+          "CFOP",
+          "Taxes"
+        ]
+      },
+      "Payment": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "Method": {
+            "type": "string",
+            "enum": [
+              "01"
+            ]
+          },
+          "Amount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          }
+        },
+        "required": [
+          "Method",
+          "Amount"
+        ]
+      },
+      "Key": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "UF": {
+            "type": "string"
+          },
+          "CNPJ": {
+            "type": "string"
+          },
+          "Model": {
+            "type": "string"
+          },
+          "NumericCode": {
+            "type": "string"
+          },
+          "Series": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 889
+          },
+          "Number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 999999999
+          },
+          "Emission": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "IssuedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "UF",
+          "CNPJ",
+          "Model",
+          "NumericCode",
+          "Series",
+          "Number",
+          "Emission",
+          "IssuedAt"
+        ]
+      },
+      "EmptyKey": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "UF": {
+            "type": "string",
+            "enum": [
+              ""
+            ]
+          },
+          "CNPJ": {
+            "type": "string",
+            "enum": [
+              ""
+            ]
+          },
+          "Model": {
+            "type": "string",
+            "enum": [
+              ""
+            ]
+          },
+          "NumericCode": {
+            "type": "string",
+            "enum": [
+              ""
+            ]
+          },
+          "Series": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "Number": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "Emission": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "IssuedAt": {
+            "type": "string",
+            "enum": [
+              "0001-01-01T00:00:00Z"
+            ]
+          }
+        },
+        "required": []
+      },
+      "ReviewedInvoice": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "Key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "Environment": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "CRT": {
+            "type": "string"
+          },
+          "Nature": {
+            "type": "string"
+          },
+          "Direction": {
+            "type": "string"
+          },
+          "Destination": {
+            "type": "string"
+          },
+          "FinalConsumer": {
+            "type": "string"
+          },
+          "Presence": {
+            "type": "string"
+          },
+          "Issuer": {
+            "$ref": "#/components/schemas/Party"
+          },
+          "Recipient": {
+            "$ref": "#/components/schemas/NullableParty"
+          },
+          "Lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Line"
+            },
+            "minItems": 1,
+            "maxItems": 990
+          },
+          "Payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Payment"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          },
+          "TaxTotals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+            }
+          },
+          "ContingencyAt": {
+            "type": "string",
+            "enum": [
+              "0001-01-01T00:00:00Z"
+            ]
+          },
+          "ContingencyReason": {
+            "type": "string",
+            "enum": [
+              ""
+            ]
+          }
+        },
+        "required": [
+          "Environment",
+          "CRT",
+          "Nature",
+          "Direction",
+          "Destination",
+          "FinalConsumer",
+          "Presence",
+          "Issuer",
+          "Lines",
+          "Payments",
+          "TaxTotals"
+        ]
+      },
+      "InvoiceInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "Key": {
+            "$ref": "#/components/schemas/EmptyKey"
+          },
+          "Environment": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "CRT": {
+            "type": "string"
+          },
+          "Nature": {
+            "type": "string"
+          },
+          "Direction": {
+            "type": "string"
+          },
+          "Destination": {
+            "type": "string"
+          },
+          "FinalConsumer": {
+            "type": "string"
+          },
+          "Presence": {
+            "type": "string"
+          },
+          "Issuer": {
+            "$ref": "#/components/schemas/Party"
+          },
+          "Recipient": {
+            "$ref": "#/components/schemas/NullableParty"
+          },
+          "Lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LineInput"
+            },
+            "minItems": 1,
+            "maxItems": 990
+          },
+          "Payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Payment"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          },
+          "TaxTotals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+            },
+            "nullable": true
+          },
+          "ContingencyAt": {
+            "type": "string",
+            "enum": [
+              "0001-01-01T00:00:00Z"
+            ]
+          },
+          "ContingencyReason": {
+            "type": "string",
+            "enum": [
+              ""
+            ]
+          }
+        },
+        "required": [
+          "Environment",
+          "CRT",
+          "Nature",
+          "Direction",
+          "Destination",
+          "FinalConsumer",
+          "Presence",
+          "Issuer",
+          "Lines",
+          "Payments"
+        ],
+        "description": "Key omitida ou zerada: UF/CNPJ/modelo/série/número/data/cNF são atribuídos pelo backend. Valores decimais exatos em strings; venda em dinheiro sem descontos/acréscimos nesta integração. O documento precisa de classificação tributária revisada; a API não escolhe alíquotas. Modo com TaxQuoteOperationID: informe a referência em cada linha; Taxes/TaxTotals podem ser nulos/omitidos para preenchimento pelo backend. Sem preenchimento silencioso de valores conflitantes. O modo manual anterior continua distinto e não recebe prova de política aprovada."
+      },
+      "Configuration": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "store_id": {
+            "type": "string"
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "profile_id": {
+            "type": "string"
+          },
+          "issuer": {
+            "type": "string"
+          },
+          "uf": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "sole_authority_reference": {
+            "type": "string"
+          },
+          "endpoint_registry_reference": {
+            "type": "string"
+          },
+          "homologation_reference": {
+            "type": "string"
+          },
+          "developer_reference": {
+            "type": "string"
+          },
+          "authorization_url": {
+            "type": "string"
+          },
+          "consultation_url": {
+            "type": "string"
+          },
+          "certificate_sha256": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string"
+          },
+          "valid_until": {
+            "type": "string"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "series": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 889
+          },
+          "initial_number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 999999999
+          },
+          "supplement_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "cancellation_url": {
+            "type": "string",
+            "description": "Endpoint privado opcional, HTTPS governamental e distinto dos serviços de emissão/consulta. Não recebido pela API."
+          }
+        },
+        "required": [
+          "id",
+          "tenant_id",
+          "store_id",
+          "device_id",
+          "profile_id",
+          "issuer",
+          "uf",
+          "timezone",
+          "model",
+          "sole_authority_reference",
+          "endpoint_registry_reference",
+          "homologation_reference",
+          "developer_reference",
+          "authorization_url",
+          "consultation_url",
+          "certificate_sha256",
+          "valid_from",
+          "valid_until",
+          "profile_revision",
+          "series",
+          "initial_number"
+        ]
+      },
+      "Preparation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "configuration": {
+            "$ref": "#/components/schemas/Configuration"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "configuration_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "review_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "invoice": {
+            "$ref": "#/components/schemas/ReviewedInvoice"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "configuration",
+          "revision",
+          "operation_id",
+          "configuration_sha256",
+          "review_sha256",
+          "invoice",
+          "created_at"
+        ]
+      },
+      "Protocol": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "received_at": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string"
+          },
+          "authorization_indicated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "environment",
+          "status",
+          "number",
+          "received_at",
+          "digest",
+          "authorization_indicated"
+        ]
+      },
+      "Evidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "prepared",
+              "not_sent",
+              "uncertain",
+              "recovery_required",
+              "authorized",
+              "rejected_requires_review",
+              "batch_rejected_requires_review",
+              "denied_requires_review",
+              "duplicate_requires_query",
+              "processing_requires_query",
+              "document_closed_requires_review",
+              "status_requires_review",
+              "service_response_requires_review",
+              "not_found_requires_review",
+              "canceled_requires_review"
+            ]
+          },
+          "key": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "query_operation_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "protocol": {
+            "$ref": "#/components/schemas/Protocol"
+          },
+          "processed_xml": {
+            "type": "string",
+            "format": "byte",
+            "description": "nfeProc em base64, somente com autorização associada à chave, ambiente e digest originais."
+          }
+        },
+        "required": [
+          "state",
+          "key",
+          "operation_id"
+        ]
+      },
+      "Status": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "preparation": {
+            "$ref": "#/components/schemas/Preparation"
+          },
+          "approved": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/Evidence"
+          },
+          "evidence_revision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "preparation",
+          "approved",
+          "evidence",
+          "evidence_revision"
+        ]
+      },
+      "PrepareInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "invoice": {
+            "$ref": "#/components/schemas/InvoiceInput"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "invoice"
+        ]
+      },
+      "ApproveInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "review_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "tax_reference": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "operation_id",
+          "revision",
+          "review_sha256",
+          "tax_reference"
+        ]
+      },
+      "EmitInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "review_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "operation_id",
+          "revision",
+          "review_sha256"
+        ]
+      },
+      "QueryInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "operation_id",
+          "revision"
+        ]
+      },
+      "NullableParty": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "CNPJ": {
+            "type": "string"
+          },
+          "CPF": {
+            "type": "string"
+          },
+          "Name": {
+            "type": "string"
+          },
+          "IE": {
+            "type": "string"
+          },
+          "IEDestination": {
+            "type": "string"
+          },
+          "Address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        },
+        "required": [],
+        "nullable": true
+      },
+      "CancellationDecision": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+          },
+          "query_operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 15,
+            "maxLength": 255
+          },
+          "approval_reference": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "operation_id",
+          "query_operation_id",
+          "reason",
+          "approval_reference"
+        ]
+      },
+      "CancellationExchange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "http_status": {
+            "type": "integer"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "format": "byte",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "uncertain",
+              "response_received"
+            ]
+          }
+        },
+        "required": [
+          "operation_id",
+          "http_status",
+          "sha256",
+          "body",
+          "state"
+        ]
+      },
+      "CancellationEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "event_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "registered_at": {
+            "type": "string"
+          },
+          "signed_xml": {
+            "type": "string",
+            "format": "byte"
+          },
+          "processed_xml": {
+            "type": "string",
+            "format": "byte"
+          },
+          "exchange": {
+            "$ref": "#/components/schemas/CancellationExchange"
+          },
+          "recovery_query_operation_id": {
+            "type": "string",
+            "description": "Consulta independente que comprovou o evento assinado exato. exchange conserva a tentativa original, inclusive resposta incerta."
+          }
+        },
+        "required": [
+          "state",
+          "key",
+          "event_id",
+          "signed_xml",
+          "exchange"
+        ]
+      },
+      "QuotedLineInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ProductID": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Unit": {
+            "type": "string"
+          },
+          "NCM": {
+            "type": "string"
+          },
+          "CFOP": {
+            "type": "string"
+          },
+          "GTIN": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "UnitPrice": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Discount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Freight": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Insurance": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Other": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})(\\.[0-9]{1,10})?$"
+          },
+          "Taxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxNode"
+            },
+            "minItems": 0,
+            "nullable": true
+          },
+          "TaxQuoteOperationID": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          },
+          "CEST": {
+            "type": "string",
+            "pattern": "^[0-9]{7}$"
+          },
+          "BenefitCode": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 10
+          },
+          "FCI": {
+            "type": "string",
+            "pattern": "^[0-9A-Fa-f-]{36}$"
+          }
+        },
+        "required": [
+          "ProductID",
+          "Description",
+          "Unit",
+          "Quantity",
+          "UnitPrice",
+          "Discount",
+          "Freight",
+          "Insurance",
+          "Other",
+          "TaxQuoteOperationID"
+        ],
+        "description": "Os grupos, totais, NCM/CFOP, CEST, cBenef e FCI vêm da memória aprovada. Valores fornecidos precisam ser idênticos. Todas as linhas devem ter referência quando uma delas usar esse modo. Cotação, perfil ou política obsoleta bloqueia nova revisão/aprovação/envio; leitura histórica permanece disponível."
+      },
+      "LineInput": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Line"
+              },
+              {
+                "not": {
+                  "required": [
+                    "TaxQuoteOperationID"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "$ref": "#/components/schemas/QuotedLineInput"
+          }
+        ]
+      }
+    }
+  }
+}

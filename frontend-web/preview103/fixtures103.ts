@@ -1,0 +1,3 @@
+// Explicit demonstration data. Never imported by production routes.
+import type {Receipt96} from '../src/core/local/checkout96.mjs';
+export function demoReceipt103(id:string):Receipt96{return {sale_id:id,operation_id:'DEMO-OP',cash_session_id:'DEMO98-CURRENT',status:'committed',fiscal_authorized:false,total_cents:31500,items:[{item_id:'ITEM',product_id:'DEMO-PRODUCT',location_id:'DEMO-LOCATION',quantity_milli:1500,unit_price_cents:21000,total_cents:31500}],payments:[{payment_id:'P1',method:'cash',status:'confirmed',amount_cents:10000},{payment_id:'P2',method:'debit',status:'confirmed',amount_cents:9600},{payment_id:'P3',method:'credit',status:'confirmed',amount_cents:11900}]};}

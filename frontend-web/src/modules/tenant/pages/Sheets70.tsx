@@ -1,3 +1,7 @@
+import {createBlockRefreshGate,blockRefreshSnapshot,type BlockRefreshTicket} from '../../../core/sheets70/blockRefresh.mjs';
+import {sheetFinanceWords} from '../../../core/sheets70/financeWords.mjs';
+import {sheetStockLocations} from '../../../core/sheets70/stockSnapshot.mjs';
+import {sheetStockWords} from '../../../core/sheets70/stockWords';
 import { useEffect, useRef, useState } from 'react';
 import type { ICellData, IWorkbookData } from '@univerjs/presets';
 import { useSearchParams } from 'react-router-dom';
@@ -39,6 +43,7 @@ export const dictionaries70: Record<string, typeof pt> = {
   zh,
 };
 interface Props {
+  ready: boolean;
   name: string;
   get: () => IWorkbookData;
   load: (book: IWorkbookData) => void;
@@ -69,8 +74,15 @@ export default function Sheets70(props: Props) {
     blocks = useRef<Block[]>([]),
     serial = useRef(''),
     queue = useRef(false),
+    pendingRefresh=useRef(''),
     mounted = useRef(true),
     controller = useRef<AbortController>();
+  const refreshGate=useRef(createBlockRefreshGate());
+  const [verifiedBlocks,setVerifiedBlocks]=useState<Record<string,string>>({});
+  const [blockErrors,setBlockErrors]=useState<Record<string,string>>({});
+  const [stockLocations,setStockLocations]=useState<{id:string;name:string}[]>([]);
+  const financeWords=sheetFinanceWords(i18n.resolvedLanguage||i18n.language);
+  const stockWords=sheetStockWords(i18n.resolvedLanguage||i18n.language);
   const [panel, setPanel] = useState(parameters.has('source') ? 'data' : ''),
     [status, setStatus] = useState(''),
     [files, setFiles] = useState<Document[]>([]),
@@ -114,17 +126,20 @@ export default function Sheets70(props: Props) {
       focusReturn.current?.focus();
     };
   }, [panel]);
+  useEffect(()=>{refreshGate.current.invalidate();setVerifiedBlocks({});},[token,scope]);
   const contextRef = useRef(scope);
   contextRef.current = scope;
   useEffect(() => {
     const track = (event: Event) => {
-      blocks.current = trackStructure(blocks.current, (event as CustomEvent).detail);
+      const next=trackStructure(blocks.current, (event as CustomEvent).detail);
+      for(const before of blocks.current){const after=next.find(b=>b.id===before.id);if(!after||blockRefreshSnapshot(after)!==blockRefreshSnapshot(before))refreshGate.current.invalidate(before.id);}
+      blocks.current = next;
       setBlockList([...blocks.current]);
     };
     window.addEventListener('titan-sheets70-command', track);
     return () => window.removeEventListener('titan-sheets70-command', track);
   }, []);
-  const label = (key: string) => (w as Record<string, string>)[key] || key;
+  const label = (key: string) => financeWords[key] || (stockWords as Record<string,string>)[key] || (w as Record<string, string>)[key] || key;
   const time = (at: number) =>
     new Intl.DateTimeFormat(i18n.resolvedLanguage || 'pt-BR', {
       dateStyle: 'short',
@@ -135,14 +150,15 @@ export default function Sheets70(props: Props) {
       doc.current.activity = [...doc.current.activity, { at: Date.now(), action }].slice(-100);
   }
   async function persist(force = false) {
-    if (queue.current || !scope) return false;
+    if (!latest.current.ready || queue.current || !scope) return false;
     queue.current = true;
     try {
       const live = latest.current.get();
       if (doc.current && doc.current.workbook.id !== live.id) {
         doc.current = null;
+        refreshGate.current.invalidate();setVerifiedBlocks({});
         blocks.current = [];
-        setBlockList([]);
+        setBlockList([]);setBlockErrors({});
         serial.current = '';
       }
       const safe = cleanSnapshot(live, blocks.current),
@@ -199,8 +215,11 @@ export default function Sheets70(props: Props) {
   useEffect(() => {
     mounted.current = true;
     doc.current = null;
+    refreshGate.current.invalidate();setVerifiedBlocks({});
     blocks.current = [];
     serial.current = '';
+    pendingRefresh.current='';
+    setBlockErrors({});
     let bootstrap: number | undefined;
     void sheetStorage()
       .list(scope)
@@ -210,18 +229,18 @@ export default function Sheets70(props: Props) {
           if (!mounted.current || doc.current) return;
           const file = saved[0];
           doc.current = file;
+          refreshGate.current.invalidate();setVerifiedBlocks({});
           blocks.current = file.blocks || [];
           setBlockList(blocks.current);
+          pendingRefresh.current=file.workbook.id;
           latest.current.load(file.workbook);
-          setTimeout(() => {
-            for (const block of blocks.current.filter((b) => !b.detached)) void fetchBlock(block);
-          }, 300);
         }, 300);
       })
       .catch(() => setError('saveError'));
     const timer = setInterval(() => void persist(), 2000);
     return () => {
       mounted.current = false;
+      refreshGate.current.invalidate();
       clearTimeout(bootstrap);
       clearInterval(timer);
       controller.current?.abort();
@@ -231,6 +250,7 @@ export default function Sheets70(props: Props) {
     const keyboard = (event: KeyboardEvent) => {
       if (!(event.ctrlKey || event.metaKey)) return;
       const key = event.key.toLowerCase();
+      if(!latest.current.ready){if(['s','f','h'].includes(key)){event.preventDefault();event.stopImmediatePropagation();}return;}
       if (key === 's') {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -249,6 +269,7 @@ export default function Sheets70(props: Props) {
     if (!revoke.length) return;
     try {
       const safe = cleanSnapshot(latest.current.get(), revoke);
+      refreshGate.current.invalidate();setVerifiedBlocks({});
       latest.current.clearCache();
       latest.current.load(safe);
       setError('permission');
@@ -276,16 +297,15 @@ export default function Sheets70(props: Props) {
     if (!(await persist()) && !window.confirm(w.discard)) return;
     controller.current?.abort();
     doc.current = file;
+    refreshGate.current.invalidate();setVerifiedBlocks({});
     blocks.current = file.blocks || [];
     setBlockList(blocks.current);
     serial.current = '';
     latest.current.clearCache();
+    pendingRefresh.current=file.workbook.id;
+    setBlockErrors({});
     latest.current.load(file.workbook);
     setPanel('');
-    setTimeout(() => {
-      if (doc.current?.id === file.id)
-        for (const block of blocks.current.filter((b) => !b.detached)) void fetchBlock(block);
-    }, 300);
   }
   function scrubSource(source: string, status: number) {
     try {
@@ -303,6 +323,18 @@ export default function Sheets70(props: Props) {
       setError('permission');
     }
   }
+  function sourceContext(selected:string,signal:AbortSignal){
+    if(!token||!session||!capabilities)throw Error('permission');
+    const origin=[session.tenant_id,session.store_id,session.identity_id,session.device_id];
+    const sameSession=()=>{const current=useLocalSession.getState();return mounted.current&&current.token===token&&origin.every((value,index)=>value===[current.session?.tenant_id,current.session?.store_id,current.session?.identity_id,current.session?.device_id][index]);};
+    return {token,session,capabilities,signal,locale:i18n.resolvedLanguage||i18n.language,sameSession,isCurrent:()=>sameSession()&&sourceAllowed(selected,auth.current.capabilities)};
+  }
+  useEffect(()=>{
+    setStockLocations([]);if(panel!=='data'||source!=='stock')return;
+    const ctrl=new AbortController();
+    try{void sheetStockLocations(sourceContext('stock',ctrl.signal)).then(value=>{if(!ctrl.signal.aborted)setStockLocations(value);}).catch(()=>{if(!ctrl.signal.aborted)setError('unavailable');});}catch{setError('permission');}
+    return()=>ctrl.abort();
+  },[panel,source,token,session,capabilities]);
   async function fetchData() {
     controller.current?.abort();
     const ctrl = new AbortController();
@@ -310,12 +342,15 @@ export default function Sheets70(props: Props) {
     setLoading(true);
     setError('');
     setData(undefined);
+    let attempt:ReturnType<typeof sourceContext>|undefined;
     try {
       if (!token || !capabilities || !sourceAllowed(source, capabilities))
         throw Error('permission');
-      const result = await sources[source]({ token, capabilities, signal: ctrl.signal }, filters);
+      attempt=sourceContext(source,ctrl.signal);
+      const result = await sources[source](attempt, filters);
       if (
         ctrl.signal.aborted ||
+        !attempt.sameSession() ||
         !mounted.current ||
         auth.current.token !== token ||
         contextRef.current !== scope ||
@@ -326,8 +361,10 @@ export default function Sheets70(props: Props) {
       setColumns(result.columns);
       props.cache(source, result);
     } catch (e) {
+      if(attempt&&!attempt.sameSession())return;
       if (e instanceof LocalAPIError && (e.status === 401 || e.status === 403))
         scrubSource(source, e.status);
+      if(e instanceof Error&&['financeSheetRange','financeSheetLimit','financeSheetRows'].includes(e.message)&&!ctrl.signal.aborted){setError(e.message);return;}
       if (!ctrl.signal.aborted)
         setError(
           (e instanceof LocalAPIError && [401, 403].includes(e.status)) ||
@@ -340,38 +377,33 @@ export default function Sheets70(props: Props) {
     }
   }
   async function fetchBlock(block: Block) {
-    if (!token || !capabilities || !sourceAllowed(block.source, capabilities)) return;
+    if (!latest.current.ready || !token || !capabilities || block.detached || !sourceAllowed(block.source, capabilities)) return;
+    let attempt:ReturnType<typeof sourceContext>|undefined,ticket:BlockRefreshTicket|undefined;
+    const current=()=>{try{return !!ticket&&ticket.current(latest.current.get().id,blocks.current.find(value=>value.id===block.id))&&latest.current.ready&&mounted.current&&auth.current.token===token&&auth.current.scope===scope&&sourceAllowed(block.source,auth.current.capabilities)&&(!attempt||attempt.sameSession());}catch{return false;}};
     try {
-      const ctrl = new AbortController();
-      const result = await sources[block.source](
-        { token, capabilities, signal: ctrl.signal },
-        block.filters || { q: '', from: '', to: '' }
-      );
-      if (
-        !mounted.current ||
-        auth.current.token !== token ||
-        !sourceAllowed(block.source, auth.current.capabilities)
-      )
-        return;
-      const selectedColumns = block.columns || result.columns,
-        indexes = selectedColumns.map((c) => result.columns.indexOf(c));
-      if (indexes.includes(-1)) throw Error('permission');
-      const matrix = [
-        selectedColumns.map(label),
-        ...result.rows.map((row) => indexes.map((i) => row[i])),
-      ];
-      const checked = checkSpace(props.get(), block, matrix, block);
-      ensureNoOverlap(checked, blocks.current);
-      const updated = props.write(matrix, { ...checked, updated: result.at }, block);
-      blocks.current = blocks.current.map((b) => (b.id === block.id ? updated : b));
+      ticket=refreshGate.current.begin(latest.current.get().id,block);
+      setVerifiedBlocks(previous=>{const next={...previous};delete next[block.id];return next;});
+      attempt=sourceContext(ticket.block.source,ticket.signal);
+      const result=await sources[ticket.block.source](attempt,ticket.block.filters||{q:'',from:'',to:''});
+      if(!current())return;
+      const original=ticket.block,selectedColumns=original.columns||result.columns,indexes=selectedColumns.map(c=>result.columns.indexOf(c));
+      if(indexes.includes(-1))throw Error('permission');
+      const matrix=[selectedColumns.map(label),...result.rows.map(row=>indexes.map(i=>row[i]))];
+      const checked=checkSpace(latest.current.get(),original,matrix,original);
+      ensureNoOverlap(checked,blocks.current);
+      const updated=latest.current.write(matrix,{...checked,updated:result.at,partial:result.partial},original);
+      blocks.current=blocks.current.map(b=>b.id===original.id?updated:b);
       setBlockList([...blocks.current]);
-      props.cache(block.source, result);
+      latest.current.cache(original.source,result);
       activity('refresh');
-    } catch (error) {
-      if (error instanceof LocalAPIError && (error.status === 401 || error.status === 403))
-        scrubSource(block.source, error.status);
-      else setError('offline');
-    }
+      setVerifiedBlocks(previous=>({...previous,[original.id]:blockRefreshSnapshot(updated)}));
+      setBlockErrors(previous=>{const next={...previous};delete next[original.id];return next;});
+    }catch(error){
+      if(!current())return;
+      const message=error instanceof LocalAPIError&&[401,403].includes(error.status)?'permission':error instanceof Error&&['financeSheetRange','financeSheetLimit','financeSheetRows'].includes(error.message)?error.message:'offline';
+      setBlockErrors(previous=>({...previous,[block.id]:message}));
+      if(error instanceof LocalAPIError&&[401,403].includes(error.status))scrubSource(block.source,error.status);
+    }finally{ticket?.finish();}
   }
 
   useEffect(() => {
@@ -382,6 +414,12 @@ export default function Sheets70(props: Props) {
     }, 60000);
     return () => clearInterval(timer);
   }, [token, capabilities]);
+  useEffect(()=>{
+    if(!props.ready||!pendingRefresh.current)return;
+    try{if(latest.current.get().id!==pendingRefresh.current)return;}catch{return;}
+    pendingRefresh.current='';
+    for(const block of blocks.current.filter(value=>!value.detached))void fetchBlock(block);
+  },[props.ready]);
   function insert() {
     if (!data) return;
     if (!sourceAllowed(source, auth.current.capabilities)) {
@@ -407,9 +445,10 @@ export default function Sheets70(props: Props) {
           ? { ...base, height: matrix.length, width: matrix[0].length }
           : checkSpace(props.get(), base, matrix, editBlock);
       if (target !== 'newSheet') ensureNoOverlap(checked, blocks.current);
+      if(editBlock)refreshGate.current.invalidate(editBlock.id);
       const result = props.write(
         matrix,
-        { ...checked, updated: data.at, filters: { ...filters }, columns: [...columns] },
+        { ...checked, updated: data.at, partial: data.partial, filters: { ...filters }, columns: [...columns] },
         editBlock,
         target === 'newSheet'
       );
@@ -417,6 +456,8 @@ export default function Sheets70(props: Props) {
         ? blocks.current.map((b) => (b.id === result.id ? result : b))
         : [...blocks.current, result];
       setBlockList([...blocks.current]);
+      setVerifiedBlocks(previous=>({...previous,[result.id]:blockRefreshSnapshot(result)}));
+      setBlockErrors(previous=>{const next={...previous};delete next[result.id];return next;});
       activity('link');
       setPanel('');
       setEditBlock(undefined);
@@ -428,8 +469,9 @@ export default function Sheets70(props: Props) {
     if (!(await persist())) return;
     const book = templateBook(props.get(), kind, label);
     doc.current = null;
+    refreshGate.current.invalidate();setVerifiedBlocks({});
     blocks.current = [];
-    setBlockList([]);
+    setBlockList([]);setBlockErrors({});
     serial.current = '';
     props.clearCache();
     props.load(book);
@@ -541,8 +583,9 @@ export default function Sheets70(props: Props) {
                 void persist().then((ok) => {
                   if (!ok) return;
                   doc.current = null;
+                  refreshGate.current.invalidate();setVerifiedBlocks({});
                   blocks.current = [];
-                  setBlockList([]);
+                  setBlockList([]);setBlockErrors({});
                   serial.current = '';
                   props.create();
                 });
@@ -580,12 +623,16 @@ export default function Sheets70(props: Props) {
             : label(status || 'local')}
         </span>
       </div>
+      {blockList.some(b=>!b.detached&&verifiedBlocks[b.id]!==blockRefreshSnapshot(b))&&<p role="alert" className="brand-message sheet70-linked-warning">{w.linkedUnverified}</p>}
       <div className="sheet70-links">
         {blockList.map((b) => (
           <details key={b.id}>
             <summary>
-              ↗ {label(b.source)} · {time(b.updated)}
+              ↗ {label(b.source)} · {time(b.updated)}{b.source==='stock'&&b.filters?.location_id?' · '+b.filters.location_id:''}
             </summary>
+            {b.partial&&<p>{w.partial}</p>}
+            {b.source==='stock'&&<p>{stockWords.help}</p>}
+            {b.source==='finance'&&<p>{financeWords.financeHelp}</p>}
             <button disabled={b.detached} onClick={() => void fetchBlock(b)}>
               {w.refresh}
             </button>
@@ -597,6 +644,7 @@ export default function Sheets70(props: Props) {
                 max="1440"
                 value={b.interval}
                 onChange={(e) => {
+                  refreshGate.current.invalidate(b.id);
                   b.interval = Math.max(0, Math.min(1440, Number(e.target.value)));
                   setBlockList([...blocks.current]);
                 }}
@@ -604,6 +652,7 @@ export default function Sheets70(props: Props) {
             </label>
             <button
               onClick={() => {
+                refreshGate.current.invalidate(b.id);
                 b.detached = true;
                 setBlockList([...blocks.current]);
                 activity('unlink');
@@ -613,6 +662,7 @@ export default function Sheets70(props: Props) {
             </button>
             <button
               onClick={() => {
+                refreshGate.current.invalidate(b.id);
                 setSource(b.source);
                 setFilters(b.filters || { q: '', from: '', to: '' });
                 setEditBlock(b);
@@ -624,6 +674,7 @@ export default function Sheets70(props: Props) {
           </details>
         ))}
       </div>
+      <div className="sheet70-source-errors">{blockList.filter(block=>blockErrors[block.id]).map(block=><p role="alert" key={block.id}>{label(block.source)}: {label(blockErrors[block.id])}</p>)}</div>
       {panel && (
         <dialog
           ref={dialog}
@@ -756,8 +807,8 @@ export default function Sheets70(props: Props) {
                 <select
                   value={source}
                   onChange={(e) => {
-                    setSource(e.target.value);
-                    setData(undefined);
+                    controller.current?.abort();setSource(e.target.value);
+                    setData(undefined);setLoading(false);
                   }}
                 >
                   {Object.keys(sources).map((s) => (
@@ -767,32 +818,35 @@ export default function Sheets70(props: Props) {
                   ))}
                 </select>
               </label>
+              {source==='finance'&&<><p>{financeWords.financeHelp}</p><label>{financeWords.finance_as_of}<input type="date" value={filters.as_of||''} onChange={e=>{controller.current?.abort();setLoading(false);setData(undefined);setFilters({...filters,as_of:e.target.value});}}/></label></>}
+              {source==='stock'&&<><p>{stockWords.help}</p><label>{stockWords.location}<select value={filters.location_id||''} onChange={e=>{controller.current?.abort();setLoading(false);setData(undefined);setFilters({...filters,location_id:e.target.value});}}><option value="">{stockWords.choose}</option>{stockLocations.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label></>}
               <label>
                 {w.search}
                 <input
+                  maxLength={240}
                   value={filters.q}
-                  onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+                  onChange={(e) => {controller.current?.abort();setLoading(false);setData(undefined);setFilters({ ...filters, q: e.target.value });}}
                 />
               </label>
               <label>
                 {w.from}
                 <input
                   type="date"
-                  disabled={!['sales', 'purchases'].includes(source)}
+                  disabled={!['sales', 'purchases','finance'].includes(source)}
                   value={filters.from}
-                  onChange={(e) => setFilters({ ...filters, from: e.target.value })}
+                  onChange={(e) => {controller.current?.abort();setLoading(false);setData(undefined);setFilters({ ...filters, from: e.target.value });}}
                 />
               </label>
               <label>
                 {w.to}
                 <input
                   type="date"
-                  disabled={!['sales', 'purchases'].includes(source)}
+                  disabled={!['sales', 'purchases','finance'].includes(source)}
                   value={filters.to}
-                  onChange={(e) => setFilters({ ...filters, to: e.target.value })}
+                  onChange={(e) => {controller.current?.abort();setLoading(false);setData(undefined);setFilters({ ...filters, to: e.target.value });}}
                 />
               </label>
-              <button disabled={loading} onClick={() => void fetchData()}>
+              <button disabled={loading||source==='finance'&&(!filters.from||!filters.to||!filters.as_of)||source==='stock'&&!stockLocations.some(item=>item.id===filters.location_id)} onClick={() => void fetchData()}>
                 {w.preview}
               </button>
               {data && (

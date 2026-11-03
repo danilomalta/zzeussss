@@ -10,6 +10,7 @@ import (
 	"errors"
 	"strings"
 	"time"
+	"titansystem-backend/internal/secretconfig"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -39,7 +40,7 @@ type Store struct {
 func New(db *sql.DB, secret string) *Store { return &Store{db: db, secret: secret} }
 
 func (s *Store) begin(ctx context.Context) (*sql.Tx, error) {
-	if s.db == nil || s.secret == "" {
+	if s.db == nil || secretconfig.Unsafe(s.secret) {
 		return nil, ErrUnavailable
 	}
 	tx, err := s.db.BeginTx(ctx, nil)

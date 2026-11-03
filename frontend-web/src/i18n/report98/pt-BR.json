@@ -1,0 +1,21 @@
+{
+  "official98": "Resultado oficial do caixa",
+  "payments98": "Conferência dos pagamentos",
+  "local98": "Contagem e malotes neste computador",
+  "noOfficial98": "Sem encerramento oficial disponível",
+  "refresh98": "Consultar novamente",
+  "loading98": "Consultando relatório…",
+  "partial98": "Há fontes indisponíveis. Os dados consultados continuam visíveis.",
+  "noCount98": "Sem conferência local salva para este caixa.",
+  "noBag98": "Sem malote registrado neste computador.",
+  "unverified98": "Valor ainda não verificado",
+  "updated98": "Dados consultados às",
+  "scope98": "Vendas consultadas não substituem o saldo oficial do caixa.",
+  "choose98": "Escolha um caixa para consultar.",
+  "overlap98": "Os dois valores podem incluir a mesma parcela. Não some confirmação eletrônica e comprovante.",
+  "countSaved98": "Conferência local salva",
+  "bagsEmpty98": "Sem registro local de malotes",
+  "sources98": "Consultar fontes",
+  "invalid98": "Não foi possível validar os dados recebidos.",
+  "same98": "Prévia e impressão usam os mesmos valores desta tela."
+}

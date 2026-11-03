@@ -1,0 +1,678 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P09 production lot declarations",
+    "version": "P09",
+    "description": "Identify quantities of finished goods already registered by a P06 result. Does not produce, reserve, consume, reverse stock or change an order. Dates are declarations, not inferred validation of shelf life. Not stock balance by lot, FEFO, sale allocation or a recall workflow. Current manage_production permission and trusted device required; writes also require valid Production contract. Tenant/store derive only from session. Strict required JSON fields: no nulls, duplicates, unknown fields or trailing JSON."
+  },
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/local/v1/production/lots": {
+      "post": {
+        "operationId": "recordProductionLot",
+        "description": "Record a unique lot code, quantity and explicit dates within unassigned produced output. Definitions are immutable. Scoped operation replay includes store, device, author, action and normalized request. Exact replay returns original recorded result even after void. Codes are never reused, including voided codes.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous JSON, dates, integer units or query"
+          },
+          "401": {
+            "description": "Verified session required"
+          },
+          "403": {
+            "description": "Human/device permission or write contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "State/revision/idempotency/code conflict, allocation above unassigned produced output or inconsistent aggregate"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Success or authorized original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 8192 bytes"
+          },
+          "503": {
+            "description": "Contract store unavailable"
+          },
+          "201": {
+            "description": "Lot recorded; no stock movement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/lots/void": {
+      "post": {
+        "operationId": "voidProductionLot",
+        "description": "recorded revision 1 -> voided revision 2, with new reason, audit and outbox. Releases only historical allocation allowance; never restores stock or deletes history. Cannot reactivate.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoidInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous JSON, dates, integer units or query"
+          },
+          "401": {
+            "description": "Verified session required"
+          },
+          "403": {
+            "description": "Human/device permission or write contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "State/revision/idempotency/code conflict, allocation above unassigned produced output or inconsistent aggregate"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Success or authorized original replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WriteResult"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 8192 bytes"
+          },
+          "503": {
+            "description": "Contract store unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/production/lots/{id}": {
+      "get": {
+        "operationId": "getProductionLot",
+        "description": "Current declaration with original code, dates and creation reason. Traverse result_id -> P06 result -> order_id -> P04 frozen order to trace recipe version, ingredients and location. Authorized reads remain available after contract expiry.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous JSON, dates, integer units or query"
+          },
+          "401": {
+            "description": "Verified session required"
+          },
+          "403": {
+            "description": "Human/device permission or write contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "State/revision/idempotency/code conflict, allocation above unassigned produced output or inconsistent aggregate"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Scoped historical data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Lot"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/lots/{id}/history": {
+      "get": {
+        "operationId": "getProductionLotHistory",
+        "description": "Creation and optional void ordered by revision, with device, author and reasons. Complete normalized request and immutable lot definition also persist in the audit tables and outbox.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous JSON, dates, integer units or query"
+          },
+          "401": {
+            "description": "Verified session required"
+          },
+          "403": {
+            "description": "Human/device permission or write contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "State/revision/idempotency/code conflict, allocation above unassigned produced output or inconsistent aggregate"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Scoped historical data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/production/results/{id}/lots": {
+      "get": {
+        "operationId": "listProductionLots",
+        "description": "Up to 50 declarations including voided, ordered by created_at,id. Totals cover the entire result even on empty pages and are read in one transaction. Historical result unit is preserved if catalog later changes. Only one offset query parameter allowed.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid/ambiguous JSON, dates, integer units or query"
+          },
+          "401": {
+            "description": "Verified session required"
+          },
+          "403": {
+            "description": "Human/device permission or write contract denied"
+          },
+          "404": {
+            "description": "Reference not found in tenant/store scope"
+          },
+          "409": {
+            "description": "State/revision/idempotency/code conflict, allocation above unassigned produced output or inconsistent aggregate"
+          },
+          "500": {
+            "description": "Internal failure; transaction rolled back"
+          },
+          "200": {
+            "description": "Scoped historical data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "RecordInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "lot_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Thousandths of the P06 historical result unit. Whole unit products require multiples of 1000. Must fit the produced amount not yet assigned to recorded lots."
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Trimmed code, at most 64 UTF-8 bytes, no control characters. Case-sensitive and unique across all lots in this tenant/store, including voided lots."
+          },
+          "manufactured_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Explicit valid calendar date YYYY-MM-DD, year 0001..9999. No automatic source or shelf-life calculation."
+          },
+          "expires_on": {
+            "type": "string",
+            "description": "Required field: empty string means unknown; otherwise valid YYYY-MM-DD calendar date >= manufactured_on. A declaration, not proof of shelf life or availability."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          }
+        },
+        "required": [
+          "operation_id",
+          "lot_id",
+          "result_id",
+          "quantity_milli",
+          "code",
+          "manufactured_on",
+          "expires_on",
+          "reason"
+        ]
+      },
+      "VoidInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "lot_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2147483647,
+            "description": "Only revision 1 can be voided; other positive values conflict."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          }
+        },
+        "required": [
+          "operation_id",
+          "lot_id",
+          "expected_revision",
+          "reason"
+        ]
+      },
+      "WriteResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lot_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "lot_id",
+          "result_id",
+          "status",
+          "revision",
+          "repeated"
+        ]
+      },
+      "Lot": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Trimmed code, at most 64 UTF-8 bytes, no control characters. Case-sensitive and unique across all lots in this tenant/store, including voided lots."
+          },
+          "manufactured_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Explicit valid calendar date YYYY-MM-DD, year 0001..9999. No automatic source or shelf-life calculation."
+          },
+          "expires_on": {
+            "type": "string",
+            "description": "Required field: empty string means unknown; otherwise valid YYYY-MM-DD calendar date >= manufactured_on. A declaration, not proof of shelf life or availability."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "created_by": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "result_id",
+          "product_id",
+          "unit",
+          "quantity_milli",
+          "code",
+          "manufactured_on",
+          "expires_on",
+          "reason",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Event": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "actor_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "voided"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Trimmed text, at most 255 UTF-8 bytes."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "operation_id",
+          "device_id",
+          "actor_id",
+          "kind",
+          "revision",
+          "reason",
+          "created_at"
+        ]
+      },
+      "History": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "Summary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "result_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "1..128 UTF-8 bytes, no surrounding whitespace."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "produced_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "assigned_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "All recorded lot quantities, excluding voided, independent of page. This is historical allocation, not current inventory."
+          },
+          "unassigned_milli": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Produced minus all recorded lots. Not free stock, not another production capacity."
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Lot"
+            }
+          }
+        },
+        "required": [
+          "result_id",
+          "product_id",
+          "unit",
+          "produced_milli",
+          "assigned_milli",
+          "unassigned_milli",
+          "items"
+        ]
+      }
+    }
+  }
+}

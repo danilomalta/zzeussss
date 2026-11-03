@@ -1,0 +1,672 @@
+[
+  {
+    "uf": "AC",
+    "name": "Acre",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Portal estadual indica credenciamento e geração de CSC.",
+    "developer_requirements": "Exigência específica da desenvolvedora ainda não confirmada.",
+    "limitations": "Abertura do portal falhou; confirmação apenas pelo índice oficial.",
+    "verification": "consulta parcial; portal indisponível na ferramenta",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "AC — credenciamento NFC-e",
+        "url": "https://sefaznet.ac.gov.br/nfce/credenciamento.xhtml"
+      }
+    ]
+  },
+  {
+    "uf": "AL",
+    "name": "Alagoas",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "IE, credenciamento, certificado e CSC conforme orientação estadual.",
+    "developer_requirements": "Não confirmado nesta consulta; não significa dispensado.",
+    "limitations": "Não assumir que taxa de processo de página antiga ainda vigora.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "AL — requisitos NFC-e",
+        "url": "https://www.sefaz.al.gov.br/nise/faq/documentos-fiscais-nfc-e/512-2-requisitos"
+      }
+    ]
+  },
+  {
+    "uf": "AP",
+    "name": "Amapá",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "SVRS",
+    "issuer_requirements": "Credenciamento e CSC pelo SATE, conforme orientação estadual.",
+    "developer_requirements": "Portal dispensa homologação de software; outros cadastros não confirmados.",
+    "limitations": "Índice disponível; leitura direta do portal retornou502.",
+    "verification": "consulta parcial; orientação oficial indexada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "AP — NFC-e",
+        "url": "https://sefaz.portal.ap.gov.br/detalhe?id=9"
+      }
+    ]
+  },
+  {
+    "uf": "AM",
+    "name": "Amazonas",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "AM",
+    "nfce65_authorizer_documented": "AM",
+    "issuer_requirements": "Consultar guia e credenciamento do contribuinte; certificado e CSC por ambiente.",
+    "developer_requirements": "Não confirmado nesta consulta; não significa dispensado.",
+    "limitations": "NFC-e possui URLs próprias, separadas da NF-e.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "AM — guia rápido NFC-e",
+        "url": "https://dbcon.sefaz.am.gov.br/nfce/arquivos/NFC-e%20-%20Guia%20R%C3%A1pido.pdf"
+      },
+      {
+        "title": "SVRS — catálogo NFC-e",
+        "url": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos"
+      }
+    ]
+  },
+  {
+    "uf": "BA",
+    "name": "Bahia",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "BA",
+    "nfce65_authorizer_documented": "SVRS",
+    "issuer_requirements": "Serviços próprios de gestão de CSC de homologação e produção.",
+    "developer_requirements": "Não confirmado nesta consulta; não significa dispensado.",
+    "limitations": "NF-e55 estadual e NFC-e65 na SVRS: roteamentos diferentes.",
+    "verification": "consulta parcial; catálogo indexado e abertura com timeout",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "BA — NFC-e e serviços",
+        "url": "https://www.sefaz.ba.gov.br/inspetoria-eletronica/icms/documentos-fiscais/nota-fiscal-de-consumidor-eletronica/"
+      }
+    ]
+  },
+  {
+    "uf": "CE",
+    "name": "Ceará",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "NFC-e conforme credenciamento e normas vigentes.",
+    "developer_requirements": "Não transportar automaticamente cadastro do antigo MFE para NFC-e.",
+    "limitations": "CF-e/MFE vedado desde1/1/2026; pagamentos eletrônicos têm vinculação tecnológica prevista.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "CE — legislação, art76-A e77",
+        "url": "https://sefazlegis.sefaz.ce.gov.br/api/openFile?id=0c68bdf7-ac43-457b-b25b-69b9cb500362"
+      }
+    ]
+  },
+  {
+    "uf": "DF",
+    "name": "Distrito Federal",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "CSC no portal da Receita com certificado, distinguindo ambientes.",
+    "developer_requirements": "Não confirmado nesta consulta; não significa dispensado.",
+    "limitations": "NFS-e é integração separada; não usar CSC estadual para serviço.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "DF — gerar CSC",
+        "url": "https://www.receita.fazenda.df.gov.br/aplicacoes/CartaServicos/servico.cfm?codServico=791&codSubCategoria=218&codTipoPessoa=7"
+      }
+    ]
+  },
+  {
+    "uf": "ES",
+    "name": "Espírito Santo",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "SVRS",
+    "issuer_requirements": "Credenciamento do emitente e CSC conforme portal.",
+    "developer_requirements": "Credenciamento de desenvolvedora previsto na orientação estadual.",
+    "limitations": "Página antiga de serviços3.10 não deve virar configuração atual de produção.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "ES — desenvolvedores, art543-Z-Z-S",
+        "url": "https://s1-internet.sefaz.es.gov.br/ReceitaOrienta/Categoria/DownloadAnexo/2853"
+      },
+      {
+        "title": "ES — serviços NFC-e",
+        "url": "https://sefaz.es.gov.br/url-dos-web-services"
+      },
+      {
+        "title": "SVRS — catálogo NFC-e",
+        "url": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos"
+      }
+    ]
+  },
+  {
+    "uf": "GO",
+    "name": "Goiás",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "GO",
+    "nfce65_authorizer_documented": "GO",
+    "issuer_requirements": "Credenciamento NF-e também habilita NFC-e segundo portal; gerar CSC.",
+    "developer_requirements": "Dispensa de homologação citada em material geral não comprova dispensa de todo cadastro.",
+    "limitations": "Conferir cadeia ICP-Brasil e regras atuais; não codificar prazo antigo de FAQ.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "GO — preparar emissão de NFC-e",
+        "url": "https://goias.gov.br/economia/nfc-e-nota-fiscal-do-consumidor-eletronica/"
+      },
+      {
+        "title": "SVRS — catálogo NFC-e",
+        "url": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos"
+      }
+    ]
+  },
+  {
+    "uf": "MA",
+    "name": "Maranhão",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVAN",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Serviço de credenciamento localizado no índice oficial.",
+    "developer_requirements": "Procedimentos atuais da desenvolvedora ainda não confirmados.",
+    "limitations": "Portal estadual não abriu; não assumir credenciamento automático ou custo zero.",
+    "verification": "pendência documental estadual2026",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "MA — catálogo de serviço de credenciamento",
+        "url": "https://homol.ma.gov.br/servicos/categorias/financas/"
+      }
+    ]
+  },
+  {
+    "uf": "MG",
+    "name": "Minas Gerais",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "MG",
+    "nfce65_authorizer_documented": "MG",
+    "issuer_requirements": "Credenciamento do cliente e CSC, conforme SEF.",
+    "developer_requirements": "Portaria277 exige cadastro e grupoZD para software usado no CNAE4731-8.",
+    "limitations": "Exigência produz efeitos desde2/2/2026; FAQ genérica anterior não afasta norma específica.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "MG — Portaria SRE277/2025",
+        "url": "https://www.fazenda.mg.gov.br/empresas/legislacao_tributaria/portarias/2025/port_subsec277_2025.html"
+      },
+      {
+        "title": "MG — serviços NFC-e",
+        "url": "https://portalsped.fazenda.mg.gov.br/spedmg/nfce/web-services/"
+      },
+      {
+        "title": "MG — FAQ sobre desenvolvedor",
+        "url": "https://portalsped.fazenda.mg.gov.br/spedmg/nfce/Perguntas-Frequentes/respostas_vi/index.html"
+      }
+    ]
+  },
+  {
+    "uf": "MS",
+    "name": "Mato Grosso do Sul",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "MS",
+    "nfce65_authorizer_documented": "MS",
+    "issuer_requirements": "Portal prevê testes mínimos de autorização normal/contingência, cancelamento e inutilização.",
+    "developer_requirements": "Aviso exige responsável técnico; exigência atual de CSRT precisa ser revalidada.",
+    "limitations": "Não confundir liberação cadastral da SEFAZ com produto Titan já homologado.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "MS — credenciamento NFC-e",
+        "url": "https://ww2.dfe.ms.gov.br/nfce-credenciamento/index.jsf"
+      },
+      {
+        "title": "MS — responsável técnico",
+        "url": "https://www.sefaz.ms.gov.br/obrigatoriedade-de-identificacao-do-responsavel-tecnico/"
+      },
+      {
+        "title": "SVRS — catálogo NFC-e",
+        "url": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos"
+      }
+    ]
+  },
+  {
+    "uf": "MT",
+    "name": "Mato Grosso",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "MT",
+    "nfce65_authorizer_documented": "MT",
+    "issuer_requirements": "Credenciamento e CSC conforme serviço estadual e enquadramento.",
+    "developer_requirements": "Cadastro específico da desenvolvedora ainda não confirmado.",
+    "limitations": "Há obrigação estadual de vinculação de pagamentos; conferir abrangência e normas operacionais.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "MT — serviço NFC-e",
+        "url": "https://www5.sefaz.mt.gov.br/web/sefaz/servicos?c=16773297&e=74924341&s=74925558"
+      },
+      {
+        "title": "MT — vinculação de pagamentos",
+        "url": "https://www5.sefaz.mt.gov.br/documents/d/sefaz/ebook_vinculacao-mato-grosso_small-1-"
+      },
+      {
+        "title": "SVRS — catálogo NFC-e",
+        "url": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos"
+      }
+    ]
+  },
+  {
+    "uf": "PA",
+    "name": "Pará",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Procedimento NFC-e completo ainda não confirmado nesta consulta.",
+    "developer_requirements": "Não confirmado nesta consulta; não significa dispensado.",
+    "limitations": "Portal de APIs auxiliares exige adesão/OAuth2; isso não comprova autorização fiscal REST.",
+    "verification": "pendência documental estadual2026",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "PA — documentação de APIs",
+        "url": "https://apis.sefa.pa.gov.br/docs"
+      }
+    ]
+  },
+  {
+    "uf": "PB",
+    "name": "Paraíba",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Portal descreve credenciamento, CSC e acesso por sócios/contadores autorizados.",
+    "developer_requirements": "Não confirmado nesta consulta; não significa dispensado.",
+    "limitations": "Contingência e transmissão posterior obedecem norma vigente; não generalizar prazo da FAQ.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "PB — NFC-e",
+        "url": "https://portal.sefaz.pb.gov.br/info/notas-fiscais/nfc-e"
+      }
+    ]
+  },
+  {
+    "uf": "PE",
+    "name": "Pernambuco",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "PE",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Credenciamento nos dois ambientes pelo e-Fisco e gestão de CSC.",
+    "developer_requirements": "Regra atual de cadastro da desenvolvedora não confirmada.",
+    "limitations": "Orientação atual permite solicitar ambos credenciamentos; não automatizar fluxo antigo das10notas.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "PE — credenciamento NFC-e",
+        "url": "https://www.sefaz.pe.gov.br/Servicos/Nota-Fiscal-de-Consumidor-Eletronica/Paginas/Credenciamento-de-Contribuintes.aspx"
+      }
+    ]
+  },
+  {
+    "uf": "PI",
+    "name": "Piauí",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Norma consultada prevê credenciamento e CSC no atendimento virtual.",
+    "developer_requirements": "Não confirmado nesta consulta; não significa dispensado.",
+    "limitations": "Consolidado e instruções operacionais2026 ainda precisam de confirmação.",
+    "verification": "consulta parcial; norma-base de2023",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "PI — regulamento, seção de credenciamento",
+        "url": "https://www.diario.pi.gov.br/doe/files/diarios/anexo/5714d565-bd46-4f50-950d-7fa74dbdc549/DIARIO-OFICIAL-DO-ESTADO-DO-PIAUI-PUBLICACAO-N-47.pdf"
+      }
+    ]
+  },
+  {
+    "uf": "PR",
+    "name": "Paraná",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "PR",
+    "nfce65_authorizer_documented": "PR",
+    "issuer_requirements": "Credenciamento do usuário conforme Receita/PR.",
+    "developer_requirements": "Fornecedor/sistema no UPD e CSRT; página NF-e informa produção desde23/2/2026.",
+    "limitations": "Confirmar separadamente o escopo do modelo65; FAQ com data2025 está divergente da página atual NF-e.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "PR — CSRT",
+        "url": "https://sped.fazenda.pr.gov.br/NFe/Pagina/CSRT"
+      },
+      {
+        "title": "PR — NPF063/2012 consolidada",
+        "url": "https://www.sefanet.pr.gov.br/dados/SEFADOCUMENTOS/103201200063.pdf"
+      },
+      {
+        "title": "SVRS — catálogo NFC-e",
+        "url": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos"
+      }
+    ]
+  },
+  {
+    "uf": "RJ",
+    "name": "Rio de Janeiro",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "SVRS",
+    "issuer_requirements": "IE habilitada, credenciamento e CSC conforme manual.",
+    "developer_requirements": "Cadastro específico da desenvolvedora não confirmado.",
+    "limitations": "CSC por ambiente; representação impressa não substitui XML/protocolo.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "RJ — manual NFC-e",
+        "url": "https://portal.fazenda.rj.gov.br/dfe/wp-content/uploads/sites/17/2023/01/DF-e_NFC-e.pdf"
+      }
+    ]
+  },
+  {
+    "uf": "RN",
+    "name": "Rio Grande do Norte",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Portal exige credenciamento NF-e55, habilitação NFC-e e CSC pela UVT.",
+    "developer_requirements": "Não confirmado nesta consulta; não significa dispensado.",
+    "limitations": "Não considerar a habilitação do modelo55 como suficiente para o65 neste estado.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "RN — etapas do credenciamento",
+        "url": "https://www.sefaz.rn.gov.br/postagem/nfce-etapas-do-credenciamento/"
+      }
+    ]
+  },
+  {
+    "uf": "RS",
+    "name": "Rio Grande do Sul",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "RS",
+    "nfce65_authorizer_documented": "RS",
+    "issuer_requirements": "Credenciamento/CSC e requisitos do contribuinte aplicáveis.",
+    "developer_requirements": "Não presumir que somente os dados de responsável técnico encerram a adequação.",
+    "limitations": "Portal2026 exige integração de cartões e Pix com QR dinâmico nas operações abrangidas.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "RS — integração de pagamentos à NFC-e",
+        "url": "https://atendimento.receita.rs.gov.br/notaintegrada"
+      },
+      {
+        "title": "SVRS — catálogo NFC-e",
+        "url": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos"
+      }
+    ]
+  },
+  {
+    "uf": "RO",
+    "name": "Rondônia",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Credenciamento do emitente e CSC no Portal do Contribuinte.",
+    "developer_requirements": "Cartilha indica cadastro prévio do software; FAQ dispensa homologação técnica.",
+    "limitations": "Cadastro e homologação são atos distintos: confirmar procedimento atual sem concluir dispensa geral.",
+    "verification": "distinção cadastro/homologação; procedimento atual a confirmar",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "RO — FAQ NFC-e",
+        "url": "https://nfce.sefin.ro.gov.br/pagina.jsp?cat=3&desc=Perguntas+Frequentes"
+      },
+      {
+        "title": "RO — cartilha NFC-e",
+        "url": "https://cdn.sefin.ro.gov.br/portalnfce/9ac05befca7d6499e3abec9bdfef2b68.pdf"
+      }
+    ]
+  },
+  {
+    "uf": "RR",
+    "name": "Roraima",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Regulamento consultado confirma assinatura/autorização para NF-e.",
+    "developer_requirements": "Credenciamento específico NFC-e/desenvolvedor não confirmado.",
+    "limitations": "Regras de2026 para modelo65 pendentes; não foram usados dados de documentos individuais.",
+    "verification": "pendência documental estadual2026",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "RR — regulamento, autorização NF-e",
+        "url": "https://www.sefaz.rr.gov.br/cidadao/downloads?catid=494&id=26478&m=0&task=download.send"
+      }
+    ]
+  },
+  {
+    "uf": "SC",
+    "name": "Santa Catarina",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "SVRS",
+    "issuer_requirements": "Vínculo/uso do PAF no SAT conforme regras da SEF.",
+    "developer_requirements": "Credenciamento da desenvolvedora, taxa e AtoDIAT54/2026.",
+    "limitations": "Mensageria não afasta deveres; LCL e regularização seguem cronograma próprio.",
+    "verification": "exigência específica da desenvolvedora confirmada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "SC — credenciamento desenvolvedor",
+        "url": "https://www.sef.sc.gov.br/servicos/solicitar-credenciamento-como-desenvolvedor-do-paf-nfce"
+      },
+      {
+        "title": "SC — AtoDIAT54/2026",
+        "url": "https://www.sef.sc.gov.br/api/download?id=8632&mime=application%2Fpdf&nomeArquivo=Ato+DIAT+NFC-e+54-2026+-+Regras+gerais.pdf"
+      },
+      {
+        "title": "SC — requisitos PAF-NFC-e3.00.00",
+        "url": "https://www.sef.sc.gov.br/api/download?id=8630&mime=application%2Fpdf&nomeArquivo=Ato+DIAT+NFC-e+54-2026+-+Anexo+II+%28Especifica%C3%A7%C3%A3o+de+Requisitos%29.pdf"
+      },
+      {
+        "title": "SC — cronograma regularização",
+        "url": "https://www.sef.sc.gov.br/api/download?id=8631&mime=application%2Fpdf&nomeArquivo=Ato+DIAT+NFC-e+54-2026+-+Anexo+I+%28Cronograma%29.pdf"
+      }
+    ]
+  },
+  {
+    "uf": "SP",
+    "name": "São Paulo",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SP",
+    "nfce65_authorizer_documented": "SP",
+    "issuer_requirements": "NFC-e e CSC conforme credenciamento estadual.",
+    "developer_requirements": "Não aplicar automaticamente regras do antigo Aplicativo Comercial SAT à NFC-e.",
+    "limitations": "CF-e-SAT vedado desde1/1/2026; aviso NFC-e prevê protocolo17posições desde5/10/2026.",
+    "verification": "orientação consultada; habilitação não comprovada",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "SP — portal NFC-e",
+        "url": "https://portal.fazenda.sp.gov.br/servicos/nfce/"
+      },
+      {
+        "title": "SP — PortariaCAT147/2012 consolidada",
+        "url": "https://legislacao.fazenda.sp.gov.br/Paginas/pcat1472012.aspx"
+      },
+      {
+        "title": "SVRS — catálogo NFC-e",
+        "url": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos"
+      }
+    ]
+  },
+  {
+    "uf": "SE",
+    "name": "Sergipe",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Credenciamento do emitente conforme orientação e enquadramento estadual.",
+    "developer_requirements": "FAQ dispensa homologação; outros registros não confirmados.",
+    "limitations": "FAQ geral contém regras antigas; validar atos atuais e CSC antes de produção.",
+    "verification": "consulta parcial; orientação geral",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "SE — FAQ fiscal",
+        "url": "https://www.sefaz.se.gov.br/SitePages/faq.aspx"
+      }
+    ]
+  },
+  {
+    "uf": "TO",
+    "name": "Tocantins",
+    "reference_date": "2026-10-26",
+    "production_validated": false,
+    "nfe55_authorizer_documented": "SVRS",
+    "nfce65_authorizer_documented": "A confirmar no portal da UF; não inferir do modelo55.",
+    "issuer_requirements": "Manual estadual orienta credenciamento e CSC.",
+    "developer_requirements": "Exigência específica de desenvolvedor/CSRT2026 não confirmada.",
+    "limitations": "Não usar lista antiga nacional de responsável técnico como comprovação de situação atual.",
+    "verification": "consulta parcial; revalidar procedimento2026",
+    "sources": [
+      {
+        "title": "Portal Nacional — serviços NF-e",
+        "url": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?AspxAutoDetectCookieSupport=1&tipoConteudo=OUC%2FYVNWZfo%3D"
+      },
+      {
+        "title": "TO — manual NFC-e",
+        "url": "https://central3.to.gov.br/arquivo/394714/"
+      }
+    ]
+  }
+]

@@ -129,5 +129,6 @@
   "wholeSheet": "Hoja completa",
   "row": "Fila",
   "column": "Columna",
-  "discard": "No se pudo guardar. ¿Descartar los cambios de esta pantalla y abrir la versión guardada?"
+  "discard": "No se pudo guardar. ¿Descartar los cambios de esta pantalla y abrir la versión guardada?",
+  "linkedUnverified": "Hay bloques vinculados sin actualización validada en esta sesión. Las celdas vacías y los ceros de fórmulas no prueban saldo cero; los valores anteriores pueden estar desactualizados. Revise las fuentes y avisos antes de usar los totales."
 }

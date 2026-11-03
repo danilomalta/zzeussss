@@ -18,6 +18,35 @@ import (
 //go:embed migrations/*.sql
 var migrations embed.FS
 
+// LatestSchemaVersion derives this executable's schema ceiling from its embedded
+// SQLite migrations, never from a manually maintained backup version list.
+func LatestSchemaVersion() (int, error) {
+	entries, err := migrations.ReadDir("migrations")
+	if err != nil {
+		return 0, err
+	}
+	versions := make(map[int]bool)
+	latest := 0
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".sql") {
+			continue
+		}
+		prefix, _, ok := strings.Cut(entry.Name(), "_")
+		version, err := strconv.Atoi(prefix)
+		if !ok || err != nil || version < 1 || versions[version] {
+			return 0, errors.New("lista de migrações locais inválida")
+		}
+		versions[version] = true
+		if version > latest {
+			latest = version
+		}
+	}
+	if latest == 0 || len(versions) != latest {
+		return 0, errors.New("lista de migrações locais incompleta")
+	}
+	return latest, nil
+}
+
 // Migrate reaplica com segurança apenas migrações novas. Uma migração aplicada
 // com conteúdo diferente interrompe a abertura, preservando os dados.
 func Migrate(ctx context.Context, db *sql.DB) error {
@@ -145,22 +174,11 @@ func applyMigration(ctx context.Context, db *sql.DB, version int, checksum, scri
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
-	// Os arquivos deste pacote usam instruções simples terminadas por ';'.
-	// Não incluir triggers nem ponto e vírgula dentro de strings nesta rotina.
-	var lines []string
-	for _, line := range strings.Split(script, "\n") {
-		if !strings.HasPrefix(strings.TrimSpace(line), "--") {
-			lines = append(lines, line)
-		}
-	}
-	for _, statement := range strings.Split(strings.Join(lines, "\n"), ";") {
-		statement = strings.TrimSpace(statement)
-		if statement == "" {
-			continue
-		}
-		if _, err := tx.ExecContext(ctx, statement); err != nil {
-			return err
-		}
+	// Let the SQLite driver parse the complete script, including quoted
+	// semicolons and trigger bodies. It runs on this same transaction;
+	// any statement failure rolls back DDL and the history row together.
+	if _, err := tx.ExecContext(ctx, script); err != nil {
+		return err
 	}
 	if _, err := tx.ExecContext(ctx,
 		"INSERT INTO schema_migrations (version, checksum, applied_at) VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))",

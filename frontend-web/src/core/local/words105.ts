@@ -1,0 +1,2 @@
+import pt from '../../i18n/requests105/pt-BR.json';import en from '../../i18n/requests105/en.json';import es from '../../i18n/requests105/es.json';import fr from '../../i18n/requests105/fr.json';import zh from '../../i18n/requests105/zh-CN.json';import {words104} from './words104';
+export function words105(l:string):Record<string,string>{return {...words104(l),...(l.startsWith('en')?en:l.startsWith('es')?es:l.startsWith('fr')?fr:l.startsWith('zh')?zh:pt)};}

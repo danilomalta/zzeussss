@@ -1,0 +1,1197 @@
+{
+  "frontend_base": "d3d727d535b3446f71d782027b1ce1f435d6f07b",
+  "backend_referencia": "a5bbcdf3420ca4fa6c471fcdd52794f86f84c0dc",
+  "schema": 65,
+  "escopo": "Pendências identificadas nos fontes/contratos e continuidade; não substitui levantamento completo de requisitos comerciais desconhecidos. existente_exige_aceite não significa função ausente. entregue_neste_pacote descreve somente a unidade relatada.",
+  "tasks": [
+    {
+      "id": "DEV-01",
+      "area": "Devoluções",
+      "route": "/local/customer-returns",
+      "estado": "entregue_neste_pacote",
+      "pendencia": "Aceite visual no desktop instalado: história, cotação, revisão, operação incerta e recuperação.",
+      "referencia": "frontend-web/src/modules/pos/pages/CustomerReturns65.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "DEV-02",
+      "area": "Devoluções",
+      "route": "/local/customer-returns",
+      "estado": "entregue_neste_pacote",
+      "pendencia": "Publicar backend65 no serviço autorizado antes de usar as operações novas; preservar serviços antigos até decisão do proprietário.",
+      "referencia": "frontend-web/src/modules/pos/pages/CustomerReturns65.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "DEV-03",
+      "area": "Devoluções",
+      "route": "/local/customer-returns",
+      "estado": "entregue_neste_pacote",
+      "pendencia": "Reembolso em outro turno, cartão/Pix ou crédito ao cliente exige contratos de backend próprios.",
+      "referencia": "frontend-web/src/modules/pos/pages/CustomerReturns65.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "REL-01",
+      "area": "Relatório oficial",
+      "route": "/local/cash",
+      "estado": "entregue_neste_pacote",
+      "pendencia": "Comparar impressão e CSV com fechamento após devoluções no serviço autorizado.",
+      "referencia": "frontend-web/src/modules/pos/pages/OfficialReport101.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "REL-02",
+      "area": "Relatório oficial",
+      "route": "/local/cash",
+      "estado": "entregue_neste_pacote",
+      "pendencia": "Manter indisponível a métrica de devolução em serviços antigos; nunca apresentar ausência como zero.",
+      "referencia": "frontend-web/src/modules/pos/pages/OfficialReport101.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "REL-03",
+      "area": "Relatório oficial",
+      "route": "/local/cash",
+      "estado": "entregue_neste_pacote",
+      "pendencia": "Não converter confirmação local de parcelas em liquidação bancária.",
+      "referencia": "frontend-web/src/modules/pos/pages/OfficialReport101.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PDV-01",
+      "area": "Venda e carrinhos",
+      "route": "/local/pos",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Executar aceite pelas telas com quedas, reenvio, concorrência e restauração, preservando as filas incertas.",
+      "referencia": "frontend-web/src/modules/pos/pages/LocalPointOfSale.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PDV-02",
+      "area": "Venda e carrinhos",
+      "route": "/local/pos",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Concluir revisão dos oito arquivos locais pausados de carrinhos no projeto do proprietário; este pacote não conhece nem substitui seus bytes.",
+      "referencia": "frontend-web/src/modules/pos/pages/LocalPointOfSale.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PDV-03",
+      "area": "Venda e carrinhos",
+      "route": "/local/pos",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Finalização mista exige confirmação e conciliação de provedores no backend; cash-only atual permanece explícito.",
+      "referencia": "frontend-web/src/modules/pos/pages/LocalPointOfSale.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PAG-01",
+      "area": "Pagamentos eletrônicos",
+      "route": "/local/pos",
+      "estado": "bloqueio_backend_provedor",
+      "pendencia": "Integrar Pix real com consulta de cobrança, expiração, duplicidade e autorização.",
+      "referencia": "frontend-web/src/core/local/checkout96.mjs",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PAG-02",
+      "area": "Pagamentos eletrônicos",
+      "route": "/local/pos",
+      "estado": "bloqueio_backend_provedor",
+      "pendencia": "Integrar adquirente/TEF com recusas, estorno e recuperação após perda de resposta.",
+      "referencia": "frontend-web/src/core/local/checkout96.mjs",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PAG-03",
+      "area": "Pagamentos eletrônicos",
+      "route": "/local/pos",
+      "estado": "bloqueio_backend_provedor",
+      "pendencia": "Vincular pagamentos divididos a uma venda transacional e ao fechamento por meio; comprovante não é aprovação.",
+      "referencia": "frontend-web/src/core/local/checkout96.mjs",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CAI-01",
+      "area": "Caixa e livro operacional",
+      "route": "/local/cash",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Ensaiar abertura, suprimento, sangria, fechamento e consulta histórica pelos perfis efetivos.",
+      "referencia": "frontend-web/src/core/cashJournal/source.mjs",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CAI-02",
+      "area": "Caixa e livro operacional",
+      "route": "/local/cash",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Validar caixa original/aparelho e retornos401/403/409 sem importar valores de outro turno.",
+      "referencia": "frontend-web/src/core/cashJournal/source.mjs",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CAI-03",
+      "area": "Caixa e livro operacional",
+      "route": "/local/cash",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Conciliar o relatório líquido com o journal incluindo devoluções e cancelamentos distintos.",
+      "referencia": "frontend-web/src/core/cashJournal/source.mjs",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "MAL-01",
+      "area": "Malotes e cofres",
+      "route": "/local/cash",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Auditar quais ações usam fonte oficial e quais continuam sendo rascunhos locais.",
+      "referencia": "frontend-web/src/core/cashDesk109/model.mjs",
+      "referencia_existe_nesta_branch": false,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "MAL-02",
+      "area": "Malotes e cofres",
+      "route": "/local/cash",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Conectar recebimento, conferência independente e recuperação às operações correspondentes do backend.",
+      "referencia": "frontend-web/src/core/cashDesk109/model.mjs",
+      "referencia_existe_nesta_branch": false,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "MAL-03",
+      "area": "Malotes e cofres",
+      "route": "/local/cash",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Exercitar duplicação de origem, conferente distinto, envio incerto e restauração.",
+      "referencia": "frontend-web/src/core/cashDesk109/model.mjs",
+      "referencia_existe_nesta_branch": false,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "FIN-01",
+      "area": "Contas a pagar",
+      "route": "/local/payables",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Aceitar documentos, parcelas, revisão independente, vencimentos e pagamento manual com perfis reais.",
+      "referencia": "frontend-web/src/core/payables113/client.mjs",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "FIN-02",
+      "area": "Contas a pagar",
+      "route": "/local/payables",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Preservar origem de retirada/suprimento e impedir uso duplicado do mesmo dinheiro.",
+      "referencia": "frontend-web/src/core/payables113/client.mjs",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "FIN-03",
+      "area": "Contas a pagar",
+      "route": "/local/payables",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Pagamentos por banco/Pix/transferência exigem novos contratos e conciliação externa.",
+      "referencia": "frontend-web/src/core/payables113/client.mjs",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "FOR-01",
+      "area": "Visão do fornecedor",
+      "route": "/local/payables",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Preservar a entrega117 aplicada; comparar totais com a fonte oficial por fornecedor.",
+      "referencia": "frontend-web/src/modules/financial/pages/SupplierReport117.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "FOR-02",
+      "area": "Visão do fornecedor",
+      "route": "/local/payables",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Testar atualização parcial, erro de uma fonte, exportação e datas locais.",
+      "referencia": "frontend-web/src/modules/financial/pages/SupplierReport117.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "FOR-03",
+      "area": "Visão do fornecedor",
+      "route": "/local/payables",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Revisar acessibilidade e idiomas em conjuntos grandes de parcelas.",
+      "referencia": "frontend-web/src/modules/financial/pages/SupplierReport117.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PED-01",
+      "area": "Compras e reposição",
+      "route": "/local/orders",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Ensaiar sugestão→aprovação→pedido→recebimento parcial→financeiro nas telas atuais.",
+      "referencia": "frontend-web/src/modules/catalog/pages/LocalOrders.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PED-02",
+      "area": "Compras e reposição",
+      "route": "/local/orders",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Confirmar revisão humana e contexto antes de todoPOST após consulta assíncrona.",
+      "referencia": "frontend-web/src/modules/catalog/pages/LocalOrders.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PED-03",
+      "area": "Compras e reposição",
+      "route": "/local/orders",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Distinguir sugestão de pedido aprovado e recebimento de entrada física efetiva.",
+      "referencia": "frontend-web/src/modules/catalog/pages/LocalOrders.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "EMP-01",
+      "area": "Pedidos autenticados entre empresas",
+      "route": "/local/company-trade",
+      "estado": "implementado_exige_aceite_visual",
+      "pendencia": "Interface implementada para identidade pública, conferência do fingerprint, vínculo pelo dono, paginação e revogação. Pendente aceite visual e verificação independente da contraparte real.",
+      "referencia": "frontend-web/src/modules/catalog/pages/CompanyTrade66.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "EMP-02",
+      "area": "Pedidos autenticados entre empresas",
+      "route": "/local/company-trade",
+      "estado": "implementado_exige_aceite_visual",
+      "pendencia": "Interface implementada para exportar pedido aprovado, importar envelope, decidir quantidade/prazo e aplicar decisão. Ponte real HTTP com duas empresas passou; pendente aceite pelas telas no serviço autorizado. Transporte entre instalações é manual, sem worker automático.",
+      "referencia": "frontend-web/src/modules/catalog/pages/CompanyTrade66.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "EMP-03",
+      "area": "Pedidos autenticados entre empresas",
+      "route": "/local/company-trade",
+      "estado": "implementado_exige_aceite_visual",
+      "pendencia": "Interface implementada para consulta do bloqueio por restauração e revisão explícita da geração pelo dono. Testado contra gate sintético real do backend; não executou restauração completa de arquivo nem revisão comercial de fingerprints.",
+      "referencia": "frontend-web/src/modules/catalog/pages/CompanyTrade66.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "REC-01",
+      "area": "Recebimento e divergências",
+      "route": "/local/orders",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Conferir entrega, quantidade aceita, avaria, recusa integral e saldo restante com estoque oficial.",
+      "referencia": "frontend-web/src/core/receiving",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "REC-02",
+      "area": "Recebimento e divergências",
+      "route": "/local/orders",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Conectar tratativas e decisão independente até resolução, sem encerrar avaria automaticamente.",
+      "referencia": "frontend-web/src/core/receiving",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "REC-03",
+      "area": "Recebimento e divergências",
+      "route": "/local/orders",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Ensaiar estorno do recebimento com histórico preservado e sem fingir devolução de dinheiro.",
+      "referencia": "frontend-web/src/core/receiving",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "EST-01",
+      "area": "Estoque",
+      "route": "/local/stock",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Validar físico/reservado/livre por produto e local, incluindo reservas produtivas.",
+      "referencia": "frontend-web/src/core/stockWorkspace",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "EST-02",
+      "area": "Estoque",
+      "route": "/local/stock",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Ensaiar entrada, transferência, perda e recuperação dos recibos com unidade esperada.",
+      "referencia": "frontend-web/src/core/stockWorkspace",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "EST-03",
+      "area": "Estoque",
+      "route": "/local/stock",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Revisar paginação, exportação de página versus total e desempenho em saldos grandes.",
+      "referencia": "frontend-web/src/core/stockWorkspace",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CAT-01",
+      "area": "Catálogo e fornecedores",
+      "route": "/local/catalog",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Homologar cadastro, unidade, preço/custo, códigos e alterações já existentes contra a API efetiva.",
+      "referencia": "frontend-web/src/modules/catalog/pages/LocalCatalog.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CAT-02",
+      "area": "Catálogo e fornecedores",
+      "route": "/local/catalog",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Confirmar precisão de quantidades, centavos e relatórios nos limites seguros.",
+      "referencia": "frontend-web/src/modules/catalog/pages/LocalCatalog.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CAT-03",
+      "area": "Catálogo e fornecedores",
+      "route": "/local/catalog",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Testar scanner físico e importação com erros parciais, sem substituir dados em silêncio.",
+      "referencia": "frontend-web/src/modules/catalog/pages/LocalCatalog.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PRO-01",
+      "area": "Produção e receitas",
+      "route": "/local/recipes",
+      "estado": "integracao_testada_aceite_visual_pendente",
+      "pendencia": "Código existente mapeado aos clientes usados pelas telas; ponte real HTTP percorreu receitas versionadas, capacidade, ordens, materiais, etapas, resultado, perdas, lotes e qualidade. Aceite visual/comercial permanece pendente.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSectors86.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PRO-02",
+      "area": "Produção e receitas",
+      "route": "/local/recipes",
+      "estado": "integracao_testada_aceite_visual_pendente",
+      "pendencia": "Fluxo cliente/API completo de produção executado em SQLite descartável, inclusive perda de resposta após resultado confirmado e recuperação sem segundo POST. Reinício/restore do servidor e navegação gráfica não foram exercitados nesta entrega.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSectors86.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PRO-03",
+      "area": "Produção e receitas",
+      "route": "/local/recipes",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Expor ingrediente limitante, arredondamento, responsável e histórico sem comprometer o mesmo saldo em alternativas.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSectors86.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "LOT-01",
+      "area": "Lotes e qualidade",
+      "route": "/local/recipes",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Identificar os controles visuais ainda ausentes para rastreio, validade, bloqueio e inspeção.",
+      "referencia": "docs/api",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "LOT-02",
+      "area": "Lotes e qualidade",
+      "route": "/local/recipes",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Vincular origem de ingredientes e lote produzido com autorização e histórico.",
+      "referencia": "docs/api",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "LOT-03",
+      "area": "Lotes e qualidade",
+      "route": "/local/recipes",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Devolução do cliente não reconstrói lote que a venda original não registrou; definir política antes de automatizar reposição por lote.",
+      "referencia": "docs/api",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CUS-01",
+      "area": "Custos e sugestões",
+      "route": "/local/recipes",
+      "estado": "integracao_testada_aceite_visual_pendente",
+      "pendencia": "Clientes e telas de custos já existiam; ponte real exercitou custo de receita/ordem e cenário parcial/completo sem duplicar a implementação.",
+      "referencia": "frontend-web/src/core",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CUS-02",
+      "area": "Custos e sugestões",
+      "route": "/local/recipes",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Explicar preço histórico, unidade, perdas e critério da sugestão antes da aprovação humana.",
+      "referencia": "frontend-web/src/core",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CUS-03",
+      "area": "Custos e sugestões",
+      "route": "/local/recipes",
+      "estado": "integracao_testada_aceite_visual_pendente",
+      "pendencia": "Plano simultâneo real verificou insuficiência de ingrediente compartilhado sem reservar ou produzir. Arredondamentos são validados pelo cliente existente; aceite visual permanece pendente.",
+      "referencia": "frontend-web/src/core",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "DOC-01",
+      "area": "Agenda de docas e logística",
+      "route": "/local/orders",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Aceitar reserva, chegada, início, conclusão e inspeção com permissões atuais.",
+      "referencia": "frontend-web/src/core/dockAgenda",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "DOC-02",
+      "area": "Agenda de docas e logística",
+      "route": "/local/orders",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Ligar ocupação, indicadores e conflitos à agenda efetiva, evitando sobreposição de capacidade.",
+      "referencia": "frontend-web/src/core/dockAgenda",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "DOC-03",
+      "area": "Agenda de docas e logística",
+      "route": "/local/orders",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Separar conclusão de descarga, recebimento aprovado e obrigação financeira.",
+      "referencia": "frontend-web/src/core/dockAgenda",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "MAN-01",
+      "area": "Manutenção e frota",
+      "route": "/local/maintenance",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Inventariar ações de bens, chamados, prestadores, orçamentos, oficina, fila e registros existentes.",
+      "referencia": "frontend-web/src/modules/maintenance/pages/LocalMaintenance.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "MAN-02",
+      "area": "Manutenção e frota",
+      "route": "/local/maintenance",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Concluir os comandos ainda ausentes e demonstrar revisão independente e recuperação.",
+      "referencia": "frontend-web/src/modules/maintenance/pages/LocalMaintenance.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "MAN-03",
+      "area": "Manutenção e frota",
+      "route": "/local/maintenance",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Viagens, despesas, bloqueios produtivos e planos exigem aceite individual dos contratos suportados.",
+      "referencia": "frontend-web/src/modules/maintenance/pages/LocalMaintenance.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "RH-01",
+      "area": "RH, ponto e tarefas",
+      "route": "/local/hr",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Separar previsões ou prévias das operações persistidas de ponto e tarefas.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalHumanResources.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "RH-02",
+      "area": "RH, ponto e tarefas",
+      "route": "/local/hr",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Aceitar perfis de funcionário/gerente, privacidade de avaliações e histórico.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalHumanResources.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "RH-03",
+      "area": "RH, ponto e tarefas",
+      "route": "/local/hr",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Demonstrar operação de smartphone e recuperação offline antes de anunciar ponto móvel funcional.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalHumanResources.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "FIS-01",
+      "area": "Fiscal",
+      "route": "/local/workbench?area=fiscal",
+      "estado": "bloqueio_backend_provedor",
+      "pendencia": "Definir provedor/SEFAZ e contratos de emissão, rejeição, contingência e cancelamento.",
+      "referencia": "frontend-web/src/core/workbench73",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "FIS-02",
+      "area": "Fiscal",
+      "route": "/local/workbench?area=fiscal",
+      "estado": "bloqueio_backend_provedor",
+      "pendencia": "Conectar interface somente a estados fiscais comprovados; venda não equivale a autorização fiscal.",
+      "referencia": "frontend-web/src/core/workbench73",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "FIS-03",
+      "area": "Fiscal",
+      "route": "/local/workbench?area=fiscal",
+      "estado": "bloqueio_backend_provedor",
+      "pendencia": "Homologar certificados, ambiente e cenários legais com responsável fiscal.",
+      "referencia": "frontend-web/src/core/workbench73",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CON-01",
+      "area": "Contador e exportações",
+      "route": "/local/workbench?area=accountant",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Homologar exportação operacional, período, escopo e valores exatos com o contador.",
+      "referencia": "frontend-web/src/core/workbench73",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CON-02",
+      "area": "Contador e exportações",
+      "route": "/local/workbench?area=accountant",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Separar livro de caixa de escrituração legal e de liquidação bancária.",
+      "referencia": "frontend-web/src/core/workbench73",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CON-03",
+      "area": "Contador e exportações",
+      "route": "/local/workbench?area=accountant",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Conferir devoluções65 nas exportações já existentes sem duplicar cancelamentos.",
+      "referencia": "frontend-web/src/core/workbench73",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "ANA-01",
+      "area": "Painéis e indicadores",
+      "route": "/local/reports",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Aceitar origem, completude e período dos indicadores e estados sem dados.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSalesAnalysis.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "ANA-02",
+      "area": "Painéis e indicadores",
+      "route": "/local/reports",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Distinguir previsto, registrado, confirmado externamente e parcial.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSalesAnalysis.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "ANA-03",
+      "area": "Painéis e indicadores",
+      "route": "/local/reports",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Ensaiar consultas grandes, filtros e exportação com dados sintéticos representativos.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSalesAnalysis.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PLA-01",
+      "area": "Planilhas",
+      "route": "/local/sheets",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Homologar fórmulas, filtros, validação, importação e exportação nos cinco idiomas.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSpreadsheet.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PLA-02",
+      "area": "Planilhas",
+      "route": "/local/sheets",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Medir abertura, memória e edição em hardware alvo; o chunk grande continua visível no build.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSpreadsheet.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "PLA-03",
+      "area": "Planilhas",
+      "route": "/local/sheets",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Evitar exposição de macros/fórmulas e preservar identificação como texto nas importações financeiras.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSpreadsheet.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "OCR-01",
+      "area": "OCR, impressão e câmera",
+      "route": "/local/pos",
+      "estado": "bloqueio_hardware",
+      "pendencia": "Validar scanner e câmera físicos com permissão e fallback.",
+      "referencia": "frontend-web/public/ocr96",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "OCR-02",
+      "area": "OCR, impressão e câmera",
+      "route": "/local/pos",
+      "estado": "bloqueio_hardware",
+      "pendencia": "Homologar impressora térmica58/80mm, spool, papel e reimpressão sem repetir venda.",
+      "referencia": "frontend-web/public/ocr96",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "OCR-03",
+      "area": "OCR, impressão e câmera",
+      "route": "/local/pos",
+      "estado": "bloqueio_hardware",
+      "pendencia": "Confirmar revisão humana do OCR antes de vincular comprovante ou valor.",
+      "referencia": "frontend-web/public/ocr96",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "ACE-01",
+      "area": "Acesso, cadastro e sessão",
+      "route": "/local/login",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Executar aceite de papéis e isolamento empresa/loja/aparelho/usuário nos módulos integrados.",
+      "referencia": "frontend-web/src/core/local/SessionGuards.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "ACE-02",
+      "area": "Acesso, cadastro e sessão",
+      "route": "/local/login",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Concluir cadastro/recuperação/perfil conforme contratos reais; não alterar autenticação neste pacote.",
+      "referencia": "frontend-web/src/core/local/SessionGuards.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "ACE-03",
+      "area": "Acesso, cadastro e sessão",
+      "route": "/local/login",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Revalidar contexto em operações tardias e preservar filas da identidade original.",
+      "referencia": "frontend-web/src/core/local/SessionGuards.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "LIC-01",
+      "area": "Licenciamento e atividade",
+      "route": "/local/subscription",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Aceitar concessão/revogação de módulos e políticas comerciais com backend de licenças autorizado.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSubscription.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "LIC-02",
+      "area": "Licenciamento e atividade",
+      "route": "/local/subscription",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Garantir que consulta histórica permaneça separada de autorização para novas mutações.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSubscription.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "LIC-03",
+      "area": "Licenciamento e atividade",
+      "route": "/local/subscription",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Revisar seleção de atividade e capacidades sem repetir questionário em cada módulo.",
+      "referencia": "frontend-web/src/modules/tenant/pages/LocalSubscription.tsx",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "DES-01",
+      "area": "Desktop Linux e Windows",
+      "route": "desktop",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Compilar explicitamente novo estágio e promover somente após revisão; iniciar não deve recompilar automaticamente.",
+      "referencia": "desktop/README.md",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "DES-02",
+      "area": "Desktop Linux e Windows",
+      "route": "desktop",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Homologar instaladorWindows, permissões, assinatura, atualização e rollback em máquina limpa.",
+      "referencia": "desktop/README.md",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "DES-03",
+      "area": "Desktop Linux e Windows",
+      "route": "desktop",
+      "estado": "integracao_testada_aceite_visual_pendente",
+      "pendencia": "Desktop informa instância existente, falha/timeout e janela disponibilizada; modo software explícito entregue para testar o aviso MESA. Medição e causa gráfica no PC ainda exigem observar a abertura.",
+      "referencia": "desktop/README.md",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "MOB-01",
+      "area": "Smartphone e vários aparelhos",
+      "route": "mobile",
+      "estado": "bloqueio_backend_aplicativo",
+      "pendencia": "Implementar venda, persistência própria e recuperação no smartphone com PC desligado.",
+      "referencia": "README.md",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "MOB-02",
+      "area": "Smartphone e vários aparelhos",
+      "route": "mobile",
+      "estado": "bloqueio_backend_aplicativo",
+      "pendencia": "Definir autoridade de estoque, conflitos e reconciliação comercial entre aparelhos.",
+      "referencia": "README.md",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "MOB-03",
+      "area": "Smartphone e vários aparelhos",
+      "route": "mobile",
+      "estado": "bloqueio_backend_aplicativo",
+      "pendencia": "Aceitar reinstalação, restauração, pareamento e revogação em aparelhos físicos.",
+      "referencia": "README.md",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "BKP-01",
+      "area": "Backup e operação",
+      "route": "backend65",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Oferecer interface apenas para operações autorizadas de backup sem expor chaves.",
+      "referencia": "docs/architecture/BACKEND_DEVOLUCOES_CLIENTE65_20261025.md",
+      "referencia_existe_nesta_branch": false,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "BKP-02",
+      "area": "Backup e operação",
+      "route": "backend65",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Demonstrar restauração e revisão de confiança entre empresas antes de novas trocas.",
+      "referencia": "docs/architecture/BACKEND_DEVOLUCOES_CLIENTE65_20261025.md",
+      "referencia_existe_nesta_branch": false,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "BKP-03",
+      "area": "Backup e operação",
+      "route": "backend65",
+      "estado": "existente_exige_aceite",
+      "pendencia": "Promover binários e serviços por decisão explícita; código ou binário instalado não comprova serviço atualizado.",
+      "referencia": "docs/architecture/BACKEND_DEVOLUCOES_CLIENTE65_20261025.md",
+      "referencia_existe_nesta_branch": false,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "IDI-01",
+      "area": "Idiomas e acessibilidade",
+      "route": "todas",
+      "estado": "pendente_aceite_transversal",
+      "pendencia": "Revisão nativa de textos pt-BR/en/es/fr/zh-CN e terminologia financeira.",
+      "referencia": "frontend-web/src/i18n",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "IDI-02",
+      "area": "Idiomas e acessibilidade",
+      "route": "todas",
+      "estado": "pendente_aceite_transversal",
+      "pendencia": "Percorrer teclado/leitor de tela, foco, mensagens, contraste, zoom e390/768/1280 em cada fluxo crítico.",
+      "referencia": "frontend-web/src/i18n",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "IDI-03",
+      "area": "Idiomas e acessibilidade",
+      "route": "todas",
+      "estado": "pendente_aceite_transversal",
+      "pendencia": "Validar quantidades/unidades, datas/fuso, centavos e impressão em cada idioma.",
+      "referencia": "frontend-web/src/i18n",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CI-01",
+      "area": "Contratos e integração contínua",
+      "route": "CI",
+      "estado": "pendente_integracao",
+      "pendencia": "Usar a suíte completa test:all; test:local histórico cobre somente uma parte dos testes.",
+      "referencia": "frontend-web/package.json",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CI-02",
+      "area": "Contratos e integração contínua",
+      "route": "CI",
+      "estado": "pendente_integracao",
+      "pendencia": "Atualizar o snapshotfrontend pinado no CIbackend mediante coordenação, sem alterar a configuração neste pacote.",
+      "referencia": "frontend-web/package.json",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "CI-03",
+      "area": "Contratos e integração contínua",
+      "route": "CI",
+      "estado": "pendente_integracao",
+      "pendencia": "Exigir evidência porSHA e por fluxo; CI de launcher não homologa todo ofrontend.",
+      "referencia": "frontend-web/package.json",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "SEG-01",
+      "area": "Segurança e dados privados",
+      "route": "todas",
+      "estado": "pendente_aceite_transversal",
+      "pendencia": "Revisão externa de segurança, limites de transporte e operações críticas antes de implantação comercial.",
+      "referencia": "docs/architecture/PROJECT_RULES.md",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "SEG-02",
+      "area": "Segurança e dados privados",
+      "route": "todas",
+      "estado": "pendente_aceite_transversal",
+      "pendencia": "Manter.env,senhas,estações,chaves,bancos e perfis fora dos pacotes e logs.",
+      "referencia": "docs/architecture/PROJECT_RULES.md",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    },
+    {
+      "id": "SEG-03",
+      "area": "Segurança e dados privados",
+      "route": "todas",
+      "estado": "pendente_aceite_transversal",
+      "pendencia": "Definir retenção, auditoria, restauração e procedimentos operacionais com o responsável da empresa.",
+      "referencia": "docs/architecture/PROJECT_RULES.md",
+      "referencia_existe_nesta_branch": true,
+      "aceite": "Exige código/contrato e evidência específica do cenário; não é aprovado pela existência da tela."
+    }
+  ],
+  "rotas_declaradas": [
+    {
+      "literal": "/register",
+      "linha": 59,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "/local/login",
+      "linha": 60,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "/local",
+      "linha": 61,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "customer-returns",
+      "linha": 62,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "prices",
+      "linha": 63,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "orders",
+      "linha": 64,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "home",
+      "linha": 66,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "losses",
+      "linha": 67,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "integrations",
+      "linha": 68,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "workbench",
+      "linha": 69,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "reports",
+      "linha": 70,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "overview",
+      "linha": 71,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "owner",
+      "linha": 72,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "map",
+      "linha": 73,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "settings",
+      "linha": 74,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "operation",
+      "linha": 75,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "integrations/diagnostics",
+      "linha": 76,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "enterprise",
+      "linha": 77,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "payables",
+      "linha": 78,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "payables/agenda",
+      "linha": 79,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "delivery",
+      "linha": 80,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "recipes",
+      "linha": 81,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "sectors",
+      "linha": 82,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "food/previous",
+      "linha": 83,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "maintenance",
+      "linha": 84,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "fleet",
+      "linha": 85,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "food",
+      "linha": 86,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "documents",
+      "linha": 87,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "purchasing",
+      "linha": 88,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "commercial",
+      "linha": 89,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "operations",
+      "linha": 90,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "stock",
+      "linha": 91,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "subscription",
+      "linha": 92,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "sheets",
+      "linha": 93,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "hr",
+      "linha": 94,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "staff",
+      "linha": 95,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "catalog",
+      "linha": 96,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "pos",
+      "linha": 97,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "cash",
+      "linha": 98,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "cash/register",
+      "linha": 99,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "/login",
+      "linha": 102,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "/pos",
+      "linha": 110,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "/checkout",
+      "linha": 118,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "/",
+      "linha": 126,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    },
+    {
+      "literal": "logistics",
+      "linha": 138,
+      "estado": "rota_declarada_aceite_nao_inferido"
+    }
+  ],
+  "frontend_implementacao": "frontend-producao-desktop67-20261026-1",
+  "compatibilidade_contratos": "As 13 rotas usadas não mudaram entre a5bbcdf e 246691c; o worker/relay CLI novo não é operado por esta interface."
+}

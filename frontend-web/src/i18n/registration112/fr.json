@@ -1,0 +1,23 @@
+{
+ "company112":"À propos de l’entreprise",
+ "companyHelp112":"Organisez le profil et le mode d’accès de votre équipe.",
+ "activity112":"Activité et services",
+ "activityHelp112":"Choisissez l’activité principale et les services présents dans l’entreprise.",
+ "features112":"Fonctionnalités",
+ "mei112":"Une activité individuelle ou une équipe réduite.",
+ "micro112":"Une structure compacte pour organiser le quotidien de l’équipe.",
+ "small112":"Une activité en croissance avec des fonctions définies.",
+ "medium112":"Plusieurs services aux responsabilités partagées.",
+ "large112":"Une activité étendue avec des équipes et processus répartis.",
+ "less112":"Réduire le nombre d’utilisateurs",
+ "more112":"Augmenter le nombre d’utilisateurs",
+ "menuHelp112":"Organisez les produits alimentaires proposés aux clients.",
+ "kitchenHelp112":"Suivez la file de préparation des commandes.",
+ "tablesHelp112":"Identifiez les commandes et le service par table.",
+ "productionHelp112":"Utilisez recettes et fiches techniques pour planifier la production.",
+ "summary112":"Résumé de la proposition",
+ "estimate112":"Estimation mensuelle des modules",
+ "none112":"Aucun élément sélectionné",
+ "noModules112":"Aucun module sélectionné.",
+ "priceRule112":"Le montant additionne les modules sélectionnés. Utilisateurs, taille et stockage n’ajoutent pas de frais automatiques dans cette proposition."
+}

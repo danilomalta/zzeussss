@@ -1,0 +1,461 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan local — historical dock utilization",
+    "version": "2026-10-22.1"
+  },
+  "paths": {
+    "/local/v1/logistics/insights/utilization": {
+      "get": {
+        "operationId": "dock_utilization",
+        "description": "Authorized snapshot in current tenant/store: manage_stock + view_orders and approved device. No contract renewal for historical reads. Historical [from,to), whole-second RFC3339, maximum31days and to<=server measurement time; canonical UTC. Entire selected dock history capped at5000appointments BEFORE filtering/pagination; excess yields422 without partial totals. Actual unloading intersects the requested period independently of planned dates. Completed uses actual completion; ongoing clips to period end, flagged still_unloading. Planned duration is union of latest NON-cancelled/non-no-show schedule snapshots, not reconstructed booking history. Actual intervals cannot overlap on one dock; contradictions yield409. Fractions exact numerator/denominator strings: seconds for durations, dimensionless 0..1 for fractions. Denominator is calendar wall clock, NOT opening hours, enabled-hours or staff capacity. Disabled dock remains historically visible. Without registered unloading is not proof of free capacity, downtime or operational availability. Summary totals cover all matching segments even on an empty detail page. Read-only, no reservation, alert, stock, supplier, payment or fiscal effects.",
+        "parameters": [
+          {
+            "name": "dock_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historical utilization snapshot with UTC calendar daily buckets; partial first/last days use only requested span, independent of detail pagination",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UtilizationReport"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown query or GET body; future/overlong period"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device denied"
+          },
+          "404": {
+            "description": "Dock not found in current scope"
+          },
+          "409": {
+            "description": "Contradictory source evidence or overlapping actual unloads"
+          },
+          "422": {
+            "description": "More than5000appointments in entire selected dock history, no partial totals"
+          },
+          "500": {
+            "description": "Read failure"
+          }
+        }
+      }
+    },
+    "/local/v1/logistics/insights/utilization.csv": {
+      "get": {
+        "operationId": "dock_utilization_csv",
+        "description": "Authorized snapshot in current tenant/store: manage_stock + view_orders and approved device. No contract renewal for historical reads. Historical [from,to), whole-second RFC3339, maximum31days and to<=server measurement time; canonical UTC. Entire selected dock history capped at5000appointments BEFORE filtering/pagination; excess yields422 without partial totals. Actual unloading intersects the requested period independently of planned dates. Completed uses actual completion; ongoing clips to period end, flagged still_unloading. Planned duration is union of latest NON-cancelled/non-no-show schedule snapshots, not reconstructed booking history. Actual intervals cannot overlap on one dock; contradictions yield409. Fractions exact numerator/denominator strings: seconds for durations, dimensionless 0..1 for fractions. Denominator is calendar wall clock, NOT opening hours, enabled-hours or staff capacity. Disabled dock remains historically visible. Without registered unloading is not proof of free capacity, downtime or operational availability. Summary totals cover all matching segments even on an empty detail page. Read-only, no reservation, alert, stock, supplier, payment or fiscal effects.",
+        "parameters": [
+          {
+            "name": "dock_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Summary and UTC daily series independent of detail pagination. CSV always includes header + summary row + day_utc rows, even when detail page empty; segment rows follow. First/last day denominators clip to requested period, not full shifts. Text formula cells escaped.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/duplicate/unknown query or GET body; future/overlong period"
+          },
+          "401": {
+            "description": "Session absent/revoked/context changed"
+          },
+          "403": {
+            "description": "Current permissions/device denied"
+          },
+          "404": {
+            "description": "Dock not found in current scope"
+          },
+          "409": {
+            "description": "Contradictory source evidence or overlapping actual unloads"
+          },
+          "422": {
+            "description": "More than5000appointments in entire selected dock history, no partial totals"
+          },
+          "500": {
+            "description": "Read failure"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Dock": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "dock_id": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dock_id",
+          "name",
+          "enabled",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "ExactSeconds": {
+        "additionalProperties": false,
+        "properties": {
+          "denominator": {
+            "type": "string"
+          },
+          "numerator": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "numerator",
+          "denominator"
+        ],
+        "type": "object"
+      },
+      "OccupiedSegment": {
+        "additionalProperties": false,
+        "properties": {
+          "appointment_id": {
+            "type": "string"
+          },
+          "ends_at": {
+            "type": "string"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "seconds": {
+            "$ref": "#/components/schemas/ExactSeconds"
+          },
+          "starts_at": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "still_unloading": {
+            "type": "boolean"
+          },
+          "supplier_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appointment_id",
+          "order_id",
+          "supplier_id",
+          "status",
+          "starts_at",
+          "ends_at",
+          "seconds",
+          "still_unloading"
+        ],
+        "type": "object"
+      },
+      "UtilizationDay": {
+        "additionalProperties": false,
+        "properties": {
+          "day_utc": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "period_seconds": {
+            "$ref": "#/components/schemas/ExactSeconds"
+          },
+          "planned_seconds": {
+            "$ref": "#/components/schemas/ExactSeconds"
+          },
+          "to": {
+            "type": "string"
+          },
+          "unloading_fraction": {
+            "$ref": "#/components/schemas/ExactSeconds"
+          },
+          "unloading_seconds": {
+            "$ref": "#/components/schemas/ExactSeconds"
+          }
+        },
+        "required": [
+          "day_utc",
+          "from",
+          "to",
+          "period_seconds",
+          "planned_seconds",
+          "unloading_seconds",
+          "unloading_fraction"
+        ],
+        "type": "object"
+      },
+      "UtilizationReport": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "type": "string"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/UtilizationDay"
+            },
+            "type": "array"
+          },
+          "dock": {
+            "$ref": "#/components/schemas/Dock"
+          },
+          "from": {
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OccupiedSegment"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "period_seconds": {
+            "$ref": "#/components/schemas/ExactSeconds"
+          },
+          "planned_appointments": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "planned_fraction": {
+            "$ref": "#/components/schemas/ExactSeconds",
+            "description": "Dimensionless exact fraction of wall-clock period, not percentage or seconds"
+          },
+          "planned_seconds": {
+            "$ref": "#/components/schemas/ExactSeconds"
+          },
+          "source_appointments": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "to": {
+            "type": "string"
+          },
+          "total_segments": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "unloading_fraction": {
+            "$ref": "#/components/schemas/ExactSeconds",
+            "description": "Dimensionless exact fraction of wall-clock period, not percentage or seconds"
+          },
+          "unloading_seconds": {
+            "$ref": "#/components/schemas/ExactSeconds"
+          },
+          "without_registered_unloading_seconds": {
+            "$ref": "#/components/schemas/ExactSeconds"
+          }
+        },
+        "required": [
+          "dock",
+          "from",
+          "to",
+          "measured_at",
+          "basis",
+          "period_seconds",
+          "planned_seconds",
+          "unloading_seconds",
+          "without_registered_unloading_seconds",
+          "planned_fraction",
+          "unloading_fraction",
+          "planned_appointments",
+          "total_segments",
+          "source_appointments",
+          "limit",
+          "offset",
+          "items",
+          "days"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

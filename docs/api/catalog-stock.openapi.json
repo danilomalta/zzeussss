@@ -663,6 +663,20 @@
               "maximum": 1000000000,
               "default": 0
             }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "inactive"
+              ],
+              "default": "all"
+            }
           }
         ],
         "responses": {
@@ -1202,6 +1216,19 @@
             "format": "int64",
             "minimum": 0,
             "description": "Omitido para papéis sem visibilidade de custo; não substituir por zero."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "state_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483647
           }
         },
         "required": [
@@ -1209,7 +1236,9 @@
           "sku",
           "name",
           "unit",
-          "price_cents"
+          "price_cents",
+          "status",
+          "state_revision"
         ],
         "additionalProperties": false
       },
@@ -1334,6 +1363,19 @@
           },
           "approximate": {
             "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "state_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 2147483647
           }
         },
         "required": [
@@ -1343,7 +1385,9 @@
           "unit",
           "price_cents",
           "minimum_configured",
-          "approximate"
+          "approximate",
+          "status",
+          "state_revision"
         ],
         "additionalProperties": false
       },
@@ -1376,6 +1420,14 @@
           },
           "cost_visible": {
             "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "all",
+              "active",
+              "inactive"
+            ]
           }
         },
         "required": [
@@ -1383,7 +1435,8 @@
           "total",
           "offset",
           "limit",
-          "cost_visible"
+          "cost_visible",
+          "status"
         ],
         "additionalProperties": false
       },
@@ -1423,6 +1476,18 @@
           "reason": {
             "type": "string",
             "description": "Após trim: 1–255 bytes UTF-8."
+          },
+          "expected_unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ],
+            "description": "Pré-condição opcional de unidade atual; divergência retorna conflito. Não modifica a unidade nem o evento de estoque."
           }
         },
         "required": [

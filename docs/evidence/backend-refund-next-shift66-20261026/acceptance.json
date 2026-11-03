@@ -1,0 +1,153 @@
+{
+  "source_commit": "49136eab3e53e57d831ad7aae340ab3b6910629d",
+  "ci_url": "https://github.com/danilomalta/zzeussss/actions/runs/40286664804",
+  "installed_at_utc": "2026-10-26T07:51:20.165808+00:00",
+  "release": "/home/danillo-malta/.local/opt/titansystem/backend/49136eab3e53e57d831ad7aae340ab3b6910629d",
+  "previous_release": "/home/danillo-malta/.local/opt/titansystem/backend/6ff0d2f255477aee324c4338c80106bf6734cce2",
+  "current": "/home/danillo-malta/.local/opt/titansystem/backend/current",
+  "files_sha256": {
+    "titan-local": "3a975ec892fa323f127a4b508a9dbf9035cea6cf0fd9d2d4c638389e9d79d5e0",
+    "titan-backup": "21917f66b29534aab1766f4c6b77aa813d02a1afae47d56698e61d7407467faa",
+    "titan-access": "3b05cddaecffcde5db3c0c4add1c02d58215ec5ad89f578c3cf1e3615a40e302",
+    "titan-peer": "ed8d697dde770227578d3f1c5c0ed6a4aed1c5488e405faca21139f1d3c50f91",
+    "titan-receive": "357ca131d577ca5f480e0e22eeff0a1b7b1df8f5bd461dc95e9ea18f79005785",
+    "titan-sync": "38f9562afea2def86ad7edb8dce9b3474511a30684206a395c402afc61f05b7b",
+    "titan-trade": "a490ea865209ee60fc844a1441378aa2d4630e090429d91310816bb777d8f303"
+  },
+  "services_restarted": false,
+  "commercial_database_or_keys_read": false,
+  "schema_version": 66,
+  "api_routes": 529,
+  "files_changed": 29,
+  "historical_sql_unchanged": 65,
+  "ci_acceptance": {
+    "status": "PASS",
+    "required_integrations": 5,
+    "top_level_passed": 1328,
+    "passed_including_subtests": 2821,
+    "skipped": 3,
+    "skipped_tests": [
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "local_acceptance": {
+    "status": "PASS",
+    "required_integrations": 5,
+    "top_level_passed": 1328,
+    "passed_including_subtests": 2821,
+    "skipped": 3,
+    "skipped_tests": [
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "ci_trade_and_cash_race": {
+    "status": "PASS",
+    "seconds": 504.18,
+    "sha256": "71eeaaa77017e651e5d31b3dab73b77daf1a7fe404cd00c354337b8f18d5ad5f"
+  },
+  "local_refunds_and_cash_race": {
+    "status": "PASS",
+    "seconds": 304.209,
+    "sha256": "3089081cce627e6486866d4445a9c21de1b22c0f71b5634eab606e62539c9bc3"
+  },
+  "installed_smoke": {
+    "result": "PASS",
+    "compiled_binary_api_lifecycles": 3,
+    "http_assertions": 12,
+    "schema_version": 66,
+    "restart_identity_preserved": true,
+    "restored_identity_preserved": true,
+    "backup_executable_roundtrip": true,
+    "unlicensed_writes_refused": true,
+    "commercial_data": false,
+    "old_schema65_binary_refuses_schema66_without_data_change": true
+  },
+  "installed_native_refund": {
+    "status": "PASS",
+    "seconds": 0.961,
+    "sha256": "a448e73b8c92457472d110d510494cd19f9abd7ca68284f86b337bd25c29e5c2",
+    "api_executable": "installed titan-local from this CI artifact",
+    "backup_executable": "installed titan-backup from this CI artifact",
+    "real_http_assertions": 10,
+    "native_api_lifecycles": 3,
+    "test_harness": "external test-only Go overlay replaces helper server with exec of native API; product sources unchanged",
+    "stock_and_cash_idempotent": true,
+    "original_ids_survive_restart_and_encrypted_restore": true,
+    "remaining_cash_cents": 401
+  },
+  "installed_native_cash_circuit": {
+    "status": "PASS",
+    "seconds": 4.364,
+    "sha256": "ff557d5783257eb7ea0fe95fdbb7ad2c5288c695a3a19d2387345ec9d3331494",
+    "scenarios": [
+      {
+        "name": "authenticated_supplier",
+        "asserted_http_calls": 183,
+        "native_api_lifecycles": 8,
+        "two_independent_companies": true
+      },
+      {
+        "name": "customer_return",
+        "asserted_http_calls": 200,
+        "native_api_lifecycles": 9,
+        "two_independent_companies": true
+      }
+    ],
+    "harness": "external test-only overlay runs installed titan-local for every API lifetime; installed backup/trade CLIs; published sources unchanged"
+  },
+  "preservation": {
+    "services": [
+      {
+        "port": 8182,
+        "pid": 1362657,
+        "executable": "/home/danillo-malta/.local/share/titansystem-tests/pdv-zt69por7/bin/titan-local",
+        "health_status": 200,
+        "original_pid_and_executable_preserved": true
+      },
+      {
+        "port": 8282,
+        "pid": 3855147,
+        "executable": "/home/danillo-malta/.local/share/titansystem-tests/pdv-023hym2n/bin/titan-local",
+        "health_status": 200,
+        "original_pid_and_executable_preserved": true
+      }
+    ],
+    "paused_frontend_original_hashes_preserved": 8,
+    "commercial_database_or_keys_opened": false
+  },
+  "ci_log_privacy_review": {
+    "backend-full.jsonl": {
+      "sha256": "0b3cc8ae9d170f122127b0120c33cbd58cf0506a13890d434b099861f8b99fc9",
+      "sensitive_value_patterns_found": false
+    },
+    "backend-integrations.json": {
+      "sha256": "768fd1a4d5ca5881346fede69ddc8c6139ced301596fa8ba78d8aa684241ff78",
+      "sensitive_value_patterns_found": false
+    },
+    "pilot-cli-race.log": {
+      "sha256": "71eeaaa77017e651e5d31b3dab73b77daf1a7fe404cd00c354337b8f18d5ad5f",
+      "sensitive_value_patterns_found": false
+    },
+    "installed-native-refund.log": {
+      "sha256": "a448e73b8c92457472d110d510494cd19f9abd7ca68284f86b337bd25c29e5c2",
+      "sensitive_value_patterns_found": false
+    },
+    "installed-native-cash-circuit.log": {
+      "sha256": "ff557d5783257eb7ea0fe95fdbb7ad2c5288c695a3a19d2387345ec9d3331494",
+      "sensitive_value_patterns_found": false
+    }
+  },
+  "frontend_changed": false,
+  "database_migrated_in_existing_services": false,
+  "integration_pending": [
+    "frontend action and decoding of optional prior_session_refund_cents",
+    "cash returns across devices or stores",
+    "electronic payment reversal and fiscal effects"
+  ],
+  "whole_backend_complete": false,
+  "resolved_validation_issue": "Legacy coexistence test expected schema65; changed solely expected version to66 and reran full suite and race successfully."
+}

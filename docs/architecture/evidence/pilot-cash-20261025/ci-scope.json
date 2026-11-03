@@ -1,0 +1,30 @@
+{
+  "checked_at_utc": "2026-10-25T11:12:39.019025+00:00",
+  "repository": "danilomalta/zzeussss",
+  "source": "GitHub Actions REST API: GET /repos/danilomalta/zzeussss/actions/runs?branch=BRANCH&per_page=1",
+  "branches": {
+    "feat/backend-b02a-compat": {
+      "total_count": 0,
+      "workflow_runs": []
+    },
+    "feat/backend-checkout-authority": {
+      "total_count": 0,
+      "workflow_runs": []
+    }
+  },
+  "workflow_scope": "push main/develop; pull_request targeting main/develop",
+  "interpretation": "The repository has 32 Actions runs; main run32 passed. Only the two named feature branches have zero runs. Local pilot logs are not CI evidence.",
+  "repository_total_runs": 32,
+  "main_latest": {
+    "run_number": 32,
+    "conclusion": "success",
+    "head_sha": "024dd3f50d2280c9c1ae6e2ba3f829053bbe84c7",
+    "html_url": "https://github.com/danilomalta/zzeussss/actions/runs/39305932267"
+  },
+  "queried_urls": [
+    "https://api.github.com/repos/danilomalta/zzeussss/actions/runs?per_page=1",
+    "https://api.github.com/repos/danilomalta/zzeussss/actions/runs?branch=main&per_page=2",
+    "https://api.github.com/repos/danilomalta/zzeussss/actions/runs?branch=feat/backend-b02a-compat&per_page=1",
+    "https://api.github.com/repos/danilomalta/zzeussss/actions/runs?branch=feat/backend-checkout-authority&per_page=1"
+  ]
+}

@@ -1,0 +1,16 @@
+Scope: fiscal preparation only, not official issuance/homologation.
+Base HEAD:327002939a517a314864cb2d42cfb984ca09f79e
+Branch:feat/backend-b02a-compat
+Schema:67
+New test functions:14
+Full go test ./...:exit0,56packages (unchanged packages may use Go cache)
+Fiscal race tests:exit0
+Real loopback HTTP:8calls,3service processes
+Backup CLI:create,verify,inspect,restore; reject wrong key/company/overwrite
+Fiscal ID and snapshot SHA256 preserved after restart/restore
+Go vet changed packages:exit0
+Go build ./...:exit0
+Built /tmp/titan-fiscal-local-20261026 and /tmp/titan-fiscal-backup-20261026
+Existing services8182/8282 health:HTTP200
+No commercial DB, dependency install, service restart, commit or push
+No official fiscal authorization, XML signing or SEFAZ test performed

@@ -1,0 +1,2473 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan — Conferência técnica da manutenção",
+    "version": "2026-10-23.1"
+  },
+  "paths": {
+    "/local/v1/fleet/workshop/templates": {
+      "get": {
+        "operationId": "workshop_template_list",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Stable ID order; total whole filter; page evidence checked. GET has no body/extra/duplicate/empty optional filter.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "request_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "workshop_template_create",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Exact six-field envelope. data object<=16384bytes, body<=24576. Recursive duplicate/unknown/missing/null rejection; items/answers1..50. Reason mandatory. Persist operation ID before sending, recover using workshop operations. Operation IDs cannot collide with original Fleet API. All scope/actors derived server-side. Labor times declarations, interval1second..16hours, whole-second RFC3339, ending not future; no overlapping active declaration/confirmation for same worker.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplatesCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/templates/{id}": {
+      "get": {
+        "operationId": "workshop_template_get",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Current state, contiguous operation revisions and original receipt integrity.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/templates/{id}/history": {
+      "get": {
+        "operationId": "workshop_template_history",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Original snapshots by revision; reasons and actions. No record is deleted.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/templates/{id}/actions": {
+      "post": {
+        "operationId": "workshop_template_action",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Exact expected_revision, ID equals path. Template disable preserves existing copied requirements. Requirement replace only before service. Inspection immutable, actions always invalid. Labor confirm/reject only declared; void preserves evidence and unblocks overlap. No payroll or monetary effects.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplatesAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/requirements": {
+      "get": {
+        "operationId": "workshop_binding_list",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Stable ID order; total whole filter; page evidence checked. GET has no body/extra/duplicate/empty optional filter.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "request_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "workshop_binding_create",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Exact six-field envelope. data object<=16384bytes, body<=24576. Recursive duplicate/unknown/missing/null rejection; items/answers1..50. Reason mandatory. Persist operation ID before sending, recover using workshop operations. Operation IDs cannot collide with original Fleet API. All scope/actors derived server-side. Labor times declarations, interval1second..16hours, whole-second RFC3339, ending not future; no overlapping active declaration/confirmation for same worker.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequirementsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/requirements/{id}": {
+      "get": {
+        "operationId": "workshop_binding_get",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Current state, contiguous operation revisions and original receipt integrity.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/requirements/{id}/history": {
+      "get": {
+        "operationId": "workshop_binding_history",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Original snapshots by revision; reasons and actions. No record is deleted.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/requirements/{id}/actions": {
+      "post": {
+        "operationId": "workshop_binding_action",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Exact expected_revision, ID equals path. Template disable preserves existing copied requirements. Requirement replace only before service. Inspection immutable, actions always invalid. Labor confirm/reject only declared; void preserves evidence and unblocks overlap. No payroll or monetary effects.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequirementsAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/inspections": {
+      "get": {
+        "operationId": "workshop_inspection_list",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Stable ID order; total whole filter; page evidence checked. GET has no body/extra/duplicate/empty optional filter.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "request_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "workshop_inspection_create",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Exact six-field envelope. data object<=16384bytes, body<=24576. Recursive duplicate/unknown/missing/null rejection; items/answers1..50. Reason mandatory. Persist operation ID before sending, recover using workshop operations. Operation IDs cannot collide with original Fleet API. All scope/actors derived server-side. Labor times declarations, interval1second..16hours, whole-second RFC3339, ending not future; no overlapping active declaration/confirmation for same worker.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InspectionsCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/inspections/{id}": {
+      "get": {
+        "operationId": "workshop_inspection_get",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Current state, contiguous operation revisions and original receipt integrity.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/inspections/{id}/history": {
+      "get": {
+        "operationId": "workshop_inspection_history",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Original snapshots by revision; reasons and actions. No record is deleted.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/inspections/{id}/actions": {
+      "post": {
+        "operationId": "workshop_inspection_action",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Exact expected_revision, ID equals path. Template disable preserves existing copied requirements. Requirement replace only before service. Inspection immutable, actions always invalid. Labor confirm/reject only declared; void preserves evidence and unblocks overlap. No payroll or monetary effects.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InspectionsAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/labor": {
+      "get": {
+        "operationId": "workshop_labor_list",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Stable ID order; total whole filter; page evidence checked. GET has no body/extra/duplicate/empty optional filter.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "request_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "workshop_labor_create",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Exact six-field envelope. data object<=16384bytes, body<=24576. Recursive duplicate/unknown/missing/null rejection; items/answers1..50. Reason mandatory. Persist operation ID before sending, recover using workshop operations. Operation IDs cannot collide with original Fleet API. All scope/actors derived server-side. Labor times declarations, interval1second..16hours, whole-second RFC3339, ending not future; no overlapping active declaration/confirmation for same worker.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LaborCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/labor/{id}": {
+      "get": {
+        "operationId": "workshop_labor_get",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Current state, contiguous operation revisions and original receipt integrity.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/labor/{id}/history": {
+      "get": {
+        "operationId": "workshop_labor_history",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Original snapshots by revision; reasons and actions. No record is deleted.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/labor/{id}/actions": {
+      "post": {
+        "operationId": "workshop_labor_action",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Exact expected_revision, ID equals path. Template disable preserves existing copied requirements. Requirement replace only before service. Inspection immutable, actions always invalid. Labor confirm/reject only declared; void preserves evidence and unblocks overlap. No payroll or monetary effects.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LaborAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/workshop/operations/{id}": {
+      "get": {
+        "operationId": "workshop_operation",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Original user/device-bound operation snapshot. Same normalized JSON+ID returns original repeated=true even after later changes; changed payload409. Distinct recovery path from original Fleet operations.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/requests/{id}/workshop": {
+      "get": {
+        "operationId": "workshop_summary",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Technical summary current request revision. Required checklist: latest inspection must pass all required items, no failed items, match copied policy revision and latest service/reassignment/reopen epoch. Optional not_applicable needs reason; required not_applicable fails. Deleted/mismatched evidence409. Labor declared/confirmed/rejected/voided exact seconds separately, no money/payroll. Max1000 source records/request, history for gate<=1000. CSV is summary and formula-protected.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkshopSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/fleet/requests/{id}/workshop.csv": {
+      "get": {
+        "operationId": "workshop_summary_csv",
+        "description": "Authenticated current tenant/store/user and approved device, ViewOrders. Writes require signed Logistics and dependencies; template/requirement and labor confirm/reject manager only. Reads need current permission but no contract renewal. Technical summary current request revision. Required checklist: latest inspection must pass all required items, no failed items, match copied policy revision and latest service/reassignment/reopen epoch. Optional not_applicable needs reason; required not_applicable fails. Deleted/mismatched evidence409. Labor declared/confirmed/rejected/voided exact seconds separately, no money/payroll. Max1000 source records/request, history for gate<=1000. CSV is summary and formula-protected.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped technical evidence; no payroll, stock, payment or fiscal posting.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate/unknown/missing/null fields or query/body"
+          },
+          "401": {
+            "description": "Missing/revoked session"
+          },
+          "403": {
+            "description": "Current permissions/device/assignment/manager/contract denied"
+          },
+          "404": {
+            "description": "Scoped reference absent; recovery bound to original user/device"
+          },
+          "409": {
+            "description": "Stale revision/state/payload, overlapping labor, missing/failed/stale evidence or integrity conflict"
+          },
+          "422": {
+            "description": "Source over1000, no partial summary or silent unlock"
+          },
+          "500": {
+            "description": "Storage failure; transaction rolls back"
+          },
+          "503": {
+            "description": "Write verifier unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "BindingInput": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_request_revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "template_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "expected_request_revision",
+          "template_id"
+        ],
+        "type": "object"
+      },
+      "CheckAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "item_id": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "not_applicable"
+            ]
+          }
+        },
+        "required": [
+          "item_id",
+          "outcome",
+          "note"
+        ],
+        "type": "object"
+      },
+      "CheckBinding": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_request_revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "template": {
+            "$ref": "#/components/schemas/CheckTemplate"
+          },
+          "template_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "expected_request_revision",
+          "template_id",
+          "template"
+        ],
+        "type": "object"
+      },
+      "CheckItem": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "required"
+        ],
+        "type": "object"
+      },
+      "CheckTemplate": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CheckItem"
+            },
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "items",
+          "note"
+        ],
+        "type": "object"
+      },
+      "Input": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "expected_revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "Inspection": {
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/CheckAnswer"
+            },
+            "type": "array"
+          },
+          "epoch_revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "expected_binding_revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "expected_request_revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "template_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "expected_request_revision",
+          "expected_binding_revision",
+          "answers",
+          "note",
+          "template_id",
+          "epoch_revision",
+          "passed"
+        ],
+        "type": "object"
+      },
+      "InspectionInput": {
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/CheckAnswer"
+            },
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "expected_binding_revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "expected_request_revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "expected_request_revision",
+          "expected_binding_revision",
+          "answers",
+          "note"
+        ],
+        "type": "object"
+      },
+      "Labor": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "ended_at": {
+            "type": "string"
+          },
+          "expected_request_revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "seconds": {
+            "format": "int64",
+            "maximum": 57600,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "started_at": {
+            "type": "string"
+          },
+          "worker_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "expected_request_revision",
+          "started_at",
+          "ended_at",
+          "description",
+          "worker_id",
+          "seconds"
+        ],
+        "type": "object"
+      },
+      "LaborInput": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "ended_at": {
+            "type": "string"
+          },
+          "expected_request_revision": {
+            "format": "int64",
+            "maximum": 9007199254740990,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "expected_request_revision",
+          "started_at",
+          "ended_at",
+          "description"
+        ],
+        "type": "object"
+      },
+      "WorkshopHistory": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WorkshopHistoryItem"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "WorkshopHistoryItem": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "result": {
+            "$ref": "#/components/schemas/WorkshopResult"
+          }
+        },
+        "required": [
+          "result",
+          "action",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "WorkshopPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WorkshopResult"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "WorkshopResult": {
+        "additionalProperties": false,
+        "properties": {
+          "actor_id": {
+            "type": "string"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CheckTemplate"
+              },
+              {
+                "$ref": "#/components/schemas/CheckBinding"
+              },
+              {
+                "$ref": "#/components/schemas/Inspection"
+              },
+              {
+                "$ref": "#/components/schemas/Labor"
+              }
+            ]
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "recorded_at": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "id",
+          "request_id",
+          "revision",
+          "state",
+          "data",
+          "actor_id",
+          "device_id",
+          "recorded_at",
+          "repeated"
+        ],
+        "type": "object"
+      },
+      "WorkshopSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "binding_revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "checklist_required": {
+            "type": "boolean"
+          },
+          "confirmed_seconds_exact": {
+            "type": "string"
+          },
+          "declared_seconds_exact": {
+            "type": "string"
+          },
+          "inspection_satisfied": {
+            "type": "boolean"
+          },
+          "latest_inspection_id": {
+            "type": "string"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "payroll_posted": {
+            "type": "boolean"
+          },
+          "rejected_seconds_exact": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "request_revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "source_records": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "voided_seconds_exact": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "request_revision",
+          "checklist_required",
+          "binding_revision",
+          "latest_inspection_id",
+          "inspection_satisfied",
+          "declared_seconds_exact",
+          "confirmed_seconds_exact",
+          "rejected_seconds_exact",
+          "voided_seconds_exact",
+          "source_records",
+          "payroll_posted",
+          "measured_at"
+        ],
+        "type": "object"
+      },
+      "Empty": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "TemplatesCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CheckTemplate"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "TemplatesAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "disable"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Empty"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "RequirementsCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/BindingInput"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "RequirementsAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "replace"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/BindingInput"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "InspectionsCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/InspectionInput"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "InspectionsAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "No valid action: immutable inspection"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Empty"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "LaborCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/LaborInput"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "enum": [
+              0
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      },
+      "LaborAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "confirm",
+              "reject",
+              "void"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/Empty"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740990
+          },
+          "id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "id",
+          "expected_revision",
+          "action",
+          "reason",
+          "data"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

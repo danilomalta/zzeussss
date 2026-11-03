@@ -1,0 +1,1004 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Titan local — dock planning and insights",
+    "version": "2026-10-22.1"
+  },
+  "paths": {
+    "/local/v1/logistics/insights/availability": {
+      "get": {
+        "operationId": "dock_insights_availability",
+        "description": "manage_stock + view_orders and approved device in current tenant/store. No renewal of license for authorized historical reads. Whole-second RFC3339 bounds up to7days. Planned gaps after active appointments, first fitting end for requested duration. Disabled dock gives no gaps. confirmed_available always false: reserve again atomically through official endpoint. Actual unloading/waiting observed regardless of their planned dates; no predicted release time. Stored overlapping active windows fail explicitly.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dock_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "duration_minutes",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 480
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized read snapshot; no reservation or state transition",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FreeWindows"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown or empty query/body"
+          },
+          "401": {
+            "description": "Session absent or revoked"
+          },
+          "403": {
+            "description": "Current human/device permissions denied"
+          },
+          "404": {
+            "description": "Dock absent in current scope"
+          },
+          "409": {
+            "description": "Source data integrity inconsistency"
+          },
+          "422": {
+            "description": "Over5000source appointments; narrow filters, no partial totals"
+          },
+          "500": {
+            "description": "Internal read failure"
+          }
+        }
+      }
+    },
+    "/local/v1/logistics/insights/suppliers/performance": {
+      "get": {
+        "operationId": "dock_insights_performance",
+        "description": "manage_stock + view_orders and approved device in current tenant/store. No renewal of license for authorized historical reads. Same-store planned START cohort [from,to), up to366days; groups by supplier_id, ordered by ID, never business ranking or attribution of fault. Global metrics cover whole cohort, supplier items/CSV current page. Waiting samples end at actual unloading start; unload samples completed only. Cancelled excluded from arrival samples; all cancelled counted separately. Late arrival means >=1whole second after planned start. Exact averages preserve nanoseconds, seconds numerator/denominator strings; null/blank without samples. Source cap5000before pagination.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dock_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized read snapshot; no reservation or state transition",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Performance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown or empty query/body"
+          },
+          "401": {
+            "description": "Session absent or revoked"
+          },
+          "403": {
+            "description": "Current human/device permissions denied"
+          },
+          "404": {
+            "description": "Dock absent in current scope"
+          },
+          "409": {
+            "description": "Source data integrity inconsistency"
+          },
+          "422": {
+            "description": "Over5000source appointments; narrow filters, no partial totals"
+          },
+          "500": {
+            "description": "Internal read failure"
+          }
+        }
+      }
+    },
+    "/local/v1/logistics/insights/pending": {
+      "get": {
+        "operationId": "dock_insights_pending",
+        "description": "manage_stock + view_orders and approved device in current tenant/store. No renewal of license for authorized historical reads. Active appointments independent of planned date. Priority1cancelled order needing local resolution,2unloading,3arrived waiting,4planned end passed; stable time/ID ties. Future ordinary reservations excluded from result but included in5000source cap. No automatic no-show/cancellation/release, no persisted/sent alert. CSV returned page only; textual formulas protected.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dock_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized read snapshot; no reservation or state transition",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown or empty query/body"
+          },
+          "401": {
+            "description": "Session absent or revoked"
+          },
+          "403": {
+            "description": "Current human/device permissions denied"
+          },
+          "404": {
+            "description": "Dock absent in current scope"
+          },
+          "409": {
+            "description": "Source data integrity inconsistency"
+          },
+          "422": {
+            "description": "Over5000source appointments; narrow filters, no partial totals"
+          },
+          "500": {
+            "description": "Internal read failure"
+          }
+        }
+      }
+    },
+    "/local/v1/logistics/insights/suppliers/performance.csv": {
+      "get": {
+        "operationId": "dock_insights_performance_csv",
+        "description": "manage_stock + view_orders and approved device in current tenant/store. No renewal of license for authorized historical reads. Same-store planned START cohort [from,to), up to366days; groups by supplier_id, ordered by ID, never business ranking or attribution of fault. Global metrics cover whole cohort, supplier items/CSV current page. Waiting samples end at actual unloading start; unload samples completed only. Cancelled excluded from arrival samples; all cancelled counted separately. Late arrival means >=1whole second after planned start. Exact averages preserve nanoseconds, seconds numerator/denominator strings; null/blank without samples. Source cap5000before pagination.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dock_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized read snapshot; no reservation or state transition",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown or empty query/body"
+          },
+          "401": {
+            "description": "Session absent or revoked"
+          },
+          "403": {
+            "description": "Current human/device permissions denied"
+          },
+          "404": {
+            "description": "Dock absent in current scope"
+          },
+          "409": {
+            "description": "Source data integrity inconsistency"
+          },
+          "422": {
+            "description": "Over5000source appointments; narrow filters, no partial totals"
+          },
+          "500": {
+            "description": "Internal read failure"
+          }
+        }
+      }
+    },
+    "/local/v1/logistics/insights/pending.csv": {
+      "get": {
+        "operationId": "dock_insights_pending_csv",
+        "description": "manage_stock + view_orders and approved device in current tenant/store. No renewal of license for authorized historical reads. Active appointments independent of planned date. Priority1cancelled order needing local resolution,2unloading,3arrived waiting,4planned end passed; stable time/ID ties. Future ordinary reservations excluded from result but included in5000source cap. No automatic no-show/cancellation/release, no persisted/sent alert. CSV returned page only; textual formulas protected.",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dock_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "supplier_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized read snapshot; no reservation or state transition",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, duplicate, unknown or empty query/body"
+          },
+          "401": {
+            "description": "Session absent or revoked"
+          },
+          "403": {
+            "description": "Current human/device permissions denied"
+          },
+          "404": {
+            "description": "Dock absent in current scope"
+          },
+          "409": {
+            "description": "Source data integrity inconsistency"
+          },
+          "422": {
+            "description": "Over5000source appointments; narrow filters, no partial totals"
+          },
+          "500": {
+            "description": "Internal read failure"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Appointment": {
+        "additionalProperties": false,
+        "properties": {
+          "appointment_id": {
+            "type": "string"
+          },
+          "arrived_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "completed_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "dock_id": {
+            "type": "string"
+          },
+          "ends_at": {
+            "type": "string"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "starts_at": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "stock_received": {
+            "type": "boolean"
+          },
+          "supplier_confirmed": {
+            "type": "boolean"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "unloading_at": {
+            "allOf": [
+              {
+                "type": "string"
+              }
+            ],
+            "nullable": true
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appointment_id",
+          "dock_id",
+          "order_id",
+          "supplier_id",
+          "starts_at",
+          "ends_at",
+          "status",
+          "revision",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "arrived_at",
+          "unloading_at",
+          "completed_at",
+          "supplier_confirmed",
+          "stock_received"
+        ],
+        "type": "object"
+      },
+      "Dock": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "dock_id": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dock_id",
+          "name",
+          "enabled",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "ExactSeconds": {
+        "additionalProperties": false,
+        "properties": {
+          "denominator": {
+            "type": "string"
+          },
+          "numerator": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "numerator",
+          "denominator"
+        ],
+        "type": "object"
+      },
+      "FreeWindows": {
+        "additionalProperties": false,
+        "properties": {
+          "active_unloading": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Appointment"
+              }
+            ],
+            "nullable": true
+          },
+          "basis": {
+            "type": "string"
+          },
+          "confirmed_available": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "dock": {
+            "$ref": "#/components/schemas/Dock"
+          },
+          "duration_minutes": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "from": {
+            "type": "string"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "occupied_windows": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "to": {
+            "type": "string"
+          },
+          "waiting_count": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "windows": {
+            "items": {
+              "$ref": "#/components/schemas/Gap"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "dock",
+          "measured_at",
+          "from",
+          "to",
+          "duration_minutes",
+          "basis",
+          "confirmed_available",
+          "active_unloading",
+          "waiting_count",
+          "occupied_windows",
+          "windows"
+        ],
+        "type": "object"
+      },
+      "Gap": {
+        "additionalProperties": false,
+        "properties": {
+          "ends_at": {
+            "type": "string"
+          },
+          "first_fit_ends_at": {
+            "type": "string"
+          },
+          "starts_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "starts_at",
+          "ends_at",
+          "first_fit_ends_at"
+        ],
+        "type": "object"
+      },
+      "PendingItem": {
+        "additionalProperties": false,
+        "properties": {
+          "appointment": {
+            "$ref": "#/components/schemas/Appointment"
+          },
+          "order_cancelled": {
+            "type": "boolean"
+          },
+          "priority": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appointment",
+          "reason",
+          "order_cancelled",
+          "priority"
+        ],
+        "type": "object"
+      },
+      "PendingPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PendingItem"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "total": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "measured_at",
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "type": "object"
+      },
+      "Performance": {
+        "additionalProperties": false,
+        "properties": {
+          "all_suppliers": {
+            "$ref": "#/components/schemas/SupplierMetrics"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SupplierMetrics"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "measured_at": {
+            "type": "string"
+          },
+          "offset": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "to": {
+            "type": "string"
+          },
+          "total_suppliers": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "measured_at",
+          "basis",
+          "total_suppliers",
+          "limit",
+          "offset",
+          "all_suppliers",
+          "items"
+        ],
+        "type": "object"
+      },
+      "SupplierMetrics": {
+        "additionalProperties": false,
+        "properties": {
+          "appointments": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "arrival_samples": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "arrived": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "average_unloading_seconds": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExactSeconds"
+              }
+            ],
+            "nullable": true
+          },
+          "average_waiting_seconds": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExactSeconds"
+              }
+            ],
+            "nullable": true
+          },
+          "cancelled": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "completed": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "late_arrivals": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "no_show": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "reserved": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "unloading": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "unloading_samples": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "waiting_samples": {
+            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "supplier_id",
+          "appointments",
+          "reserved",
+          "arrived",
+          "unloading",
+          "completed",
+          "cancelled",
+          "no_show",
+          "arrival_samples",
+          "late_arrivals",
+          "waiting_samples",
+          "unloading_samples",
+          "average_waiting_seconds",
+          "average_unloading_seconds"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

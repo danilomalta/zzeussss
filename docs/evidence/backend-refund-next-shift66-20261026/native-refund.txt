@@ -1,0 +1,29 @@
+=== RUN   TestHTTPCustomerReturnLaterShiftRestartAndEncryptedRestore
+    customer_return_cross_shift_test.go:269: HTTP POST /local/v1/login -> 200
+    customer_return_cross_shift_test.go:271: HTTP POST /local/v1/sales/sale-one/returns/cash-session -> 201
+    customer_return_cross_shift_test.go:274: HTTP GET /local/v1/me -> 200
+    customer_return_cross_shift_test.go:275: HTTP POST /local/v1/login -> 200
+    customer_return_cross_shift_test.go:277: HTTP GET /local/v1/sale-return-operations/durable-refund -> 200
+    customer_return_cross_shift_test.go:284: BACKUP CLI key-init: expected_success=true observed_success=true
+    customer_return_cross_shift_test.go:284: BACKUP CLI create-live: expected_success=true observed_success=true
+    customer_return_cross_shift_test.go:284: BACKUP CLI verify: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:98: BACKUP CLI before-restore: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:105: BACKUP REPORT before-restore: {"version":1,"profile":"pilot_cash_v1","schema_version":66,"archive_sha256":"9ff291534e2e03dd9e0cdfd8899e5f041ccd00083330a5a69a206a3bf203ec44","business_sha256":"7975aad57c20b57a1b3727c67742954afebfbee308b674c7652dd4783f74160c","records":{"cash_movements":2,"cash_sessions":2,"payable_cash_payments":0,"purchase_deliveries":0,"purchase_order_items":0,"purchase_orders":0,"purchase_receipts":0,"purchase_receiving_cases":0,"purchase_supplier_decisions":0,"sale_payments":1,"sales":1,"stock_movements":5,"supplier_payable_installments":0,"supplier_payables":0},"unavailable":[]}
+    customer_return_cross_shift_test.go:284: BACKUP CLI wrong-key-init: expected_success=true observed_success=true
+    customer_return_cross_shift_test.go:284: BACKUP CLI reject-wrong-key: expected_success=false observed_success=false
+    customer_return_cross_shift_test.go:284: BACKUP CLI reject-wrong-company: expected_success=false observed_success=false
+    customer_return_cross_shift_test.go:284: BACKUP CLI restore-new-path: expected_success=true observed_success=true
+    customer_return_cross_shift_test.go:284: BACKUP CLI reject-overwrite: expected_success=false observed_success=false
+    customer_return_cross_shift_test.go:284: BACKUP CLI create-from-restored: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:98: BACKUP CLI after-restore: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:105: BACKUP REPORT after-restore: {"version":1,"profile":"pilot_cash_v1","schema_version":66,"archive_sha256":"7db91ccb208baf1dbf14316a6f2d05b8b3cdb3bb9f320f6d99d72dbf45d8836b","business_sha256":"7975aad57c20b57a1b3727c67742954afebfbee308b674c7652dd4783f74160c","records":{"cash_movements":2,"cash_sessions":2,"payable_cash_payments":0,"purchase_deliveries":0,"purchase_order_items":0,"purchase_orders":0,"purchase_receipts":0,"purchase_receiving_cases":0,"purchase_supplier_decisions":0,"sale_payments":1,"sales":1,"stock_movements":5,"supplier_payable_installments":0,"supplier_payables":0},"unavailable":[]}
+    customer_return_cross_shift_test.go:284: BACKUP CLI RESTORATION: pilot table counts and business SHA256 identical; encrypted archive SHA256 distinct; source and restored DBs separate
+    customer_return_cross_shift_test.go:310: HTTP POST /local/v1/login -> 200
+    customer_return_cross_shift_test.go:311: HTTP GET /local/v1/sale-return-operations/durable-refund -> 200
+    customer_return_cross_shift_test.go:315: HTTP POST /local/v1/sales/sale-one/returns/cash-session -> 200
+    customer_return_cross_shift_test.go:319: HTTP POST /local/v1/cash/close -> 200
+    customer_return_cross_shift_test.go:321: HTTP GET /local/v1/cash/sessions/turn-two/report -> 200
+    customer_return_cross_shift_test.go:326: CROSS SHIFT ACCEPTANCE: 10 real HTTP calls; 3 service process lifetimes; original IDs retained after restart and encrypted restore; no duplicate cash or stock
+--- PASS: TestHTTPCustomerReturnLaterShiftRestartAndEncryptedRestore (0.96s)
+PASS
+ok  	titansystem-backend/internal/localapi	0.961s

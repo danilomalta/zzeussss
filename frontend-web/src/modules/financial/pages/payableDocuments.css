@@ -1,0 +1,12 @@
+.payable-documents{border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;font-size:max(13px,1rem);color:var(--text);background:var(--surface)}
+.payable-documents>summary{cursor:pointer;font-weight:650;min-height:44px;padding:.65rem}
+.payable-documents section{min-width:0}.payable-documents label{display:grid;gap:.35rem;margin:.75rem 0}
+.payable-documents input,.payable-documents select,.payable-documents textarea{font:inherit;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;min-height:44px;max-width:100%;padding:.5rem}
+.payable-documents button,.payable-documents a{font:inherit;min-height:44px;padding:.55rem .8rem}
+.payable-documents fieldset{min-width:0;border:1px solid var(--border);padding:.75rem}
+.payable-documents :focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.payable-documents table{width:100%;border-collapse:collapse;text-align:start}.payable-documents th,.payable-documents td{padding:.75rem;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere;min-width:110px}.payable-documents th{text-align:start}
+.payable-documents button{color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:8px}.payable-documents a{color:var(--text)}.payable-documents button:disabled{opacity:.6;cursor:not-allowed}
+.payable-documents code{overflow-wrap:anywhere}.document-installment{display:flex;align-items:end;flex-wrap:wrap;gap:.75rem}.document-installment label{flex:1 1 12rem}
+.payable-documents .p113-check{display:flex;align-items:center;gap:.7rem;min-height:44px}.payable-documents .p113-check input{width:24px;min-height:24px}
+@media(max-width:600px){.payable-documents{padding:.5rem}.document-installment label{flex-basis:100%}}

@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-25",
+  "desktop_source_hash": "4e7a50ff66a205baadc9a6693b37e061a0e89596583d8df8c9d950995f358dc7",
+  "fixture": "real Go API with synthetic licensed pilot data",
+  "mock": false,
+  "commercial_credentials": false,
+  "services_restarted": false,
+  "measurements": [
+    {
+      "route": "/local/sheets",
+      "module_ms": 796.49,
+      "ui_ready": true,
+      "alerts": [],
+      "api_statuses": [],
+      "sheet_canvas": 2
+    },
+    {
+      "route": "/local/catalog",
+      "module_ms": 409.2,
+      "ui_ready": true,
+      "alerts": [],
+      "api_statuses": [
+        {
+          "path": "/local/v1/catalog/search",
+          "status": 200
+        }
+      ],
+      "sheet_canvas": null
+    },
+    {
+      "route": "/local/orders",
+      "module_ms": 404.59,
+      "ui_ready": true,
+      "alerts": [],
+      "api_statuses": [
+        {
+          "path": "/local/v1/purchase-orders",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/purchase-suppliers",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/purchase-approvals",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/purchase-receiving-cases",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/logistics/docks",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/replenishment/products",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/replenishment/suggestions",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/logistics/occupancy",
+          "status": 200
+        }
+      ],
+      "sheet_canvas": null
+    },
+    {
+      "route": "/local/payables",
+      "module_ms": 391.87,
+      "ui_ready": true,
+      "alerts": [],
+      "api_statuses": [
+        {
+          "path": "/local/v1/finance/payables",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/finance/payables",
+          "status": 200
+        }
+      ],
+      "sheet_canvas": null
+    },
+    {
+      "route": "/local/pos",
+      "module_ms": 407.12,
+      "ui_ready": true,
+      "alerts": [],
+      "api_statuses": [
+        {
+          "path": "/local/v1/sales",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/staff",
+          "status": 403
+        },
+        {
+          "path": "/local/v1/locations",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/local/v1/cash/current",
+          "status": 200
+        }
+      ],
+      "sheet_canvas": null
+    }
+  ],
+  "scope": "Single cold module opening in a fresh Electron profile, on this Ubuntu. Includes 300ms API quiet period. Does not reproduce reported 180s delay or measure large commercial datasets.",
+  "public_vite_login": {
+    "port": 3002,
+    "ms": 389.23,
+    "requests": 55,
+    "authenticated": false
+  },
+  "notes": [
+    "PDV staff query returned403: fixture permission unchanged, no elevation; register closed screen loaded.",
+    "First PDV measurement hit429 login throttling after repeated synthetic logins; rerun used new disposable service.",
+    "Native MESA warning did not prevent rendering.",
+    "No latency cause inferred from bundle size alone."
+  ]
+}

@@ -1,0 +1,1153 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Durable local POS carts",
+    "version": "2026.10.24.1",
+    "description": "Actor/device scoped. No reservations when saved/claimed. Save snapshots authoritative prices; claim and cash finalization revalidate them and free stock. All request properties required, unused fields empty/zero. Cash finalization is atomic with existing sale/journal/outbox and cart history. No electronic approvals, fiscal emission or browser integration."
+  },
+  "paths": {
+    "/local/v1/pos/carts": {
+      "post": {
+        "operationId": "carts_post__local_v1_pos_carts",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Original snapshot, exact replay or authoritative scoped read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed/unknown/null/duplicate fields or invalid query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Effective Sell permission or POS license denied"
+          },
+          "404": {
+            "description": "Not owned by current actor/device/store"
+          },
+          "409": {
+            "description": "Revision/state/current price/unit/stock/identity conflict"
+          },
+          "413": {
+            "description": "Save body exceeds128KiB or action4096bytes"
+          },
+          "422": {
+            "description": "4096revision limit"
+          },
+          "500": {
+            "description": "Storage failure: transaction rolled back"
+          },
+          "503": {
+            "description": "Contract service unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartSaveInput"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "carts_get__local_v1_pos_carts",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "suspended",
+                "claimed",
+                "completed",
+                "cancelled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Original snapshot, exact replay or authoritative scoped read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed/unknown/null/duplicate fields or invalid query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Effective Sell permission or POS license denied"
+          },
+          "404": {
+            "description": "Not owned by current actor/device/store"
+          },
+          "409": {
+            "description": "Revision/state/current price/unit/stock/identity conflict"
+          },
+          "413": {
+            "description": "Save body exceeds128KiB or action4096bytes"
+          },
+          "422": {
+            "description": "4096revision limit"
+          },
+          "500": {
+            "description": "Storage failure: transaction rolled back"
+          },
+          "503": {
+            "description": "Contract service unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/pos/carts/{id}": {
+      "get": {
+        "operationId": "carts_get__local_v1_pos_carts__id_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Original snapshot, exact replay or authoritative scoped read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cart"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed/unknown/null/duplicate fields or invalid query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Effective Sell permission or POS license denied"
+          },
+          "404": {
+            "description": "Not owned by current actor/device/store"
+          },
+          "409": {
+            "description": "Revision/state/current price/unit/stock/identity conflict"
+          },
+          "413": {
+            "description": "Save body exceeds128KiB or action4096bytes"
+          },
+          "422": {
+            "description": "4096revision limit"
+          },
+          "500": {
+            "description": "Storage failure: transaction rolled back"
+          },
+          "503": {
+            "description": "Contract service unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/pos/carts/{id}/actions": {
+      "post": {
+        "operationId": "carts_post__local_v1_pos_carts__id__actions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Original snapshot, exact replay or authoritative scoped read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed/unknown/null/duplicate fields or invalid query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Effective Sell permission or POS license denied"
+          },
+          "404": {
+            "description": "Not owned by current actor/device/store"
+          },
+          "409": {
+            "description": "Revision/state/current price/unit/stock/identity conflict"
+          },
+          "413": {
+            "description": "Save body exceeds128KiB or action4096bytes"
+          },
+          "422": {
+            "description": "4096revision limit"
+          },
+          "500": {
+            "description": "Storage failure: transaction rolled back"
+          },
+          "503": {
+            "description": "Contract service unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartActionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/pos/carts/{id}/history": {
+      "get": {
+        "operationId": "carts_get__local_v1_pos_carts__id__history",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Original snapshot, exact replay or authoritative scoped read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed/unknown/null/duplicate fields or invalid query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Effective Sell permission or POS license denied"
+          },
+          "404": {
+            "description": "Not owned by current actor/device/store"
+          },
+          "409": {
+            "description": "Revision/state/current price/unit/stock/identity conflict"
+          },
+          "413": {
+            "description": "Save body exceeds128KiB or action4096bytes"
+          },
+          "422": {
+            "description": "4096revision limit"
+          },
+          "500": {
+            "description": "Storage failure: transaction rolled back"
+          },
+          "503": {
+            "description": "Contract service unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/pos/cart-operations/{id}": {
+      "get": {
+        "operationId": "carts_get__local_v1_pos_cart_operations__id_",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Original snapshot, exact replay or authoritative scoped read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed/unknown/null/duplicate fields or invalid query"
+          },
+          "401": {
+            "description": "Missing/foreign/revoked session"
+          },
+          "403": {
+            "description": "Effective Sell permission or POS license denied"
+          },
+          "404": {
+            "description": "Not owned by current actor/device/store"
+          },
+          "409": {
+            "description": "Revision/state/current price/unit/stock/identity conflict"
+          },
+          "413": {
+            "description": "Save body exceeds128KiB or action4096bytes"
+          },
+          "422": {
+            "description": "4096revision limit"
+          },
+          "500": {
+            "description": "Storage failure: transaction rolled back"
+          },
+          "503": {
+            "description": "Contract service unavailable"
+          }
+        }
+      }
+    },
+    "/local/v1/pos/carts/{id}/reconcile": {
+      "get": {
+        "operationId": "expanded_get__local_v1_pos_carts__id__reconcile",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cash_session_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current diagnostic or validated complete operational report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartReconciliation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict query"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Effective permission/module denied"
+          },
+          "404": {
+            "description": "Cart not owned by this actor/device"
+          },
+          "409": {
+            "description": "Corrupt source or state conflict"
+          },
+          "422": {
+            "description": "Report exceeds1000carts or10000events"
+          }
+        }
+      }
+    },
+    "/local/v1/pos/carts/report": {
+      "get": {
+        "operationId": "expanded_get__local_v1_pos_carts_report",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current diagnostic or validated complete operational report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict query"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Effective permission/module denied"
+          },
+          "404": {
+            "description": "Cart not owned by this actor/device"
+          },
+          "409": {
+            "description": "Corrupt source or state conflict"
+          },
+          "422": {
+            "description": "Report exceeds1000carts or10000events"
+          }
+        }
+      }
+    },
+    "/local/v1/pos/carts/report.csv": {
+      "get": {
+        "operationId": "expanded_get__local_v1_pos_carts_report_csv",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current diagnostic or validated complete operational report",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict query"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Effective permission/module denied"
+          },
+          "404": {
+            "description": "Cart not owned by this actor/device"
+          },
+          "409": {
+            "description": "Corrupt source or state conflict"
+          },
+          "422": {
+            "description": "Report exceeds1000carts or10000events"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Cart": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "suspended",
+              "claimed",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "sale_id": {
+            "type": "string"
+          },
+          "payment_id": {
+            "type": "string"
+          },
+          "cash_session_id": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuoteItem"
+            }
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "sale_operation_id": {
+            "type": "string"
+          },
+          "received_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "change_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "state",
+          "label",
+          "sale_id",
+          "payment_id",
+          "cash_session_id",
+          "items",
+          "total_cents",
+          "created_at",
+          "updated_at",
+          "sale_operation_id",
+          "received_cents",
+          "change_cents"
+        ],
+        "additionalProperties": false
+      },
+      "CartSaveInput": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "cart_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "label": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        },
+        "required": [
+          "operation_id",
+          "cart_id",
+          "expected_revision",
+          "label",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "CartActionInput": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "claim",
+              "release",
+              "cancel",
+              "finalize_cash"
+            ]
+          },
+          "cash_session_id": {
+            "type": "string"
+          },
+          "received_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "action",
+          "cash_session_id",
+          "received_cents",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "CartResult": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "cart": {
+            "$ref": "#/components/schemas/Cart"
+          }
+        },
+        "required": [
+          "operation_id",
+          "action",
+          "reason",
+          "repeated",
+          "cart"
+        ],
+        "additionalProperties": false
+      },
+      "CartPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cart"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "additionalProperties": false
+      },
+      "CartHistory": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartResult"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "additionalProperties": false
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "product_id",
+          "location_id",
+          "quantity_milli"
+        ],
+        "additionalProperties": false
+      },
+      "QuoteItem": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "quantity_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "unit": {
+            "type": "string"
+          },
+          "unit_price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "available_milli": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "product_id",
+          "location_id",
+          "quantity_milli",
+          "unit",
+          "unit_price_cents",
+          "total_cents",
+          "available_milli"
+        ],
+        "additionalProperties": false
+      },
+      "CartReconciliation": {
+        "type": "object",
+        "properties": {
+          "cart_id": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "checked_at": {
+            "type": "string"
+          },
+          "saved_total_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "current_quote": {
+            "$ref": "#/components/schemas/Quote"
+          },
+          "sale_id": {
+            "type": "string"
+          },
+          "reserved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cart_id",
+          "revision",
+          "state",
+          "status",
+          "blockers",
+          "checked_at",
+          "saved_total_cents",
+          "sale_id",
+          "reserved"
+        ],
+        "additionalProperties": false
+      },
+      "CartReportRow": {
+        "type": "object",
+        "properties": {
+          "cart_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "age_seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "line_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sale_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "cart_id",
+          "state",
+          "revision",
+          "updated_at",
+          "age_seconds",
+          "line_count",
+          "sale_id"
+        ],
+        "additionalProperties": false
+      },
+      "CartReport": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "generated_at": {
+            "type": "string"
+          },
+          "source_complete": {
+            "type": "boolean"
+          },
+          "financial_totals_included": {
+            "type": "boolean"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "suspended": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "claimed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "completed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "cancelled": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "suspended",
+              "claimed",
+              "completed",
+              "cancelled"
+            ],
+            "additionalProperties": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartReportRow"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "generated_at",
+          "source_complete",
+          "financial_totals_included",
+          "total",
+          "summary",
+          "items",
+          "summary"
+        ],
+        "additionalProperties": false
+      },
+      "Quote": {
+        "type": "object",
+        "properties": {
+          "cash_session_id": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuoteItem"
+            }
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "payment_methods": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "discounts_supported": {
+            "type": "boolean"
+          },
+          "loyalty_supported": {
+            "type": "boolean"
+          },
+          "reserved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cash_session_id",
+          "items",
+          "total_cents",
+          "payment_methods",
+          "discounts_supported",
+          "loyalty_supported",
+          "reserved"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

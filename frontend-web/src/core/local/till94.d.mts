@@ -1,3 +1,4 @@
+import type {Receipt96} from './checkout96.mjs';
 import type {CartItem} from './posModel.mjs';import type {SaleReceipt} from './localClient.mjs';
 export interface Actor94{id:string;role:string;permissions:string[]}
 export interface Part94{id:string;method:string;amount:number}
@@ -14,8 +15,8 @@ export function validate94(d:unknown,scope:string,cash:string):Till94;
 export function request94(d:Till94,a:Actor94,input:{kind:string;amount:number;reason:string;reference:string;gross?:number;parts?:Part94[];received?:number|null}):string;
 export function decide94(d:Till94,a:Actor94,id:string,approve:boolean,reason:string):void;
 export function withdraw94(d:Till94,a:Actor94,id:string):void;
-export function return94(d:Till94,a:Actor94,receipt:SaleReceipt,input:{item:string;quantity:number;outcome:string;reason:string}):string;
-export function cancel94(d:Till94,a:Actor94,receipt:SaleReceipt,reason:string):string;
+export function return94(d:Till94,a:Actor94,receipt:Receipt96,input:{item:string;quantity:number;outcome:string;reason:string}):string;
+export function cancel94(d:Till94,a:Actor94,receipt:Receipt96,reason:string):string;
 export function seal94(d:Till94,a:Actor94,amount:number,destination:string,policy:string,confirmedCount:boolean):string;
 export function bagStep94(d:Till94,a:Actor94,id:string,stage:string,count?:number,reason?:string):void;
 export function suspend94(d:Till94,a:Actor94,cart:CartItem[],reference:string):string;

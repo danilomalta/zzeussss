@@ -1,0 +1,209 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Customer company registration",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/local/v1/company/registration": {
+      "get": {
+        "operationId": "getCompanyRegistration",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Active owner only. Manual customer-owned registration; no module, credential or fiscal authorization is granted.",
+        "responses": {
+          "200": {
+            "description": "Persisted registration or installation seed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not an active owner"
+          },
+          "404": {
+            "description": "Operation not found in scope"
+          },
+          "409": {
+            "description": "Revision or operation conflict"
+          },
+          "500": {
+            "description": "Storage unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "operation_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "postCompanyRegistration",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Active owner only. Manual customer-owned registration; no module, credential or fiscal authorization is granted.",
+        "responses": {
+          "200": {
+            "description": "Persisted registration or installation seed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not an active owner"
+          },
+          "404": {
+            "description": "Operation not found in scope"
+          },
+          "409": {
+            "description": "Revision or operation conflict"
+          },
+          "500": {
+            "description": "Storage unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Input"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "stage",
+          "company_name",
+          "responsible",
+          "cnpj",
+          "legal_name",
+          "uf",
+          "state_registration",
+          "municipality_ibge",
+          "crt",
+          "provider",
+          "environment"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "pre_registration",
+              "company_profile"
+            ]
+          },
+          "company_name": {
+            "type": "string"
+          },
+          "responsible": {
+            "type": "string"
+          },
+          "cnpj": {
+            "type": "string"
+          },
+          "legal_name": {
+            "type": "string"
+          },
+          "uf": {
+            "type": "string"
+          },
+          "state_registration": {
+            "type": "string"
+          },
+          "municipality_ibge": {
+            "type": "string"
+          },
+          "crt": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          }
+        }
+      },
+      "Record": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "input",
+          "revision",
+          "created_at",
+          "repeated"
+        ],
+        "properties": {
+          "input": {
+            "$ref": "#/components/schemas/Input"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

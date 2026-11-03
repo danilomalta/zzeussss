@@ -1,16 +1,19 @@
 import {useState} from 'react';
+import {FiscalCustomer} from './FiscalCustomer';
+import {fiscalWords} from '../../../../core/fiscalCustomer/words';
 import {Link} from 'react-router-dom';
+import {words113} from '../../../../core/payables113/words';
 import {useEnterprise89} from '../../../../core/enterprise89/context';
 import {finance89,remaining89,settle89,money as parseMoney,parseOFX89,match89} from '../../../../core/enterprise89/engine.mjs';
 import {readInvoice} from '../../../../core/workbench73/xml';
 import type {Bank89,Document89} from '../../../../core/enterprise89/types';
 import {Badge89,Blocked89,Export89,Form89,options89,Panel89,Table89,today89} from './UI';
 export function Finance89Page(){
- const {data,w,money,date,act,error,busy}=useEnterprise89(),[tab,setTab]=useState('finance'),[query,setQuery]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[preview,setPreview]=useState<Bank89[]>([]),[bankLabel,setBankLabel]=useState('');
+ const {data,w,money,date,act,error,busy,locale,cap}=useEnterprise89(),[tab,setTab]=useState('finance'),[query,setQuery]=useState(''),[from,setFrom]=useState(''),[to,setTo]=useState(''),[preview,setPreview]=useState<Bank89[]>([]),[bankLabel,setBankLabel]=useState('');
  const totals=finance89(data.finance,from,to||undefined),rows=data.finance.filter(r=>(!query||r.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()))&&(!from||r.due>=from)&&(!to||r.due<=to)),today=today89();
  async function ofx(file:File){try{if(!bankLabel.trim()||bankLabel.length>80||file.size>2000000)throw Error('invalid');setPreview(parseOFX89(await file.text()).map(r=>({...r,id:crypto.randomUUID(),reference:bankLabel.trim()+'|'+r.reference,match:''})));}catch(e){error(e instanceof Error?e.message:'invalid');}}
  const available=data.finance.flatMap(r=>r.settlements.filter(s=>!data.bank.some(b=>b.match===s.id)).map(s=>({value:s.id,label:r.name+' · '+date(s.date)+' · '+money(s.amount)})));
- return <><nav className="erp89-tabs" aria-label={w.finance}>{['finance','bank'].map(k=><button key={k} className="brand-secondary" aria-pressed={tab===k} onClick={()=>setTab(k)}>{w[k]}</button>)}</nav><div className="erp89-filters"><label>{w.search}<input value={query} onChange={e=>setQuery(e.target.value)}/></label><label>{w.from}<input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label>{w.to}<input type="date" min={from} value={to} onChange={e=>setTo(e.target.value)}/></label></div>
+ return <>{cap.permissions.includes('view_accounting')&&<Link className="brand-secondary" to="/local/payables">{words113(locale).title}</Link>}<nav className="erp89-tabs" aria-label={w.finance}>{['finance','bank'].map(k=><button key={k} className="brand-secondary" aria-pressed={tab===k} onClick={()=>setTab(k)}>{w[k]}</button>)}</nav><div className="erp89-filters"><label>{w.search}<input value={query} onChange={e=>setQuery(e.target.value)}/></label><label>{w.from}<input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label>{w.to}<input type="date" min={from} value={to} onChange={e=>setTo(e.target.value)}/></label></div>
  <section className="erp89-metrics">{(['pay','receive','incoming','outgoing','net','result'] as const).map(k=><article className="brand-panel" key={k}><span>{w[k]}</span><strong>{money(totals[k])}</strong></article>)}</section><p className="erp89-note">{w.cashBasis}</p>
  {tab==='finance'?<><Form89 id="newAccount" title="newAccount" fields={[{name:'name'},{name:'kind',options:options89(['pay','receive'])},{name:'amount',decimal:true},{name:'due',type:'date',value:today},{name:'category',options:options89(['revenue','expense','transfer'])},{name:'center',required:false}]} run={v=>act('newAccount',v.name,d=>d.finance.push({id:crypto.randomUUID(),name:v.name.trim(),kind:v.kind as 'pay'|'receive',amount:parseMoney(v.amount),due:v.due,category:v.category as 'revenue'|'expense'|'transfer',center:v.center.trim(),settlements:[]}))}/>
  <Form89 id="settlement" title="settlement" fields={[{name:'account',options:data.finance.filter(r=>remaining89(r)>0).map(r=>({value:r.id,label:r.name+' · '+money(remaining89(r))}))},{name:'amount',decimal:true},{name:'date',type:'date',value:today},{name:'method',options:options89(['cash','credit','debit','pix','bank'])}]} run={async v=>{if(!window.confirm(w.confirmAction))return false;return act('settlement',w.settlement,d=>{const row=d.finance.find(r=>r.id===v.account);if(!row)throw Error('invalid');settle89(row,{id:crypto.randomUUID(),date:v.date,amount:parseMoney(v.amount),method:v.method});});}}/>
@@ -21,6 +24,10 @@ export function Finance89Page(){
  </>;
 }
 export function Fiscal89Page(){
+ const {locale}=useEnterprise89(),fw=fiscalWords(locale),[tab,setTab]=useState('customer');
+ return <><nav className="erp89-tabs" aria-label={fw.title}>{['customer','archive'].map(key=><button type="button" key={key} className="brand-secondary" aria-pressed={tab===key} onClick={()=>setTab(key)}>{key==='customer'?fw.title:fw.archive}</button>)}</nav><div hidden={tab!=='customer'}><FiscalCustomer/></div><div hidden={tab!=='archive'}><FiscalArchive89Page/></div></>;
+}
+function FiscalArchive89Page(){
  const {data,w,money,date,act,error,busy}=useEnterprise89(),[preview,setPreview]=useState<Document89[]>([]),[query,setQuery]=useState('');
  async function files(input:FileList){try{if(input.length>20)throw Error('limit');const rows:Document89[]=[];for(const file of Array.from(input)){if(file.size>2000000)throw Error('limit');const v=readInvoice(await file.text());rows.push({id:crypto.randomUUID(),key:v.key,number:v.number,name:v.issuer,date:v.issued.slice(0,10),amount:v.total,model:v.key.slice(20,22),protocol:v.protocol,items:v.items.length});}setPreview(rows);}catch(e){error(e instanceof Error?e.message:'invalid');}}
  const rows=data.documents.filter(r=>(r.name+' '+r.number).toLocaleLowerCase().includes(query.toLocaleLowerCase()));

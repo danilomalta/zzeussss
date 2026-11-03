@@ -1,4 +1,4 @@
-// Package purchases creates local orders; it neither sends them nor changes stock.
+// Package purchases manages local orders and authorized receiving. It never sends orders to suppliers.
 package purchases
 
 import (
@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 	"titansystem-backend/internal/core/modules"
+	"titansystem-backend/internal/localdb/catalog"
 	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/identity"
 )
@@ -48,16 +49,17 @@ type Item struct {
 	Quantity  int64  `json:"quantity_milli"`
 }
 type Order struct {
-	ID           string `json:"id"`
-	OperationID  string `json:"operation_id"`
-	SupplierID   string `json:"supplier_id"`
-	SupplierName string `json:"supplier_name"`
-	SuggestionID string `json:"suggestion_id"`
-	Status       string `json:"status"`
-	CreatedAt    string `json:"created_at"`
-	ApprovedBy   string `json:"approved_by"`
-	ApprovedAt   string `json:"approved_at"`
-	Items        []Item `json:"items"`
+	ID              string `json:"id"`
+	OperationID     string `json:"operation_id"`
+	SupplierID      string `json:"supplier_id"`
+	SupplierName    string `json:"supplier_name"`
+	SuggestionID    string `json:"suggestion_id"`
+	Status          string `json:"status"`
+	ReceivingStatus string `json:"receiving_status"`
+	CreatedAt       string `json:"created_at"`
+	ApprovedBy      string `json:"approved_by"`
+	ApprovedAt      string `json:"approved_at"`
+	Items           []Item `json:"items"`
 }
 type Approval struct {
 	SuggestionID string `json:"suggestion_id"`
@@ -102,7 +104,7 @@ func CreateSupplier(ctx context.Context, db *sql.DB, license *entitlementstore.S
 		return Result{}, e
 	}
 	var id, name, status, actor, store string
-	e = tx.QueryRowContext(ctx, `SELECT id,name,status,created_by,store_id FROM purchase_suppliers WHERE tenant_id=? AND device_id=? AND operation_id=?`, a.TenantID, d.DeviceID, in.OperationID).Scan(&id, &name, &status, &actor, &store)
+	e = tx.QueryRowContext(ctx, `SELECT id,name,status,created_by,store_id FROM purchase_supplier_originals WHERE tenant_id=? AND device_id=? AND operation_id=?`, a.TenantID, d.DeviceID, in.OperationID).Scan(&id, &name, &status, &actor, &store)
 	if e == nil {
 		if id != in.ID || name != in.Name || status != in.Status || actor != a.IdentityID || store != a.StoreID {
 			return Result{}, ErrConflict
@@ -113,6 +115,13 @@ func CreateSupplier(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	if !errors.Is(e, sql.ErrNoRows) {
 		return Result{}, e
 	}
+	var used int
+	if e = tx.QueryRowContext(ctx, `SELECT count(*) FROM purchase_supplier_edits WHERE tenant_id=? AND device_id=? AND operation_id=?`, a.TenantID, d.DeviceID, in.OperationID).Scan(&used); e != nil {
+		return Result{}, e
+	}
+	if used != 0 {
+		return Result{}, ErrConflict
+	}
 	var exists int
 	if e = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM purchase_suppliers WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.ID).Scan(&exists); e != nil {
 		return Result{}, e
@@ -122,6 +131,9 @@ func CreateSupplier(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	if e = one(ctx, tx, `INSERT INTO purchase_suppliers VALUES(?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, in.ID, d.DeviceID, in.OperationID, a.IdentityID, in.Name, in.Status, now); e != nil {
+		return Result{}, e
+	}
+	if e = one(ctx, tx, `INSERT INTO purchase_supplier_originals SELECT * FROM purchase_suppliers WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.ID); e != nil {
 		return Result{}, e
 	}
 	if e = audit(ctx, tx, a, d, in.OperationID, "supplier.created", in.ID, now); e != nil {
@@ -186,6 +198,9 @@ func Create(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a 
 	}
 	if e != nil {
 		return Result{}, e
+	}
+	if err := catalog.RequireActiveProductTx(ctx, tx, a.TenantID, item.ProductID); err != nil {
+		return Result{}, err
 	}
 	if item.Quantity <= 0 || item.Quantity > MaxQuantity {
 		return Result{}, ErrInvalid
@@ -313,6 +328,11 @@ func Orders(ctx context.Context, db *sql.DB, a identity.Scope, d identity.Device
 		return nil, e
 	}
 	rows.Close()
+	for n := range out {
+		if _, err := orderStatusTx(ctx, tx, a, &out[n]); err != nil {
+			return nil, err
+		}
+	}
 	e = tx.Commit()
 	return out, e
 }
@@ -351,6 +371,9 @@ func Get(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceCon
 	rows.Close()
 	if len(v.Items) != 1 {
 		return Order{}, ErrConflict
+	}
+	if _, err := orderStatusTx(ctx, tx, a, &v); err != nil {
+		return Order{}, err
 	}
 	e = tx.Commit()
 	return v, e

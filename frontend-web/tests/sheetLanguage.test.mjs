@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {sheetLanguageKey,currentSheetLanguage} from '../src/core/sheets70/language.mjs';
+test('sheet locale resolves the five languages including regional variants',()=>{for(const [input,output] of [['pt-BR','ptBR'],['pt-PT','ptBR'],['en-US','enUS'],['en-GB','enUS'],['es-AR','esES'],['fr-FR','frFR'],['zh-Hans','zhCN'],['unknown','ptBR']])assert.equal(sheetLanguageKey(input),output);});
+test('a language selected while importing replaces the late result before mounting',async()=>{let language='pt-BR';const calls=[];const pack=await currentSheetLanguage(()=>language,()=>true,async l=>{calls.push(l);if(l==='pt-BR')language='zh-CN';return {locale:sheetLanguageKey(l)};});assert.equal(pack.locale,'zhCN');assert.deepEqual(calls,['pt-BR','zh-CN']);});
+test('navigation while loading cannot create or update an obsolete editor',async()=>{let active=true;const result=await currentSheetLanguage(()=> 'en',()=>active,async()=>{active=false;return {locale:'enUS'};});assert.equal(result,null);});
+test('already cancelled editor does not start an import',async()=>{let calls=0;assert.equal(await currentSheetLanguage(()=> 'en',()=>false,async()=>{calls++;return {locale:'enUS'};}),null);assert.equal(calls,0);});
+test('failed language import remains an error, not a silent wrong-language editor',async()=>{await assert.rejects(()=>currentSheetLanguage(()=> 'fr',()=>true,async()=>{throw Error('offline');}),/offline/);});

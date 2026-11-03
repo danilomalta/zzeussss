@@ -13,12 +13,12 @@ Segurança & Desempenho:
 */
 
 export const api = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
+  baseURL: window.location.protocol === 'titan:' ? '/api/v1' : 'http://localhost:8080/api/v1',
   timeout: 15000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'X-Client-Platform': 'web',
+    'X-Client-Platform': window.location.protocol === 'titan:' ? 'desktop' : 'web',
   },
 });
 

@@ -1,0 +1,37 @@
+// Opt-in actual HTTP acceptance using the same production clients as the screens.
+import assert from 'node:assert/strict';
+import {createProductionRead} from '../src/core/productionRead/source.mjs';
+import {createProductionCommands} from '../src/core/productionRead/commands.mjs';
+if(!process.env.TITAN_PRODUCTION67_FIXTURE)throw Error('Disposable Go fixture required');
+const f=JSON.parse(process.env.TITAN_PRODUCTION67_FIXTURE),map=new Map();let dropResult=false,posts=0;
+const fetcher=async(path,o)=>{if(o.method==='POST')posts++;const r=await fetch(f.url+path,o);if(dropResult&&path==='/local/v1/production/results'){dropResult=false;assert.equal(r.status,201);await r.text();throw Error('Synthetic response loss AFTER commit');}return r;};
+const response=await fetcher('/local/v1/capabilities',{headers:{Authorization:'Bearer '+f.token}});assert.equal(response.status,200);const capabilities=await response.json();
+const options={token:f.token,session:f.session,capabilities,isCurrent:()=>true,fetcher,storage:{getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)},locks:{request:async(k,o,fn)=>fn({name:k})}};
+let source=createProductionCommands(options);const read=createProductionRead(options);
+async function write(kind,body){const c=source.prepare(kind,{operation_id:crypto.randomUUID(),...body}),r=await source.submit(c);assert.equal(r.state,'confirmed');assert.equal(source.pending(),null);return r.receipt.result;}
+let version=await read.version('bread-v1');assert.equal((await read.capacity(version,'production-room')).alternatives[0].possible_batches,5);
+await write('recipe',{recipe_id:version.recipe_id,version_id:'bread-v2',expected_revision:1,name:'Pao versao2',output_product_id:'bread',output_unit:'unit',yield_milli:10000,ingredients:version.ingredients});
+const v2=await read.version('bread-v2');assert.equal((await read.version('bread-v1')).revision,1);assert.equal(v2.revision,2);
+assert.equal((await source.simultaneous('production-room',[{version,batches:3},{version:v2,batches:3}])).feasible,false);
+assert.equal((await source.materialCost(version,3)).batches,3);
+assert.equal((await source.costScenario(version,{batches:3})).scenario_contribution_cents_exact,null);
+await source.costScenario(version,{batches:3,labor:{minutes:60,workers:2,hourly_cost_cents:1000},overhead_cents:0,sale_price_cents:1000});
+await write('order',{order_id:'production67-order',version_id:version.version_id,location_id:'production-room',responsible_id:f.session.identity_id,planned_batches:3});
+let order=await source.order('production67-order');assert.equal(order.recipe.version_id,'bread-v1');await source.orderMaterialCost(order);
+await write('state',{order_id:order.id,expected_revision:1,status:'approved',reason:'Synthetic authorized approval'});
+await write('stage_plan',{order_id:order.id,reason:'Synthetic execution plan',stages:[{stage_id:'mix',name:'Misturar',responsible_id:f.session.identity_id},{stage_id:'bake',name:'Assar',responsible_id:f.session.identity_id}]});
+await write('reserve',{reservation_id:'production67-materials',order_id:order.id,reason:'Synthetic reservation'});
+assert.equal((await read.capacity(version,'production-room')).alternatives[0].possible_batches,2);
+await write('materials',{reservation_id:'production67-materials',action:'consume',reason:'Synthetic measured consumption'});
+for(const stage_id of ['mix','bake'])for(const status of ['running','completed'])await write('stage_state',{order_id:order.id,stage_id,status,expected_revision:status==='running'?1:2,reason:'Synthetic stage evidence'});
+assert.equal((await source.stageHistory(order.id)).length,5);
+const input={operation_id:crypto.randomUUID(),result_id:'production67-result',order_id:order.id,expected_revision:2,produced_milli:27000,reason:'Synthetic measured result'};
+dropResult=true;await assert.rejects(()=>source.submit(source.prepare('result',input)));assert.equal(source.pending().uncertain,true);const before=posts;source=createProductionCommands(options);assert.equal((await source.recover()).state,'confirmed');assert.equal(posts,before);
+order=await source.order(order.id);assert.equal(order.status,'completed');const trace=await source.trace(order.id);assert.equal(trace.result.produced_milli,27000);assert.equal(trace.result.shortfall_milli,3000);
+const reference={result_id:trace.result.result_id,product_id:'bread',unit:'unit',planned_milli:30000,produced_milli:27000,shortfall_milli:3000};
+await write('loss',{loss_id:'production67-loss',result_id:reference.result_id,quantity_milli:3000,reason:'Synthetic process loss'});assert.equal((await source.declarations('loss',reference)).remaining,0);assert.equal((await source.declarationHistory('loss','production67-loss')).length,1);
+await write('lot',{lot_id:'production67-lot',result_id:reference.result_id,quantity_milli:27000,code:'BATCH67',manufactured_on:'2026-10-26',expires_on:'2026-10-30',reason:'Synthetic batch declaration'});
+const lot=await source.declaration('lot','production67-lot',reference);assert.equal((await source.declarations('lot',reference)).remaining,0);
+await write('quality',{lot_id:lot.id,expected_revision:0,status:'passed',criterion:'Synthetic independent visual inspection',reason:'Synthetic inspection record'});assert.equal((await source.quality(lot)).status,'passed');assert.equal((await source.qualityHistory(lot)).length,1);
+assert.equal((await source.history(order.id)).at(-1).after_status,'completed');assert.equal(source.pending(),null);
+console.log('PASS production67: immutable recipe versions, shared capacity, current costs/scenarios, order/approval, reservation/consumption, sequential stages, good output/loss/batch/quality, lost-response receipt recovery without second POST; real HTTP and disposable SQLite. No graphical clicks or commercial database.');

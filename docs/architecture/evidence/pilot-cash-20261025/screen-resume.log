@@ -1,0 +1,34 @@
+=== RUN   TestPilotCashScreenFlow
+    pilot_screen_flow_test.go:97: Resumed original screen-created records from consistent disposable snapshot; only test license renewed
+    pilot_screen_flow_test.go:148: Real API ready: workflow is empty; waiting for screen actions and DONE marker
+    pilot_screen_flow_test.go:178: HTTP POST /local/v1/login -> 200
+    pilot_screen_flow_test.go:189: HTTP GET /local/v1/cash/sessions/363b9e9c-61a0-45ce-ac3c-63ed0d9a4396/report -> 200
+    pilot_screen_flow_test.go:194: HTTP GET /local/v1/finance/payables/c1541c9a-761e-46d3-bc2d-3f3bdd811dcb -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/sales/0b57c82e-82fc-401c-b84b-ba1b67c9a7e5 -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/cash/sessions/363b9e9c-61a0-45ce-ac3c-63ed0d9a4396/report -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/purchase-orders/aff41294-2f79-4d21-b2aa-7ac1d2db890c/trace -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/purchase-orders/aff41294-2f79-4d21-b2aa-7ac1d2db890c/supply-cycle?limit=50&offset=0 -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/purchase-deliveries/3600f64c-640f-4b9b-972e-11dccb8e85cc -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/finance/payables/c1541c9a-761e-46d3-bc2d-3f3bdd811dcb -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/finance/receiving-origins/c1541c9a-761e-46d3-bc2d-3f3bdd811dcb -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/sales/0b57c82e-82fc-401c-b84b-ba1b67c9a7e5 -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/cash/sessions/363b9e9c-61a0-45ce-ac3c-63ed0d9a4396/report -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/purchase-orders/aff41294-2f79-4d21-b2aa-7ac1d2db890c/trace -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/purchase-orders/aff41294-2f79-4d21-b2aa-7ac1d2db890c/supply-cycle?limit=50&offset=0 -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/purchase-deliveries/3600f64c-640f-4b9b-972e-11dccb8e85cc -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/finance/payables/c1541c9a-761e-46d3-bc2d-3f3bdd811dcb -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/finance/receiving-origins/c1541c9a-761e-46d3-bc2d-3f3bdd811dcb -> 200
+    pilot_screen_flow_test.go:223: HTTP GET /local/v1/me -> 401
+    pilot_screen_flow_test.go:224: HTTP POST /local/v1/login -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/sales/0b57c82e-82fc-401c-b84b-ba1b67c9a7e5 -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/cash/sessions/363b9e9c-61a0-45ce-ac3c-63ed0d9a4396/report -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/purchase-orders/aff41294-2f79-4d21-b2aa-7ac1d2db890c/trace -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/purchase-orders/aff41294-2f79-4d21-b2aa-7ac1d2db890c/supply-cycle?limit=50&offset=0 -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/purchase-deliveries/3600f64c-640f-4b9b-972e-11dccb8e85cc -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/finance/payables/c1541c9a-761e-46d3-bc2d-3f3bdd811dcb -> 200
+    pilot_screen_flow_test.go:183: HTTP GET /local/v1/finance/receiving-origins/c1541c9a-761e-46d3-bc2d-3f3bdd811dcb -> 200
+    pilot_screen_flow_test.go:229: Screen-originated workflow persisted, restarted and restored; waiting for final screen reread and FINISH marker
+    pilot_screen_flow_test.go:231: PASS: original UI-originated sale/order/receipt/payment/closure preserved across restart and encrypted backup restoration; no workflow POST from acceptance driver
+--- PASS: TestPilotCashScreenFlow (1647.62s)
+PASS
+ok  	titansystem-backend/internal/localapi	1647.621s

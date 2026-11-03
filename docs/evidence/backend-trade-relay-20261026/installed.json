@@ -1,0 +1,39 @@
+{
+  "source_commit": "1d8b885f9a3d5b280d26968e6f472d9316740cc0",
+  "ci_url": "https://github.com/danilomalta/zzeussss/actions/runs/40262463058",
+  "installed_at_utc": "2026-10-26T03:20:02.809024+00:00",
+  "release": "/home/danillo-malta/.local/opt/titansystem/backend/1d8b885f9a3d5b280d26968e6f472d9316740cc0",
+  "previous_release": "/home/danillo-malta/.local/opt/titansystem/backend/a5bbcdf3420ca4fa6c471fcdd52794f86f84c0dc",
+  "current": "/home/danillo-malta/.local/opt/titansystem/backend/current",
+  "files_sha256": {
+    "titan-local": "2a7703fc81f2883dddceae26fa6daa6c3c5955888a7e4837b1cf1309574702ef",
+    "titan-backup": "48a9e57e6e8396e8577911d92d6aa27aeaf66973611045037931f02180fa0be1",
+    "titan-access": "83d36b1cd001ff6bcd41f654724361949cb5a1035ee0769a8f32fdb44819556f",
+    "titan-peer": "20015575cb75c5aec7743b2e48cc9aa40b6c91a7a79e10eccdb652a2986a6ca6",
+    "titan-receive": "5713e81cc4c401fbf6b4d65d3b1c30b67dd35be2519e260821a24aafe5545aef",
+    "titan-sync": "1262c4d7fe73b3906fbb61cf7302d2fd370c61805dc93078b0ff77993a176ac7",
+    "titan-trade": "880b0370f2d70a8475325406ceae9b0e2e4b160298298ce96426d94373607ec3"
+  },
+  "services_restarted": false,
+  "commercial_database_or_keys_read": false,
+  "installed_validation": {
+    "result": "PASS",
+    "compiled_binary_api_lifecycles": 3,
+    "http_assertions": 12,
+    "schema_version": 65,
+    "restart_identity_preserved": true,
+    "restored_identity_preserved": true,
+    "backup_executable_roundtrip": true,
+    "unlicensed_writes_refused": true,
+    "commercial_data": false
+  },
+  "installed_cli_full_pilot": {
+    "result": "PASS",
+    "buyer_http_calls": 164,
+    "supplier_http_calls": 22,
+    "api_process_lifetimes": 9,
+    "elapsed_seconds": 3.03,
+    "origin_offline_recovery_test": "PASS in full regression suite",
+    "test_database_only": true
+  }
+}

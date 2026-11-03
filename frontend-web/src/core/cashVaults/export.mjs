@@ -1,0 +1,16 @@
+import {fail,time,integer,pathID} from './model.mjs';
+export const columns=['format_version','row_type','scope','generated_at','vault_id','vault_name','vault_state','balance_cents','latest_count_id','count_state','expected_cents','counted_cents','difference_cents','counter_id','reviewer_id','total_vaults','active_vaults','archived_vaults','counting','awaiting_review','divergent_latest'];
+function number(s){if(!/^-?(0|[1-9]\d*)$/.test(s)||s==='-0')fail();const n=Number(s);if(!Number.isSafeInteger(n))fail();return n;}
+function safe(s,empty=false){if(empty&&s==='')return;if(!s||new TextEncoder().encode(s).length>4096||!/^[_\p{L}\p{N}]/u.test(s)||/\p{Cc}/u.test(s))fail();}
+function parse(raw){if(raw.charCodeAt(0)===0xfeff)raw=raw.slice(1);if(!raw.endsWith('\r\n'))fail();const rows=[];let row=[],cell='',quoted=false,closed=false;for(let i=0;i<raw.length;i++){const c=raw[i];if(quoted){if(c==='"'){if(raw[i+1]==='"'){cell+='"';i++;}else{quoted=false;closed=true;}}else cell+=c;}else if(c==='"'){if(cell||closed)fail();quoted=true;}else if(c===';'){row.push(cell);cell='';closed=false;}else if(c==='\r'&&raw[i+1]==='\n'){row.push(cell);if(row.length!==21||rows.length>=1002)fail();rows.push(row);row=[];cell='';closed=false;i++;}else{if(closed||c==='\r'||c==='\n')fail();cell+=c;}if(cell.length>20000||row.length>21)fail();}if(quoted||row.length||cell)fail();return rows;}
+export function vaultCSV(data){
+ if(!(data instanceof Uint8Array)||data.byteLength>2*1024*1024)fail();let raw;try{raw=new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(data);}catch{fail();}const rows=parse(raw);if(rows.length<2||rows[0].some((v,i)=>v!==columns[i]))fail();const summary=rows[1];if(summary[0]!=='1'||summary[1]!=='summary'||summary[2]!=='local_physical_vaults'||!time(summary[3])||[4,5,6,8,9,10,11,12,13,14].some(i=>summary[i]!==''))fail();const expected=summary.slice(15).map(number),total=number(summary[7]);if(!integer(total)||expected.some(n=>!integer(n)||n>1000)||rows.length!==expected[0]+2)fail();let balance=0n;const counts=[0,0,0,0,0,0],seen=new Set();
+ for(const r of rows.slice(2)){
+  if(r[0]!=='1'||r[1]!=='vault'||r[2]!==summary[2]||r[3]!==summary[3]||!pathID(r[4])||seen.has(r[4])||!['active','archived'].includes(r[6])||r.slice(15).some(v=>v!==''))fail();for(const i of [4,5,6])safe(r[i]);seen.add(r[4]);const amount=number(r[7]);if(!integer(amount)||r[6]==='archived'&&amount!==0)fail();balance+=BigInt(amount);counts[0]++;counts[r[6]==='active'?1:2]++;
+  if(r[8]===''){if(r.slice(8,15).some(v=>v!==''))fail();}
+  else{if(!pathID(r[8])||!['counting','submitted','accepted','rejected','cancelled'].includes(r[9]))fail();for(const i of [8,9,13])safe(r[i]);safe(r[14],true);if(['counting','cancelled'].includes(r[9])){if(r.slice(10,13).some(v=>v!=='')||r[14]!=='')fail();if(r[9]==='counting')counts[3]++;}
+   else{const a=number(r[10]),b=number(r[11]),diff=number(r[12]);if(!integer(a)||!integer(b)||BigInt(b)-BigInt(a)!==BigInt(diff)||(r[9]==='submitted'?r[14]!=='':!r[14]||r[14]===r[13]))fail();if(r[9]==='submitted')counts[4]++;if(diff!==0)counts[5]++;}
+  }
+ }
+ if(balance!==BigInt(total)||counts.some((n,i)=>n!==expected[i]))fail();return {total_balance_cents:total,vault_count:expected[0]};
+}

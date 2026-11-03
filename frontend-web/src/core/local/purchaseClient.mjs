@@ -3,7 +3,7 @@ const id=v=>typeof v==='string' && v.length>0 && v.length<=128 && v.trim()===v;
 const text=v=>typeof v==='string' && v.length>0;
 export const validPurchaseInput=v=>v && ['operation_id','order_id','supplier_id','suggestion_id'].every(k=>id(v[k])) && Object.keys(v).length===4;
 export const validSupplierInput=v=>v && id(v.operation_id) && id(v.id) && text(v.name) && v.name.trim()===v.name && new TextEncoder().encode(v.name).length<=255 && ['active','inactive'].includes(v.status) && Object.keys(v).length===4;
-const summary=v=>v && ['id','operation_id','supplier_id','suggestion_id','approved_by'].every(k=>id(v[k])) && text(v.supplier_name) && text(v.created_at) && text(v.approved_at) && v.status==='local_not_sent';
+const summary=v=>v && ['id','operation_id','supplier_id','suggestion_id','approved_by'].every(k=>id(v[k])) && text(v.supplier_name) && text(v.created_at) && text(v.approved_at) && ['local_not_sent','cancelled'].includes(v.status);
 const item=v=>v && id(v.product_id) && text(v.sku) && text(v.name) && text(v.unit) && Number.isSafeInteger(v.quantity_milli) && v.quantity_milli>0;
 const invalid=()=>{throw new LocalAPIError(0,'Dados de pedido incompatíveis com a API local.');};
 export function createPurchaseClient(fetcher=globalThis.fetch){

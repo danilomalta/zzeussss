@@ -4,6 +4,7 @@ export function allowedAreas(capabilities) {
  const signed=['active','expired','not_yet_valid'].includes(capabilities?.license?.state);
  const has=(module,permission)=>signed && m.has(module) && p.has(permission);
  const areas=['home'];
+ if(p.has('view_accounting'))areas.push('reports');
  if(has('inventory','view_catalog')) areas.push('catalog','prices');
  if(has('inventory','manage_stock')) areas.push('stock');
  if(has('pos','sell')) areas.push('pos','cash','sos','payments');
@@ -19,6 +20,7 @@ export function allowedAreas(capabilities) {
  return areas;
 }
 export function areaForRoute(pathname) {
+ if(pathname==='/local/reports')return 'reports';
  if(pathname==='/local/sheets')return 'sheets';
  if(pathname==='/local/hr')return 'hr';
  if((pathname==='/local/owner' || pathname==='/local/overview'))return 'portfolio';

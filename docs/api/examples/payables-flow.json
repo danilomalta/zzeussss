@@ -1,0 +1,1281 @@
+{
+  "normalization": "Only generated actor/context/movement IDs and timestamps are normalized; amounts, states, original operation IDs and HTTP results come from real handlers and disposable SQLite.",
+  "steps": [
+    {
+      "name": "create_document",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payables",
+      "request": {
+        "currency": "BRL",
+        "description": "Compra de farinha",
+        "document_reference": "NFe-123",
+        "installments": [
+          {
+            "amount_cents": 10000,
+            "due_on": "2026-10-10",
+            "id": "part-one"
+          },
+          {
+            "amount_cents": 9600,
+            "due_on": "2026-10-20",
+            "id": "part-two"
+          },
+          {
+            "amount_cents": 11900,
+            "due_on": "2026-11-20",
+            "id": "part-three"
+          }
+        ],
+        "issued_on": "2026-10-01",
+        "operation_id": "create-invoice",
+        "payable_id": "invoice-one",
+        "supplier_id": "supplier",
+        "total_cents": 31500
+      },
+      "status": 201,
+      "response": {
+        "operation_id": "create-invoice",
+        "payable": {
+          "created_at": "2026-10-20T12:00:00Z",
+          "creator_id": "owner-test",
+          "currency": "BRL",
+          "description": "Compra de farinha",
+          "document_reference": "NFe-123",
+          "history": [
+            {
+              "action": "create",
+              "actor_id": "owner-test",
+              "created_at": "2026-10-20T12:00:00Z",
+              "from_state": "",
+              "operation_id": "create-invoice",
+              "reason": "Compra de farinha",
+              "to_state": "pending"
+            }
+          ],
+          "id": "invoice-one",
+          "installments": [
+            {
+              "amount_cents": 10000,
+              "due_on": "2026-10-10",
+              "id": "part-one"
+            },
+            {
+              "amount_cents": 9600,
+              "due_on": "2026-10-20",
+              "id": "part-two"
+            },
+            {
+              "amount_cents": 11900,
+              "due_on": "2026-11-20",
+              "id": "part-three"
+            }
+          ],
+          "issued_on": "2026-10-01",
+          "last_operation_id": "create-invoice",
+          "payment_execution_available": false,
+          "settled_cents": null,
+          "state": "pending",
+          "supplier_id": "supplier",
+          "supplier_name": "Padaria",
+          "total_cents": 31500,
+          "updated_at": "2026-10-20T12:00:00Z"
+        },
+        "repeated": false
+      }
+    },
+    {
+      "name": "recover_document_after_discarded_reply",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/operations/create-invoice",
+      "status": 200,
+      "response": {
+        "operation_id": "create-invoice",
+        "payable": {
+          "created_at": "2026-10-20T12:00:00Z",
+          "creator_id": "owner-test",
+          "currency": "BRL",
+          "description": "Compra de farinha",
+          "document_reference": "NFe-123",
+          "history": [
+            {
+              "action": "create",
+              "actor_id": "owner-test",
+              "created_at": "2026-10-20T12:00:00Z",
+              "from_state": "",
+              "operation_id": "create-invoice",
+              "reason": "Compra de farinha",
+              "to_state": "pending"
+            }
+          ],
+          "id": "invoice-one",
+          "installments": [
+            {
+              "amount_cents": 10000,
+              "due_on": "2026-10-10",
+              "id": "part-one"
+            },
+            {
+              "amount_cents": 9600,
+              "due_on": "2026-10-20",
+              "id": "part-two"
+            },
+            {
+              "amount_cents": 11900,
+              "due_on": "2026-11-20",
+              "id": "part-three"
+            }
+          ],
+          "issued_on": "2026-10-01",
+          "last_operation_id": "create-invoice",
+          "payment_execution_available": false,
+          "settled_cents": null,
+          "state": "pending",
+          "supplier_id": "supplier",
+          "supplier_name": "Padaria",
+          "total_cents": 31500,
+          "updated_at": "2026-10-20T12:00:00Z"
+        },
+        "repeated": false
+      }
+    },
+    {
+      "name": "creator_cannot_approve",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/invoice-one/approve",
+      "request": {
+        "operation_id": "approve-invoice",
+        "reason": "Documento e vencimentos conferidos"
+      },
+      "status": 403,
+      "response": {
+        "error": {
+          "code": "forbidden",
+          "message": "Operação não autorizada."
+        }
+      }
+    },
+    {
+      "name": "approve_document",
+      "actor": "reviewer",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/invoice-one/approve",
+      "request": {
+        "operation_id": "approve-invoice",
+        "reason": "Documento e vencimentos conferidos"
+      },
+      "status": 200,
+      "response": {
+        "operation_id": "approve-invoice",
+        "payable": {
+          "created_at": "2026-10-20T12:00:00Z",
+          "creator_id": "owner-test",
+          "currency": "BRL",
+          "description": "Compra de farinha",
+          "document_reference": "NFe-123",
+          "history": [
+            {
+              "action": "create",
+              "actor_id": "owner-test",
+              "created_at": "2026-10-20T12:00:00Z",
+              "from_state": "",
+              "operation_id": "create-invoice",
+              "reason": "Compra de farinha",
+              "to_state": "pending"
+            },
+            {
+              "action": "approve",
+              "actor_id": "payable-reviewer",
+              "created_at": "2026-10-20T12:00:00Z",
+              "from_state": "pending",
+              "operation_id": "approve-invoice",
+              "reason": "Documento e vencimentos conferidos",
+              "to_state": "approved"
+            }
+          ],
+          "id": "invoice-one",
+          "installments": [
+            {
+              "amount_cents": 10000,
+              "due_on": "2026-10-10",
+              "id": "part-one"
+            },
+            {
+              "amount_cents": 9600,
+              "due_on": "2026-10-20",
+              "id": "part-two"
+            },
+            {
+              "amount_cents": 11900,
+              "due_on": "2026-11-20",
+              "id": "part-three"
+            }
+          ],
+          "issued_on": "2026-10-01",
+          "last_operation_id": "approve-invoice",
+          "payment_execution_available": false,
+          "settled_cents": null,
+          "state": "approved",
+          "supplier_id": "supplier",
+          "supplier_name": "Padaria",
+          "total_cents": 31500,
+          "updated_at": "2026-10-20T12:00:00Z"
+        },
+        "repeated": false
+      }
+    },
+    {
+      "name": "recover_approval",
+      "actor": "reviewer",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/operations/approve-invoice",
+      "status": 200,
+      "response": {
+        "operation_id": "approve-invoice",
+        "payable": {
+          "created_at": "2026-10-20T12:00:00Z",
+          "creator_id": "owner-test",
+          "currency": "BRL",
+          "description": "Compra de farinha",
+          "document_reference": "NFe-123",
+          "history": [
+            {
+              "action": "create",
+              "actor_id": "owner-test",
+              "created_at": "2026-10-20T12:00:00Z",
+              "from_state": "",
+              "operation_id": "create-invoice",
+              "reason": "Compra de farinha",
+              "to_state": "pending"
+            },
+            {
+              "action": "approve",
+              "actor_id": "payable-reviewer",
+              "created_at": "2026-10-20T12:00:00Z",
+              "from_state": "pending",
+              "operation_id": "approve-invoice",
+              "reason": "Documento e vencimentos conferidos",
+              "to_state": "approved"
+            }
+          ],
+          "id": "invoice-one",
+          "installments": [
+            {
+              "amount_cents": 10000,
+              "due_on": "2026-10-10",
+              "id": "part-one"
+            },
+            {
+              "amount_cents": 9600,
+              "due_on": "2026-10-20",
+              "id": "part-two"
+            },
+            {
+              "amount_cents": 11900,
+              "due_on": "2026-11-20",
+              "id": "part-three"
+            }
+          ],
+          "issued_on": "2026-10-01",
+          "last_operation_id": "approve-invoice",
+          "payment_execution_available": false,
+          "settled_cents": null,
+          "state": "approved",
+          "supplier_id": "supplier",
+          "supplier_name": "Padaria",
+          "total_cents": 31500,
+          "updated_at": "2026-10-20T12:00:00Z"
+        },
+        "repeated": false
+      }
+    },
+    {
+      "name": "replay_original_create",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payables",
+      "request": {
+        "currency": "BRL",
+        "description": "Compra de farinha",
+        "document_reference": "NFe-123",
+        "installments": [
+          {
+            "amount_cents": 10000,
+            "due_on": "2026-10-10",
+            "id": "part-one"
+          },
+          {
+            "amount_cents": 9600,
+            "due_on": "2026-10-20",
+            "id": "part-two"
+          },
+          {
+            "amount_cents": 11900,
+            "due_on": "2026-11-20",
+            "id": "part-three"
+          }
+        ],
+        "issued_on": "2026-10-01",
+        "operation_id": "create-invoice",
+        "payable_id": "invoice-one",
+        "supplier_id": "supplier",
+        "total_cents": 31500
+      },
+      "status": 200,
+      "response": {
+        "operation_id": "create-invoice",
+        "payable": {
+          "created_at": "2026-10-20T12:00:00Z",
+          "creator_id": "owner-test",
+          "currency": "BRL",
+          "description": "Compra de farinha",
+          "document_reference": "NFe-123",
+          "history": [
+            {
+              "action": "create",
+              "actor_id": "owner-test",
+              "created_at": "2026-10-20T12:00:00Z",
+              "from_state": "",
+              "operation_id": "create-invoice",
+              "reason": "Compra de farinha",
+              "to_state": "pending"
+            }
+          ],
+          "id": "invoice-one",
+          "installments": [
+            {
+              "amount_cents": 10000,
+              "due_on": "2026-10-10",
+              "id": "part-one"
+            },
+            {
+              "amount_cents": 9600,
+              "due_on": "2026-10-20",
+              "id": "part-two"
+            },
+            {
+              "amount_cents": 11900,
+              "due_on": "2026-11-20",
+              "id": "part-three"
+            }
+          ],
+          "issued_on": "2026-10-01",
+          "last_operation_id": "create-invoice",
+          "payment_execution_available": false,
+          "settled_cents": null,
+          "state": "pending",
+          "supplier_id": "supplier",
+          "supplier_name": "Padaria",
+          "total_cents": 31500,
+          "updated_at": "2026-10-20T12:00:00Z"
+        },
+        "repeated": true
+      }
+    },
+    {
+      "name": "document_with_current_cash",
+      "actor": "accountant",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/invoice-one",
+      "status": 200,
+      "response": {
+        "cash": {
+          "applied_cents": 0,
+          "basis": "declared_cash_audited_sources",
+          "outstanding_cents": 31500,
+          "paid_cents": 0,
+          "returned_cents": 0
+        },
+        "created_at": "2026-10-20T12:00:00Z",
+        "creator_id": "owner-test",
+        "currency": "BRL",
+        "description": "Compra de farinha",
+        "document_reference": "NFe-123",
+        "history": [
+          {
+            "action": "create",
+            "actor_id": "owner-test",
+            "created_at": "2026-10-20T12:00:00Z",
+            "from_state": "",
+            "operation_id": "create-invoice",
+            "reason": "Compra de farinha",
+            "to_state": "pending"
+          },
+          {
+            "action": "approve",
+            "actor_id": "payable-reviewer",
+            "created_at": "2026-10-20T12:00:00Z",
+            "from_state": "pending",
+            "operation_id": "approve-invoice",
+            "reason": "Documento e vencimentos conferidos",
+            "to_state": "approved"
+          }
+        ],
+        "id": "invoice-one",
+        "installments": [
+          {
+            "amount_cents": 10000,
+            "due_on": "2026-10-10",
+            "id": "part-one"
+          },
+          {
+            "amount_cents": 9600,
+            "due_on": "2026-10-20",
+            "id": "part-two"
+          },
+          {
+            "amount_cents": 11900,
+            "due_on": "2026-11-20",
+            "id": "part-three"
+          }
+        ],
+        "issued_on": "2026-10-01",
+        "last_operation_id": "approve-invoice",
+        "payment_execution_available": false,
+        "settled_cents": null,
+        "state": "approved",
+        "supplier_id": "supplier",
+        "supplier_name": "Padaria",
+        "total_cents": 31500,
+        "updated_at": "2026-10-20T12:00:00Z"
+      }
+    },
+    {
+      "name": "documents_page",
+      "actor": "accountant",
+      "method": "GET",
+      "path": "/local/v1/finance/payables?state=approved\u0026limit=1\u0026offset=0",
+      "status": 200,
+      "response": {
+        "has_more": false,
+        "items": [
+          {
+            "cash": {
+              "applied_cents": 0,
+              "basis": "declared_cash_audited_sources",
+              "outstanding_cents": 31500,
+              "paid_cents": 0,
+              "returned_cents": 0
+            },
+            "created_at": "2026-10-20T12:00:00Z",
+            "creator_id": "owner-test",
+            "currency": "BRL",
+            "description": "Compra de farinha",
+            "document_reference": "NFe-123",
+            "history": [
+              {
+                "action": "create",
+                "actor_id": "owner-test",
+                "created_at": "2026-10-20T12:00:00Z",
+                "from_state": "",
+                "operation_id": "create-invoice",
+                "reason": "Compra de farinha",
+                "to_state": "pending"
+              },
+              {
+                "action": "approve",
+                "actor_id": "payable-reviewer",
+                "created_at": "2026-10-20T12:00:00Z",
+                "from_state": "pending",
+                "operation_id": "approve-invoice",
+                "reason": "Documento e vencimentos conferidos",
+                "to_state": "approved"
+              }
+            ],
+            "id": "invoice-one",
+            "installments": [
+              {
+                "amount_cents": 10000,
+                "due_on": "2026-10-10",
+                "id": "part-one"
+              },
+              {
+                "amount_cents": 9600,
+                "due_on": "2026-10-20",
+                "id": "part-two"
+              },
+              {
+                "amount_cents": 11900,
+                "due_on": "2026-11-20",
+                "id": "part-three"
+              }
+            ],
+            "issued_on": "2026-10-01",
+            "last_operation_id": "approve-invoice",
+            "payment_execution_available": false,
+            "settled_cents": null,
+            "state": "approved",
+            "supplier_id": "supplier",
+            "supplier_name": "Padaria",
+            "total_cents": 31500,
+            "updated_at": "2026-10-20T12:00:00Z"
+          }
+        ],
+        "limit": 1,
+        "offset": 0,
+        "total_count": 1
+      }
+    },
+    {
+      "name": "initial_balances",
+      "actor": "accountant",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/invoice-one/installment-balances",
+      "status": 200,
+      "response": {
+        "complete": true,
+        "currency": "BRL",
+        "generated_at": "2026-10-20T12:00:00Z",
+        "items": [
+          {
+            "applied_cents": 0,
+            "installment": {
+              "amount_cents": 10000,
+              "due_on": "2026-10-10",
+              "id": "part-one"
+            },
+            "outstanding_cents": 10000,
+            "paid_cents": 0,
+            "returned_cents": 0
+          },
+          {
+            "applied_cents": 0,
+            "installment": {
+              "amount_cents": 9600,
+              "due_on": "2026-10-20",
+              "id": "part-two"
+            },
+            "outstanding_cents": 9600,
+            "paid_cents": 0,
+            "returned_cents": 0
+          },
+          {
+            "applied_cents": 0,
+            "installment": {
+              "amount_cents": 11900,
+              "due_on": "2026-11-20",
+              "id": "part-three"
+            },
+            "outstanding_cents": 11900,
+            "paid_cents": 0,
+            "returned_cents": 0
+          }
+        ],
+        "payable_id": "invoice-one",
+        "state": "approved",
+        "summary": {
+          "applied_cents": 0,
+          "basis": "declared_cash_audited_sources",
+          "outstanding_cents": 31500,
+          "paid_cents": 0,
+          "returned_cents": 0
+        }
+      }
+    },
+    {
+      "name": "recover_original_withdrawal",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/cash/movements/operations/withdraw-one",
+      "status": 200,
+      "response": {
+        "amount_cents": 6000,
+        "created_at": "2026-10-20T12:00:00Z",
+        "kind": "withdrawal",
+        "movement_id": "movement-test-withdraw-one",
+        "operation_id": "withdraw-one",
+        "reason": "Movimento de teste conferido",
+        "repeated": false,
+        "session_id": "turn-one"
+      }
+    },
+    {
+      "name": "select_payment_source",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/invoice-one/cash-sources?installment_id=part-one",
+      "status": 200,
+      "response": {
+        "amount_limit_cents": 10000,
+        "amount_rule": "up_to_outstanding",
+        "blocked_reason": "",
+        "complete": true,
+        "currency": "BRL",
+        "generated_at": "2026-10-20T12:00:00Z",
+        "has_more": false,
+        "installment_id": "part-one",
+        "items": [
+          {
+            "actor_id": "owner-test",
+            "amount_cents": 6000,
+            "kind": "withdrawal",
+            "movement_id": "movement-test-withdraw-one",
+            "occurred_at": "2026-10-20T12:00:00Z",
+            "operation_id": "withdraw-one",
+            "session_id": "turn-one"
+          },
+          {
+            "actor_id": "owner-test",
+            "amount_cents": 4000,
+            "kind": "withdrawal",
+            "movement_id": "movement-test-withdraw-two",
+            "occurred_at": "2026-10-20T12:00:00Z",
+            "operation_id": "withdraw-two",
+            "session_id": "turn-one"
+          }
+        ],
+        "limit": 50,
+        "offset": 0,
+        "purpose": "pay",
+        "reservation_created": false,
+        "target_id": "invoice-one",
+        "total_count": 2,
+        "write_authorization_checked": false
+      }
+    },
+    {
+      "name": "confirm_first_cash_link",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/invoice-one/cash-payments",
+      "request": {
+        "installment_id": "part-one",
+        "operation_id": "pay-one",
+        "payment_id": "payment-one",
+        "recipient": "Responsavel do fornecedor",
+        "reference": "receipt-one",
+        "withdrawal_operation_id": "withdraw-one"
+      },
+      "status": 201,
+      "response": {
+        "operation_id": "pay-one",
+        "payment": {
+          "actor_id": "owner-test",
+          "amount_cents": 6000,
+          "created_at": "2026-10-20T12:00:00Z",
+          "id": "payment-one",
+          "installment_id": "part-one",
+          "operation_id": "pay-one",
+          "payable_id": "invoice-one",
+          "recipient": "Responsavel do fornecedor",
+          "reference": "receipt-one",
+          "return": null,
+          "withdrawal_operation_id": "withdraw-one"
+        },
+        "repeated": false
+      }
+    },
+    {
+      "name": "recover_cash_link_after_discarded_reply",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/finance/payable-cash/operations/pay-one",
+      "status": 200,
+      "response": {
+        "operation_id": "pay-one",
+        "payment": {
+          "actor_id": "owner-test",
+          "amount_cents": 6000,
+          "created_at": "2026-10-20T12:00:00Z",
+          "id": "payment-one",
+          "installment_id": "part-one",
+          "operation_id": "pay-one",
+          "payable_id": "invoice-one",
+          "recipient": "Responsavel do fornecedor",
+          "reference": "receipt-one",
+          "return": null,
+          "withdrawal_operation_id": "withdraw-one"
+        },
+        "repeated": false
+      }
+    },
+    {
+      "name": "replay_same_cash_link",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/invoice-one/cash-payments",
+      "request": {
+        "installment_id": "part-one",
+        "operation_id": "pay-one",
+        "payment_id": "payment-one",
+        "recipient": "Responsavel do fornecedor",
+        "reference": "receipt-one",
+        "withdrawal_operation_id": "withdraw-one"
+      },
+      "status": 200,
+      "response": {
+        "operation_id": "pay-one",
+        "payment": {
+          "actor_id": "owner-test",
+          "amount_cents": 6000,
+          "created_at": "2026-10-20T12:00:00Z",
+          "id": "payment-one",
+          "installment_id": "part-one",
+          "operation_id": "pay-one",
+          "payable_id": "invoice-one",
+          "recipient": "Responsavel do fornecedor",
+          "reference": "receipt-one",
+          "return": null,
+          "withdrawal_operation_id": "withdraw-one"
+        },
+        "repeated": true
+      }
+    },
+    {
+      "name": "same_id_changed_content",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/invoice-one/cash-payments",
+      "request": {
+        "installment_id": "part-one",
+        "operation_id": "pay-one",
+        "payment_id": "payment-one",
+        "recipient": "Responsavel do fornecedor",
+        "reference": "receipt-different",
+        "withdrawal_operation_id": "withdraw-one"
+      },
+      "status": 409,
+      "response": {
+        "error": {
+          "code": "conflict",
+          "message": "Operação em conflito; consulte seu estado antes de tentar novamente."
+        }
+      }
+    },
+    {
+      "name": "same_origin_different_ids",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/invoice-one/cash-payments",
+      "request": {
+        "installment_id": "part-one",
+        "operation_id": "pay-duplicate",
+        "payment_id": "payment-duplicate",
+        "recipient": "Responsavel do fornecedor",
+        "reference": "receipt-duplicate",
+        "withdrawal_operation_id": "withdraw-one"
+      },
+      "status": 409,
+      "response": {
+        "error": {
+          "code": "conflict",
+          "message": "Operação em conflito; consulte seu estado antes de tentar novamente."
+        }
+      }
+    },
+    {
+      "name": "complete_first_installment",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/invoice-one/cash-payments",
+      "request": {
+        "installment_id": "part-one",
+        "operation_id": "pay-two",
+        "payment_id": "payment-two",
+        "recipient": "Responsavel do fornecedor",
+        "reference": "receipt-two",
+        "withdrawal_operation_id": "withdraw-two"
+      },
+      "status": 201,
+      "response": {
+        "operation_id": "pay-two",
+        "payment": {
+          "actor_id": "owner-test",
+          "amount_cents": 4000,
+          "created_at": "2026-10-20T12:00:00Z",
+          "id": "payment-two",
+          "installment_id": "part-one",
+          "operation_id": "pay-two",
+          "payable_id": "invoice-one",
+          "recipient": "Responsavel do fornecedor",
+          "reference": "receipt-two",
+          "return": null,
+          "withdrawal_operation_id": "withdraw-two"
+        },
+        "repeated": false
+      }
+    },
+    {
+      "name": "above_installment_balance",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/invoice-one/cash-payments",
+      "request": {
+        "installment_id": "part-one",
+        "operation_id": "pay-over",
+        "payment_id": "payment-over",
+        "recipient": "Responsavel do fornecedor",
+        "reference": "receipt-over",
+        "withdrawal_operation_id": "withdraw-over"
+      },
+      "status": 409,
+      "response": {
+        "error": {
+          "code": "conflict",
+          "message": "Operação em conflito; consulte seu estado antes de tentar novamente."
+        }
+      }
+    },
+    {
+      "name": "fully_applied_source_list",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/invoice-one/cash-sources?installment_id=part-one",
+      "status": 200,
+      "response": {
+        "amount_limit_cents": 0,
+        "amount_rule": "up_to_outstanding",
+        "blocked_reason": "installment_fully_applied",
+        "complete": true,
+        "currency": "BRL",
+        "generated_at": "2026-10-20T12:00:00Z",
+        "has_more": false,
+        "installment_id": "part-one",
+        "items": [],
+        "limit": 50,
+        "offset": 0,
+        "purpose": "pay",
+        "reservation_created": false,
+        "target_id": "invoice-one",
+        "total_count": 0,
+        "write_authorization_checked": false
+      }
+    },
+    {
+      "name": "recover_original_supply",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/cash/movements/operations/return-supply",
+      "status": 200,
+      "response": {
+        "amount_cents": 6000,
+        "created_at": "2026-10-20T12:00:00Z",
+        "kind": "supply",
+        "movement_id": "movement-test-return-supply",
+        "operation_id": "return-supply",
+        "reason": "Movimento de teste conferido",
+        "repeated": false,
+        "session_id": "turn-one"
+      }
+    },
+    {
+      "name": "select_return_source",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/finance/payable-cash/payment-one/return-sources",
+      "status": 200,
+      "response": {
+        "amount_limit_cents": 6000,
+        "amount_rule": "exact_payment_amount",
+        "blocked_reason": "",
+        "complete": true,
+        "currency": "BRL",
+        "generated_at": "2026-10-20T12:00:00Z",
+        "has_more": false,
+        "installment_id": "part-one",
+        "items": [
+          {
+            "actor_id": "owner-test",
+            "amount_cents": 6000,
+            "kind": "supply",
+            "movement_id": "movement-test-return-supply",
+            "occurred_at": "2026-10-20T12:00:00Z",
+            "operation_id": "return-supply",
+            "session_id": "turn-one"
+          }
+        ],
+        "limit": 50,
+        "offset": 0,
+        "purpose": "return",
+        "reservation_created": false,
+        "target_id": "payment-one",
+        "total_count": 1,
+        "write_authorization_checked": false
+      }
+    },
+    {
+      "name": "confirm_integral_return",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payable-cash/payment-one/return",
+      "request": {
+        "operation_id": "return-one",
+        "reason": "Fornecedor devolveu integralmente em especie",
+        "supply_operation_id": "return-supply"
+      },
+      "status": 201,
+      "response": {
+        "operation_id": "return-one",
+        "payment": {
+          "actor_id": "owner-test",
+          "amount_cents": 6000,
+          "created_at": "2026-10-20T12:00:00Z",
+          "id": "payment-one",
+          "installment_id": "part-one",
+          "operation_id": "pay-one",
+          "payable_id": "invoice-one",
+          "recipient": "Responsavel do fornecedor",
+          "reference": "receipt-one",
+          "return": {
+            "actor_id": "owner-test",
+            "created_at": "2026-10-20T12:00:00Z",
+            "operation_id": "return-one",
+            "reason": "Fornecedor devolveu integralmente em especie",
+            "supply_operation_id": "return-supply"
+          },
+          "withdrawal_operation_id": "withdraw-one"
+        },
+        "repeated": false
+      }
+    },
+    {
+      "name": "recover_integral_return",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/finance/payable-cash/operations/return-one",
+      "status": 200,
+      "response": {
+        "operation_id": "return-one",
+        "payment": {
+          "actor_id": "owner-test",
+          "amount_cents": 6000,
+          "created_at": "2026-10-20T12:00:00Z",
+          "id": "payment-one",
+          "installment_id": "part-one",
+          "operation_id": "pay-one",
+          "payable_id": "invoice-one",
+          "recipient": "Responsavel do fornecedor",
+          "reference": "receipt-one",
+          "return": {
+            "actor_id": "owner-test",
+            "created_at": "2026-10-20T12:00:00Z",
+            "operation_id": "return-one",
+            "reason": "Fornecedor devolveu integralmente em especie",
+            "supply_operation_id": "return-supply"
+          },
+          "withdrawal_operation_id": "withdraw-one"
+        },
+        "repeated": false
+      }
+    },
+    {
+      "name": "replay_integral_return",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payable-cash/payment-one/return",
+      "request": {
+        "operation_id": "return-one",
+        "reason": "Fornecedor devolveu integralmente em especie",
+        "supply_operation_id": "return-supply"
+      },
+      "status": 200,
+      "response": {
+        "operation_id": "return-one",
+        "payment": {
+          "actor_id": "owner-test",
+          "amount_cents": 6000,
+          "created_at": "2026-10-20T12:00:00Z",
+          "id": "payment-one",
+          "installment_id": "part-one",
+          "operation_id": "pay-one",
+          "payable_id": "invoice-one",
+          "recipient": "Responsavel do fornecedor",
+          "reference": "receipt-one",
+          "return": {
+            "actor_id": "owner-test",
+            "created_at": "2026-10-20T12:00:00Z",
+            "operation_id": "return-one",
+            "reason": "Fornecedor devolveu integralmente em especie",
+            "supply_operation_id": "return-supply"
+          },
+          "withdrawal_operation_id": "withdraw-one"
+        },
+        "repeated": true
+      }
+    },
+    {
+      "name": "second_return_new_operation",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/local/v1/finance/payable-cash/payment-one/return",
+      "request": {
+        "operation_id": "return-duplicate",
+        "reason": "Fornecedor devolveu integralmente em especie",
+        "supply_operation_id": "return-supply"
+      },
+      "status": 409,
+      "response": {
+        "error": {
+          "code": "conflict",
+          "message": "Operação em conflito; consulte seu estado antes de tentar novamente."
+        }
+      }
+    },
+    {
+      "name": "original_payment_receipt_is_immutable",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/local/v1/finance/payable-cash/operations/pay-one",
+      "status": 200,
+      "response": {
+        "operation_id": "pay-one",
+        "payment": {
+          "actor_id": "owner-test",
+          "amount_cents": 6000,
+          "created_at": "2026-10-20T12:00:00Z",
+          "id": "payment-one",
+          "installment_id": "part-one",
+          "operation_id": "pay-one",
+          "payable_id": "invoice-one",
+          "recipient": "Responsavel do fornecedor",
+          "reference": "receipt-one",
+          "return": null,
+          "withdrawal_operation_id": "withdraw-one"
+        },
+        "repeated": false
+      }
+    },
+    {
+      "name": "cancel_with_applied_money",
+      "actor": "reviewer",
+      "method": "POST",
+      "path": "/local/v1/finance/payables/invoice-one/cancel",
+      "request": {
+        "operation_id": "cancel-paid",
+        "reason": "Documento precisa de revisao"
+      },
+      "status": 409,
+      "response": {
+        "error": {
+          "code": "conflict",
+          "message": "Operação em conflito; consulte seu estado antes de tentar novamente."
+        }
+      }
+    },
+    {
+      "name": "balances_after_restart",
+      "actor": "accountant",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/invoice-one/installment-balances",
+      "status": 200,
+      "response": {
+        "complete": true,
+        "currency": "BRL",
+        "generated_at": "2026-10-20T12:00:00Z",
+        "items": [
+          {
+            "applied_cents": 4000,
+            "installment": {
+              "amount_cents": 10000,
+              "due_on": "2026-10-10",
+              "id": "part-one"
+            },
+            "outstanding_cents": 6000,
+            "paid_cents": 10000,
+            "returned_cents": 6000
+          },
+          {
+            "applied_cents": 0,
+            "installment": {
+              "amount_cents": 9600,
+              "due_on": "2026-10-20",
+              "id": "part-two"
+            },
+            "outstanding_cents": 9600,
+            "paid_cents": 0,
+            "returned_cents": 0
+          },
+          {
+            "applied_cents": 0,
+            "installment": {
+              "amount_cents": 11900,
+              "due_on": "2026-11-20",
+              "id": "part-three"
+            },
+            "outstanding_cents": 11900,
+            "paid_cents": 0,
+            "returned_cents": 0
+          }
+        ],
+        "payable_id": "invoice-one",
+        "state": "approved",
+        "summary": {
+          "applied_cents": 4000,
+          "basis": "declared_cash_audited_sources",
+          "outstanding_cents": 27500,
+          "paid_cents": 10000,
+          "returned_cents": 6000
+        }
+      }
+    },
+    {
+      "name": "cash_history_after_restart",
+      "actor": "accountant",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/invoice-one/cash-payments?limit=1\u0026offset=0",
+      "status": 200,
+      "response": {
+        "has_more": true,
+        "items": [
+          {
+            "actor_id": "owner-test",
+            "amount_cents": 6000,
+            "created_at": "2026-10-20T12:00:00Z",
+            "id": "payment-one",
+            "installment_id": "part-one",
+            "operation_id": "pay-one",
+            "payable_id": "invoice-one",
+            "recipient": "Responsavel do fornecedor",
+            "reference": "receipt-one",
+            "return": {
+              "actor_id": "owner-test",
+              "created_at": "2026-10-20T12:00:00Z",
+              "operation_id": "return-one",
+              "reason": "Fornecedor devolveu integralmente em especie",
+              "supply_operation_id": "return-supply"
+            },
+            "withdrawal_operation_id": "withdraw-one"
+          }
+        ],
+        "limit": 1,
+        "offset": 0,
+        "summary": {
+          "applied_cents": 4000,
+          "basis": "declared_cash_audited_sources",
+          "outstanding_cents": 27500,
+          "paid_cents": 10000,
+          "returned_cents": 6000
+        },
+        "total_count": 2
+      }
+    },
+    {
+      "name": "cash_history_second_page",
+      "actor": "accountant",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/invoice-one/cash-payments?limit=1\u0026offset=1",
+      "status": 200,
+      "response": {
+        "has_more": false,
+        "items": [
+          {
+            "actor_id": "owner-test",
+            "amount_cents": 4000,
+            "created_at": "2026-10-20T12:00:00Z",
+            "id": "payment-two",
+            "installment_id": "part-one",
+            "operation_id": "pay-two",
+            "payable_id": "invoice-one",
+            "recipient": "Responsavel do fornecedor",
+            "reference": "receipt-two",
+            "return": null,
+            "withdrawal_operation_id": "withdraw-two"
+          }
+        ],
+        "limit": 1,
+        "offset": 1,
+        "summary": {
+          "applied_cents": 4000,
+          "basis": "declared_cash_audited_sources",
+          "outstanding_cents": 27500,
+          "paid_cents": 10000,
+          "returned_cents": 6000
+        },
+        "total_count": 2
+      }
+    },
+    {
+      "name": "final_report",
+      "actor": "accountant",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/report?from=2026-10-01\u0026to=2026-11-30\u0026as_of=2026-10-20",
+      "status": 200,
+      "response": {
+        "complete": true,
+        "currency": "BRL",
+        "generated_at": "2026-10-20T12:00:00Z",
+        "items": [
+          {
+            "cash_applied_cents": 4000,
+            "document_reference": "NFe-123",
+            "installment": {
+              "amount_cents": 10000,
+              "due_on": "2026-10-10",
+              "id": "part-one"
+            },
+            "outstanding_cents": 6000,
+            "payable_id": "invoice-one",
+            "state": "approved",
+            "supplier_id": "supplier",
+            "supplier_name": "Padaria",
+            "timing": "overdue"
+          },
+          {
+            "cash_applied_cents": 0,
+            "document_reference": "NFe-123",
+            "installment": {
+              "amount_cents": 9600,
+              "due_on": "2026-10-20",
+              "id": "part-two"
+            },
+            "outstanding_cents": 9600,
+            "payable_id": "invoice-one",
+            "state": "approved",
+            "supplier_id": "supplier",
+            "supplier_name": "Padaria",
+            "timing": "today"
+          },
+          {
+            "cash_applied_cents": 0,
+            "document_reference": "NFe-123",
+            "installment": {
+              "amount_cents": 11900,
+              "due_on": "2026-11-20",
+              "id": "part-three"
+            },
+            "outstanding_cents": 11900,
+            "payable_id": "invoice-one",
+            "state": "approved",
+            "supplier_id": "supplier",
+            "supplier_name": "Padaria",
+            "timing": "future"
+          }
+        ],
+        "payment_execution_available": false,
+        "scope": "local_supplier_obligations",
+        "settled_cents": null,
+        "summary": {
+          "approved_cents": 31500,
+          "approved_future_cents": 11900,
+          "approved_outstanding_cents": 27500,
+          "approved_outstanding_future_cents": 11900,
+          "approved_outstanding_overdue_cents": 6000,
+          "approved_outstanding_today_cents": 9600,
+          "approved_overdue_cents": 10000,
+          "approved_today_cents": 9600,
+          "cancelled_cents": 0,
+          "cash_applied_cents": 4000,
+          "installment_count": 3,
+          "pending_cents": 0,
+          "rejected_cents": 0
+        },
+        "window": {
+          "as_of": "2026-10-20",
+          "from": "2026-10-01",
+          "to": "2026-11-30"
+        }
+      }
+    },
+    {
+      "name": "final_csv_format2",
+      "actor": "accountant",
+      "method": "GET",
+      "path": "/local/v1/finance/payables/report.csv?from=2026-10-01\u0026to=2026-11-30\u0026as_of=2026-10-20",
+      "status": 200,
+      "response": "﻿format_version;row_type;scope;from;to;as_of;currency;metric;metric_value;payable_id;supplier_id;supplier_name;document_reference;state;installment_id;due_on;amount_cents;timing;cash_applied_cents;outstanding_cents\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_cents;31500;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_future_cents;11900;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_cents;27500;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_future_cents;11900;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_overdue_cents;6000;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_outstanding_today_cents;9600;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_overdue_cents;10000;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;approved_today_cents;9600;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;cancelled_cents;0;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;cash_applied_cents;4000;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;installment_count;3;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;pending_cents;0;;;;;;;;;;;\r\n2;summary;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;rejected_cents;0;;;;;;;;;;;\r\n2;installment;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;;;invoice-one;supplier;Padaria;NFe-123;approved;part-one;2026-10-10;10000;overdue;4000;6000\r\n2;installment;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;;;invoice-one;supplier;Padaria;NFe-123;approved;part-two;2026-10-20;9600;today;0;9600\r\n2;installment;local_supplier_obligations;2026-10-01;2026-11-30;2026-10-20;BRL;;;invoice-one;supplier;Padaria;NFe-123;approved;part-three;2026-11-20;11900;future;0;11900\r\n"
+    }
+  ],
+  "test_data_only": true
+}

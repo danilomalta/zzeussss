@@ -1,0 +1,16 @@
+{
+ "reviewTitle110":"Confira antes de registrar",
+ "reviewHelp110":"Revise o produto, a quantidade, o valor e a solução solicitada.",
+ "reviewEffect110":"Será criada uma solicitação para análise. Nenhum reembolso, crédito, estoque ou documento fiscal será alterado agora.",
+ "ack110":"Conferi os dados e entendo que esta solicitação ainda depende de análise e execução autorizada.",
+ "back110":"Voltar aos campos",
+ "confirm110":"Confirmar registro da solicitação",
+ "saving110":"Conferindo e registrando…",
+ "changed110":"Os dados mudaram. Confira novamente antes de confirmar.",
+ "saveFailed110":"Não foi possível salvar a solicitação. Os campos foram preservados; confira e tente novamente.",
+ "queueTitle110":"Acompanhamento das solicitações",
+ "queueScope110":"Os números acompanham os filtros abaixo e incluem somente os registros deste computador.",
+ "pendingValue110":"Valor solicitado aguardando análise",
+ "pendingNote110":"Valor solicitado não é prejuízo realizado nem dinheiro devolvido. Aprovação local não executa pagamento ou estoque.",
+ "prepare110":"Revisar antes de registrar"
+}

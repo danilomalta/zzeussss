@@ -1,0 +1,744 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem P62 recibos originais de recebimento",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/purchase-receiving/operations/{kind}/{id}/receipt": {
+      "get": {
+        "summary": "Recibo original, autorizado para empresa/loja/aparelho/operador de origem",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "authorize",
+                "receipt",
+                "reject",
+                "void"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recibo original; não altera estoque ou pedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OriginalOperation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tipo, identificador ou query inválidos"
+          },
+          "401": {
+            "description": "Sessão inválida"
+          },
+          "403": {
+            "description": "Permissão/aparelho recusados"
+          },
+          "404": {
+            "description": "Operação ausente no escopo original"
+          },
+          "409": {
+            "description": "Dados/auditoria/vínculos inconsistentes"
+          },
+          "500": {
+            "description": "Falha interna"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "AuthorizeInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "order_id",
+          "reason",
+          "reference"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "255 bytes UTF-8, sem NUL, CR ou LF"
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "AuthorizeResult": {
+        "type": "object",
+        "required": [
+          "repeated",
+          "authorization",
+          "order_id"
+        ],
+        "properties": {
+          "repeated": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "authorization": {
+            "type": "object",
+            "required": [
+              "operation_id",
+              "reason",
+              "reference",
+              "device_id",
+              "actor_id",
+              "created_at"
+            ],
+            "properties": {
+              "operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "255 bytes UTF-8, sem NUL, CR ou LF"
+              },
+              "reference": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "device_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "actor_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "ReceiptInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "order_id",
+          "reason",
+          "delivery_reference",
+          "location_id",
+          "unit",
+          "delivered_milli",
+          "accepted_milli"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "255 bytes UTF-8, sem NUL, CR ou LF"
+          },
+          "delivery_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "location_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "delivered_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "accepted_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "ReceiptResult": {
+        "type": "object",
+        "required": [
+          "repeated",
+          "receipt"
+        ],
+        "properties": {
+          "repeated": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "receipt": {
+            "type": "object",
+            "required": [
+              "operation_id",
+              "order_id",
+              "reason",
+              "delivery_reference",
+              "location_id",
+              "unit",
+              "delivered_milli",
+              "accepted_milli",
+              "device_id",
+              "actor_id",
+              "created_at",
+              "id",
+              "product_id",
+              "stock_operation_id",
+              "movement_id"
+            ],
+            "properties": {
+              "operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "255 bytes UTF-8, sem NUL, CR ou LF"
+              },
+              "delivery_reference": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "location_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "unit",
+                  "kg",
+                  "g",
+                  "liter",
+                  "ml",
+                  "meter"
+                ]
+              },
+              "delivered_milli": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "accepted_milli": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "device_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "actor_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "product_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "stock_operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "movement_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            }
+          }
+        }
+      },
+      "RejectInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "order_id",
+          "reason",
+          "delivery_reference",
+          "unit",
+          "delivered_milli"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "255 bytes UTF-8, sem NUL, CR ou LF"
+          },
+          "delivery_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "unit",
+              "kg",
+              "g",
+              "liter",
+              "ml",
+              "meter"
+            ]
+          },
+          "delivered_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "RejectResult": {
+        "type": "object",
+        "required": [
+          "repeated",
+          "rejection"
+        ],
+        "properties": {
+          "repeated": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "rejection": {
+            "type": "object",
+            "required": [
+              "operation_id",
+              "order_id",
+              "reason",
+              "delivery_reference",
+              "unit",
+              "delivered_milli",
+              "device_id",
+              "actor_id",
+              "created_at",
+              "id",
+              "product_id"
+            ],
+            "properties": {
+              "operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "255 bytes UTF-8, sem NUL, CR ou LF"
+              },
+              "delivery_reference": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "unit",
+                  "kg",
+                  "g",
+                  "liter",
+                  "ml",
+                  "meter"
+                ]
+              },
+              "delivered_milli": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "device_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "actor_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "product_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            }
+          }
+        }
+      },
+      "VoidInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "order_id",
+          "reason",
+          "receipt_id"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "order_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "255 bytes UTF-8, sem NUL, CR ou LF"
+          },
+          "receipt_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      },
+      "VoidResult": {
+        "type": "object",
+        "required": [
+          "repeated",
+          "void"
+        ],
+        "properties": {
+          "repeated": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "void": {
+            "type": "object",
+            "required": [
+              "operation_id",
+              "order_id",
+              "reason",
+              "receipt_id",
+              "device_id",
+              "actor_id",
+              "created_at",
+              "quantity_milli",
+              "unit",
+              "product_id",
+              "location_id",
+              "stock_operation_id",
+              "movement_id"
+            ],
+            "properties": {
+              "operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "order_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "255 bytes UTF-8, sem NUL, CR ou LF"
+              },
+              "receipt_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "device_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "actor_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "quantity_milli": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "unit",
+                  "kg",
+                  "g",
+                  "liter",
+                  "ml",
+                  "meter"
+                ]
+              },
+              "product_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "location_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "stock_operation_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "movement_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            }
+          }
+        }
+      },
+      "OriginalOperation": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "input",
+              "result"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "authorize"
+                ]
+              },
+              "input": {
+                "$ref": "#/components/schemas/AuthorizeInput"
+              },
+              "result": {
+                "$ref": "#/components/schemas/AuthorizeResult"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "input",
+              "result"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "receipt"
+                ]
+              },
+              "input": {
+                "$ref": "#/components/schemas/ReceiptInput"
+              },
+              "result": {
+                "$ref": "#/components/schemas/ReceiptResult"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "input",
+              "result"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "reject"
+                ]
+              },
+              "input": {
+                "$ref": "#/components/schemas/RejectInput"
+              },
+              "result": {
+                "$ref": "#/components/schemas/RejectResult"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "input",
+              "result"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "void"
+                ]
+              },
+              "input": {
+                "$ref": "#/components/schemas/VoidInput"
+              },
+              "result": {
+                "$ref": "#/components/schemas/VoidResult"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

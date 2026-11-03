@@ -1,0 +1,2 @@
+import pt from '../../i18n/orders115/pt-BR.json';import en from '../../i18n/orders115/en.json';import es from '../../i18n/orders115/es.json';import fr from '../../i18n/orders115/fr.json';import zh from '../../i18n/orders115/zh-CN.json';
+export function words115(locale:string):Record<string,string>{return locale.startsWith('en')?en:locale.startsWith('es')?es:locale.startsWith('fr')?fr:locale.startsWith('zh')?zh:pt;}

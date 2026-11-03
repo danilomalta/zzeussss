@@ -1,0 +1,10 @@
+'use strict';
+const $=id=>document.getElementById(id),bridge=window.titanConnection;let locale='pt-BR',status='reading',error='';
+try{const saved=localStorage.getItem('titan-language');locale=Object.hasOwn(TitanConnectionWords.words,saved)?saved:(navigator.language?.startsWith('pt')?'pt-BR':navigator.language?.startsWith('zh')?'zh-CN':navigator.language?.split('-')[0]||'pt-BR');}catch{}
+function w(){return TitanConnectionWords.forLocale(locale);}
+function mode(){const local=$('mode').value!=='remote',online=$('mode').value==='hybrid';$('online').disabled=$('mode').value==='local';$('online').required=online;$('hint').textContent=w()[local?'hintLocal':'hintRemote'];}
+function render(){const words=w();document.documentElement.lang=Object.hasOwn(TitanConnectionWords.words,locale)?locale:'pt-BR';document.querySelectorAll('[data-word]').forEach(node=>node.textContent=words[node.dataset.word]);$('operational').placeholder=words.operational;document.title='TitanSystem — '+words.title;$('status').textContent=words[status]||'';$('error').textContent=words[error]||'';mode();}
+$('language').value=Object.hasOwn(TitanConnectionWords.words,locale)?locale:'pt-BR';$('language').addEventListener('change',()=>{locale=$('language').value;try{localStorage.setItem('titan-language',locale);}catch{}render();});
+$('mode').addEventListener('change',mode);
+$('connection').addEventListener('submit',async event=>{event.preventDefault();error='';$('fields').disabled=true;try{const r=await bridge.save({version:1,mode:$('mode').value,operational_url:$('operational').value,online_url:$('mode').value==='local'?null:$('online').value||null});if(!r.ok)error=r.code||'connection_write_failed';else status=r.code||'saved';}catch{error='connection_write_failed';}finally{$('fields').disabled=false;render();}});
+(async()=>{if(!bridge){status='inApp';render();return;}try{const r=await bridge.read();if(r.config){$('mode').value=r.config.mode;$('operational').value=r.config.operational_url;$('online').value=r.config.online_url||'';}status=r.uiAvailable?'ready':'uiMissing';$('fields').disabled=false;render();}catch{error='readFailed';render();}})();

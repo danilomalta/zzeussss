@@ -1,0 +1,25 @@
+import {contextKey,contextOf} from '../context74/model.mjs';
+import {LocalAPIError} from '../local/localClient.mjs';
+import {id,items,body,validateQuote,history,receipt,command,equal,fail} from './model.mjs';
+export function createCustomerReturns({token,session,capabilities,isCurrent,storage,locks,fetcher=globalThis.fetch}){
+ const scope=contextKey(contextOf(session,capabilities)),actor=session.identity_id,key='titan-customer-returns:v1:'+scope,controllers=new Set();let disposed=false;
+ function current(write=false){let ok=false;try{ok=!disposed&&typeof token==='string'&&!!token&&!/[\r\n]/.test(token)&&isCurrent()&&contextKey(contextOf(session,capabilities))===scope;}catch{}if(!ok)throw new LocalAPIError(401,'customer-returns');if(!capabilities.permissions?.includes('cancel_sale')||write&&(capabilities.license?.state!=='active'||!['core','pos'].every(m=>capabilities.license.modules?.includes(m))))throw new LocalAPIError(403,'customer-returns');}
+ current();
+ function pending(){current();try{const raw=storage.getItem(key);if(raw===null)return null;if(raw.length>2000000)fail();return command(JSON.parse(raw),scope,actor);}catch{throw Error('customerReturnStorage');}}
+ function save(c){current();command(c,scope,actor);try{const raw=JSON.stringify(c);storage.setItem(key,raw);if(storage.getItem(key)!==raw)fail();}catch{throw Error('customerReturnStorage');}}
+ function clear(c){current();if(!equal(pending(),c))throw Error('customerReturnPending');try{storage.removeItem(key);if(storage.getItem(key)!==null)fail();}catch{throw Error('customerReturnStorage');}}
+ async function locked(fn){current();if(!locks?.request)throw Error('customerReturnLocks');return locks.request(key,{mode:'exclusive',ifAvailable:true},async lock=>{if(!lock)throw Error('customerReturnLocked');current();return fn();});}
+ async function request(path,input,write=false,signal){current(write);const c=new AbortController(),abort=()=>c.abort();controllers.add(c);if(signal?.aborted)abort();signal?.addEventListener('abort',abort,{once:true});const timer=setTimeout(abort,15000);try{current(write);c.signal.throwIfAborted();const r=await fetcher('/local/v1/'+path,{method:input?'POST':'GET',headers:{Authorization:'Bearer '+token,...(input?{'Content-Type':'application/json'}:{})},credentials:'omit',cache:'no-store',signal:c.signal,...(input?{body:JSON.stringify(input)}:{})});current();c.signal.throwIfAborted();if(!r.ok){const e=new LocalAPIError(r.status,'customer-returns');e.serverRefusal=true;throw e;}const text=await r.text();current();c.signal.throwIfAborted();if(text.length>8000000)fail();try{return JSON.parse(text);}catch{fail();}}finally{clearTimeout(timer);controllers.delete(c);signal?.removeEventListener('abort',abort);}}
+ async function resolve(send=false,discard=false){let c=pending();if(!c)return null;let found;try{found=receipt(await request('sale-return-operations/'+encodeURIComponent(c.body.operation_id)),c.sale,c);}catch(e){if(!(e instanceof LocalAPIError&&e.serverRefusal&&e.status===404))throw e;}if(found){clear(c);return {state:'confirmed',receipt:found};}if(discard){if(c.uncertain)throw Error('customerReturnUncertain');clear(c);return {state:'discarded'};}if(!send)return {state:'missing'};
+  current(true);const prior=c.uncertain;c={...c,uncertain:true};save(c);
+  try{receipt(await request('sales/'+encodeURIComponent(c.sale)+'/returns',c.body,true),c.sale,c);}catch(e){if(!prior&&e instanceof LocalAPIError&&e.serverRefusal&&[400,403,404,409,413,422].includes(e.status))save({...c,uncertain:false});throw e;}
+  found=receipt(await request('sale-return-operations/'+encodeURIComponent(c.body.operation_id)),c.sale,c);clear(c);return {state:'confirmed',receipt:found};
+ }
+ return {scope,key,pending,assertCurrent:current,get canWrite(){try{current(true);return !!locks?.request;}catch{return false;}},dispose(){disposed=true;for(const c of controllers)c.abort();controllers.clear();},
+  history(sale,signal){if(!id(sale))fail();return request('sales/'+encodeURIComponent(sale)+'/returns',undefined,false,signal).then(v=>history(v,sale));},
+  quote(sale,selected,signal){if(!id(sale))fail();items(selected);return request('sales/'+encodeURIComponent(sale)+'/returns/quote',{items:selected},true,signal).then(v=>validateQuote(v,sale,selected));},
+  prepare(q,reason,operationID){current(true);const selected=q.items.map(({sale_item_id,quantity_milli,disposition})=>({sale_item_id,quantity_milli,disposition}));validateQuote(q,q.sale_id,selected);const input=body({operation_id:operationID,reason,expected_refund_cents:q.refund_cents,items:selected});return command(structuredClone({version:1,scope,actor,sale:q.sale_id,body:input,quote:q,uncertain:false}),scope,actor);},
+  submit(c){c=command(structuredClone(c),scope,actor);current(true);if(c.uncertain)fail();return locked(async()=>{if(pending())throw Error('customerReturnPending');save(c);return resolve(true);});},
+  recover(send=false){if(typeof send!=='boolean')fail();return locked(()=>resolve(send));},discard(){return locked(()=>resolve(false,true));}
+ };
+}

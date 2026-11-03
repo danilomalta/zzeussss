@@ -1,0 +1,13 @@
+{
+  "details": "Ver composição do fechamento",
+  "balanced": "Sem diferença de caixa",
+  "shortage": "Falta no dinheiro contado",
+  "surplus": "Sobra no dinheiro contado",
+  "localPrint": "Imprimir conferência local",
+  "localExport": "Baixar conferência local CSV",
+  "previous": "Registros anteriores do fechamento",
+  "previousNote": "Registro salvo anteriormente; pode não representar a situação atual no servidor.",
+  "localTitle": "Conferência neste computador",
+  "localNote": "Comprovantes e malotes ajudam na conferência. Eles não alteram o resultado oficial nem confirmam pagamento bancário.",
+  "paymentDetails": "Ver conferência dos pagamentos"
+}

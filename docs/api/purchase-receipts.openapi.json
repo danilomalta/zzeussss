@@ -1,0 +1,377 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Recebimento local conferido de compras",
+    "version": "1.0.0",
+    "description": "Local human receiving workflow. Does not imply supplier transmission or external acknowledgement. Tenant/store/device derived from session."
+  },
+  "paths": {
+    "/local/v1/purchase-orders/{id}/receipts": {
+      "post": {
+        "summary": "Recebimento local conferido de compras",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success or exact replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "receipt",
+                    "repeated"
+                  ],
+                  "properties": {
+                    "receipt": {
+                      "type": "object",
+                      "required": [
+                        "operation_id",
+                        "delivery_reference",
+                        "location_id",
+                        "unit",
+                        "delivered_milli",
+                        "accepted_milli",
+                        "reason",
+                        "id",
+                        "order_id",
+                        "device_id",
+                        "actor_id",
+                        "product_id",
+                        "stock_operation_id",
+                        "movement_id",
+                        "created_at"
+                      ],
+                      "properties": {
+                        "operation_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "delivery_reference": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "location_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "unit": {
+                          "type": "string",
+                          "enum": [
+                            "unit",
+                            "kg",
+                            "g",
+                            "liter",
+                            "ml",
+                            "meter"
+                          ]
+                        },
+                        "delivered_milli": {
+                          "type": "integer",
+                          "format": "int64",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "accepted_milli": {
+                          "type": "integer",
+                          "format": "int64",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "order_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "device_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "actor_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "product_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "stock_operation_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "movement_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "repeated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Permission or contract denied"
+          },
+          "404": {
+            "description": "Order not in authenticated scope"
+          },
+          "409": {
+            "description": "Conflict or inconsistent evidence"
+          },
+          "413": {
+            "description": "Body exceeds limit"
+          },
+          "500": {
+            "description": "Unexpected database error"
+          },
+          "503": {
+            "description": "Issuer unavailable"
+          },
+          "201": {
+            "description": "New immutable receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "receipt",
+                    "repeated"
+                  ],
+                  "properties": {
+                    "receipt": {
+                      "type": "object",
+                      "required": [
+                        "operation_id",
+                        "delivery_reference",
+                        "location_id",
+                        "unit",
+                        "delivered_milli",
+                        "accepted_milli",
+                        "reason",
+                        "id",
+                        "order_id",
+                        "device_id",
+                        "actor_id",
+                        "product_id",
+                        "stock_operation_id",
+                        "movement_id",
+                        "created_at"
+                      ],
+                      "properties": {
+                        "operation_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "delivery_reference": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "location_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "unit": {
+                          "type": "string",
+                          "enum": [
+                            "unit",
+                            "kg",
+                            "g",
+                            "liter",
+                            "ml",
+                            "meter"
+                          ]
+                        },
+                        "delivered_milli": {
+                          "type": "integer",
+                          "format": "int64",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "accepted_milli": {
+                          "type": "integer",
+                          "format": "int64",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "order_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "device_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "actor_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "product_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "stock_operation_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "movement_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 128
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "repeated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "delivery_reference",
+                  "location_id",
+                  "unit",
+                  "delivered_milli",
+                  "accepted_milli",
+                  "reason"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "delivery_reference": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "location_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "unit",
+                      "kg",
+                      "g",
+                      "liter",
+                      "ml",
+                      "meter"
+                    ]
+                  },
+                  "delivered_milli": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "accepted_milli": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

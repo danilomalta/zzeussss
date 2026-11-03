@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"titansystem-backend/internal/localdb/catalog"
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
@@ -81,6 +82,9 @@ func suggest(ctx context.Context, db *sql.DB, actor identity.Scope, device ident
 	}
 	if err != nil {
 		return SuggestResult{}, err
+	}
+	if e := catalog.RequireActiveProductTx(ctx, tx, actor.TenantID, in.ProductID); e != nil {
+		return SuggestResult{}, e
 	}
 	var observed int64
 	err = tx.QueryRowContext(ctx, `SELECT COALESCE(SUM(m.quantity_milli),0) FROM stock_movements m

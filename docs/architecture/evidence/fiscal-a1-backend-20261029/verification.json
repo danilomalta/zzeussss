@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-29",
+  "base_commit": "7223bac548f9c621f15f3964d82f2efc8edfb5ff",
+  "scope": "Backend A1/PKCS12 credential loading and offline native configuration inspection; no frontend or installed-service change",
+  "dependency": {
+    "module": "software.sslmate.com/src/go-pkcs12",
+    "version": "v0.7.4",
+    "module_integrity": "all modules verified",
+    "vendor_advisory": "https://github.com/SSLMate/go-pkcs12/security/advisories/GHSA-mpwr-8vm7-h73f",
+    "patched_version": "0.7.2"
+  },
+  "backend_full": {
+    "packages_passed": 59,
+    "top_level_passed": 1498,
+    "passed_including_subtests": 3315,
+    "failures": [],
+    "skipped_tests": [
+      "TestPostgresCatalogCreationAndDiscountAtomicity",
+      "TestPostgresDurableRotationConcurrencyAndRollback",
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "credential_and_native_cli_race": {
+    "packages_passed": 2,
+    "top_level_passed": 10,
+    "passed_including_subtests": 53,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "production_api_race": {
+    "packages_passed": 1,
+    "top_level_passed": 5,
+    "passed_including_subtests": 7,
+    "failures": [],
+    "skipped_tests": []
+  },
+  "python_regressions": {
+    "acceptance_gate_passed": 7,
+    "api_contracts_passed": 10,
+    "failed": 0
+  },
+  "route_inventory": {
+    "routes": 547,
+    "new_routes": 0,
+    "result": "PASS"
+  },
+  "vet": {
+    "result": "PASS",
+    "packages": [
+      "./internal/fiscalproduction",
+      "./cmd/titan-fiscal",
+      "./cmd/titan-local"
+    ]
+  },
+  "builds": {
+    "linux_native": [
+      "titan-fiscal",
+      "titan-local"
+    ],
+    "windows_cross_compile": [
+      "titan-local-windows-amd64.exe"
+    ],
+    "native_fiscal_executable_tested": true,
+    "installed": false,
+    "binary_sha256": {
+      "titan-fiscal": "8b85689ceec87984b62c2c27bc402f771f7aea7ee76f71178104a5ff36c3a1f1",
+      "titan-local": "619c55bddf5e97dcc831d1919711848b281825fee15d6d38118116cdf56765a4",
+      "titan-local-windows-amd64.exe": "229b5f83ecb017eb229724a0dc43a58705fc84c4b8df876bf677c1e1bf73ca21"
+    }
+  },
+  "covered": [
+    "Modern2026/PBMAC1, Modern2023/PBES2, LegacyDES and Unicode password",
+    "real XML RSA signature verified after PFX loading",
+    "private file, bounded input, symlink and mixed-source rejection",
+    "wrong password and issuer/fingerprint rejection",
+    "external root trust required; PFX-embedded root never promoted",
+    "live CRL revocation blocks a previously loaded signer",
+    "compiled executable success and nonzero failure without private input disclosure",
+    "existing real mTLS API/session/recovery/restart/backup regressions"
+  ],
+  "ci_previous_head": {
+    "commit": "7223bac548f9c621f15f3964d82f2efc8edfb5ff",
+    "passed_checks": 6,
+    "failed_checks": 1,
+    "failed_run": "https://github.com/danilomalta/zzeussss/actions/runs/40810819619",
+    "cause": "localapi race package 10-minute deadline, current top-level test had 11 seconds elapsed",
+    "fix": "deadline raised to 20 minutes, finite job remains 40 minutes; assertions unchanged",
+    "new_head_checks": "pending publication"
+  },
+  "required_ci_integrations": 7,
+  "limits": [
+    "No official SEFAZ homologation or customer issuer/certificate supplied.",
+    "No official fiscal transmission in this verification; certificates and identities are generated only in disposable test fixtures, never product defaults.",
+    "No secure Windows credential/ACL provisioning claimed by the cross-build.",
+    "No A3, HSM, native secret vault, matrix/branch credential delegation or automated rotation.",
+    "No full national tax engine, production DANFE/contingency, SPED/PVA or production NFS-e completed by this adapter.",
+    "Offline inspection does not verify database session/license, issuer accreditation or operational authorization.",
+    "No original repository, commercial DB, installed service 8182/8282, frontend, Electron or main merge changed."
+  ],
+  "tested_source_sha256": {
+    "backend/go.mod": "c712b0402230cdcfa0636358ce46773dc9364a4cbf8d70f333344b8db35fffb2",
+    "backend/go.sum": "bf0a032eb4b046695c31e44b2964df086a951c01d4ee62da6fea49056c70ca2d",
+    "backend/internal/fiscalproduction/config.go": "19f93d0e13dce1535bf2f0a835bcb92ca7eebc4a87ab8432253ca0f0c0035e7d",
+    "backend/internal/fiscalproduction/material.go": "387458507c759a555e77874d88a8a91d41035ea5abf907ed62a0d24c650845c9",
+    "backend/internal/fiscalproduction/inspection.go": "f8fb29cb71aa98fa14c18549a8373a15734286d99a2d2b456b8cd02c7fdaa926",
+    "backend/internal/fiscalproduction/material_test.go": "820d1b3d450af4d4b655021b34237284c0fab42a1c82c8c8e5bbd5e4c65ef79c",
+    "backend/cmd/titan-fiscal/main.go": "a176d06b75fa72b3f93d4a14675aeccd972779f28bb9e3922002f09002e74dc3",
+    "backend/cmd/titan-fiscal/production_config_test.go": "a5b7854611a89253c8df1ec874c433cf9aacbc6f25670daba8f8880cc17e2622",
+    ".github/workflows/backend-pilot.yml": "3451f2490a0518465887e4cbf3abf18ee2391279148781068b4e708b3c9dbf22",
+    "tools/verify_backend_acceptance.py": "0792311d068fe74fad1914dfd69e598cecaceaeb1c54e4b4af6c679f9d1c0f33",
+    "tools/tests/test_verify_backend_acceptance.py": "af1a170591e809a28c35c9608e25b79be7cee3570bf2aa01223a54a9ec5d388f"
+  }
+}

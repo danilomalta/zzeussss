@@ -1,0 +1,5 @@
+import type {LocalSession,LocalCapabilities} from '../local/localClient.mjs';
+import type {ReturnItem,ReturnQuote,ReturnCommand,ReturnHistory,CustomerReturn} from './model.mjs';
+export interface ReturnResolution{state:'confirmed'|'missing'|'discarded';receipt?:CustomerReturn}
+export interface CustomerReturnsAPI{scope:string;key:string;canWrite:boolean;pending():ReturnCommand|null;assertCurrent(write?:boolean):void;dispose():void;history(sale:string,signal?:AbortSignal):Promise<ReturnHistory>;quote(sale:string,items:ReturnItem[],signal?:AbortSignal):Promise<ReturnQuote>;prepare(quote:ReturnQuote,reason:string,operationID:string):ReturnCommand;submit(command:ReturnCommand):Promise<ReturnResolution>;recover(send?:boolean):Promise<ReturnResolution|null>;discard():Promise<ReturnResolution|null>}
+export function createCustomerReturns(options:{token:string;session:LocalSession;capabilities:LocalCapabilities;isCurrent:()=>boolean;storage:Storage;locks:LockManager;fetcher?:typeof fetch}):CustomerReturnsAPI;

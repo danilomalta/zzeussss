@@ -1,0 +1,1 @@
+export function currentSheetEditor<T extends {locale:string},M>(getLanguage:()=>string,isCurrent:()=>boolean,loadEditor:()=>Promise<M>,loadLanguage:(language:string)=>Promise<T>):Promise<{editor:M;pack:T}|null>;

@@ -1,0 +1,23 @@
+{
+ "company112":"Sobre la empresa",
+ "companyHelp112":"Organice el perfil y la forma de acceso de su equipo.",
+ "activity112":"Actividad y sectores",
+ "activityHelp112":"Elija la actividad principal y marque los sectores de la empresa.",
+ "features112":"Funciones",
+ "mei112":"Una operación individual o con un equipo reducido.",
+ "micro112":"Una estructura compacta para organizar el trabajo del equipo.",
+ "small112":"Una operación en crecimiento con funciones definidas.",
+ "medium112":"Varios sectores con responsabilidades compartidas.",
+ "large112":"Una operación amplia con equipos y procesos distribuidos.",
+ "less112":"Reducir usuarios",
+ "more112":"Aumentar usuarios",
+ "menuHelp112":"Organice los productos de alimentación ofrecidos a los clientes.",
+ "kitchenHelp112":"Siga la cola de preparación de pedidos.",
+ "tablesHelp112":"Identifique pedidos y atención por mesa.",
+ "productionHelp112":"Use recetas y fichas técnicas para planificar la producción.",
+ "summary112":"Resumen de la propuesta",
+ "estimate112":"Estimación mensual de módulos",
+ "none112":"Ninguno seleccionado",
+ "noModules112":"Ningún módulo seleccionado.",
+ "priceRule112":"El importe suma los módulos seleccionados. Usuarios, tamaño y almacenamiento no añaden cargos automáticos en esta propuesta."
+}

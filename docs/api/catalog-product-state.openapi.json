@@ -1,0 +1,203 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Estado operacional do produto",
+    "version": "P28"
+  },
+  "servers": [
+    {
+      "url": "/local/v1"
+    }
+  ],
+  "security": [
+    {
+      "localSession": []
+    }
+  ],
+  "paths": {
+    "/catalog/products/{id}/state": {
+      "get": {
+        "summary": "Estado global; view_catalog e leitura historica",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso / replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida, query desconhecida ou JSON ambiguo"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Sem permissao ou contrato vigente para escrita"
+          },
+          "404": {
+            "description": "Registro nao encontrado no escopo"
+          },
+          "409": {
+            "description": "Conflito de revisao, replay ou integridade"
+          },
+          "413": {
+            "description": "Corpo acima de 4096 bytes"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          }
+        }
+      },
+      "post": {
+        "summary": "Mudar estado global; manage_stock e Inventory vigente",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso / replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada invalida, query desconhecida ou JSON ambiguo"
+          },
+          "401": {
+            "description": "Sessao invalida"
+          },
+          "403": {
+            "description": "Sem permissao ou contrato vigente para escrita"
+          },
+          "404": {
+            "description": "Registro nao encontrado no escopo"
+          },
+          "409": {
+            "description": "Conflito de revisao, replay ou integridade"
+          },
+          "413": {
+            "description": "Corpo acima de 4096 bytes"
+          },
+          "503": {
+            "description": "Verificador indisponivel"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductStateInput"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "ProductState": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_id",
+          "status",
+          "revision",
+          "repeated"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProductStateInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "status",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        }
+      }
+    }
+  }
+}

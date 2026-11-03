@@ -1,0 +1,21 @@
+{
+  "official98": "Official till result",
+  "payments98": "Payment reconciliation",
+  "local98": "Counts and cash bags on this computer",
+  "noOfficial98": "No official closing available",
+  "refresh98": "Refresh",
+  "loading98": "Loading report…",
+  "partial98": "Some sources are unavailable. Retrieved data remains visible.",
+  "noCount98": "No local reconciliation saved for this till.",
+  "noBag98": "No cash bag recorded on this computer.",
+  "unverified98": "Amount still unverified",
+  "updated98": "Data retrieved at",
+  "scope98": "Retrieved sales do not replace the official till balance.",
+  "choose98": "Choose a till to view.",
+  "overlap98": "Both values may include the same payment part. Do not add electronic confirmation and receipt evidence.",
+  "countSaved98": "Local reconciliation saved",
+  "bagsEmpty98": "No local cash bag record",
+  "sources98": "Read sources",
+  "invalid98": "The received data could not be validated.",
+  "same98": "Preview and print use the same values as this screen."
+}

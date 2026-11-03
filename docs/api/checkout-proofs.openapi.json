@@ -1,0 +1,1154 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TitanSystem B02B9 — comprovantes manuais e pendencias do checkout",
+    "version": "1.0.0",
+    "description": "Documento informado nao equivale a pagamento aprovado. Sell permite registrar/retirar e consultar proprio documento; ManageCash permite consultar fila/relatorio e revisar documento de outra pessoa. ProviderConfirmed permanece falso, settled_cents desconhecido null. Sem comprovacao bancaria, valor financeiro, venda mista ou adapter automatico. Plano com qualquer historico externo tem cancelamento automatico bloqueado."
+  },
+  "paths": {
+    "/local/v1/checkout/plans/{id}/parts/{part}/proofs": {
+      "post": {
+        "summary": "Registra referencia manual de comprovante",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProofResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "part",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitProof"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/checkout/proofs": {
+      "get": {
+        "summary": "Fila documental para gestao",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProofPage"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000,
+              "default": 0
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "submitted",
+                "accepted",
+                "rejected",
+                "withdrawn",
+                "revoked"
+              ],
+              "default": "submitted"
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/checkout/proofs/report": {
+      "get": {
+        "summary": "Relatorio de evidencias sem liquidacao",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProofReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/report.csv": {
+      "get": {
+        "summary": "CSV documental completo",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/operations/{id}": {
+      "get": {
+        "summary": "Recibo original do autor",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/checkout/proofs/{id}": {
+      "get": {
+        "summary": "Consulta evidencia do operador ou gestor",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProof"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/checkout/proofs/{id}/accept": {
+      "post": {
+        "summary": "Transicao documental accept",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewProof"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/{id}/reject": {
+      "post": {
+        "summary": "Transicao documental reject",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewProof"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/{id}/withdraw": {
+      "post": {
+        "summary": "Transicao documental withdraw",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewProof"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/checkout/proofs/{id}/revoke": {
+      "post": {
+        "summary": "Transicao documental revoke",
+        "description": "Efeito somente documental: provider_confirmed=false. Nao aprova pagamento, nao finaliza venda, nao estorna e nao altera caixa/estoque. Leituras historicas sem contrato POS; escritas com contrato POS.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "401": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "403": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "404": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "409": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "413": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "422": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "500": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "503": {
+            "description": "Recusa sem dados parciais nem alteracao financeira."
+          },
+          "200": {
+            "description": "Evidencia ou recibo original; nunca confirmacao do provedor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProofResult"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewProof"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "ProofEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "actor_id",
+          "action",
+          "from_state",
+          "to_state",
+          "reason",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "actor_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "submit",
+              "accept",
+              "reject",
+              "withdraw",
+              "revoke"
+            ]
+          },
+          "from_state": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "to_state": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "created_at": {
+            "type": "string",
+            "maxLength": 64
+          }
+        }
+      },
+      "PaymentProof": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "checkout_id",
+          "part_id",
+          "submitter_id",
+          "method",
+          "amount_cents",
+          "provider",
+          "terminal",
+          "reference",
+          "occurred_at",
+          "state",
+          "reviewer_id",
+          "provider_confirmed",
+          "effect",
+          "created_at",
+          "updated_at",
+          "last_operation_id",
+          "history"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "checkout_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "part_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "submitter_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "debit",
+              "credit",
+              "pix"
+            ]
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "provider": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "terminal": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "reference": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "occurred_at": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "accepted",
+              "rejected",
+              "withdrawn",
+              "revoked"
+            ]
+          },
+          "reviewer_id": {
+            "type": "string",
+            "maxLength": 128,
+            "nullable": true
+          },
+          "provider_confirmed": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "effect": {
+            "type": "string",
+            "enum": [
+              "evidence_only"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "updated_at": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "last_operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "history": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": {
+              "$ref": "#/components/schemas/ProofEvent"
+            }
+          }
+        }
+      },
+      "ProofResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "repeated",
+          "proof"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "proof": {
+            "$ref": "#/components/schemas/PaymentProof"
+          }
+        }
+      },
+      "ProofPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "state",
+          "total_count",
+          "limit",
+          "offset",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/PaymentProof"
+            }
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "all",
+              "submitted",
+              "accepted",
+              "rejected",
+              "withdrawn",
+              "revoked"
+            ]
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SubmitProof": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "proof_id",
+          "provider",
+          "terminal",
+          "reference",
+          "occurred_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "proof_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "provider": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "terminal": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "maxLength": 64
+          }
+        }
+      },
+      "ReviewProof": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "ProofMethodSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "method",
+          "submitted_count",
+          "accepted_count",
+          "historical_count",
+          "reported_active_cents",
+          "accepted_evidence_cents"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "debit",
+              "credit",
+              "pix"
+            ]
+          },
+          "submitted_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "accepted_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "historical_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "reported_active_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "accepted_evidence_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "ProofReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "scope",
+          "generated_at",
+          "provider_confirmed",
+          "settled_cents",
+          "total_count",
+          "plans_with_evidence",
+          "reported_active_cents",
+          "accepted_evidence_cents",
+          "methods",
+          "items"
+        ],
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "unverified_checkout_evidence"
+            ]
+          },
+          "generated_at": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "provider_confirmed": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "settled_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "total_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "plans_with_evidence": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "reported_active_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "accepted_evidence_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "methods": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "$ref": "#/components/schemas/ProofMethodSummary"
+            }
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/PaymentProof"
+            }
+          }
+        }
+      }
+    }
+  }
+}

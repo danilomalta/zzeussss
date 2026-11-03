@@ -1,0 +1,36 @@
+{
+  "release": "frontend-producao-desktop67-20261026-1",
+  "head": "b6add8eb544bccf818014d4a072f111a697f5490",
+  "verified_candidate": true,
+  "logs": "/home/danillo-malta/Downloads/Titan_Frontend67_Validacao_bxw_318q",
+  "backup": "/home/danillo-malta/Downloads/Titan_Frontend67_Backup_q4c0x3r1",
+  "applied_unix": 1792997851,
+  "before": {
+    "desktop/main.cjs": "7171c0c36d97fded0d42b0407b7edfe88e50af0aac6a6d76c499b9bc6b500b24",
+    "desktop/scripts/build.mjs": "3a67858776213907aa8d22bc29b0aee0b625b6522736698f20f98c0423c00299",
+    "desktop/scripts/shortcut.cjs": "3022e963584de3b005d6ae65bd6979c774ff1ec6cf7bfcdae0a5c5304697bdda",
+    "desktop/scripts/stage.cjs": "cf87fb7641418a740305570b76fbe3abbd9990147af878ca3db9f8fb4b121ce6",
+    "desktop/src/startup.cjs": null,
+    "desktop/tests/startup.test.cjs": "771f6af01b91900305d84e397258788878f64c6ac262330f66b12752bb4a5b43",
+    "desktop/tests/visibility67.test.cjs": null,
+    "docs/frontend/ENTREGA_PRODUCAO_DESKTOP67.md": null,
+    "docs/frontend/PENDENCIAS_FRONTEND67.json": null,
+    "docs/frontend/PENDENCIAS_FRONTEND67.md": null,
+    "frontend-web/tests/production67.bridge.mjs": null,
+    "docs/architecture/CONTINUIDADE_TITANSYSTEM.md": "9d013ad2fc5b9fd278ace47bbae0625afdb282adddb61c9febf3e464c21c5354"
+  },
+  "after": {
+    "desktop/main.cjs": "d77395a8d932e2fd48a7430fb179a00974dba545ad050e77699a618a9a13512e",
+    "desktop/scripts/build.mjs": "8f2969fbd5ec06d83752124265dab672078f30f22cd823e4ec437bc2a64b7938",
+    "desktop/scripts/shortcut.cjs": "3af7dbc09b5a1cc05e9a55a644c985e2dba51e428d2aa82f70b359bfed369ed0",
+    "desktop/scripts/stage.cjs": "5bca51a27ef7ddd80d7de6f102ea65959537028cc527d3e571737a3438623de0",
+    "desktop/src/startup.cjs": "30a35e0bb04cbdedab0dbdd0eb75fbf5209339e2b17e73bebae0f7cca65cbe75",
+    "desktop/tests/startup.test.cjs": "e227f6964e03e54f31cc680c0a5e37e6e189e6f0e1dec5b6858bf21a00c627d4",
+    "desktop/tests/visibility67.test.cjs": "25e736d3fb7edaa35e9922dfb7a8148e9b0d45d7ae5d65d1e33c7696934c09fb",
+    "docs/frontend/ENTREGA_PRODUCAO_DESKTOP67.md": "6c036ab0c139bcc36725a22c00fc59cde7d577c99ef9986167b814139acb348f",
+    "docs/frontend/PENDENCIAS_FRONTEND67.json": "660a133ca809c7cba3e653fe49ae28d15494a56317d85768806a282a6080a29b",
+    "docs/frontend/PENDENCIAS_FRONTEND67.md": "27cf8ee2498c7c69f8b016b0176f69542fc621d3e9c7f42cc14788c417f4f998",
+    "frontend-web/tests/production67.bridge.mjs": "52a44d5056123dc1389a317c38a037c5a6188da54e941b8579f101554da60b4f",
+    "docs/architecture/CONTINUIDADE_TITANSYSTEM.md": "4fd327cb90a2e1730727324a7a4e9b80638177625367a8a2e68f30f0dc3cf0ce"
+  }
+}
