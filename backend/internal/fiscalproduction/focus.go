@@ -227,6 +227,10 @@ func (p *FocusProvider) claim(ctx context.Context, a RequestContext, sale, ref, 
 }
 
 type focusReply struct {
+	XML              string `json:"caminho_xml_nota_fiscal"`
+	CancellationXML  string `json:"caminho_xml_cancelamento"`
+	CorrectionXML    string `json:"caminho_xml_carta_correcao"`
+	CorrectionNumber int    `json:"numero_carta_correcao"`
 	Offline          *bool  `json:"contingencia_offline"`
 	OfflineFinalized *bool  `json:"contingencia_offline_efetivada"`
 	CNPJ             string `json:"cnpj_emitente"`
@@ -317,6 +321,7 @@ func (p *FocusProvider) exchangeModel(ctx context.Context, method, ref, cnpj str
 		}
 	}
 	out.Message = p.safeMessage(message)
+	out.Evidence, _ = json.Marshal(focusArchiveLinks{Invoice: reply.XML, Cancellation: reply.CancellationXML, Correction: reply.CorrectionXML, CorrectionNumber: reply.CorrectionNumber, DANFE: reply.DANFE})
 	if method == http.MethodDelete {
 		out.State = fiscal.CheckoutCancellationFailed
 		out.ErrorCode = "focus_cancellation_failed"
@@ -369,9 +374,6 @@ func (p *FocusProvider) exchangeModel(ctx context.Context, method, ref, cnpj str
 			}
 		}
 		out.State = "authorized_homologation"
-		if model == "55" && safeFocusDANFEPath(reply.DANFE, cnpj, key) && p.safeMessage(reply.DANFE) == reply.DANFE {
-			out.Evidence, _ = json.Marshal(map[string]string{"danfe_path": reply.DANFE})
-		}
 		out.ErrorCode = ""
 		return out, nil
 	case "erro_autorizacao", "denegado":
@@ -382,6 +384,11 @@ func (p *FocusProvider) exchangeModel(ctx context.Context, method, ref, cnpj str
 		out.State = "pending"
 		return out, nil
 	case "cancelado":
+		key := strings.TrimPrefix(reply.Key, "NFe")
+		if !fiscalcore.ValidAccessKey(key) || key[6:20] != cnpj || key[20:22] != model {
+			return out, errFocusUncertain
+		}
+		out.Key = key
 		out.State = fiscal.CheckoutCancelled
 		out.ErrorCode = ""
 		return out, nil
@@ -391,13 +398,16 @@ func (p *FocusProvider) exchangeModel(ctx context.Context, method, ref, cnpj str
 }
 func (p *FocusProvider) save(ctx context.Context, a RequestContext, sale, intent string, out DocumentResult, err error) (DocumentResult, error) {
 	out.IntentID = intent
+	if out.State == "authorized_homologation" || out.State == fiscal.CheckoutCancelled {
+		out.ArchiveState = p.archiveResult(ctx, a, sale, intent, out)
+	}
 	durable, cancel := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
 	defer cancel()
 	approved := false
 	if saved, e := fiscal.ReadIntent(durable, a.DB, a.Actor, a.Device, intent, false); e == nil {
 		approved = accountantApprovedIntent(durable, a, saved)
 	}
-	if e := fiscal.RecordCheckoutStatus(durable, a.DB, a.Actor, a.Device, sale, fiscal.CheckoutStatus{AccountantApproved: &approved, State: out.State, OperationID: out.OperationID, IntentID: intent, Key: out.Key, ErrorCode: out.ErrorCode, Message: out.Message}); e != nil {
+	if e := fiscal.RecordCheckoutStatus(durable, a.DB, a.Actor, a.Device, sale, fiscal.CheckoutStatus{ArchiveState: out.ArchiveState, AccountantApproved: &approved, State: out.State, OperationID: out.OperationID, IntentID: intent, Key: out.Key, ErrorCode: out.ErrorCode, Message: out.Message}); e != nil {
 		out.ErrorCode = "fiscal_status_persistence_failed"
 		return out, ErrUnavailable
 	}

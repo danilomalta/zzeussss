@@ -162,5 +162,6 @@
   "exportUntil": "Último dia (UTC)",
   "exportDownload": "Escolher destino e exportar",
   "exportSaved": "Arquivo entregue ao destino ou gerenciador de downloads. Confira READ_ME.txt e ausências no CSV.",
-  "exportFailed": "Exportação cancelada ou indisponível. Verifique sessão, permissão, destino e limites."
+  "exportFailed": "Exportação cancelada ou indisponível. Verifique sessão, permissão, destino e limites.",
+  "nfeArchivePending": "O XML ainda não está arquivado localmente. Confira a chave privada de backup e consulte a mesma nota; não emita outra venda ou nota."
 }

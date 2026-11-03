@@ -124,7 +124,7 @@ func (s *Server) fiscalNFe55Action(c *fiber.Ctx, action string) error {
 		return nfe55Failure(c, err)
 	}
 	// No request, recipient, certificate, token, URL or tax input is echoed.
-	return c.JSON(fiber.Map{"state": out.State, "message": out.Message, "error_code": out.ErrorCode, "key": out.Key, "intent_id": out.IntentID})
+	return c.JSON(fiber.Map{"archive_state": out.ArchiveState, "state": out.State, "message": out.Message, "error_code": out.ErrorCode, "key": out.Key, "intent_id": out.IntentID})
 }
 func (s *Server) fiscalNFe55DANFE(c *fiber.Ctx) error {
 	if !fiscalRead(c) || !noBagQuery(c) {

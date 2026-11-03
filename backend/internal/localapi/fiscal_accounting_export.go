@@ -3,7 +3,6 @@ package localapi
 import (
 	"github.com/gofiber/fiber/v2"
 	"titansystem-backend/internal/localdb/fiscal"
-	"titansystem-backend/internal/localdb/localauth"
 )
 
 func (s *Server) fiscalAccountingExport(c *fiber.Ctx) error {
@@ -22,8 +21,7 @@ func (s *Server) fiscalAccountingExport(c *fiber.Ctx) error {
 	if !valid || len(seen) != 3 {
 		return fiscalFailure(c, fiscal.ErrInvalid)
 	}
-	session := c.Locals("session").(localauth.Session)
-	zip, err := fiscal.AccountingExport(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, session.Token, c.Query("from"), c.Query("until"), c.Query("lang"))
+	zip, err := s.fiscalProviders.AccountingExport(c.UserContext(), s.productionContext(c), c.Query("from"), c.Query("until"), c.Query("lang"))
 	if err != nil {
 		return fiscalFailure(c, err)
 	}

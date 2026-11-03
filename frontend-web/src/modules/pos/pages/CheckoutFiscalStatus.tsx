@@ -30,7 +30,7 @@ export function CheckoutFiscalStatusView({view,busy,unavailable,demo,canReproces
   <p role="status" aria-live="polite">{demo?w.checkoutFiscalDemo:unavailable?w.checkoutFiscalUnavailable:!view?w.checkoutFiscalLoading:w[{authorized:'checkoutFiscalAuthorized',failed:'checkoutFiscalFailed',pending:'checkoutFiscalPending',none:'checkoutFiscalNone',cancelled:'checkoutFiscalCancelled',cancellationFailed:'checkoutFiscalCancellationFailed'}[view.state]]}</p>
   {view?.state==='cancellationFailed'&&view.message&&<p role="alert">{view.message}</p>}
   {view?.contingencyPending&&<p role="alert">{w.checkoutFiscalContingencyPending}</p>}
-  {view?.state==='authorized'&&<><p>{w.checkoutFiscalHomologation}</p>{!view.accountantApproved&&<p role="note">{w.checkoutFiscalAccountantUnapproved}</p>}</>}
+  {view?.state==='authorized'&&<><p>{w.checkoutFiscalHomologation}</p>{view.archivePending&&<p role="alert">{w.checkoutFiscalArchivePending}</p>}{!view.accountantApproved&&<p role="note">{w.checkoutFiscalAccountantUnapproved}</p>}</>}
   {view?.state==='failed'&&canReprocess&&<><button type="button" className="brand-secondary" disabled={busy||!view.canRetry||!connected||demo} onClick={onRetry}>{w.checkoutFiscalRetry}</button>{!view.canRetry&&<p>{w.checkoutFiscalMissingRequest}</p>}</>}
   {!demo&&<button type="button" className="brand-secondary" disabled={busy||!connected} onClick={onRefresh}>{w.checkoutFiscalRefresh}</button>}
  </section>;

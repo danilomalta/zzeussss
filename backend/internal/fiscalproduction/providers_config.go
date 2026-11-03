@@ -12,6 +12,8 @@ import (
 
 // Trusted process configuration. Secret references are rejected; secrets live in the vault.
 type TenantFiscalConfiguration struct {
+	// Customer-selected private 32-byte backup key; ciphertext lives in their selected business DB.
+	XMLArchiveKeyFile string `json:"xml_archive_key_file,omitempty"`
 	// Empty preserves the existing NFC-e configuration; model 55 must be explicit.
 	DocumentModel        string          `json:"model,omitempty"`
 	VaultPath            string          `json:"vault_path,omitempty"`
@@ -66,6 +68,9 @@ func NewProviderRegistry(entries []ProviderRegistration) (*ProviderRegistry, err
 			}
 		}
 		r.entries[b.TenantID] = entry
+	}
+	if err := validateArchiveKeys(entries); err != nil {
+		return nil, err
 	}
 	return r, nil
 }

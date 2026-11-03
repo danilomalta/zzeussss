@@ -162,5 +162,6 @@
   "exportUntil": "Dernier jour (UTC)",
   "exportDownload": "Choisir le dossier et exporter",
   "exportSaved": "Fichier remis au dossier ou gestionnaire de téléchargements. Vérifiez READ_ME.txt et absences dans le CSV.",
-  "exportFailed": "Export annulé ou indisponible. Vérifiez session, permission, dossier et limites."
+  "exportFailed": "Export annulé ou indisponible. Vérifiez session, permission, dossier et limites.",
+  "nfeArchivePending": "Le XML n’est pas encore archivé localement. Vérifiez la clé privée de sauvegarde et consultez la même facture ; ne créez pas une autre vente ou facture."
 }

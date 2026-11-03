@@ -21,6 +21,7 @@ const CheckoutCancelled = "cancelled_homologation"
 const CheckoutCancellationFailed = "cancellation_failed"
 
 type CheckoutStatus struct {
+	ArchiveState       string `json:"archive_state,omitempty"`
 	AccountantApproved *bool  `json:"accountant_approved,omitempty"`
 	Message            string `json:"message,omitempty"`
 	CanReprocess       bool   `json:"can_reprocess"`

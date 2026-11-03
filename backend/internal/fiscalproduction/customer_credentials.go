@@ -284,6 +284,7 @@ func (r *ProviderRegistry) customerRegistration(tenant string, base TenantFiscal
 	}
 	c.VaultPath = base.VaultPath
 	c.MasterKeyFile = base.MasterKeyFile
+	c.XMLArchiveKeyFile = base.XMLArchiveKeyFile
 	if c.Environment == "production" {
 		return ProviderRegistration{}, ErrCheckoutProduction
 	}

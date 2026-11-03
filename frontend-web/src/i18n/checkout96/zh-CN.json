@@ -84,5 +84,6 @@
   "checkoutFiscalCancelled": "税务票据已取消",
   "checkoutFiscalCancellationFailed": "税务票据取消失败",
   "checkoutFiscalContingencyPending": "Focus 已报告应急开票，但尚未在 SEFAZ 完成。请查询同一引用，不要另开一张发票。",
-  "checkoutFiscalAccountantUnapproved": "测试环境：税务分类尚无会计师批准证明。启用生产环境将要求该批准；生产环境仍被阻止。"
+  "checkoutFiscalAccountantUnapproved": "测试环境：税务分类尚无会计师批准证明。启用生产环境将要求该批准；生产环境仍被阻止。",
+  "checkoutFiscalArchivePending": "XML 尚未在本地归档。请检查私有备份密钥并查询同一张发票；不要重新创建销售或发票。"
 }

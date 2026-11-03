@@ -22,9 +22,11 @@ type CorrectionInput struct {
 	Confirmed bool   `json:"confirmed_allowed_fields"`
 }
 type CorrectionResult struct {
-	State   string `json:"state"`
-	Message string `json:"message,omitempty"`
-	Number  int    `json:"number,omitempty"`
+	ArchiveState string `json:"archive_state,omitempty"`
+	XMLPath      string `json:"-"`
+	State        string `json:"state"`
+	Message      string `json:"message,omitempty"`
+	Number       int    `json:"number,omitempty"`
 }
 
 // Official contract: /reference/emitir_carta_correcao. One durable attempt per
@@ -83,6 +85,18 @@ func (p *FocusProvider) Correct(ctx context.Context, a RequestContext, in Docume
 		return result, nil
 	}
 	result := p.sendCorrection(ctx, ref, body)
+	if result.State == "correction_authorized_homologation" {
+		data, e := p.downloadArchiveXML(ctx, result.XMLPath, current.Key, "correction", result.Number)
+		if e == nil {
+			e = p.storeArchive(ctx, a, in.SaleID, current.IntentID, current.Key, "correction", result.Number, data)
+		}
+		clear(data)
+		result.ArchiveState = "pending"
+		if e == nil {
+			result.ArchiveState = "archived"
+		}
+	}
+
 	raw, _ := json.Marshal(result)
 	id, err := localdb.NewID()
 	if err != nil {
@@ -113,6 +127,7 @@ func (p *FocusProvider) sendCorrection(ctx context.Context, ref string, body []b
 		defer response.Body.Close()
 		raw, e := io.ReadAll(io.LimitReader(response.Body, 1024*1024+1))
 		var reply struct {
+			XMLPath string `json:"caminho_xml_carta_correcao"`
 			Status  string `json:"status"`
 			Message string `json:"mensagem_sefaz"`
 			Number  int    `json:"numero_carta_correcao"`
@@ -123,6 +138,7 @@ func (p *FocusProvider) sendCorrection(ctx context.Context, ref string, body []b
 			case response.StatusCode == 200 && reply.Status == "autorizado" && reply.Number >= 1 && reply.Number <= 20:
 				result.State = "correction_authorized_homologation"
 				result.Number = reply.Number
+				result.XMLPath = reply.XMLPath
 			case reply.Status == "erro_autorizacao" && (response.StatusCode == 200 || response.StatusCode == 400):
 				result.State = "correction_failed"
 			case response.StatusCode == 400 || response.StatusCode == 401 || response.StatusCode == 404 || response.StatusCode == 415:

@@ -162,5 +162,6 @@
   "exportUntil": "Last day (UTC)",
   "exportDownload": "Choose destination and export",
   "exportSaved": "File delivered to the destination or download manager. Check READ_ME.txt and missing records in CSV.",
-  "exportFailed": "Export cancelled or unavailable. Check session, permission, destination and limits."
+  "exportFailed": "Export cancelled or unavailable. Check session, permission, destination and limits.",
+  "nfeArchivePending": "XML is not yet archived locally. Check the private backup key and query the same invoice; do not issue another sale or invoice."
 }

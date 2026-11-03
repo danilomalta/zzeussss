@@ -162,5 +162,6 @@
   "exportUntil": "最后一天（UTC）",
   "exportDownload": "选择目录并导出",
   "exportSaved": "文件已交付到所选目录或下载管理器。请检查 READ_ME.txt 和 CSV 中缺失的记录。",
-  "exportFailed": "导出取消或不可用。请检查会话、权限、目录及限制。"
+  "exportFailed": "导出取消或不可用。请检查会话、权限、目录及限制。",
+  "nfeArchivePending": "XML 尚未在本地归档。请检查私有备份密钥并查询同一张发票；不要重新创建销售或发票。"
 }

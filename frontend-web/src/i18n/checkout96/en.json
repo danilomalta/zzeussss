@@ -84,5 +84,6 @@
   "checkoutFiscalCancelled": "Fiscal document cancelled",
   "checkoutFiscalCancellationFailed": "Fiscal document cancellation failed",
   "checkoutFiscalContingencyPending": "Focus reported contingency: not yet finalized at SEFAZ. Consult the same reference; do not issue another invoice.",
-  "checkoutFiscalAccountantUnapproved": "HOMOLOGATION: classification is not yet evidenced as accountant-approved. Approval will be required to enable production; production remains blocked."
+  "checkoutFiscalAccountantUnapproved": "HOMOLOGATION: classification is not yet evidenced as accountant-approved. Approval will be required to enable production; production remains blocked.",
+  "checkoutFiscalArchivePending": "XML is not yet archived locally. Check the private backup key and query the same invoice; do not issue another sale or invoice."
 }

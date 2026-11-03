@@ -84,5 +84,6 @@
   "checkoutFiscalCancelled": "Document fiscal annulé",
   "checkoutFiscalCancellationFailed": "Échec de l’annulation du document fiscal",
   "checkoutFiscalContingencyPending": "Contingence signalée par Focus : pas encore confirmée à la SEFAZ. Consultez la même référence ; n’émettez pas une autre facture.",
-  "checkoutFiscalAccountantUnapproved": "HOMOLOGATION : classification sans preuve d’approbation comptable. Cette approbation sera exigée pour la production ; celle-ci reste bloquée."
+  "checkoutFiscalAccountantUnapproved": "HOMOLOGATION : classification sans preuve d’approbation comptable. Cette approbation sera exigée pour la production ; celle-ci reste bloquée.",
+  "checkoutFiscalArchivePending": "Le XML n’est pas encore archivé localement. Vérifiez la clé privée de sauvegarde et consultez la même facture ; ne créez pas une autre vente ou facture."
 }
