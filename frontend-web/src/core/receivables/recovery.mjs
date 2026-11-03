@@ -2,7 +2,7 @@
 // customer text, tokens, passwords or session objects. A restored pointer is GET-only.
 const validID=v=>typeof v==='string'&&/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(v);
 function pointer(value){
- if(!value||!validID(value.op)||!validID(value.id)||!['create','receive_cash','cancel'].includes(value.action))throw Error('storage');
+ if(!value||!validID(value.op)||!validID(value.id)||!['create','receive_cash','cancel','reverse_cash'].includes(value.action))throw Error('storage');
  return {op:value.op,id:value.id,action:value.action};
 }
 function same(a,b){return a&&a.op===b.op&&a.id===b.id&&a.action===b.action;}

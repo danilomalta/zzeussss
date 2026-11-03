@@ -21346,6 +21346,24 @@
     },
     "/local/v1/finance/receivables/customer-orders/{id}": {
       "$ref": "receivables.openapi.json#/paths/~1local~1v1~1finance~1receivables~1customer-orders~1{id}"
+    },
+    "/local/v1/retail/config": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1config"
+    },
+    "/local/v1/retail/customers": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1customers"
+    },
+    "/local/v1/retail/customers/{id}": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1customers~1{id}"
+    },
+    "/local/v1/retail/customers/{id}/privacy": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1customers~1{id}~1privacy"
+    },
+    "/local/v1/finance/receivables/{id}/reverse-cash": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1finance~1receivables~1{id}~1reverse-cash"
+    },
+    "/local/v1/retail/sales/{id}/refund": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1sales~1{id}~1refund"
     }
   },
   "components": {

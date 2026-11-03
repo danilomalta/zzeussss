@@ -1,0 +1,1 @@
+export function retailClient(options:{token:string|null;session:object|null;getCurrent:()=>{token:string|null;session:object|null};fetcher?:typeof fetch}):{dispose():void;request(path:string,body?:unknown):Promise<any>};

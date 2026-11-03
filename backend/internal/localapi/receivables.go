@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"titansystem-backend/internal/localdb/localauth"
 	"titansystem-backend/internal/localdb/receivables"
+	"titansystem-backend/internal/localdb/retail"
 )
 
 func (s *Server) mountReceivables(r fiber.Router) {
@@ -19,11 +20,19 @@ func (s *Server) mountReceivables(r fiber.Router) {
 	r.Get("/finance/receivables/:id", s.readReceivable)
 	r.Post("/finance/receivables/:id/receive-cash", s.receiveReceivableCash)
 	r.Post("/finance/receivables/:id/cancel", s.cancelReceivable)
+	r.Post("/finance/receivables/:id/reverse-cash", s.reverseReceivableCash)
+	s.mountRetail(r)
 }
 func receivableError(c *fiber.Ctx, e error) error {
 	switch {
 	case errors.Is(e, localauth.ErrDenied):
 		return c.SendStatus(401)
+	case errors.Is(e, retail.ErrDisabled):
+		return c.Status(409).JSON(fiber.Map{"code": "retail_disabled_or_ineligible"})
+	case errors.Is(e, retail.ErrInvalid):
+		return c.SendStatus(400)
+	case errors.Is(e, retail.ErrConflict):
+		return c.SendStatus(409)
 	case errors.Is(e, receivables.ErrInvalid):
 		return c.SendStatus(400)
 	case errors.Is(e, receivables.ErrNotFound):
@@ -119,8 +128,26 @@ func (s *Server) createReceivable(c *fiber.Ctx) error {
 		return c.SendStatus(503)
 	}
 	var in receivables.CreateInput
-	if !receivableBody(c, []string{"operation_id", "id", "customer_reference", "document_reference", "description", "issued_on", "total_cents", "installments"}, &in, "customer_order") {
+	if !receivableBody(c, []string{"operation_id", "id", "customer_reference", "document_reference", "description", "issued_on", "total_cents", "installments"}, &in, "customer_order", "credit_sale") {
 		return c.SendStatus(400)
+	}
+	if in.CreditSale != nil {
+		var b map[string]json.RawMessage
+		json.Unmarshal(c.Body(), &b)
+		if _, e := exactSaleObject(b["credit_sale"], []string{"sale_id", "session_id", "items"}, "tax_quote_operations"); e != nil {
+			return c.SendStatus(400)
+		}
+		var items struct {
+			Items []json.RawMessage `json:"items"`
+		}
+		if json.Unmarshal(b["credit_sale"], &items) != nil {
+			return c.SendStatus(400)
+		}
+		for _, item := range items.Items {
+			if _, e := exactSaleObject(item, []string{"product_id", "location_id", "quantity_milli"}); e != nil {
+				return c.SendStatus(400)
+			}
+		}
 	}
 	if in.CustomerOrder != nil {
 		var body map[string]json.RawMessage
@@ -209,6 +236,20 @@ func (s *Server) receivableCustomerOrder(c *fiber.Ctx) error {
 	}
 	ss := c.Locals("session").(localauth.Session)
 	out, e := receivables.CustomerOrder(c.UserContext(), s.DB, ss.Actor, ss.Device, c.Params("id"))
+	if e != nil {
+		return receivableError(c, e)
+	}
+	c.Set("Cache-Control", "no-store")
+	return c.JSON(out)
+}
+
+func (s *Server) reverseReceivableCash(c *fiber.Ctx) error {
+	var in receivables.ReversalInput
+	if !receivableBody(c, []string{"operation_id", "original_operation_id", "original_device_id", "session_id", "amount_cents", "expected_reversed_cents", "reason"}, &in) {
+		return c.SendStatus(400)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	out, e := receivables.ReverseCash(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, ss.Token, c.Params("id"), in)
 	if e != nil {
 		return receivableError(c, e)
 	}

@@ -1,0 +1,5 @@
+export function retailClient({token,session,getCurrent,fetcher=globalThis.fetch}){
+ const fields=['tenant_id','store_id','identity_id','device_id'],fingerprint=JSON.stringify(fields.map(k=>session?.[k]));const controllers=new Set();let dead=false;
+ const current=()=>{const now=getCurrent();if(dead||!token||!session||now.token!==token||now.session!==session||JSON.stringify(fields.map(k=>now.session?.[k]))!==fingerprint)throw Error('context');};
+ return {dispose(){dead=true;for(const c of controllers)c.abort();},async request(path,body){current();const ctrl=new AbortController();controllers.add(ctrl);const timer=setTimeout(()=>ctrl.abort(),15000);try{const response=await fetcher('/local/v1/retail'+path,{method:body?'POST':'GET',cache:'no-store',credentials:'omit',signal:ctrl.signal,headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});current();if(!response.ok)throw Error('refused');const value=response.status===204?null:await response.json();current();return value;}finally{clearTimeout(timer);controllers.delete(ctrl);}}};
+}

@@ -25,6 +25,9 @@ func (s *Server) mountCheckoutPlans(r fiber.Router) {
 }
 
 func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
+	if blocked, e := s.rejectCreditFiscal(c); blocked {
+		return e
+	}
 	c.Set(fiber.HeaderCacheControl, "no-store")
 	if s.contracts == nil {
 		return c.SendStatus(503)
@@ -208,6 +211,9 @@ func (s *Server) readCheckoutPlan(c *fiber.Ctx) error {
 // Only the sale ID is accepted. Never accept an operation, tenant, invoice or
 // payment override on the recovery endpoint.
 func (s *Server) reprocessCheckoutFiscal(c *fiber.Ctx) error {
+	if blocked, e := s.rejectCreditFiscal(c); blocked {
+		return e
+	}
 	c.Set(fiber.HeaderCacheControl, "no-store")
 	if s.contracts == nil {
 		return c.SendStatus(503)

@@ -1,0 +1,525 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Opt-in company retail and local customer privacy",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/local/v1/retail/config": {
+      "get": {
+        "operationId": "readRetailConfig",
+        "description": "Owner only. Defaults disabled; no commercial defaults.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current authorized data"
+          },
+          "204": {
+            "description": "Persisted idempotent action"
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Role, store or contract denied"
+          },
+          "409": {
+            "description": "Disabled, ineligible or revision conflict"
+          }
+        }
+      },
+      "post": {
+        "operationId": "configureRetail",
+        "description": "Owner only, expected revision and explicit integer policy. Idempotent operation_id.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current authorized data"
+          },
+          "204": {
+            "description": "Persisted idempotent action"
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Role, store or contract denied"
+          },
+          "409": {
+            "description": "Disabled, ineligible or revision conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "config"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string"
+                  },
+                  "config": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "revision",
+                      "credit_enabled",
+                      "refund_enabled",
+                      "loyalty_enabled",
+                      "multistore_enabled",
+                      "credit_roles",
+                      "refund_roles",
+                      "points_roles",
+                      "earn_cents",
+                      "earn_points",
+                      "redeem_points",
+                      "redeem_cents",
+                      "valid_days"
+                    ],
+                    "properties": {
+                      "revision": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "credit_enabled": {
+                        "type": "boolean"
+                      },
+                      "refund_enabled": {
+                        "type": "boolean"
+                      },
+                      "loyalty_enabled": {
+                        "type": "boolean"
+                      },
+                      "multistore_enabled": {
+                        "type": "boolean"
+                      },
+                      "credit_roles": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "owner",
+                            "manager",
+                            "accountant",
+                            "cashier"
+                          ]
+                        }
+                      },
+                      "refund_roles": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "owner",
+                            "manager",
+                            "accountant",
+                            "cashier"
+                          ]
+                        }
+                      },
+                      "points_roles": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "owner",
+                            "manager",
+                            "accountant",
+                            "cashier"
+                          ]
+                        }
+                      },
+                      "earn_cents": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "earn_points": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "redeem_points": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "redeem_cents": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "valid_days": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/retail/customers": {
+      "post": {
+        "operationId": "saveRetailCustomer",
+        "description": "Owner only, recorded consent and local PII; no PII copied to logs/outbox. Immutable ID; revision concurrency.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current authorized data"
+          },
+          "204": {
+            "description": "Persisted idempotent action"
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Role, store or contract denied"
+          },
+          "409": {
+            "description": "Disabled, ineligible or revision conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "customer"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string"
+                  },
+                  "customer": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "name",
+                      "cpf",
+                      "phone",
+                      "consent_reference",
+                      "revision",
+                      "credit_limit_cents",
+                      "block_overdue",
+                      "credit_enabled",
+                      "loyalty_consent"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "cpf": {
+                        "type": "string"
+                      },
+                      "phone": {
+                        "type": "string"
+                      },
+                      "consent_reference": {
+                        "type": "string"
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "credit_limit_cents": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "block_overdue": {
+                        "type": "boolean"
+                      },
+                      "credit_enabled": {
+                        "type": "boolean"
+                      },
+                      "loyalty_consent": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/retail/customers/{id}": {
+      "get": {
+        "operationId": "readRetailCustomer",
+        "description": "Owner only, no-store.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized data"
+          },
+          "204": {
+            "description": "Persisted idempotent action"
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Role, store or contract denied"
+          },
+          "409": {
+            "description": "Disabled, ineligible or revision conflict"
+          }
+        }
+      }
+    },
+    "/local/v1/retail/customers/{id}/privacy": {
+      "post": {
+        "operationId": "retailPrivacy",
+        "description": "Owner performs explicit confirmed data-subject request. Export current data or anonymize contact fields, keeping financial ledger. operation_id, revision, anonymize and confirmed required.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized data"
+          },
+          "204": {
+            "description": "Persisted idempotent action"
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Role, store or contract denied"
+          },
+          "409": {
+            "description": "Disabled, ineligible or revision conflict"
+          }
+        }
+      }
+    },
+    "/local/v1/finance/receivables/{id}/reverse-cash": {
+      "post": {
+        "operationId": "reverseReceivableCash",
+        "description": "Owner by default, configurable refund roles and opt-in credit policy. Explicit original receipt/device, amount, expected_reversed_cents, session and reason. Serializes compensation with receipts; cannot exceed original receipt; immutable reason and original remain. Never cancels tax note.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized data"
+          },
+          "204": {
+            "description": "Persisted idempotent action"
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Role, store or contract denied"
+          },
+          "409": {
+            "description": "Disabled, ineligible or revision conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "original_operation_id",
+                  "original_device_id",
+                  "session_id",
+                  "amount_cents",
+                  "expected_reversed_cents",
+                  "reason"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "original_operation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "original_device_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "session_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "amount_cents": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "expected_reversed_cents": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/retail/sales/{id}/refund": {
+      "post": {
+        "operationId": "refundRetailSale",
+        "description": "Opt-in financial refund for an original cash sale, by item and explicit quantity; expected quantity and cents required. Original sale, stock and tax status remain unchanged. Refuses credit/tax-bound sales and overlap with physical returns; uses cumulative integer allocation. Idempotent operation_id. Only configured refund roles under existing session/store/Finance/POS authorization.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized data"
+          },
+          "204": {
+            "description": "Persisted idempotent action"
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Role, store or contract denied"
+          },
+          "409": {
+            "description": "Disabled, ineligible or revision conflict"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

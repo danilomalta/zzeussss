@@ -11,6 +11,7 @@ export function validateCustomerOrder(v){
 export function validateCreateInput(v){
  if(!v||!id(v.id)||!id(v.operation_id)||!text(v.customer_reference,128)||!text(v.document_reference,128)||!text(v.description,500)||!date(v.issued_on)||!cents(v.total_cents)||!v.total_cents||!Array.isArray(v.installments)||!v.installments.length||v.installments.length>120)throw new ReceivableError('invalid');
  if(v.customer_order!=null&&(!id(v.customer_order.message_id)||!text(v.customer_order.terms_reference,500)||v.customer_order.confirmed!==true))throw new ReceivableError('invalid');
+ if(v.credit_sale!=null){const c=v.credit_sale;if(v.customer_order!=null||!id(c.sale_id)||!id(c.session_id)||!Array.isArray(c.items)||!c.items.length||c.items.length>500)throw new ReceivableError('invalid');for(const p of c.items)if(!id(p.product_id)||!id(p.location_id)||!cents(p.quantity_milli)||!p.quantity_milli)throw new ReceivableError('invalid');}
  const seen=new Set();let sum=0n;for(const p of v.installments){if(!p||!id(p.id)||seen.has(p.id)||!date(p.due_on)||p.due_on<v.issued_on||!cents(p.amount_cents)||!p.amount_cents)throw new ReceivableError('invalid');seen.add(p.id);sum+=BigInt(p.amount_cents);}
  if(sum!==BigInt(v.total_cents))throw new ReceivableError('invalid');return v;
 }
@@ -26,7 +27,7 @@ export function validateDocument(v){
  for(const part of v.installments){if(!part||!id(part.id)||seen.has(part.id)||!cents(part.amount_cents)||part.amount_cents<1||!cents(part.received_cents)||part.received_cents>part.amount_cents)throw new ReceivableError('invalid');seen.add(part.id);total+=BigInt(part.amount_cents);received+=BigInt(part.received_cents);}
  if(total!==BigInt(v.total_cents)||received!==BigInt(v.received_cents)||v.state==='cancelled'&&(received!==0n||v.outstanding_cents!==0)||v.state!=='cancelled'&&BigInt(v.outstanding_cents)!==total-received||v.state==='settled'&&v.outstanding_cents!==0)throw new ReceivableError('invalid');
  let receipts=0n;for(const receipt of v.receipts){if(!receipt||!id(receipt.operation_id)||!id(receipt.movement_id)||!cents(receipt.amount_cents)||!receipt.amount_cents)throw new ReceivableError('invalid');receipts+=BigInt(receipt.amount_cents);}
- if(receipts!==received||!v.history.length||!text(v.customer_reference,128)||!text(v.document_reference,128)||!text(v.description,500)||!date(v.issued_on))throw new ReceivableError('invalid');
+ if(!cents(v.reversed_cents??0)||receipts-BigInt(v.reversed_cents??0)!==received||!v.history.length||!text(v.customer_reference,128)||!text(v.document_reference,128)||!text(v.description,500)||!date(v.issued_on))throw new ReceivableError('invalid');
  if(v.customer_order!=null&&(validateCustomerOrder(v.customer_order.source).customer_reference!==v.customer_reference||!text(v.customer_order.terms_reference,500)))throw new ReceivableError('invalid');
  return v;
 }
@@ -59,6 +60,7 @@ export function createReceivablesClient({fetcher=globalThis.fetch,getCurrent,pen
    async read(document){if(!id(document))throw new ReceivableError('invalid');const v=validateDocument(await request('/'+encodeURIComponent(document)));if(v.id!==document)throw new ReceivableError('invalid');return v;},
    create(input){validateCreateInput(input);return submit('create',input.id,'',input);},
    receive(document,input){if(!id(input?.session_id)||!id(input?.installment_id)||!cents(input.amount_cents)||!input.amount_cents||!cents(input.expected_received_cents))throw new ReceivableError('invalid');return submit('receive_cash',document,'/'+encodeURIComponent(document)+'/receive-cash',input);},
+   reverse(document,input){if(!id(input?.original_operation_id)||!id(input.original_device_id)||!id(input.session_id)||!cents(input.amount_cents)||!input.amount_cents||!cents(input.expected_reversed_cents)||!text(input.reason,500))throw new ReceivableError('invalid');return submit('reverse_cash',document,'/'+encodeURIComponent(document)+'/reverse-cash',input);},
    cancel(document,input){if(!text(input?.reason,500))throw new ReceivableError('invalid');return submit('cancel',document,'/'+encodeURIComponent(document)+'/cancel',input);},
    async reconcile(){return locked(async()=>{const command=pending.get(scope);if(!command)return null;
     try{const value=result(await request('/operations/'+encodeURIComponent(command.op)),command);current();await forget(command);return value;}catch(e){if(!(e instanceof ReceivableError)||e.status!==404)throw e;}

@@ -16,6 +16,8 @@ import (
 	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/register"
+	"titansystem-backend/internal/localdb/retail"
+	"titansystem-backend/internal/localdb/sale"
 	"titansystem-backend/internal/localdb/supplycycle"
 	"titansystem-backend/internal/sqlitewrite"
 	"unicode/utf8"
@@ -42,7 +44,14 @@ type Installment struct {
 	AmountCents   int64  `json:"amount_cents"`
 	ReceivedCents int64  `json:"received_cents"`
 }
+type CreditSaleInput struct {
+	SaleID             string      `json:"sale_id"`
+	SessionID          string      `json:"session_id"`
+	Items              []sale.Item `json:"items"`
+	TaxQuoteOperations []string    `json:"tax_quote_operations,omitempty"`
+}
 type CreateInput struct {
+	CreditSale        *CreditSaleInput    `json:"credit_sale,omitempty"`
 	CustomerOrder     *CustomerOrderInput `json:"customer_order,omitempty"`
 	OperationID       string              `json:"operation_id"`
 	ID                string              `json:"id"`
@@ -64,7 +73,14 @@ type CancelInput struct {
 	OperationID string `json:"operation_id"`
 	Reason      string `json:"reason"`
 }
+type Reversal struct {
+	OperationID         string `json:"operation_id"`
+	OriginalDeviceID    string `json:"original_device_id"`
+	OriginalOperationID string `json:"original_operation_id"`
+	AmountCents         int64  `json:"amount_cents"`
+}
 type Receipt struct {
+	DeviceID      string `json:"device_id"`
 	OperationID   string `json:"operation_id"`
 	InstallmentID string `json:"installment_id"`
 	SessionID     string `json:"session_id"`
@@ -82,6 +98,9 @@ type Event struct {
 	CreatedAt   string `json:"created_at"`
 }
 type Document struct {
+	Reversals         []Reversal           `json:"reversals,omitempty"`
+	CreditSaleID      string               `json:"credit_sale_id,omitempty"`
+	ReversedCents     int64                `json:"reversed_cents"`
 	CustomerOrder     *CustomerOrderOrigin `json:"customer_order,omitempty"`
 	History           []Event              `json:"history"`
 	ID                string               `json:"id"`
@@ -130,7 +149,7 @@ func readTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (Docum
 	if e != nil {
 		return out, e
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT i.id,i.due_on,i.amount_cents,COALESCE((SELECT sum(r.amount_cents) FROM receivable_cash_receipts r WHERE r.tenant_id=i.tenant_id AND r.store_id=i.store_id AND r.document_id=i.document_id AND r.installment_id=i.id),0) FROM receivable_installments i WHERE i.tenant_id=? AND i.store_id=? AND i.document_id=? ORDER BY i.due_on,i.id`, a.TenantID, a.StoreID, id)
+	rows, e := tx.QueryContext(ctx, `SELECT i.id,i.due_on,i.amount_cents,COALESCE((SELECT sum(r.amount_cents) FROM receivable_cash_receipts r WHERE r.tenant_id=i.tenant_id AND r.store_id=i.store_id AND r.document_id=i.document_id AND r.installment_id=i.id),0)-COALESCE((SELECT sum(v.amount_cents) FROM receivable_cash_reversals v WHERE v.tenant_id=i.tenant_id AND v.store_id=i.store_id AND v.document_id=i.document_id AND v.installment_id=i.id),0) FROM receivable_installments i WHERE i.tenant_id=? AND i.store_id=? AND i.document_id=? ORDER BY i.due_on,i.id`, a.TenantID, a.StoreID, id)
 	if e != nil {
 		return out, e
 	}
@@ -157,13 +176,13 @@ func readTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (Docum
 	if total != out.TotalCents {
 		return out, ErrConflict
 	}
-	rows, e = tx.QueryContext(ctx, `SELECT operation_id,installment_id,session_id,movement_id,amount_cents,actor_id,created_at FROM receivable_cash_receipts WHERE tenant_id=? AND store_id=? AND document_id=? ORDER BY created_at,operation_id`, a.TenantID, a.StoreID, id)
+	rows, e = tx.QueryContext(ctx, `SELECT device_id,operation_id,installment_id,session_id,movement_id,amount_cents,actor_id,created_at FROM receivable_cash_receipts WHERE tenant_id=? AND store_id=? AND document_id=? ORDER BY created_at,operation_id`, a.TenantID, a.StoreID, id)
 	if e != nil {
 		return out, e
 	}
 	for rows.Next() {
 		var v Receipt
-		if e = rows.Scan(&v.OperationID, &v.InstallmentID, &v.SessionID, &v.MovementID, &v.AmountCents, &v.ActorID, &v.CreatedAt); e != nil {
+		if e = rows.Scan(&v.DeviceID, &v.OperationID, &v.InstallmentID, &v.SessionID, &v.MovementID, &v.AmountCents, &v.ActorID, &v.CreatedAt); e != nil {
 			rows.Close()
 			return out, e
 		}
@@ -191,6 +210,34 @@ func readTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string) (Docum
 	if e != nil {
 		return out, e
 	}
+	var reversals int64
+	if e = tx.QueryRowContext(ctx, `SELECT COALESCE(sum(amount_cents),0) FROM receivable_cash_reversals WHERE tenant_id=? AND store_id=? AND document_id=?`, a.TenantID, a.StoreID, id).Scan(&reversals); e != nil {
+		return out, e
+	}
+	out.ReversedCents = reversals
+	reverseRows, err := tx.QueryContext(ctx, `SELECT operation_id,original_device_id,original_operation_id,amount_cents FROM receivable_cash_reversals WHERE tenant_id=? AND store_id=? AND document_id=? ORDER BY operation_id`, a.TenantID, a.StoreID, id)
+	if err != nil {
+		return out, err
+	}
+	for reverseRows.Next() {
+		var v Reversal
+		if err = reverseRows.Scan(&v.OperationID, &v.OriginalDeviceID, &v.OriginalOperationID, &v.AmountCents); err != nil {
+			reverseRows.Close()
+			return out, err
+		}
+		out.Reversals = append(out.Reversals, v)
+	}
+	err = reverseRows.Err()
+	reverseRows.Close()
+	if err != nil {
+		return out, err
+	}
+	var creditSale string
+	e = tx.QueryRowContext(ctx, `SELECT sale_id FROM receivable_credit_sales WHERE tenant_id=? AND store_id=? AND document_id=?`, a.TenantID, a.StoreID, id).Scan(&creditSale)
+	if e != nil && !errors.Is(e, sql.ErrNoRows) {
+		return out, e
+	}
+	out.CreditSaleID = creditSale
 	out.OutstandingCents = out.TotalCents - out.ReceivedCents
 	if out.State == "cancelled" {
 		if out.ReceivedCents != 0 {
@@ -327,7 +374,7 @@ func mutate(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, 
 			return e
 		}
 		var retired int
-		if e = tx.QueryRowContext(ctx, `SELECT count(*) FROM receivable_reconciliations WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=?`, a.TenantID, a.StoreID, d.DeviceID, op).Scan(&retired); e != nil {
+		if e = tx.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM receivable_reconciliations UNION ALL SELECT * FROM receivable_reversal_reconciliations) WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=?`, a.TenantID, a.StoreID, d.DeviceID, op).Scan(&retired); e != nil {
 			return e
 		}
 		if retired != 0 {
@@ -344,6 +391,9 @@ func mutate(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, 
 		reason := ""
 		if cancellation, ok := input.(CancelInput); ok {
 			reason = cancellation.Reason
+		}
+		if reversal, ok := input.(ReversalInput); ok {
+			reason = reversal.Reason
 		}
 		doc.History = append(doc.History, Event{OperationID: op, Action: action, ActorID: a.IdentityID, DeviceID: d.DeviceID, Reason: reason, CreatedAt: now})
 		out = Result{OperationID: op, Action: action, Document: doc}
@@ -362,6 +412,9 @@ func Create(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a identi
 	if !text(in.CustomerReference, 128) || !text(in.DocumentReference, 128) || !text(in.Description, 500) || !date(in.IssuedOn) || in.TotalCents < 1 || in.TotalCents > MaxSafe || len(in.Installments) < 1 || len(in.Installments) > 120 {
 		return Result{}, ErrInvalid
 	}
+	if in.CreditSale != nil && (in.CustomerOrder != nil || !validID(in.CreditSale.SaleID) || !validID(in.CreditSale.SessionID)) {
+		return Result{}, ErrInvalid
+	}
 	if in.CustomerOrder != nil && (!validID(in.CustomerOrder.MessageID) || !text(in.CustomerOrder.TermsReference, 500) || !in.CustomerOrder.Confirmed) {
 		return Result{}, ErrInvalid
 	}
@@ -378,6 +431,19 @@ func Create(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a identi
 		return Result{}, ErrInvalid
 	}
 	return mutate(ctx, db, c, a, d, token, in.OperationID, in.ID, "create", in, func(tx *sql.Tx) error {
+		if in.CreditSale != nil {
+			if e := retail.CreditTx(ctx, tx, a, in.CustomerReference, in.TotalCents); e != nil {
+				return e
+			}
+			saleInput := sale.Input{OperationID: in.OperationID, SaleID: in.CreditSale.SaleID, CashSessionID: in.CreditSale.SessionID, Items: in.CreditSale.Items, TaxQuoteOperations: in.CreditSale.TaxQuoteOperations, Payments: []sale.Payment{{Method: "receivable", AmountCents: in.TotalCents}}}
+			result, e := sale.CompleteCreditTx(ctx, tx, c, a, d, saleInput)
+			if e != nil {
+				return e
+			}
+			if result.Repeated {
+				return ErrConflict
+			}
+		}
 		var origin *CustomerOrderOrigin
 		if in.CustomerOrder != nil {
 			if e := c.RequireTx(ctx, tx, a, d, identity.ViewOrders, modules.Orders); e != nil {
@@ -409,6 +475,11 @@ func Create(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a identi
 		e := checked(ctx, tx, `INSERT INTO receivable_documents VALUES(?,?,?,?,?,?,?,?,'open',?,?)`, a.TenantID, a.StoreID, in.ID, in.CustomerReference, in.DocumentReference, in.Description, in.IssuedOn, in.TotalCents, a.IdentityID, time.Now().UTC().Format(time.RFC3339Nano))
 		if e != nil {
 			return e
+		}
+		if in.CreditSale != nil {
+			if e = checked(ctx, tx, `INSERT INTO receivable_credit_sales VALUES(?,?,?,?)`, a.TenantID, a.StoreID, in.ID, in.CreditSale.SaleID); e != nil {
+				return e
+			}
 		}
 		if origin != nil {
 			raw, _ := json.Marshal(origin)
@@ -477,7 +548,7 @@ func Cancel(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a identi
 		if e != nil {
 			return e
 		}
-		if doc.State != "open" || doc.ReceivedCents != 0 {
+		if doc.State != "open" || doc.ReceivedCents != 0 || doc.CreditSaleID != "" {
 			return ErrConflict
 		}
 		e = checked(ctx, tx, `UPDATE receivable_documents SET state='cancelled' WHERE tenant_id=? AND store_id=? AND id=? AND state='open'`, a.TenantID, a.StoreID, id)

@@ -3,7 +3,7 @@
   "info": {
     "title": "Manual external commercial receivables and cash collection",
     "version": "1.0.0",
-    "description": "Not a fiscal invoice or a second sale. Owner/manager with manage_cash and active finance contract write; view_accounting reads this store, including expired-contract history. Cash receipt also needs POS contract and an open drawer on this device. Receipt, cash supply and immutable audit commit atomically under BEGIN IMMEDIATE. expected_received_cents is per installment; exactly one competing stale revision wins. Same operation+payload+actor replays the original snapshot; altered payload conflicts. A cash supply from this flow cannot be reused as supplier return. Cancellation only before any receipt; no implicit refund, stock or fiscal effect. All currency is BRL integer cents; no interest, TEF or card approval. Recovery GET is limited to original tenant/store/device/actor. Page total is document count, never a monetary total. The document audit is local, with no new peer message type; only the existing cash movement has its existing outbox event. No customer text in transport events/logs. Optional customer_order links this same receivable to verified signed trade history in the same transaction. New debt is manually recorded under explicit documented terms; it is not evidence of monetary acceptance by the buyer. No second sale, stock movement or automatic collection. Paid sales cannot be used as this order origin. Cancellation before receipt releases its active origin for an explicitly corrected new document, preserving history."
+    "description": "Not a fiscal invoice or a second sale. Owner/manager with manage_cash and active finance contract write; view_accounting reads this store, including expired-contract history. Cash receipt also needs POS contract and an open drawer on this device. Receipt, cash supply and immutable audit commit atomically under BEGIN IMMEDIATE. expected_received_cents is per installment; exactly one competing stale revision wins. Same operation+payload+actor replays the original snapshot; altered payload conflicts. A cash supply from this flow cannot be reused as supplier return. Cancellation only before any receipt; no implicit refund, stock or fiscal effect. All currency is BRL integer cents; no interest, TEF or card approval. Recovery GET is limited to original tenant/store/device/actor. Page total is document count, never a monetary total. The document audit is local, with no new peer message type; only the existing cash movement has its existing outbox event. No customer text in transport events/logs. Optional customer_order links this same receivable to verified signed trade history in the same transaction. New debt is manually recorded under explicit documented terms; it is not evidence of monetary acceptance by the buyer. No second sale, stock movement or automatic collection. Paid sales cannot be used as this order origin. Cancellation before receipt releases its active origin for an explicitly corrected new document, preserving history. Optional credit_sale creates a sale and this receivable atomically, after explicit tenant/customer credit opt-in and credit/overdue checks. It creates no cash movement or payment and invokes no fiscal emitter. Its existing tax quote requirements are retained. Credit sale cancellation is refused here. reverse-cash compensates an original receipt, never changing sale, stock or fiscal status; net received is gross receipts minus immutable reversals. Existing role/store and Finance/POS contract restrictions remain prerequisites."
   },
   "paths": {
     "/local/v1/finance/receivables": {
@@ -412,7 +412,8 @@
                     "enum": [
                       "create",
                       "receive_cash",
-                      "cancel"
+                      "cancel",
+                      "reverse_cash"
                     ]
                   },
                   "confirmed": {
@@ -568,6 +569,55 @@
           },
           "customer_order": {
             "$ref": "#/components/schemas/CustomerOrderInput"
+          },
+          "credit_sale": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sale_id",
+              "session_id",
+              "items"
+            ],
+            "properties": {
+              "sale_id": {
+                "type": "string"
+              },
+              "session_id": {
+                "type": "string"
+              },
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 500,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "product_id",
+                    "location_id",
+                    "quantity_milli"
+                  ],
+                  "properties": {
+                    "product_id": {
+                      "type": "string"
+                    },
+                    "location_id": {
+                      "type": "string"
+                    },
+                    "quantity_milli": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                }
+              },
+              "tax_quote_operations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       },
@@ -698,6 +748,9 @@
             "format": "int64",
             "minimum": 1,
             "maximum": 9007199254740991
+          },
+          "device_id": {
+            "type": "string"
           }
         }
       },
@@ -823,6 +876,41 @@
           },
           "customer_order": {
             "$ref": "#/components/schemas/CustomerOrderOrigin"
+          },
+          "credit_sale_id": {
+            "type": "string"
+          },
+          "reversed_cents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "reversals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "operation_id",
+                "original_device_id",
+                "original_operation_id",
+                "amount_cents"
+              ],
+              "properties": {
+                "operation_id": {
+                  "type": "string"
+                },
+                "original_device_id": {
+                  "type": "string"
+                },
+                "original_operation_id": {
+                  "type": "string"
+                },
+                "amount_cents": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
           }
         }
       },
@@ -844,7 +932,8 @@
             "enum": [
               "create",
               "receive_cash",
-              "cancel"
+              "cancel",
+              "reverse_cash"
             ]
           },
           "repeated": {
@@ -912,7 +1001,8 @@
             "enum": [
               "create",
               "receive_cash",
-              "cancel"
+              "cancel",
+              "reverse_cash"
             ]
           },
           "resolution": {

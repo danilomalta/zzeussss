@@ -21,7 +21,7 @@ type ReconcileInput struct {
 
 func reconciliationTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, op string) (Result, error) {
 	out := Result{OperationID: op, Repeated: true, Resolution: "not_applied"}
-	e := tx.QueryRowContext(ctx, `SELECT document_id,action FROM receivable_reconciliations WHERE tenant_id=? AND store_id=? AND device_id=? AND actor_id=? AND operation_id=?`, a.TenantID, a.StoreID, d.DeviceID, a.IdentityID, op).Scan(&out.DocumentID, &out.Action)
+	e := tx.QueryRowContext(ctx, `SELECT document_id,action FROM (SELECT * FROM receivable_reconciliations UNION ALL SELECT * FROM receivable_reversal_reconciliations) WHERE tenant_id=? AND store_id=? AND device_id=? AND actor_id=? AND operation_id=?`, a.TenantID, a.StoreID, d.DeviceID, a.IdentityID, op).Scan(&out.DocumentID, &out.Action)
 	if errors.Is(e, sql.ErrNoRows) {
 		return Result{}, ErrNotFound
 	}
@@ -32,7 +32,7 @@ func reconciliationTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d ident
 // BEGIN IMMEDIATE serializes its durable fence with every financial mutation.
 func Reconcile(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, token, op string, in ReconcileInput) (Result, error) {
 	var out Result
-	if db == nil || c == nil || !validID(op) || !validID(in.DocumentID) || !in.Confirmed || (in.Action != "create" && in.Action != "receive_cash" && in.Action != "cancel") {
+	if db == nil || c == nil || !validID(op) || !validID(in.DocumentID) || !in.Confirmed || (in.Action != "create" && in.Action != "receive_cash" && in.Action != "cancel" && in.Action != "reverse_cash") {
 		return out, ErrInvalid
 	}
 	e := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
@@ -55,7 +55,7 @@ func Reconcile(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a ide
 			return e
 		}
 		var oldActor string
-		e = tx.QueryRowContext(ctx, `SELECT actor_id,document_id,action FROM receivable_reconciliations WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=?`, a.TenantID, a.StoreID, d.DeviceID, op).Scan(&oldActor, &doc, &action)
+		e = tx.QueryRowContext(ctx, `SELECT actor_id,document_id,action FROM (SELECT * FROM receivable_reconciliations UNION ALL SELECT * FROM receivable_reversal_reconciliations) WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=?`, a.TenantID, a.StoreID, d.DeviceID, op).Scan(&oldActor, &doc, &action)
 		if e == nil {
 			if oldActor != a.IdentityID || doc != in.DocumentID || action != in.Action {
 				return ErrConflict
@@ -70,10 +70,18 @@ func Reconcile(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a ide
 		if e = tx.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM receivable_cash_receipts WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=?)+(SELECT count(*) FROM cash_adjustments WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=?)`, a.TenantID, a.StoreID, d.DeviceID, op, a.TenantID, a.StoreID, d.DeviceID, "ar-"+digest([]string{a.TenantID, a.StoreID, d.DeviceID, op})).Scan(&effects); e != nil {
 			return e
 		}
-		if effects != 0 {
+		var reverseEffects int
+		if e = tx.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM receivable_cash_reversals WHERE tenant_id=? AND store_id=? AND operation_id=?)+(SELECT count(*) FROM cash_adjustments WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=?)`, a.TenantID, a.StoreID, op, a.TenantID, a.StoreID, d.DeviceID, "arr-"+digest([]string{a.TenantID, a.StoreID, op})).Scan(&reverseEffects); e != nil {
+			return e
+		}
+		if effects != 0 || reverseEffects != 0 {
 			return ErrConflict
 		}
-		if e = checked(ctx, tx, `INSERT INTO receivable_reconciliations VALUES(?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, d.DeviceID, op, a.IdentityID, in.DocumentID, in.Action, time.Now().UTC().Format(time.RFC3339Nano)); e != nil {
+		table := "receivable_reconciliations"
+		if in.Action == "reverse_cash" {
+			table = "receivable_reversal_reconciliations"
+		}
+		if e = checked(ctx, tx, `INSERT INTO `+table+` VALUES(?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, d.DeviceID, op, a.IdentityID, in.DocumentID, in.Action, time.Now().UTC().Format(time.RFC3339Nano)); e != nil {
 			return e
 		}
 		out = Result{OperationID: op, DocumentID: in.DocumentID, Action: in.Action, Resolution: "not_applied"}
