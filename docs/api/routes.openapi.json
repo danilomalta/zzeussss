@@ -21364,6 +21364,15 @@
     },
     "/local/v1/retail/sales/{id}/refund": {
       "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1sales~1{id}~1refund"
+    },
+    "/local/v1/retail/customers/{id}/loyalty": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1customers~1{id}~1loyalty"
+    },
+    "/local/v1/retail/customers/{id}/loyalty/earn": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1customers~1{id}~1loyalty~1earn"
+    },
+    "/local/v1/retail/customers/{id}/loyalty/redeem": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1customers~1{id}~1loyalty~1redeem"
     }
   },
   "components": {

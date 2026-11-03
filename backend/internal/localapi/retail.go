@@ -14,6 +14,9 @@ func (s *Server) retailService(c *fiber.Ctx) retail.Service {
 }
 func (s *Server) mountRetail(r fiber.Router) {
 	r.Post("/retail/sales/:id/refund", s.refundRetailSale)
+	r.Get("/retail/customers/:id/loyalty", s.readRetailPoints)
+	r.Post("/retail/customers/:id/loyalty/earn", s.earnRetailPoints)
+	r.Post("/retail/customers/:id/loyalty/redeem", s.redeemRetailPoints)
 	r.Get("/retail/config", s.readRetailConfig)
 	r.Post("/retail/config", s.configureRetail)
 	r.Post("/retail/customers", s.saveRetailCustomer)
@@ -137,4 +140,36 @@ func (s *Server) rejectCreditFiscal(c *fiber.Ctx) (bool, error) {
 		return true, c.Status(409).JSON(fiber.Map{"code": "credit_fiscal_payment_not_mapped"})
 	}
 	return false, nil
+}
+
+func (s *Server) readRetailPoints(c *fiber.Ctx) error {
+	if !noBagQuery(c) || len(c.Body()) != 0 {
+		return c.SendStatus(400)
+	}
+	out, e := s.retailService(c).Points(c.UserContext(), c.Params("id"))
+	if e != nil {
+		return receivableError(c, e)
+	}
+	c.Set("Cache-Control", "no-store")
+	return c.JSON(out)
+}
+func (s *Server) earnRetailPoints(c *fiber.Ctx) error {
+	var in retail.PointsInput
+	if !receivableBody(c, []string{"operation_id", "sale_id", "confirmed"}, &in) {
+		return c.SendStatus(400)
+	}
+	if e := s.retailService(c).Award(c.UserContext(), c.Params("id"), in); e != nil {
+		return receivableError(c, e)
+	}
+	return c.SendStatus(204)
+}
+func (s *Server) redeemRetailPoints(c *fiber.Ctx) error {
+	var in retail.PointsInput
+	if !receivableBody(c, []string{"operation_id", "points", "expected_balance", "confirmed"}, &in) {
+		return c.SendStatus(400)
+	}
+	if e := s.retailService(c).Redeem(c.UserContext(), c.Params("id"), in); e != nil {
+		return receivableError(c, e)
+	}
+	return c.SendStatus(204)
 }

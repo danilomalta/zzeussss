@@ -56,6 +56,7 @@ type Customer struct {
 	LoyaltyConsent   bool   `json:"loyalty_consent"`
 }
 type Service struct {
+	Clock     func() time.Time
 	DB        *sql.DB
 	Contracts *entitlementstore.Store
 	Actor     identity.Scope
@@ -298,4 +299,11 @@ func CreditTx(ctx context.Context, tx *sql.Tx, a identity.Scope, customer string
 		return ErrDisabled
 	}
 	return nil
+}
+
+func (s Service) now() time.Time {
+	if s.Clock != nil {
+		return s.Clock().UTC()
+	}
+	return time.Now().UTC()
 }

@@ -30,9 +30,19 @@ Data: 03/11/2026. Branch: `feat/varejo-fase1`. Base limpa: `5833f2822212a5bf0d53
 - Frontend completo: `/tmp/retail-a-front-accepted.log`, 2.593 testes, zero falhas/pulados, 2,944 s. TypeScript passou. Os relatórios intermediários que contavam apenas arquivos não são a contagem de casos usada aqui.
 - Contratos: verificador e 10 testes de contratos passaram. Novas rotas em `route-inventory.json`, `routes.openapi.json`, `retail.openapi.json`; contrato de recebíveis ampliado. Logs de execução em `/tmp`, sem dados comerciais, não são incluídos na distribuição.
 
-## B — a executar após o gate A
+## B — PARCIAL: razão de fidelidade e direito ao benefício
 
-Fidelidade transacional não é declarada concluída nesta unidade. Reaproveitar políticas/consentimento sem inferir benefício comercial ou gerar pagamento fictício.
+Commit A: `94ffc59`.
+
+- Programa por empresa, desligado por padrão. A configuração exige bases inteiras de acúmulo/resgate e validade explícitas, com consentimento específico. Não há pontos por padrão.
+- Acúmulo autorizado após associação explícita de cliente e venda confirmada; venda pendente/cancelada, outra loja/empresa, cliente sem consentimento e repetição com novo ID não criam um segundo crédito. A política usada e a validade ficam imutáveis por venda.
+- Saldo deriva do razão imutável. Antes de consultar/resgatar, a transação reconcilia cancelamentos e reembolsos financeiros/físicos com a origem. Recalcula pela regra original, mesmo após alteração do programa. Não inventa proporcionalidade tributária. Reversão é materializada antes do resultado/resgate, não dentro da transação antiga de cancelamento da venda. Se não puder reconciliar, recusa a operação.
+- Resgate exige saldo anterior explícito, quantum configurado e confirmação. Retira pontos dos lotes dentro da validade, registra direito ao benefício em centavos e é idempotente. Não pode gerar saldo negativo. Uma reversão posterior a pontos já consumidos pode revelar dívida de pontos; novos resgates são recusados enquanto não houver saldo suficiente. Não há ajuste silencioso ou apagamento do razão.
+- A tela mostra conta, razão, direitos ao benefício e aviso nos cinco idiomas: o registro não aplica desconto, não paga a venda e não movimenta dinheiro. Nenhum cadastro pessoal é colocado no armazenamento do navegador ou em eventos de transporte.
+- `TestRetailConcurrentLoyaltyRedemption`: 50 repetições sem falhas, vencedor único e replay sem nova retirada. `TestRetailLoyaltyRollbackAndCancellation`, `TestRetailLoyaltyPartialRefundReconcilesOriginalPolicy`, `TestRetailLoyaltyConsentAndUnknownCustomer`, `TestRetailLoyaltyExpiryIsExplicit`, `TestHTTPRetailLoyaltyRealAPI` passaram em SQLite descartável. Logs `/tmp/retail-b-*`.
+- Gate: cofre/rotação count=20 passou (21,023 s); frontend completo 2.593 testes, zero falhas/pulados; TypeScript e contratos passaram (586 rotas). Nenhum teste existente foi removido ou afrouxado.
+
+**Retomada B:** aplicação do direito ao benefício no checkout ainda não foi implementada. É necessário definir seu uso (desconto, vale ou produto) e como desfazer benefício já utilizado; não assumir pagamento ou entrega. O acúmulo de venda em dinheiro demanda associação explícita pós-confirmação, não leitura automática de CPF/adesão. Exportação consolidada por titular permanece parcial como registrado em A.
 
 ## C — a executar após o gate B
 

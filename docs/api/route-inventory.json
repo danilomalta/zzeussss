@@ -4102,6 +4102,27 @@
       "path": "/api/v1/suppliers/operations/:operation_id",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/retail/customers/:id/loyalty",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/customers/:id/loyalty/earn",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/customers/:id/loyalty/redeem",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
     }
   ]
 }

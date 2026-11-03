@@ -512,6 +512,196 @@
           }
         }
       }
+    },
+    "/local/v1/retail/customers/{id}/loyalty": {
+      "get": {
+        "operationId": "readRetailPoints",
+        "description": "Derived points account. Reconciles original sale cancellations/refunds before returning, under immediate writer. Expiry is per original award; reversal can expose debt, and redemption cannot increase debt.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current derived account"
+          },
+          "204": {
+            "description": "Idempotent ledger action"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Role, store or contract denied"
+          },
+          "409": {
+            "description": "Disabled, no consent or revision conflict"
+          }
+        }
+      }
+    },
+    "/local/v1/retail/customers/{id}/loyalty/earn": {
+      "post": {
+        "operationId": "earnRetailPoints",
+        "description": "Explicit consent and tenant policy required. Confirmed original sale only, one customer award per sale. Original integer earning policy and expiry are archived. No payment is created.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current derived account"
+          },
+          "204": {
+            "description": "Idempotent ledger action"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Role, store or contract denied"
+          },
+          "409": {
+            "description": "Disabled, no consent or revision conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "sale_id",
+                  "confirmed"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string"
+                  },
+                  "sale_id": {
+                    "type": "string"
+                  },
+                  "confirmed": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/retail/customers/{id}/loyalty/redeem": {
+      "post": {
+        "operationId": "redeemRetailPoints",
+        "description": "Serializes redemption with account reconciliation; expected balance, safe integer quantum and nonnegative result required. Records immutable benefit entitlement only: no automatic checkout discount, cash movement or fiscal emission.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current derived account"
+          },
+          "204": {
+            "description": "Idempotent ledger action"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Role, store or contract denied"
+          },
+          "409": {
+            "description": "Disabled, no consent or revision conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "points",
+                  "expected_balance",
+                  "confirmed"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string"
+                  },
+                  "points": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "expected_balance": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "confirmed": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

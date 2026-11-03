@@ -52,7 +52,13 @@ export const dictionaries={
     "expected_quantity_milli": "Estornado antes (centavos) (1/1000)",
     "expected_cents": "Valor (centavos)",
     "session_id": "Caixa aberto",
-    "sale_id": "Venda"
+    "sale_id": "Venda",
+    "earn": "Acumular após venda confirmada",
+    "redeem": "Registrar resgate de pontos",
+    "points": "Pontos",
+    "expected_balance": "Saldo anterior de pontos",
+    "pointsNotice": "O resgate registra um direito ao benefício; não aplica desconto, não paga venda e não movimenta dinheiro.",
+    "confirmPoints": "Confirmar operação de pontos conforme a política da empresa?"
   },
   "en": {
     "title": "Company retail",
@@ -107,7 +113,13 @@ export const dictionaries={
     "expected_quantity_milli": "Previously reversed (cents) (1/1000)",
     "expected_cents": "Amount (cents)",
     "session_id": "Open drawer",
-    "sale_id": "Sale"
+    "sale_id": "Sale",
+    "earn": "Earn after a confirmed sale",
+    "redeem": "Record points redemption",
+    "points": "Points",
+    "expected_balance": "Previous points balance",
+    "pointsNotice": "Redemption records a benefit entitlement; it does not apply a discount, pay a sale or move money.",
+    "confirmPoints": "Confirm the points operation under company policy?"
   },
   "es": {
     "title": "Comercio por empresa",
@@ -162,7 +174,13 @@ export const dictionaries={
     "expected_quantity_milli": "Revertido previamente (centavos) (1/1000)",
     "expected_cents": "Importe (centavos)",
     "session_id": "Caja abierta",
-    "sale_id": "Venta"
+    "sale_id": "Venta",
+    "earn": "Acumular tras venta confirmada",
+    "redeem": "Registrar canje de puntos",
+    "points": "Puntos",
+    "expected_balance": "Saldo anterior de puntos",
+    "pointsNotice": "El canje registra un derecho al beneficio; no aplica descuento, no paga la venta ni mueve dinero.",
+    "confirmPoints": "¿Confirmar la operación de puntos según la política de la empresa?"
   },
   "fr": {
     "title": "Commerce par entreprise",
@@ -217,7 +235,13 @@ export const dictionaries={
     "expected_quantity_milli": "Déjà contrepassé (centimes) (1/1000)",
     "expected_cents": "Montant (centimes)",
     "session_id": "Caisse ouverte",
-    "sale_id": "Vente"
+    "sale_id": "Vente",
+    "earn": "Cumuler après une vente confirmée",
+    "redeem": "Enregistrer une utilisation de points",
+    "points": "Points",
+    "expected_balance": "Solde précédent des points",
+    "pointsNotice": "L’utilisation enregistre un droit à un avantage ; aucun rabais, paiement ou mouvement d’argent n’est appliqué.",
+    "confirmPoints": "Confirmer l’opération selon la politique de l’entreprise ?"
   },
   "zh-CN": {
     "title": "企业零售",
@@ -272,7 +296,13 @@ export const dictionaries={
     "expected_quantity_milli": "已冲销金额（分） (1/1000)",
     "expected_cents": "金额（分）",
     "session_id": "已开钱箱",
-    "sale_id": "销售"
+    "sale_id": "销售",
+    "earn": "确认销售后累计积分",
+    "redeem": "记录积分兑换",
+    "points": "积分",
+    "expected_balance": "之前的积分余额",
+    "pointsNotice": "兑换仅记录权益，不会自动折扣、支付销售或转移资金。",
+    "confirmPoints": "按企业政策确认积分操作？"
   }
 };
 export function retailWords(locale){return dictionaries[locale]||dictionaries[locale?.split("-")[0]]||dictionaries["pt-BR"];}
