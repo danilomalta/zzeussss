@@ -1607,6 +1607,11 @@
           "accountant_reference": {
             "type": "string",
             "maxLength": 512
+          },
+          "file_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "SHA-256 dos bytes originais do arquivo, calculado pelo servidor na importação; não representa aprovação contábil."
           }
         }
       }
