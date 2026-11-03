@@ -35,3 +35,15 @@ Testes: TestHTTPFiscalAccountingExportContainsExactArchivedXMLAndRequiresOwner, 
 
 ## Regra global — proprietário
 Emissão e cancelamento pelo adapter Focus (55 e 65) agora exigem proprietário, também na reserva imediatamente anterior ao envio. O checkout nativo de homologação revalida proprietário/sessão/contrato antes da operação e no guard imediatamente anterior à rede. A venda continua independente da falha fiscal. TestHomologationFiscalOwnerRecheckedAfterRoleChange cobre a perda de papel durante uma sessão já aberta. As travas de produção, cofre, rotação e testes existentes não foram alterados.
+
+## Evidência final — 02/11/2026
+
+Branch feat/fase7-fiscal, base f26b46c. Commits por etapa: E1 cf88b45; E2 10db6cd; E3 1da27f6; E4 611daba revertido por cb906ca; E5 fbf9e77; E6 c27cdc6; guarda global de proprietário 52b0f62. E1/E2/E3/E6 são PARCIAIS; E4/E5 mantêm os bloqueios descritos acima.
+
+Validação final executada uma vez com PostgreSQL 17 descartável, binários auxiliares e variáveis do job de aceitação: saída Go JSON sem Action fail, 1.634 testes principais e 3.763 incluindo subtestes aprovados. tools/verify_backend_acceptance.py, sem alteração, respondeu PASS com 25 integrações obrigatórias. Duração do passo: 712,17 segundos. Nenhuma falha nova na execução final frente à base Fase 6. Isso não apaga a falha intermediária do gate E4 nem atribui sua causa ao importador.
+
+Quatro testes pulados na suíte: TestFocusSandboxRealNFCe (sem credenciais; ensaio real não autorizado), TestMigrationCrashChild, TestPilotCashProcess e TestPilotCashScreenFlow (entradas auxiliares condicionais). As 25 integrações exigidas pelo verificador foram executadas/aprovadas; nenhum requisito obrigatório foi dispensado.
+
+Frontend completo: 2.553 aprovados, zero falhas e zero pulados. TypeScript aprovado nos gates; build Vite aprovado em 21,92 segundos. Contratos e inventário aprovados, 566 rotas. go build ./... aprovado. Race dos pacotes alterados com seleção dos testes afetados: fiscalproduction 39,473 s; localdb/fiscal 1,042 s; localapi 48,355 s, todos aprovados, sem corrida relatada. Cofre/rotação -count=20 aprovados nos gates E1/E2/E3/E5/E6 e guarda global; E4 falhou e foi revertida conforme acima.
+
+Logs preservados localmente em /tmp/titan-fase7-final-gmjmo2k8/runner/ (backend-full.jsonl, backend-integrations.json e pilot.log), /tmp/titan-fase7-race.log e /tmp/titan-fase7-final-front.log. Não são um registro de homologação oficial nem de execução em Windows. PostgreSQL descartável encerrado após a coleta; nenhum serviço do cliente foi interrompido. Nenhuma emissão real, token Focus, dado comercial ou segredo foi usado/publicado. Windows e instalação em máquina limpa não foram ensaiados nesta fase.
