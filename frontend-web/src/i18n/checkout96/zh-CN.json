@@ -83,5 +83,6 @@
   "checkoutFiscalDemo": "演示模式：不会进行真实税务开票。",
   "checkoutFiscalCancelled": "税务票据已取消",
   "checkoutFiscalCancellationFailed": "税务票据取消失败",
-  "checkoutFiscalContingencyPending": "Focus 已报告应急开票，但尚未在 SEFAZ 完成。请查询同一引用，不要另开一张发票。"
+  "checkoutFiscalContingencyPending": "Focus 已报告应急开票，但尚未在 SEFAZ 完成。请查询同一引用，不要另开一张发票。",
+  "checkoutFiscalAccountantUnapproved": "测试环境：税务分类尚无会计师批准证明。启用生产环境将要求该批准；生产环境仍被阻止。"
 }

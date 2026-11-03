@@ -83,5 +83,6 @@
   "checkoutFiscalDemo": "Démonstration : aucune émission fiscale réelle.",
   "checkoutFiscalCancelled": "Document fiscal annulé",
   "checkoutFiscalCancellationFailed": "Échec de l’annulation du document fiscal",
-  "checkoutFiscalContingencyPending": "Contingence signalée par Focus : pas encore confirmée à la SEFAZ. Consultez la même référence ; n’émettez pas une autre facture."
+  "checkoutFiscalContingencyPending": "Contingence signalée par Focus : pas encore confirmée à la SEFAZ. Consultez la même référence ; n’émettez pas une autre facture.",
+  "checkoutFiscalAccountantUnapproved": "HOMOLOGATION : classification sans preuve d’approbation comptable. Cette approbation sera exigée pour la production ; celle-ci reste bloquée."
 }

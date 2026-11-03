@@ -21319,6 +21319,9 @@
     },
     "/local/v1/fiscal/accounting-export": {
       "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1accounting-export"
+    },
+    "/local/v1/fiscal/tax-tables/import": {
+      "$ref": "./fiscal-tax-policy.openapi.json#/paths/~1fiscal~1tax-tables~1import"
     }
   },
   "components": {

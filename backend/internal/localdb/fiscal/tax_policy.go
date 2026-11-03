@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+	"titansystem-backend/internal/sqlitewrite"
 
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/fiscalcore"
@@ -16,6 +17,7 @@ import (
 )
 
 type TaxPolicyInput struct {
+	Review           *TaxReview         `json:"review,omitempty"`
 	OperationID      string             `json:"operation_id"`
 	ExpectedRevision int                `json:"expected_revision"`
 	ProfileID        string             `json:"profile_id"`
@@ -36,7 +38,7 @@ type TaxPolicy struct {
 
 func taxHash(b []byte) string { v := sha256.Sum256(b); return hex.EncodeToString(v[:]) }
 func (in TaxPolicyInput) valid() bool {
-	return idPattern.MatchString(in.OperationID) && idPattern.MatchString(in.Rule.ID) && idPattern.MatchString(in.Rule.ProductID) && idPattern.MatchString(in.ProfileID) && in.ExpectedRevision >= 0 && in.ExpectedRevision < 1000000 && in.ProfileRevision > 0 && fiscalcore.ValidateTaxPolicy(in.Rule, in.Case, in.Sources) == nil
+	return in.Review.valid(in.Rule.CRT) && idPattern.MatchString(in.OperationID) && idPattern.MatchString(in.Rule.ID) && idPattern.MatchString(in.Rule.ProductID) && idPattern.MatchString(in.ProfileID) && in.ExpectedRevision >= 0 && in.ExpectedRevision < 1000000 && in.ProfileRevision > 0 && fiscalcore.ValidateTaxPolicy(in.Rule, in.Case, in.Sources) == nil
 }
 func taxPolicyTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string, revision int) (TaxPolicy, error) {
 	var out TaxPolicy
@@ -64,14 +66,19 @@ func taxPolicyTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id string, r
 // Every revision preserves provenance and belongs to one profile and store.
 func PublishTaxPolicy(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in TaxPolicyInput, token string) (TaxPolicy, error) {
 	var out TaxPolicy
+	err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+		var e error
+		out, e = publishTaxPolicyTx(ctx, tx, license, a, d, in, token)
+		return e
+	})
+	return out, err
+}
+func publishTaxPolicyTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in TaxPolicyInput, token string) (TaxPolicy, error) {
+	var out TaxPolicy
 	if !in.valid() {
 		return out, ErrInvalid
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return out, err
-	}
-	defer tx.Rollback()
+	var err error
 	if err = fiscalSessionTx(ctx, tx, a, d, token); err != nil {
 		return out, err
 	}
@@ -98,7 +105,7 @@ func PublishTaxPolicy(ctx context.Context, db *sql.DB, license *entitlementstore
 			return out, err
 		}
 		out.Repeated = true
-		return out, tx.Commit()
+		return out, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return out, err
@@ -113,6 +120,9 @@ func PublishTaxPolicy(ctx context.Context, db *sql.DB, license *entitlementstore
 	p, err := profileTx(ctx, tx, a, in.ProfileID, 0)
 	if err != nil {
 		return out, err
+	}
+	if in.Review != nil && p.Input.Environment != "homologation" {
+		return out, ErrInvalid
 	}
 	if p.Revision != in.ProfileRevision {
 		return out, ErrConflict
@@ -167,7 +177,7 @@ func PublishTaxPolicy(ctx context.Context, db *sql.DB, license *entitlementstore
 	if err != nil {
 		return TaxPolicy{}, err
 	}
-	return out, tx.Commit()
+	return out, nil
 }
 func ReadTaxPolicy(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, id string, revision int) (TaxPolicy, error) {
 	if !idPattern.MatchString(id) || revision < 0 {

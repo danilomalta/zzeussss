@@ -398,6 +398,72 @@
           }
         ]
       }
+    },
+    "/fiscal/tax-tables/import": {
+      "post": {
+        "operationId": "importTaxTable",
+        "description": "Proprietário, sessão e contrato ativos. JSON versionado até 1 MiB/100 regras. Publicação atômica em BEGIN IMMEDIATE, quatro tentativas limitadas. Fonte/vigência obrigatórias; SHA-256 dos bytes originais em review.file_sha256. Aprovação contábil sempre falsa na importação. Nenhum envio externo.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version",
+                  "revision",
+                  "regime",
+                  "policies"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "enum": [
+                      1
+                    ]
+                  },
+                  "revision": {
+                    "type": "string"
+                  },
+                  "regime": {
+                    "type": "string",
+                    "enum": [
+                      "simples_nacional",
+                      "lucro_presumido",
+                      "lucro_real"
+                    ]
+                  },
+                  "policies": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "$ref": "#/components/schemas/PolicyInput"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Todas as regras publicadas com hash original e aprovação contábil falsa."
+          },
+          "400": {
+            "description": "Arquivo inválido; nenhuma regra gravada."
+          },
+          "401": {
+            "description": "Sessão ausente."
+          },
+          "403": {
+            "description": "Proprietário/contrato exigidos."
+          },
+          "409": {
+            "description": "Conflito de revisão; nenhuma regra gravada."
+          }
+        }
+      }
     }
   },
   "components": {
@@ -723,6 +789,9 @@
               "type": "string",
               "format": "uri"
             }
+          },
+          "review": {
+            "$ref": "#/components/schemas/TaxReview"
           }
         }
       },
@@ -1506,6 +1575,38 @@
           "amount": {
             "type": "string",
             "pattern": "^(0|[1-9][0-9]{0,12})(\\.[0-9]{1,2})?$"
+          }
+        }
+      },
+      "TaxReview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "regime",
+          "table_revision",
+          "accountant_approved"
+        ],
+        "properties": {
+          "regime": {
+            "type": "string",
+            "enum": [
+              "simples_nacional",
+              "lucro_presumido",
+              "lucro_real"
+            ]
+          },
+          "table_revision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "accountant_approved": {
+            "type": "boolean",
+            "default": false
+          },
+          "accountant_reference": {
+            "type": "string",
+            "maxLength": 512
           }
         }
       }

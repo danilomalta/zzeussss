@@ -3983,6 +3983,13 @@
       "path": "/local/v1/fiscal/accounting-export",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/tax-tables/import",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
     }
   ]
 }

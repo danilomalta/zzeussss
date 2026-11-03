@@ -104,3 +104,16 @@ func (s *Server) readTaxQuote(c *fiber.Ctx) error {
 	}
 	return c.JSON(out)
 }
+
+func (s *Server) importTaxTable(c *fiber.Ctx) error {
+	c.Set(fiber.HeaderCacheControl, "no-store")
+	if !noBagQuery(c) || len(c.Body()) > 1024*1024 {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	ss := c.Locals("session").(localauth.Session)
+	out, err := fiscal.ImportTaxTable(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, c.Body(), ss.Token)
+	if err != nil {
+		return fiscalFailure(c, err)
+	}
+	return c.Status(201).JSON(out)
+}
