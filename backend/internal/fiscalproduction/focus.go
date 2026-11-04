@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"crypto/tls"
+	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -22,6 +23,7 @@ import (
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 // API contracts: https://doc.focusnfe.com.br/reference/{emitir,consultar,cancelar}_nfce
@@ -88,34 +90,31 @@ func (p *FocusProvider) scope(ctx context.Context, a RequestContext, permission 
 	if a.DB == nil || a.License == nil || p.configuration.CertificateType != "A1" || len(p.token) == 0 || a.Actor.TenantID != b.TenantID || a.Actor.StoreID != b.StoreID || a.Device.TenantID != b.TenantID || a.Device.StoreID != b.StoreID || a.Device.DeviceID != b.DeviceID {
 		return ErrUnavailable
 	}
-	tx, err := a.DB.BeginTx(ctx, nil)
-	if err != nil {
-		return ErrUnavailable
-	}
-	defer tx.Rollback()
-	if err = fiscal.ValidateSaleSessionTx(ctx, tx, a.Actor, a.Device, a.Token); err != nil {
-		return err
-	}
-	if err = a.License.RequireTx(ctx, tx, a.Actor, a.Device, permission, modules.Fiscal); err != nil {
-		return err
-	}
-	var barriers int
-	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM fiscal_restore_barriers WHERE tenant_id=?`, a.Actor.TenantID).Scan(&barriers); err != nil {
-		return ErrUnavailable
-	}
-	if barriers != 0 {
-		return fiscal.ErrRestored
-	}
-	{
+	// Authorization also writes the license clock. A deferred read-to-write
+	// upgrade can lose to invoice preparation; use the existing bounded writer.
+	return sqlitewrite.Run(ctx, a.DB, fiscal.ErrConflict, func(tx *sql.Tx) error {
+		if err := fiscal.ValidateSaleSessionTx(ctx, tx, a.Actor, a.Device, a.Token); err != nil {
+			return err
+		}
+		if err := a.License.RequireTx(ctx, tx, a.Actor, a.Device, permission, modules.Fiscal); err != nil {
+			return err
+		}
+		var barriers int
+		if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM fiscal_restore_barriers WHERE tenant_id=?`, a.Actor.TenantID).Scan(&barriers); err != nil {
+			return ErrUnavailable
+		}
+		if barriers != 0 {
+			return fiscal.ErrRestored
+		}
 		var role string
-		if err = tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=? AND status='active'`, a.Actor.TenantID, a.Actor.IdentityID).Scan(&role); err != nil {
+		if err := tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=? AND status='active'`, a.Actor.TenantID, a.Actor.IdentityID).Scan(&role); err != nil {
 			return ErrUnavailable
 		}
 		if role != "owner" {
 			return identity.ErrDenied
 		}
-	}
-	return tx.Commit()
+		return nil
+	})
 }
 func (p *FocusProvider) ValidateCheckout(ctx context.Context, a RequestContext, environment int) error {
 	return p.validateModel(ctx, a, environment, "65")

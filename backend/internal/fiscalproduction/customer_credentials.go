@@ -14,6 +14,7 @@ import (
 	"titansystem-backend/internal/fiscalcore"
 	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 // This endpoint is explicitly enabled by the infrastructure owner per tenant.
@@ -73,25 +74,24 @@ func authorizeCustomerCredentials(ctx context.Context, a RequestContext) error {
 	if a.DB == nil || a.License == nil {
 		return ErrUnavailable
 	}
-	tx, err := a.DB.BeginTx(ctx, nil)
-	if err != nil {
-		return ErrUnavailable
-	}
-	defer tx.Rollback()
-	if err = fiscal.ValidateSaleSessionTx(ctx, tx, a.Actor, a.Device, a.Token); err != nil {
-		return err
-	}
-	if err = a.License.RequireTx(ctx, tx, a.Actor, a.Device, identity.ViewAccounting, modules.Fiscal); err != nil {
-		return err
-	}
-	var role string
-	if err = tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=? AND status='active'`, a.Actor.TenantID, a.Actor.IdentityID).Scan(&role); err != nil {
-		return identity.ErrDenied
-	}
-	if role != "owner" {
-		return identity.ErrDenied
-	}
-	return nil
+	// RequireTx persists the contract clock: this is a write transaction even
+	// for a credential read. Acquire the writer before reading session/revision.
+	return sqlitewrite.Run(ctx, a.DB, fiscal.ErrConflict, func(tx *sql.Tx) error {
+		if err := fiscal.ValidateSaleSessionTx(ctx, tx, a.Actor, a.Device, a.Token); err != nil {
+			return err
+		}
+		if err := a.License.RequireTx(ctx, tx, a.Actor, a.Device, identity.ViewAccounting, modules.Fiscal); err != nil {
+			return err
+		}
+		var role string
+		if err := tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=? AND status='active'`, a.Actor.TenantID, a.Actor.IdentityID).Scan(&role); err != nil {
+			return identity.ErrDenied
+		}
+		if role != "owner" {
+			return identity.ErrDenied
+		}
+		return nil
+	})
 }
 func readCustomerRecord(ctx context.Context, v *FiscalSecretVault, tenant string) (customerCredentialRecord, []byte, error) {
 	return readCustomerRecordFrom(ctx, v, v.db, tenant)
