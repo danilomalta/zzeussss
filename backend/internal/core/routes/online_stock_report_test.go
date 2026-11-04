@@ -19,7 +19,7 @@ func TestOnlineStockReportsMountedRolesAndInputs(t *testing.T) {
 		{"manager", "/coverage?horizon_days=0", "", 400}, {"admin", "/export.csv?tenant_id=x", "", 400}, {"owner", "/summary", "{}", 400},
 	} {
 		t.Run(tc.role+tc.path, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery("SELECT EXISTS").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()

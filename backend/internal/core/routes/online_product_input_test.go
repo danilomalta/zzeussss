@@ -10,7 +10,7 @@ import (
 )
 
 func TestOnlineProductInvalidInputNeverReachesInsert(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	for _, body := range []string{
 		`{"nome":"Item","sku":"sku","preco":0.001}`,
 		`{"nome":"Item","sku":"sku","estoque":2147483648}`,
@@ -44,7 +44,7 @@ func TestOnlineProductInvalidInputNeverReachesInsert(t *testing.T) {
 }
 
 func TestOnlineProductMissingKeyCannotBypassManagedCreation(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	mock := onlineMock(t)
 	mock.ExpectQuery(`SELECT EXISTS`).WithArgs("operator", "company-b", "stock", "11111111-1111-4111-8111-111111111112").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 	app := fiber.New()

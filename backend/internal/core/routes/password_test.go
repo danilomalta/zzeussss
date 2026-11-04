@@ -9,7 +9,7 @@ import (
 )
 
 func TestPasswordRouteRequiresActiveSessionAndLimitsAttempts(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	for _, state := range []string{"anonymous", "revoked", "active", "limited"} {
 		t.Run(state, func(t *testing.T) {
 			mock := onlineMock(t)

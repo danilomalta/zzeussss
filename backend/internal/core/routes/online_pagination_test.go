@@ -11,7 +11,7 @@ import (
 )
 
 func TestOnlinePaginationBoundsAndTenant(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	for _, tenant := range []string{"company-a", "company-b"} {
 		for _, kind := range []string{"products", "suggestions"} {
 			t.Run(tenant+kind, func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestOnlinePaginationBoundsAndTenant(t *testing.T) {
 }
 
 func TestOnlinePaginationRejectsBeforeBusinessQuery(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	for _, path := range []string{"/api/v1/produtos/", "/api/v1/discounts/suggestions"} {
 		for _, query := range []string{"limit=0", "limit=101", "limit=-1", "limit=1.5", "limit=1e2", "limit=", "offset=-1", "offset=1000000001", "offset=999999999999999999999", "limit=1&limit=2", "offset=0&offset=1", "tenant_id=foreign", "unknown=1"} {
 			t.Run(path+query, func(t *testing.T) {
@@ -93,7 +93,7 @@ func TestOnlinePaginationRejectsBeforeBusinessQuery(t *testing.T) {
 }
 
 func TestOnlinePaginationEmptyProductPageAtMaximum(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	mock := onlineMock(t)
 	mock.ExpectQuery(`SELECT EXISTS`).WithArgs("operator", "company-a", "owner", "11111111-1111-4111-8111-111111111112").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 	mock.ExpectQuery(`SELECT .* FROM "products" WHERE tenant_id = \$1.*LIMIT \$2 OFFSET \$3`).WithArgs("company-a", 100, 1000000000).WillReturnRows(sqlmock.NewRows([]string{"id", "tenant_id", "nome"}))

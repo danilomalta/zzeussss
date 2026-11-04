@@ -114,9 +114,9 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	previous := database.DB
 	database.DB = db
 	defer func() { database.DB = previous }()
-	t.Setenv("JWT_SECRET", "catalog-fixture-only-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	token := func(tenant, user, session string) string {
-		signed, e := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": user, "tenant_id": tenant, "role": "owner", "sid": session, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("catalog-fixture-only-secret"))
+		signed, e := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": user, "tenant_id": tenant, "role": "owner", "sid": session, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte(jwtFixtureKey))
 		if e != nil {
 			t.Fatal("token de fixture indisponível")
 		}
@@ -2388,7 +2388,7 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	}
 	stockSession42 := uuid.NewString()
 	exec(`INSERT INTO online_sessions(id,tenant_id,user_id,role,created_at,expires_at) VALUES($1,$2,$3,'stock',clock_timestamp(),clock_timestamp()+interval '1 hour')`, stockSession42, tenantA, stockUser)
-	stockToken42, errStock42 := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": stockUser, "tenant_id": tenantA, "role": "stock", "sid": stockSession42, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("catalog-fixture-only-secret"))
+	stockToken42, errStock42 := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": stockUser, "tenant_id": tenantA, "role": "stock", "sid": stockSession42, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte(jwtFixtureKey))
 	if errStock42 != nil {
 		t.Fatal("token stock42 indisponível")
 	}
@@ -2582,7 +2582,7 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	}
 	stockSession43 := uuid.NewString()
 	exec(`INSERT INTO online_sessions(id,tenant_id,user_id,role,created_at,expires_at) VALUES($1,$2,$3,'stock',clock_timestamp(),clock_timestamp()+interval '1 hour')`, stockSession43, tenantA, stockUser)
-	stockToken43, errStock43 := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": stockUser, "tenant_id": tenantA, "role": "stock", "sid": stockSession43, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("catalog-fixture-only-secret"))
+	stockToken43, errStock43 := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": stockUser, "tenant_id": tenantA, "role": "stock", "sid": stockSession43, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte(jwtFixtureKey))
 	if errStock43 != nil {
 		t.Fatal("token43 indisponível")
 	}
@@ -2811,7 +2811,7 @@ func TestPostgresCatalogCreationAndDiscountAtomicity(t *testing.T) {
 	// Stock staff can read recommendations44 but cannot create/decide human proposals45.
 	stockSession45 := uuid.NewString()
 	exec(`INSERT INTO online_sessions(id,tenant_id,user_id,role,created_at,expires_at) VALUES($1,$2,$3,'stock',clock_timestamp(),clock_timestamp()+interval '1 hour')`, stockSession45, tenantA, stockUser)
-	stockToken45, e45 := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": stockUser, "tenant_id": tenantA, "role": "stock", "sid": stockSession45, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("catalog-fixture-only-secret"))
+	stockToken45, e45 := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": stockUser, "tenant_id": tenantA, "role": "stock", "sid": stockSession45, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte(jwtFixtureKey))
 	if e45 != nil {
 		t.Fatal("sessão45 indisponível")
 	}

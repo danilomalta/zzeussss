@@ -63,7 +63,7 @@ func TestPasswordCookieExpiresOnlyAfterSuccessfulCommit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("JWT_SECRET", "test-only-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	for _, fault := range []string{"none", "audit", "commit"} {
 		t.Run(fault, func(t *testing.T) {
 			conn, m, e := sqlmock.New()

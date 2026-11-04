@@ -28,7 +28,7 @@ func testStore(t *testing.T) (*Store, sqlmock.Sqlmock) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { db.Close() })
-	return New(db, "test-only-key"), m
+	return New(db, jwtFixtureKey), m
 }
 func identity(m sqlmock.Sqlmock) {
 	m.ExpectQuery(`SELECT u.name, u.password_hash.*FOR SHARE OF u, t`).WithArgs(testUser, testTenant, "owner").WillReturnRows(sqlmock.NewRows([]string{"name", "password_hash"}).AddRow("Owner", "hash"))

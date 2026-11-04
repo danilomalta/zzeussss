@@ -17,7 +17,7 @@ func TestReplenishmentMountedPermissionsAndStrictInputs(t *testing.T) {
 		{"stock", "GET", "/summary?limit=1", "", 400}, {"owner", "GET", "/items?tenant_id=x", "", 400}, {"owner", "GET", "/products/01", "", 400}, {"owner", "GET", "/products/1?state=all", "", 400}, {"stock", "POST", "/products/1/simulate", "{}", 400}, {"owner", "POST", "/products/1/simulate?q=x", "{}", 400}, {"owner", "GET", "/export.csv?review_days=", "", 400}, {"owner", "GET", "/summary", "{}", 400},
 	} {
 		t.Run(tc.role+tc.method+tc.path, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery("SELECT EXISTS").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()

@@ -10,7 +10,7 @@ import (
 )
 
 func TestUnfinishedBusinessRoutesAreUnavailable(t *testing.T) {
-	const secret = "segredo-apenas-do-teste"
+	secret := jwtFixtureKey
 	t.Setenv("JWT_SECRET", secret)
 	claims := jwt.MapClaims{"sid": "11111111-1111-4111-8111-111111111112",
 		"sub":       "11111111-1111-4111-8111-111111111111",

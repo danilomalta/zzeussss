@@ -8,7 +8,7 @@ import (
 )
 
 func TestRecoveryRouteRequiresAuthenticationForIssuanceAndBoundsPublicAttempts(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	m := onlineMock(t)
 	app := fiber.New()
 	Registrar(app)

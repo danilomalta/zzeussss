@@ -23,7 +23,7 @@ import (
 
 func TestLoginRealScenarios(t *testing.T) {
 	// Configura o segredo do JWT temporariamente para o contexto de testes unitários
-	t.Setenv("JWT_SECRET", "test_secret_for_auth_scenarios_unit_testing")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 
 	// Prepara a hash Bcrypt correta para a senha de teste
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("correct_password"), bcrypt.DefaultCost)

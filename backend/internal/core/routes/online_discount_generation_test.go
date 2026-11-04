@@ -13,7 +13,7 @@ import (
 )
 
 func TestOnlineDiscountGenerationEmptyLimitAndFailureResponses(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	for _, scenario := range []string{"empty", "too-large", "query-failure", "commit-failure"} {
 		t.Run(scenario, func(t *testing.T) {
 			mock := onlineMock(t)

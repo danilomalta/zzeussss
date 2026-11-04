@@ -47,7 +47,7 @@ func TestLoginDoesNotReturnInternalErrorsOrSubmittedSecrets(t *testing.T) {
 }
 
 func TestRefreshRejectsInvalidTokenBeforeDatabaseLookup(t *testing.T) {
-	t.Setenv("JWT_SECRET", "test-only-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	old := database.DB
 	database.DB = nil
 	t.Cleanup(func() { database.DB = old })
@@ -69,7 +69,7 @@ func TestRefreshRejectsInvalidTokenBeforeDatabaseLookup(t *testing.T) {
 			case "access":
 				claims["type"] = "access"
 			}
-			raw, err := jwt.NewWithClaims(method, claims).SignedString([]byte("test-only-secret"))
+			raw, err := jwt.NewWithClaims(method, claims).SignedString([]byte(jwtFixtureKey))
 			if err != nil {
 				t.Fatal(err)
 			}

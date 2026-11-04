@@ -34,7 +34,7 @@ func TestMarginReportMountedPermissionsAndInput(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.role+tc.method+tc.path, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery("SELECT EXISTS").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()

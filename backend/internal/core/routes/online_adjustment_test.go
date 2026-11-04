@@ -20,7 +20,7 @@ func TestAdjustmentMountedRoutesRejectCashierStockAndAmbiguousBodyBeforeWrites(t
 		{"owner", "/api/v1/catalog/adjustments/preview?tenant_id=other", `{}`, 400},
 	} {
 		t.Run(tc.role+tc.path, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery(`SELECT EXISTS`).WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()

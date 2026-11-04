@@ -10,9 +10,10 @@ import (
 )
 
 func TestStartupRefusesUnsafeSecretsBeforeDatabaseOrListener(t *testing.T) {
-	base := map[string]string{"JWT_SECRET": "installation-specific-private-signing-key", "DB_USER": "operator", "DB_PASSWORD": "installation-specific-private-database-key", "DB_NAME": "company", "DB_HOST": "127.0.0.1", "DB_SSLMODE": "disable"}
+	base := map[string]string{"JWT_SECRET": jwtFixtureKey, "DB_USER": "operator", "DB_PASSWORD": "installation-specific-private-database-key", "DB_NAME": "company", "DB_HOST": "127.0.0.1", "DB_SSLMODE": "disable"}
 	for _, tc := range []struct{ name, key, value string }{
 		{"missing JWT", "JWT_SECRET", ""}, {"blank JWT", "JWT_SECRET", " \t"}, {"public JWT", "JWT_SECRET", "super_secret_key_change_in_prod"}, {"missing database password", "DB_PASSWORD", ""}, {"blank database password", "DB_PASSWORD", " \t"}, {"public database password", "DB_PASSWORD", "titanpass"},
+		{"short JWT", "JWT_SECRET", "short"}, {"malformed JWT", "JWT_SECRET", strings.Repeat("x", 64)}, {"padded JWT", "JWT_SECRET", jwtFixtureKey + "="}, {"repeated JWT", "JWT_SECRET", strings.Repeat("A", 43)},
 		{"public URL password", "DATABASE_URL", "postgres://operator:titanpass@127.0.0.1/company?sslmode=disable"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -41,7 +42,10 @@ func TestStartupRefusesUnsafeSecretsBeforeDatabaseOrListener(t *testing.T) {
 func TestMainStartupRefusesUnsafeCredentialsWithoutDisclosure(t *testing.T) {
 	for _, tc := range []struct{ name, jwt, password string }{
 		{"JWT", "super_secret_key_change_in_prod", "installation-private-database"},
-		{"database", "installation-private-signing-key", "titanpass"},
+		{"short JWT", "short", "installation-private-database"},
+		{"malformed JWT", strings.Repeat("x", 64), "installation-private-database"},
+		{"repeated JWT", strings.Repeat("A", 43), "installation-private-database"},
+		{"database", jwtFixtureKey, "titanpass"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			command := exec.Command(os.Args[0], "-test.run=^TestStartupFailureChild$")

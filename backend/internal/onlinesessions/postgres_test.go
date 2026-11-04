@@ -74,7 +74,7 @@ func TestPostgresDurableRotationConcurrencyAndRollback(t *testing.T) {
 	if err = CheckSchema(ctx, db); err != nil {
 		t.Fatal(err)
 	}
-	s := New(db, "test-only-key")
+	s := New(db, jwtFixtureKey)
 	scope := Scope{User: testUser, Tenant: testTenant, Role: "owner"}
 	first, err := s.Create(ctx, scope, string(passwordHash))
 	if err != nil {

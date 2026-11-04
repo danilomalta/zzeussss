@@ -24,7 +24,7 @@ func TestBatchMountedRoutesRejectCashierStockAndAmbiguousBodyBeforeWrites(t *tes
 		{"owner", "/api/v1/catalog/batches/preview?tenant_id=other", `{}`, 400},
 	} {
 		t.Run(tc.role+tc.path, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery(`SELECT EXISTS`).WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()
@@ -47,7 +47,7 @@ func TestBatchMountedRoutesRejectCashierStockAndAmbiguousBodyBeforeWrites(t *tes
 	}
 }
 func TestBatchHTTPPreviewShowsBeforeAfterAndNoStoreWrite(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	m := onlineMock(t)
 	tenant := "22222222-2222-4222-8222-222222222222"
 	user := "33333333-3333-4333-8333-333333333333"
@@ -57,7 +57,7 @@ func TestBatchHTTPPreviewShowsBeforeAfterAndNoStoreWrite(t *testing.T) {
 	m.ExpectQuery(`SELECT s.id::text`).WithArgs(session, tenant, user, "owner").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(session))
 	m.ExpectQuery(`SELECT id,nome`).WithArgs(tenant, int64(8)).WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "sku", "price", "active", "version"}).AddRow(8, "Item", "", "ABC", "2.50", true, 1))
 	m.ExpectCommit()
-	token, e := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": user, "tenant_id": tenant, "role": "owner", "sid": session, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("isolated-test-secret"))
+	token, e := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": user, "tenant_id": tenant, "role": "owner", "sid": session, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte(jwtFixtureKey))
 	if e != nil {
 		t.Fatal(e)
 	}

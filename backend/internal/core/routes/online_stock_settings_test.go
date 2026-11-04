@@ -17,7 +17,7 @@ func TestStockSettingsMountedPermissionsAndStrictInputs(t *testing.T) {
 		{"owner", "GET", "/produtos/01/stock-settings", "", 400}, {"owner", "GET", "/produtos/1/stock-settings?tenant_id=x", "", 400}, {"owner", "POST", "/produtos/1/stock-settings/preview", "{}", 400}, {"owner", "POST", "/produtos/1/stock-settings", "{}", 400}, {"owner", "GET", "/produtos/1/stock-settings/history?limit=", "", 400}, {"owner", "GET", "/produtos/1/stock-settings/history?limit=1&limit=2", "", 400}, {"owner", "GET", "/catalog/stock-settings/operations/bad", "", 400}, {"owner", "GET", "/produtos/1/stock-settings", "{}", 400},
 	} {
 		t.Run(tc.role+tc.method+tc.path, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery("SELECT EXISTS").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()

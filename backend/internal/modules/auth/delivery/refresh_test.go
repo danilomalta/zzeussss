@@ -15,7 +15,7 @@ import (
 )
 
 func TestRefreshRejectsRevokedMembership(t *testing.T) {
-	t.Setenv("JWT_SECRET", "secret-test-only")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	connection, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)

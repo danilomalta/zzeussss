@@ -19,7 +19,7 @@ func TestAdjustmentExportHTTPRejectsUnauthorizedAndAmbiguousFilters(t *testing.T
 		status            int
 	}{{"stock", "", "", 403}, {"cashier", "", "", 403}, {"owner", "?tenant_id=other", "", 400}, {"owner", "?actor_id=x&actor_id=y", "", 400}, {"owner", "?actor_id=", "", 400}, {"owner", "?product_id=01", "", 400}, {"owner", "?product_id=", "", 400}, {"owner", "?from=2026-10-01T00:00:00Z", "", 400}, {"owner", "?until=", "", 400}, {"owner", "?limit=11", "", 400}, {"owner", "?limit=0", "", 400}, {"owner", "?offset=-1", "", 400}, {"owner", "?format=xlsx", "", 400}, {"owner", "", `{}`, 400}} {
 		t.Run(tc.role+tc.query+tc.body, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery(`SELECT EXISTS`).WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()
@@ -44,7 +44,7 @@ func TestAdjustmentExportHTTPRejectsUnauthorizedAndAmbiguousFilters(t *testing.T
 func TestAdjustmentExportHTTPEmptyJSONAndCSVHaveSafeMetadata(t *testing.T) {
 	for _, kind := range []string{"preview", "csv"} {
 		t.Run(kind, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			tenant := "22222222-2222-4222-8222-222222222222"
 			user := "33333333-3333-4333-8333-333333333333"
@@ -56,7 +56,7 @@ func TestAdjustmentExportHTTPEmptyJSONAndCSVHaveSafeMetadata(t *testing.T) {
 			m.ExpectQuery(`SELECT operation_id::text.*ORDER BY created_at DESC`).WithArgs(tenant, "", nil, nil, "", 10, 0).WillReturnRows(sqlmock.NewRows([]string{"op", "actor", "reason", "rate", "raw", "at", "hash"}))
 			m.ExpectQuery(`SELECT clock_timestamp`).WillReturnRows(sqlmock.NewRows([]string{"at"}).AddRow(time.Now()))
 			m.ExpectCommit()
-			access, e := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": user, "tenant_id": tenant, "role": "owner", "sid": session, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("isolated-test-secret"))
+			access, e := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": user, "tenant_id": tenant, "role": "owner", "sid": session, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte(jwtFixtureKey))
 			if e != nil {
 				t.Fatal(e)
 			}

@@ -14,7 +14,7 @@ import (
 )
 
 func TestCurrentUserAndRoleOnProtectedRoute(t *testing.T) {
-	t.Setenv("JWT_SECRET", "secret-test-only")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	connection, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
@@ -47,7 +47,7 @@ func TestCurrentUserAndRoleOnProtectedRoute(t *testing.T) {
 				"sub": "operador", "tenant_id": "empresa-a", "role": tc.role,
 				"type": "access", "exp": time.Now().Add(time.Minute).Unix(),
 			}
-			token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte("secret-test-only"))
+			token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(jwtFixtureKey))
 			if err != nil {
 				t.Fatal(err)
 			}

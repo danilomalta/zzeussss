@@ -17,7 +17,7 @@ func TestPurchaseDraftsMountedPermissionsAndStrictInputs(t *testing.T) {
 		{"owner", "POST", "/purchases", "{}", 400}, {"owner", "GET", "/purchases/bad", "", 400}, {"owner", "POST", "/purchases/11111111-1111-4111-8111-111111111111/approve", "{}", 400}, {"manager", "POST", "/purchases/11111111-1111-4111-8111-111111111111/cancel?q=x", "{}", 400}, {"owner", "GET", "/purchases/operations/11111111-1111-4111-8111-111111111111", "{}", 400},
 	} {
 		t.Run(tc.role+tc.method+tc.path, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery("SELECT EXISTS").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()

@@ -12,7 +12,7 @@ import (
 )
 
 func TestManagedCreationHTTPReturnsPersistedProduct(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	m := onlineMock(t)
 	tenant := "22222222-2222-4222-8222-222222222222"
 	user := "33333333-3333-4333-8333-333333333333"
@@ -27,7 +27,7 @@ func TestManagedCreationHTTPReturnsPersistedProduct(t *testing.T) {
 	m.ExpectQuery(`INSERT INTO online_catalog_creations`).WillReturnRows(sqlmock.NewRows([]string{"created"}).AddRow(time.Now()))
 	m.ExpectExec(`INSERT INTO online_catalog_creation_outbox`).WillReturnResult(sqlmock.NewResult(0, 1))
 	m.ExpectCommit()
-	access, e := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": user, "tenant_id": tenant, "role": "owner", "sid": session, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte("isolated-test-secret"))
+	access, e := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": user, "tenant_id": tenant, "role": "owner", "sid": session, "type": "access", "exp": time.Now().Add(time.Hour).Unix()}).SignedString([]byte(jwtFixtureKey))
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -53,7 +53,7 @@ func TestManagedCreationHTTPReturnsPersistedProduct(t *testing.T) {
 func TestSearchRejectsDuplicateForeignOrUnknownFilters(t *testing.T) {
 	for _, q := range []string{"q=a&q=b", "tenant_id=other", "active=wrong", "limit=101"} {
 		t.Run(q, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery(`SELECT EXISTS`).WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()

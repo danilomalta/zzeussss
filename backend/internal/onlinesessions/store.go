@@ -40,7 +40,7 @@ type Store struct {
 func New(db *sql.DB, secret string) *Store { return &Store{db: db, secret: secret} }
 
 func (s *Store) begin(ctx context.Context) (*sql.Tx, error) {
-	if s.db == nil || secretconfig.Unsafe(s.secret) {
+	if s.db == nil || !secretconfig.ValidJWTKey(s.secret) {
 		return nil, ErrUnavailable
 	}
 	tx, err := s.db.BeginTx(ctx, nil)

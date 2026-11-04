@@ -35,15 +35,15 @@ func TestSessionTokenRejectsAlgorithmExpiryAndMalformedScope(t *testing.T) {
 				case "wrong-type":
 					claims["type"] = "other"
 				}
-				key := "test-only-secret"
+				key := jwtFixtureKey
 				if bad == "wrong-secret" {
-					key = "different"
+					key = newJWTFixtureKey()
 				}
 				raw, err := jwt.NewWithClaims(method, claims).SignedString([]byte(key))
 				if err != nil {
 					t.Fatal(err)
 				}
-				_, err = ParseSession(raw, "test-only-secret", kind)
+				_, err = ParseSession(raw, jwtFixtureKey, kind)
 				if (err == nil) != (bad == "valid") {
 					t.Fatal("aceite incorreto")
 				}

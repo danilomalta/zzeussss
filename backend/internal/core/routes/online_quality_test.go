@@ -13,7 +13,7 @@ func TestQualityRoutesRejectRolesAndAmbiguousQueries(t *testing.T) {
 	for _, path := range paths {
 		for _, role := range []string{"cashier", "employee", "accountant"} {
 			t.Run(path+role, func(t *testing.T) {
-				t.Setenv("JWT_SECRET", "isolated-test-secret")
+				t.Setenv("JWT_SECRET", jwtFixtureKey)
 				m := onlineMock(t)
 				m.ExpectQuery("SELECT EXISTS").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 				app := fiber.New()
@@ -41,7 +41,7 @@ func TestQualityRoutesRejectRolesAndAmbiguousQueries(t *testing.T) {
 		"zero-stock?limit=",
 	} {
 		t.Run(path, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery("SELECT EXISTS").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()
@@ -62,7 +62,7 @@ func TestQualityRoutesRejectRolesAndAmbiguousQueries(t *testing.T) {
 		})
 	}
 	t.Run("get_body", func(t *testing.T) {
-		t.Setenv("JWT_SECRET", "isolated-test-secret")
+		t.Setenv("JWT_SECRET", jwtFixtureKey)
 		m := onlineMock(t)
 		m.ExpectQuery("SELECT EXISTS").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 		app := fiber.New()

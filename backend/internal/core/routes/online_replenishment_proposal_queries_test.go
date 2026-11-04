@@ -17,7 +17,7 @@ func TestProposalQueriesMountedRolesAndInputs(t *testing.T) {
 		{"owner", "GET", "/proposals/summary?state=all", "", 400}, {"owner", "GET", "/proposals?limit=101", "", 400}, {"owner", "GET", "/proposals/export.csv?tenant_id=x", "", 400}, {"manager", "GET", "/proposals/bad/history", "", 400}, {"owner", "GET", "/proposals/11111111-1111-4111-8111-111111111111/check", "{}", 400},
 	} {
 		t.Run(tc.role+tc.method+tc.path, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery("SELECT EXISTS").WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()

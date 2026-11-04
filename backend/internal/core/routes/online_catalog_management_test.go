@@ -21,7 +21,7 @@ func TestCatalogManagementRejectsInputBeforeAnyMutation(t *testing.T) {
 		{"/api/v1/produtos/1/price?tenant_id=foreign", `{}`, 400},
 	} {
 		t.Run(test.path+test.body, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery(`SELECT EXISTS`).WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()
@@ -46,7 +46,7 @@ func TestCatalogManagementRejectsInputBeforeAnyMutation(t *testing.T) {
 func TestCatalogPriceAndHistoryRequireManagementRole(t *testing.T) {
 	for _, test := range []struct{ method, path string }{{"POST", "/api/v1/produtos/1/price"}, {"POST", "/api/v1/produtos/1/active"}, {"GET", "/api/v1/produtos/1/history"}} {
 		t.Run(test.path, func(t *testing.T) {
-			t.Setenv("JWT_SECRET", "isolated-test-secret")
+			t.Setenv("JWT_SECRET", jwtFixtureKey)
 			m := onlineMock(t)
 			m.ExpectQuery(`SELECT EXISTS`).WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 			app := fiber.New()
@@ -68,7 +68,7 @@ func TestCatalogPriceAndHistoryRequireManagementRole(t *testing.T) {
 	}
 }
 func TestCatalogIndividualLookupScopesTenantAndReturnsExactCents(t *testing.T) {
-	t.Setenv("JWT_SECRET", "isolated-test-secret")
+	t.Setenv("JWT_SECRET", jwtFixtureKey)
 	m := onlineMock(t)
 	m.ExpectQuery(`SELECT EXISTS`).WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 	m.ExpectQuery(`SELECT id,nome`).WithArgs("company-a", int64(42)).WillReturnRows(sqlmock.NewRows([]string{"id", "nome", "descricao", "sku", "preco", "ativo", "version"}).AddRow(42, "Item", "", "ABC", "9999999999.99", false, 8))

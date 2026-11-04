@@ -10,7 +10,7 @@ import (
 )
 
 func TestAuthGuardTokenTypes(t *testing.T) {
-	const secret = "chave-exclusiva-para-teste"
+	secret := jwtFixtureKey
 	t.Setenv("JWT_SECRET", secret)
 
 	cases := []struct {
@@ -65,7 +65,7 @@ func TestAuthGuardTokenTypes(t *testing.T) {
 }
 
 func TestAuthGuardRequiresOperatorAndRole(t *testing.T) {
-	const secret = "chave-exclusiva-para-teste"
+	secret := jwtFixtureKey
 	t.Setenv("JWT_SECRET", secret)
 	for _, missing := range []string{"sub", "role", "sid"} {
 		t.Run(missing, func(t *testing.T) {
