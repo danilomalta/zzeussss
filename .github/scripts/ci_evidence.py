@@ -18,6 +18,22 @@ def collect(source, destination, commit):
             # Output and subtest names can contain customer data or credentials.
             # Keep package/top-level test names and numeric timing, not raw logs.
             item = {key: event[key] for key in ('Action', 'Package', 'Elapsed') if key in event}
+            # Only fixed diagnostic labels; never include any captured text.
+            output = event.get('Output', '')
+            codes = {
+                'Chrome startup timeout': 'chrome_startup_timeout',
+                'Chrome unavailable': 'chrome_unavailable',
+                'Browser assertion failed': 'browser_assertion_failed',
+                'ERR_MODULE_NOT_FOUND': 'module_not_found',
+                'ERR_CONNECTION_REFUSED': 'connection_refused',
+                'ProcessSingleton': 'chrome_profile_lock',
+                'SQLITE_BUSY': 'sqlite_busy',
+                'SQLITE_LOCKED': 'sqlite_locked',
+                'test timed out': 'test_timeout',
+            }
+            diagnostics = sorted({code for pattern, code in codes.items() if pattern in output})
+            if diagnostics:
+                item['DiagnosticCodes'] = diagnostics
             if 'Test' in event:
                 item['Test'] = event['Test'].split('/')[0]
             events.append(item)

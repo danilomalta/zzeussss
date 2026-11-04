@@ -50,6 +50,13 @@ jobs:
         run: |
           python3 -m unittest discover -s ../tools/tests -p test_api_contracts.py -v
           python3 ../tools/check_api_contracts.py
+      - name: Receivables browser and HTTP prerequisites
+        env:
+          TITAN_RECEIVABLES_BRIDGE: ${{ github.workspace }}/frontend-web/tests/receivables.bridge.mjs
+          TITAN_RECEIVABLES_BROWSER_BRIDGE: ${{ github.workspace }}/frontend-web/tests/receivables.browser.mjs
+        run: |
+          command -v google-chrome
+          go test ./internal/localapi -run '^TestReceivables(CustomerOrderFrontendBridge|FrontendRealHTTPBridge|BrowserRestartRecovery)$' -timeout 120s -count=1 -json > "$RUNNER_TEMP/receivables-prerequisites.jsonl"
       - name: Vet backend
         run: go vet ./...
       - name: Build real executables

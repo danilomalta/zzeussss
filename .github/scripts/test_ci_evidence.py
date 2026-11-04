@@ -25,6 +25,16 @@ class EvidenceTest(unittest.TestCase):
             self.assertEqual(len(list(destination.iterdir())), 2)
             self.assertEqual(json.loads((destination / 'manifest.json').read_text())['commit'], 'a' * 40)
 
+    def test_diagnostic_labels_never_copy_error_values(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = Path(root) / 'source'; source.mkdir()
+            destination = Path(root) / 'safe'
+            (source / 'browser.jsonl').write_text(json.dumps({'Action': 'output', 'Test': 'TestBrowser', 'Output': 'Chrome startup timeout private-token-and-personal-data'}) + '\n')
+            module.collect(source, destination, 'b' * 40)
+            event = json.loads((destination / 'browser.jsonl').read_text())
+            self.assertEqual(event['DiagnosticCodes'], ['chrome_startup_timeout'])
+            self.assertNotIn('private-token', (destination / 'browser.jsonl').read_text())
+
     def test_requires_exact_commit(self):
         with self.assertRaises(ValueError):
             module.collect(Path('/unused'), Path('/unused'), 'main')
