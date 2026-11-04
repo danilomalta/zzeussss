@@ -49,10 +49,10 @@ func Registrar(app *fiber.App) {
 	authGroup.Post("/password", middleware.AuthGuard(), middleware.RateLimitLogin(), middleware.CurrentUser(), authHandler.ChangePassword)
 	authGroup.Post("/recovery/key", middleware.AuthGuard(), middleware.RateLimitLogin(), middleware.CurrentUser(), authHandler.IssueRecovery)
 	authGroup.Post("/recovery/reset", authDelivery.RefreshOrigin, middleware.RateLimitLogin(), authHandler.Recover)
-	authGroup.Post("/logout", middleware.AuthGuard(), middleware.CurrentUser(), authHandler.Logout)
+	authGroup.Post("/logout", authDelivery.RefreshOrigin, middleware.AuthGuard(), middleware.CurrentUser(), authHandler.Logout)
 	authGroup.Get("/sessions", middleware.AuthGuard(), middleware.CurrentUser(), authHandler.Sessions)
-	authGroup.Post("/sessions/revoke-others", middleware.AuthGuard(), middleware.CurrentUser(), authHandler.RevokeOthers)
-	authGroup.Post("/sessions/:id/revoke", middleware.AuthGuard(), middleware.CurrentUser(), authHandler.RevokeSession)
+	authGroup.Post("/sessions/revoke-others", authDelivery.RefreshOrigin, middleware.AuthGuard(), middleware.CurrentUser(), authHandler.RevokeOthers)
+	authGroup.Post("/sessions/:id/revoke", authDelivery.RefreshOrigin, middleware.AuthGuard(), middleware.CurrentUser(), authHandler.RevokeSession)
 
 	// Health Check (Rota pública sem proteção)
 	v1.Get("/saude", Saude)

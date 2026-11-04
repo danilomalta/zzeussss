@@ -3091,7 +3091,8 @@
       "path": "/api/v1/auth/logout",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "implemented"
+      "state": "implemented",
+      "origin_validation": "RefreshOrigin: explicit allowed browser origin; cross-site refused; native still requires active Bearer session"
     },
     {
       "api": "online",
@@ -3139,7 +3140,8 @@
       "path": "/api/v1/auth/sessions/:id/revoke",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "implemented"
+      "state": "implemented",
+      "origin_validation": "RefreshOrigin: explicit allowed browser origin; cross-site refused; native still requires active Bearer session"
     },
     {
       "api": "online",
@@ -3147,7 +3149,8 @@
       "path": "/api/v1/auth/sessions/revoke-others",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "implemented"
+      "state": "implemented",
+      "origin_validation": "RefreshOrigin: explicit allowed browser origin; cross-site refused; native still requires active Bearer session"
     },
     {
       "api": "online",

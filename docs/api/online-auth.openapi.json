@@ -139,7 +139,7 @@
             "accessBearer": []
           }
         ],
-        "description": "Sem corpo; corpo não vazio retorna 400. Empresa e usuário derivados da sessão.",
+        "description": "Sem corpo; corpo não vazio retorna 400. Empresa e usuário derivados da sessão. RefreshOrigin exige origem explícita na lista ALLOWED_ORIGINS para navegador e recusa Sec-Fetch-Site=cross-site antes de DB; clientes nativos sem Origin continuam exigindo Bearer/sessão ativa. CORS não substitui essa validação. A revogação e a auditoria confirmam juntas; só após commit retorna 204 e expira o cookie. Repetição com a sessão já revogada retorna 401, sem nova auditoria. Em timeout/503 o resultado é incerto: não assumir rollback nem sucesso.",
         "responses": {
           "401": {
             "description": "Sessão ausente/expirada/revogada ou alvo fora da conta"
@@ -151,13 +151,32 @@
             "description": "Limite do middleware Fiber"
           },
           "204": {
-            "description": "Revogação confirmada"
+            "description": "Revogação confirmada",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Expira titan_session_rt com valor vazio, Expires no passado e nenhum Max-Age positivo (Fiber serializa a expiração sem Max-Age), mesmo Path=/api/v1/auth/refresh, domínio host-only, HttpOnly e Secure/Strict da emissão (Lax em COOKIE_SECURE=false explícito).",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            }
           },
           "400": {
             "description": "Corpo ou identificador inválido"
           },
           "500": {
             "description": "Chave de sessão indisponível no servidor"
+          },
+          "403": {
+            "description": "Origem de navegador recusada; nenhuma sessão ou cookie é alterado"
           }
         }
       }
@@ -170,7 +189,7 @@
             "accessBearer": []
           }
         ],
-        "description": "Sem corpo; corpo não vazio retorna 400. Empresa e usuário derivados da sessão.",
+        "description": "Sem corpo; corpo não vazio retorna 400. Empresa e usuário derivados da sessão. RefreshOrigin exige origem explícita na lista ALLOWED_ORIGINS para navegador e recusa Sec-Fetch-Site=cross-site antes de DB; clientes nativos sem Origin continuam exigindo Bearer/sessão ativa. CORS não substitui essa validação.",
         "responses": {
           "401": {
             "description": "Sessão ausente/expirada/revogada ou alvo fora da conta"
@@ -189,6 +208,9 @@
           },
           "500": {
             "description": "Chave de sessão indisponível no servidor"
+          },
+          "403": {
+            "description": "Origem de navegador recusada; nenhuma sessão ou cookie é alterado"
           }
         }
       }
@@ -201,7 +223,7 @@
             "accessBearer": []
           }
         ],
-        "description": "Sem corpo; corpo não vazio retorna 400. Empresa e usuário derivados da sessão.",
+        "description": "Sem corpo; corpo não vazio retorna 400. Empresa e usuário derivados da sessão. RefreshOrigin exige origem explícita na lista ALLOWED_ORIGINS para navegador e recusa Sec-Fetch-Site=cross-site antes de DB; clientes nativos sem Origin continuam exigindo Bearer/sessão ativa. CORS não substitui essa validação.",
         "responses": {
           "401": {
             "description": "Sessão ausente/expirada/revogada ou alvo fora da conta"
@@ -220,6 +242,9 @@
           },
           "500": {
             "description": "Chave de sessão indisponível no servidor"
+          },
+          "403": {
+            "description": "Origem de navegador recusada; nenhuma sessão ou cookie é alterado"
           }
         },
         "parameters": [
@@ -639,5 +664,12 @@
         }
       }
     }
-  }
+  },
+  "x-f01-logout-contract": [
+    "Capturar a sessão/contexto atual e enviar POST /api/v1/auth/logout com Authorization: Bearer e credentials:include, sem corpo, antes de remover o access token. Não enviar papel/tenant/others; não tentar logout de outra sessão em troca de contexto.",
+    "204 confirma revogação no servidor e expiração do cookie; só então concluir saída e descartar o token. Nunca ler o cookie HttpOnly. Não persistir tokens/cookies/credenciais em localStorage, logs ou telemetria.",
+    "Timeout, perda de resposta e 503: travar ações da sessão em encerramento e preservar apenas em memória a identidade da tentativa para repetição explícita do mesmo logout; não renovar automaticamente, substituir por outra sessão ou anunciar revogação confirmada. Perder essa memória não comprova saída no servidor.",
+    "401 na repetição pode indicar revogação, expiração do access ou outra recusa; não é prova isolada de revogação. Interromper operações e pedir novo acesso autorizado quando necessário. Com outra sessão autenticada da mesma conta, usar GET /auth/sessions e POST /auth/sessions/{id}/revoke para a identidade original; lista truncada/ID ausente não comprova revogação. Não revogar outros IDs por inferência.",
+    "403 exige corrigir a origem aprovada; não desabilitar a barreira. Nunca tratar apagar estado local ou cookie como revogação no banco. O frontend F01 não foi alterado nesta unidade."
+  ]
 }
