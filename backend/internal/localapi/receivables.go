@@ -9,6 +9,7 @@ import (
 	"titansystem-backend/internal/localdb/localauth"
 	"titansystem-backend/internal/localdb/receivables"
 	"titansystem-backend/internal/localdb/retail"
+	"titansystem-backend/internal/localdb/stock"
 )
 
 func (s *Server) mountReceivables(r fiber.Router) {
@@ -27,6 +28,14 @@ func receivableError(c *fiber.Ctx, e error) error {
 	switch {
 	case errors.Is(e, localauth.ErrDenied):
 		return c.SendStatus(401)
+	case errors.Is(e, stock.ErrAvailabilityReference):
+		return c.SendStatus(400)
+	case errors.Is(e, stock.ErrAvailability):
+		return c.SendStatus(409)
+	case errors.Is(e, retail.ErrCreditConstraint):
+		return c.Status(409).JSON(fiber.Map{"code": "customer_credit_limit_or_overdue"})
+	case errors.Is(e, retail.ErrCalendar):
+		return c.Status(409).JSON(fiber.Map{"code": "credit_calendar_required"})
 	case errors.Is(e, retail.ErrDisabled):
 		return c.Status(409).JSON(fiber.Map{"code": "retail_disabled_or_ineligible"})
 	case errors.Is(e, retail.ErrInvalid):

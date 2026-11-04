@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {retailClient} from '../src/core/retail/client.mjs';
+const base=process.env.TITAN_RETAIL_TEST_BASE,token=process.env.TITAN_RETAIL_TEST_TOKEN,session=JSON.parse(process.env.TITAN_RETAIL_TEST_SCOPE);
+assert.match(base,/^http:\/\/127\.0\.0\.1:\d+$/);
+const data=new Map(),journal={async read(k){return data.get(k)||null;},async reserve(k,v){if(data.has(k))return false;data.set(k,structuredClone(v));return true;},async remove(k,v){if(data.get(k)?.op===v.op)data.delete(k);}};
+let originalPosts=0;
+const options={token,session,getCurrent:()=>({token,session}),journal};
+const first=retailClient({...options,fetcher:async(path,options)=>{const r=await fetch(base+path,options);if(path==='/local/v1/retail/stores'&&options.method==='POST'){assert.equal(r.status,204);originalPosts++;throw Error('synthetic lost response after actual commit');}return r;}});
+await assert.rejects(first.request('/stores',{operation_id:'bridge-store',id:'bridge-store',name:'Synthetic bridge store'}));
+assert.equal(first.pending(),'bridge-store');first.dispose();
+const restored=retailClient({...options,fetcher:async(path,options)=>{if(path==='/local/v1/retail/stores'&&options.method==='POST')originalPosts++;return fetch(base+path,options);}});
+await restored.ready();assert.deepEqual(await restored.resolve(),{operation_id:'bridge-store',applied:true,retired:false});
+assert.equal(originalPosts,1);assert.equal(data.size,0);
+const day=new Date().toISOString().slice(0,10),report=await restored.request('/stores/report?all_stores=true&from_on='+day+'&to_on='+day);
+assert.equal(report.totals.filter(x=>x.store_id==='bridge-store').length,1);restored.dispose();
+console.log('retail bridge: actual HTTP recovered original operation without replay');

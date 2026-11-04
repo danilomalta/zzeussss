@@ -4123,6 +4123,41 @@
       "path": "/local/v1/retail/customers/:id/loyalty/redeem",
       "authentication": "session",
       "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/stores",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/stores/transfer",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/retail/stores/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/operations/:id/reconcile",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/retail/access",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
     }
   ]
 }

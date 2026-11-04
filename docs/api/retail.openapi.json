@@ -96,7 +96,8 @@
                       "earn_points",
                       "redeem_points",
                       "redeem_cents",
-                      "valid_days"
+                      "valid_days",
+                      "credit_timezone"
                     ],
                     "properties": {
                       "revision": {
@@ -124,7 +125,11 @@
                             "owner",
                             "manager",
                             "accountant",
-                            "cashier"
+                            "cashier",
+                            "stock",
+                            "production",
+                            "employee",
+                            "supplier"
                           ]
                         }
                       },
@@ -137,7 +142,11 @@
                             "owner",
                             "manager",
                             "accountant",
-                            "cashier"
+                            "cashier",
+                            "stock",
+                            "production",
+                            "employee",
+                            "supplier"
                           ]
                         }
                       },
@@ -150,7 +159,11 @@
                             "owner",
                             "manager",
                             "accountant",
-                            "cashier"
+                            "cashier",
+                            "stock",
+                            "production",
+                            "employee",
+                            "supplier"
                           ]
                         }
                       },
@@ -178,6 +191,10 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9007199254740991
+                      },
+                      "credit_timezone": {
+                        "type": "string",
+                        "description": "Explicit IANA calendar for credit overdue checks; required and validated when credit is enabled. Empty and Local are refused for enabled credit."
                       }
                     }
                   }
@@ -516,7 +533,7 @@
     "/local/v1/retail/customers/{id}/loyalty": {
       "get": {
         "operationId": "readRetailPoints",
-        "description": "Derived points account. Reconciles original sale cancellations/refunds before returning, under immediate writer. Expiry is per original award; reversal can expose debt, and redemption cannot increase debt.",
+        "description": "Derived points account. Reconciles original sale cancellations/refunds before returning, under immediate writer. Expiry is per original award; reversal can expose debt, and redemption cannot increase debt. Entries, benefits and balance are scoped to the authenticated store. Shared customer and company policy do not grant access to another store ledger.",
         "security": [
           {
             "localSession": []
@@ -699,6 +716,308 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/local/v1/retail/stores": {
+      "post": {
+        "operationId": "createRetailStore",
+        "description": "Owner-only creation in the current tenant; opt-in, idempotent, no device or key is silently created. Existing pairing/provisioning must authorize the actual destination custodian.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current snapshot"
+          },
+          "204": {
+            "description": "Idempotent action"
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Store/role/contract denied"
+          },
+          "409": {
+            "description": "Disabled or revision conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "id",
+                  "name"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/retail/stores/transfer": {
+      "post": {
+        "operationId": "retailStoreTransfer",
+        "description": "Single existing shared database only. Source session, both stores permissions, active contract, approved destination inventory custodian, physical confirmation, original unit, reservations and expected quantities are checked inside BEGIN IMMEDIATE. Both movements and audit commit together. Destination device denotes custodian, not request author; original actor/device are recorded separately. No peer message or remote command is generated.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current snapshot"
+          },
+          "204": {
+            "description": "Idempotent action"
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Store/role/contract denied"
+          },
+          "409": {
+            "description": "Disabled or revision conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "destination_store_id",
+                  "destination_custodian_id",
+                  "product_id",
+                  "from_location_id",
+                  "to_location_id",
+                  "quantity_milli",
+                  "expected_from_milli",
+                  "expected_to_milli",
+                  "confirmed"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string"
+                  },
+                  "destination_store_id": {
+                    "type": "string"
+                  },
+                  "destination_custodian_id": {
+                    "type": "string"
+                  },
+                  "product_id": {
+                    "type": "string"
+                  },
+                  "from_location_id": {
+                    "type": "string"
+                  },
+                  "to_location_id": {
+                    "type": "string"
+                  },
+                  "quantity_milli": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "expected_from_milli": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "expected_to_milli": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "confirmed": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/retail/stores/report": {
+      "get": {
+        "operationId": "retailStoreReport",
+        "description": "Explicit inclusive UTC sales period and current stock snapshot. All stores requires explicit all_stores=true, and is filtered by target-store stock AND accounting permission. Otherwise defaults to current store. No sum of incompatible quantity units, no silent truncation above 5000 positions. Gross sales includes credit; it is not cash or historical stock.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current snapshot"
+          },
+          "204": {
+            "description": "Idempotent action"
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Store/role/contract denied"
+          },
+          "409": {
+            "description": "Disabled or revision conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from_on",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to_on",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "all_stores",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/retail/operations/{id}/reconcile": {
+      "post": {
+        "operationId": "reconcileRetailOperation",
+        "description": "Explicit same tenant/store/device/actor reconciliation. Under BEGIN IMMEDIATE, returns applied for an immutable original operation, otherwise records an immutable absent-command fence. Never resends a payload, deletes a financial effect or reveals customer personal data. Late original commands are rejected.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "confirmed"
+                ],
+                "properties": {
+                  "confirmed": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Exactly one of applied or retired, with the original operation_id"
+          },
+          "400": {
+            "description": "Invalid confirmation"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Scope/role/contract denied"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/local/v1/retail/access": {
+      "get": {
+        "operationId": "readRetailAccess",
+        "description": "Authenticated current-context policy hints only, no customer data, roles lists or secrets. These booleans never grant a command: the UI intersects current license/permissions, and every command rechecks authoritative policy and contract in its transaction. Default business features false; owner may configure via Core.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Own context identifiers and can_configure, can_customer, can_credit, can_refund, can_points, can_stores booleans"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Context denied"
           }
         }
       }

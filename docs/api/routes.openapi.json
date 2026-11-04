@@ -21373,6 +21373,21 @@
     },
     "/local/v1/retail/customers/{id}/loyalty/redeem": {
       "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1customers~1{id}~1loyalty~1redeem"
+    },
+    "/local/v1/retail/stores": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1stores"
+    },
+    "/local/v1/retail/stores/transfer": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1stores~1transfer"
+    },
+    "/local/v1/retail/stores/report": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1stores~1report"
+    },
+    "/local/v1/retail/operations/{id}/reconcile": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1operations~1{id}~1reconcile"
+    },
+    "/local/v1/retail/access": {
+      "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1access"
     }
   },
   "components": {

@@ -39,7 +39,7 @@ export function createReceivablesClient({fetcher=globalThis.fetch,getCurrent,pen
   async function request(path,body){
    current();const controller=new AbortController();controllers.add(controller);const timer=setTimeout(()=>controller.abort(),15000);
    try{const response=await fetcher('/local/v1/finance/receivables'+path,{method:body?'POST':'GET',credentials:'omit',cache:'no-store',signal:controller.signal,headers:{Authorization:`Bearer ${context.token}`,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});current();
-    if(!response.ok)throw new ReceivableError(response.status===403?'denied':response.status===409?'conflict':'unavailable',response.status);
+    if(!response.ok){let code='';try{code=(await response.json())?.code||'';}catch{};current();throw new ReceivableError(response.status===403?'denied':code==='customer_credit_limit_or_overdue'||code==='credit_calendar_required'?'creditPolicy':response.status===409?'conflict':'unavailable',response.status);}
     const result=await response.json();current();return result;
    }finally{clearTimeout(timer);controllers.delete(controller);}
   }

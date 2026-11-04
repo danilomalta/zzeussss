@@ -15,6 +15,7 @@ import (
 	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/receivables"
+	"titansystem-backend/internal/localdb/register"
 	"titansystem-backend/internal/localdb/retail"
 )
 
@@ -27,7 +28,7 @@ func retailEnable(t *testing.T, f *httpContractFixture, limit int64) {
 	t.Helper()
 	s := retailServiceFor(f)
 	ctx := context.Background()
-	if e := s.Configure(ctx, "retail-config", retail.Config{CreditEnabled: true, RefundEnabled: true, CreditRoles: []string{"owner"}, RefundRoles: []string{"owner"}, PointsRoles: []string{"owner"}}); e != nil {
+	if e := s.Configure(ctx, "retail-config", retail.Config{CreditEnabled: true, CreditTimezone: "UTC", RefundEnabled: true, CreditRoles: []string{"owner"}, RefundRoles: []string{"owner"}, PointsRoles: []string{"owner"}}); e != nil {
 		t.Fatal(e)
 	}
 	if e := s.SaveCustomer(ctx, "retail-customer", retail.Customer{ID: "customer-external", Name: "Synthetic Customer", CPF: "", Phone: "synthetic-phone", ConsentReference: "consent-explicit", CreditEnabled: true, CreditLimitCents: limit}); e != nil {
@@ -113,6 +114,10 @@ func TestRetailCreditSaleAtomicWithoutCash(t *testing.T) {
 		t.Fatal(got)
 	}
 	arResult(t, f.httpContractFixture, arPath, string(body), 200)
+	var queued int
+	if e := f.db.QueryRow(`SELECT count(*) FROM outbox WHERE event_type='retail.credit_sale'`).Scan(&queued); e != nil || queued != 0 {
+		t.Fatal("unknown credit protocol queued", e)
+	}
 	for _, table := range []string{"cash_movements", "sale_payments"} {
 		var n int
 		if e := f.db.QueryRow("SELECT count(*) FROM " + table).Scan(&n); e != nil || n != 0 {
@@ -267,4 +272,126 @@ func TestRetailDefaultRoleAndSessionIsolation(t *testing.T) {
 	if code != 403 {
 		t.Fatal("manager default", code)
 	}
+}
+func TestRetailConcurrentCustomerConsent(t *testing.T) {
+	f := arSetup(t)
+	retailEnable(t, f, 5000)
+	s := retailServiceFor(f)
+	const n = 6
+	errs := make(chan error, n)
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			errs <- s.SaveCustomer(context.Background(), fmt.Sprintf("customer-edit-%d", i), retail.Customer{ID: "customer-external", Revision: 1, Name: fmt.Sprintf("Synthetic-%d", i), Phone: fmt.Sprintf("phone-%d", i), ConsentReference: fmt.Sprintf("consent-%d", i)})
+		}(i)
+	}
+	wg.Wait()
+	close(errs)
+	wins := 0
+	for e := range errs {
+		if e == nil {
+			wins++
+		} else if !errors.Is(e, retail.ErrConflict) {
+			t.Fatal(e)
+		}
+	}
+	if wins != 1 {
+		t.Fatalf("winners=%d", wins)
+	}
+	var raw string
+	f.db.QueryRow(`SELECT body FROM retail_customers WHERE id='customer-external'`).Scan(&raw)
+	var c retail.Customer
+	if e := json.Unmarshal([]byte(raw), &c); e != nil {
+		t.Fatal(e)
+	}
+	suffix := strings.TrimPrefix(c.Name, "Synthetic-")
+	if c.Phone != "phone-"+suffix || c.ConsentReference != "consent-"+suffix || c.Revision != 2 {
+		t.Fatal("mixed customer credentials", c)
+	}
+}
+func TestRetailConcurrentCreditSale(t *testing.T) {
+	f := salesSetup(t)
+	f.install(t, signedTestContract(t, f.private, f.owner.TenantID, 9, []modules.ID{modules.Core, modules.Inventory, modules.POS, modules.Finance}), 200)
+	retailEnable(t, f.httpContractFixture, 3198)
+	s := retailServiceFor(f.httpContractFixture)
+	const n = 6
+	errs := make(chan error, n)
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			id := fmt.Sprintf("parallel-credit-%d", i)
+			_, e := receivables.Create(context.Background(), f.db, s.Contracts, s.Actor, f.device, f.token, receivables.CreateInput{OperationID: id, ID: id, CustomerReference: "customer-external", DocumentReference: id, Description: "Synthetic credit", IssuedOn: "2026-11-03", TotalCents: 3198, Installments: []receivables.Installment{{ID: "one", DueOn: "2026-12-01", AmountCents: 3198}}, CreditSale: &receivables.CreditSaleInput{SaleID: id, SessionID: "turn-one", Items: salesInput(f).Items}})
+			errs <- e
+		}(i)
+	}
+	wg.Wait()
+	close(errs)
+	wins := 0
+	for e := range errs {
+		if e == nil {
+			wins++
+		} else if !errors.Is(e, retail.ErrConflict) && !errors.Is(e, receivables.ErrConflict) {
+			t.Fatal("not a credit/revision conflict", e)
+		}
+	}
+	if wins != 1 {
+		t.Fatalf("winners=%d", wins)
+	}
+	assertStockBalance(t, f, f.shelf, 3000)
+	var nCash int
+	f.db.QueryRow(`SELECT count(*) FROM cash_movements`).Scan(&nCash)
+	if nCash != 0 {
+		t.Fatal("credit created cash")
+	}
+}
+func TestRetailOverdueCreditRuleIsExplicit(t *testing.T) {
+	f := salesSetup(t)
+	f.install(t, signedTestContract(t, f.private, f.owner.TenantID, 9, []modules.ID{modules.Core, modules.Inventory, modules.POS, modules.Finance}), 200)
+	retailEnable(t, f.httpContractFixture, 10000)
+	s := retailServiceFor(f.httpContractFixture)
+	old := strings.NewReplacer("2026-11-01", "2000-01-01", "2026-11-05", "2000-01-02", "2026-11-10", "2000-01-03").Replace(arBody)
+	arResult(t, f.httpContractFixture, arPath, old, 201)
+	if e := s.SaveCustomer(context.Background(), "block-overdue", retail.Customer{ID: "customer-external", Revision: 1, Name: "Synthetic", ConsentReference: "explicit", CreditEnabled: true, BlockOverdue: true, CreditLimitCents: 10000}); e != nil {
+		t.Fatal(e)
+	}
+	_, e := receivables.Create(context.Background(), f.db, s.Contracts, s.Actor, f.device, f.token, receivables.CreateInput{OperationID: "overdue-credit", ID: "overdue-credit", CustomerReference: "customer-external", DocumentReference: "overdue-credit", Description: "Synthetic credit", IssuedOn: "2026-11-03", TotalCents: 3198, Installments: []receivables.Installment{{ID: "one", DueOn: "2026-12-01", AmountCents: 3198}}, CreditSale: &receivables.CreditSaleInput{SaleID: "overdue-credit", SessionID: "turn-one", Items: salesInput(f).Items}})
+	if !errors.Is(e, retail.ErrCreditConstraint) {
+		t.Fatal("overdue policy not enforced", e)
+	}
+	assertStockBalance(t, f, f.shelf, 5000)
+}
+func TestRetailSaleCannotAdoptPriorCashReason(t *testing.T) {
+	f := salesSetup(t)
+	s := retailServiceFor(f.httpContractFixture)
+	_, e := register.MoveWithContract(context.Background(), f.db, s.Contracts, s.Actor, f.device, register.MovementInput{OperationID: "independent-supply", SessionID: "turn-one", Kind: "supply", AmountCents: 1, Reason: "venda:sale-one"})
+	if e != nil {
+		t.Fatal(e)
+	}
+	// A legacy/orphan row deliberately lacks the normal adjustment prefix/metadata.
+	if _, e = f.db.Exec(`INSERT INTO cash_movements VALUES('synthetic-orphan',?,?,'turn-one',1,'venda:sale-one','2026-11-03T00:00:00Z')`, f.owner.TenantID, f.owner.StoreID); e != nil {
+		t.Fatal(e)
+	}
+	salesRequest(t, f, salesInput(f), 409)
+	assertStockBalance(t, f, f.shelf, 5000)
+	var n int
+	f.db.QueryRow(`SELECT count(*) FROM sales`).Scan(&n)
+	if n != 0 {
+		t.Fatal("colliding cash origin adopted")
+	}
+	var category string
+	if e = f.db.QueryRow(`SELECT category FROM cash_journal_sources WHERE source_id=?`, eSourceMovement(t, f)).Scan(&category); e != nil || category != "supply" {
+		t.Fatal(category, e)
+	}
+}
+func eSourceMovement(t *testing.T, f *stockHTTPFixture) string {
+	t.Helper()
+	var id string
+	if e := f.db.QueryRow(`SELECT movement_id FROM cash_adjustments WHERE operation_id='independent-supply'`).Scan(&id); e != nil {
+		t.Fatal(e)
+	}
+	return id
 }

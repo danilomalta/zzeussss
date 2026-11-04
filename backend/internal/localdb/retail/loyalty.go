@@ -87,7 +87,7 @@ func (s Service) synchronizePoints(ctx context.Context, tx *sql.Tx, customer str
 		status                                string
 	}
 	list := []award{}
-	rows, e := tx.QueryContext(ctx, `SELECT a.sale_id,a.points,a.total_cents,a.earn_cents,a.earn_points,a.expires_unix,s.status FROM retail_point_awards a JOIN sales s ON s.tenant_id=a.tenant_id AND s.id=a.sale_id WHERE a.tenant_id=? AND a.customer_id=?`, s.Actor.TenantID, customer)
+	rows, e := tx.QueryContext(ctx, `SELECT a.sale_id,a.points,a.total_cents,a.earn_cents,a.earn_points,a.expires_unix,s.status FROM retail_point_awards a JOIN sales s ON s.tenant_id=a.tenant_id AND s.id=a.sale_id WHERE a.tenant_id=? AND a.customer_id=? AND a.store_id=?`, s.Actor.TenantID, customer, s.Actor.StoreID)
 	if e != nil {
 		return e
 	}
@@ -147,7 +147,7 @@ func (s Service) pointsTx(ctx context.Context, tx *sql.Tx, customer string) (Poi
 	if e := s.synchronizePoints(ctx, tx, customer); e != nil {
 		return out, e
 	}
-	rows, e := tx.QueryContext(ctx, `SELECT sale_id,entry_id,kind,delta,expires_unix FROM retail_points WHERE tenant_id=? AND customer_id=? ORDER BY expires_unix,sale_id,entry_id`, s.Actor.TenantID, customer)
+	rows, e := tx.QueryContext(ctx, `SELECT p.sale_id,p.entry_id,p.kind,p.delta,p.expires_unix FROM retail_points p JOIN retail_point_awards a ON a.tenant_id=p.tenant_id AND a.sale_id=p.sale_id WHERE p.tenant_id=? AND p.customer_id=? AND a.store_id=? ORDER BY p.expires_unix,p.sale_id,p.entry_id`, s.Actor.TenantID, customer, s.Actor.StoreID)
 	if e != nil {
 		return out, e
 	}
@@ -176,7 +176,7 @@ func (s Service) pointsTx(ctx context.Context, tx *sql.Tx, customer string) (Poi
 	out.Balance = balance.Int64()
 	rows.Close()
 	out.Benefits = []PointBenefit{}
-	benefits, err := tx.QueryContext(ctx, `SELECT operation_id,points,benefit_cents FROM retail_point_redemptions WHERE tenant_id=? AND customer_id=? ORDER BY operation_id`, s.Actor.TenantID, customer)
+	benefits, err := tx.QueryContext(ctx, `SELECT b.operation_id,b.points,b.benefit_cents FROM retail_point_redemptions b JOIN retail_operations o ON o.tenant_id=b.tenant_id AND o.operation_id=b.operation_id WHERE b.tenant_id=? AND b.customer_id=? AND o.store_id=? ORDER BY b.operation_id`, s.Actor.TenantID, customer, s.Actor.StoreID)
 	if err != nil {
 		return out, err
 	}
@@ -195,6 +195,9 @@ func (s Service) pointsTx(ctx context.Context, tx *sql.Tx, customer string) (Poi
 }
 func (s Service) Points(ctx context.Context, customer string) (PointsAccount, error) {
 	var out PointsAccount
+	if s.DB == nil || s.Contracts == nil {
+		return out, ErrInvalid
+	}
 	if !ID(customer) {
 		return out, ErrInvalid
 	}
@@ -247,6 +250,13 @@ func (s Service) Award(ctx context.Context, customer string, in PointsInput) err
 		}
 		if points < 1 {
 			return ErrDisabled
+		}
+		account, e := s.pointsTx(ctx, tx, customer)
+		if e != nil {
+			return e
+		}
+		if account.Balance > Max-points {
+			return ErrConflict
 		}
 		expires := s.now().Unix() + c.ValidDays*86400
 		_, e = tx.ExecContext(ctx, `INSERT INTO retail_point_awards VALUES(?,?,?,?,?,?,?,?,?)`, s.Actor.TenantID, s.Actor.StoreID, in.SaleID, customer, points, total, c.EarnCents, c.EarnPoints, expires)

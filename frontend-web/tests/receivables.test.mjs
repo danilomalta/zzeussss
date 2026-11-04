@@ -53,7 +53,8 @@ test('five dictionaries cover all labels and totals render exact received/outsta
  const {createRequire}=await import('node:module'),fs=await import('node:fs');const require=createRequire(import.meta.url),ts=require('typescript'),React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
  const source=fs.readFileSync(new URL('../src/modules/financial/pages/LocalReceivables.tsx',import.meta.url),'utf8');
  const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
- const mod={exports:{}};Function('require','exports','module',js)(name=>name.startsWith('react')?require(name):name.includes('words.mjs')?{receivableWords:lang=>dictionaries[lang]}:{},mod.exports,mod);
+ const {money113}=await import('../src/core/payables113/model.mjs');
+ const mod={exports:{}};Function('require','exports','module',js)(name=>name.startsWith('react')?require(name):name.includes('words.mjs')?{receivableWords:lang=>dictionaries[lang]}:name.includes('payables113/model.mjs')?{money113}:{},mod.exports,mod);
  for(const locale of Object.keys(dictionaries)){const html=renderToStaticMarkup(React.createElement(mod.exports.ReceivableTotals,{document:document(600),locale}));const money=n=>new Intl.NumberFormat(locale,{style:'currency',currency:'BRL'}).format(n/100);assert.ok(html.includes(dictionaries[locale].received));assert.ok(html.includes(money(600)));assert.ok(html.includes(money(400)));}
 });
 

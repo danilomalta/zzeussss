@@ -130,3 +130,10 @@ func availableBalanceTx(ctx context.Context, tx *sql.Tx, a identity.Scope, produ
 	out.FreeMilli = out.PhysicalMilli - out.ReservedMilli
 	return out, nil
 }
+
+// AvailableBalanceInTx reuses the existing exact quantity/unit/reservation rules.
+// Caller must prove the source session and human authorization for this store in
+// this same transaction. It does not impersonate a destination device/session.
+func AvailableBalanceInTx(ctx context.Context, tx *sql.Tx, a identity.Scope, product, location string) (Availability, error) {
+	return availableBalanceTx(ctx, tx, a, product, location)
+}

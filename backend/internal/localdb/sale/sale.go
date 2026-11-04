@@ -163,6 +163,14 @@ func completeTxMode(ctx context.Context, tx *sql.Tx, actor identity.Scope, devic
 	if existingSale != 0 {
 		return Result{}, ErrConflict
 	}
+	// Free-text adjustment reasons cannot become a sale's authoritative cash origin.
+	var reasonCollision int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM cash_movements m JOIN cash_sessions c ON c.tenant_id=m.tenant_id AND c.store_id=m.store_id AND c.id=m.cash_session_id WHERE m.tenant_id=? AND m.store_id=? AND c.device_id=? AND m.reason=?`, actor.TenantID, actor.StoreID, device.DeviceID, "venda:"+in.SaleID).Scan(&reasonCollision); err != nil {
+		return Result{}, err
+	}
+	if reasonCollision != 0 {
+		return Result{}, ErrConflict
+	}
 	if err = checkShiftTx(ctx, tx, actor, device, in.CashSessionID); err != nil {
 		return Result{}, err
 	}
@@ -260,6 +268,7 @@ func completeTxMode(ctx context.Context, tx *sql.Tx, actor identity.Scope, devic
 			return Result{}, err
 		}
 	}
+	var cashID string
 	if !credit {
 		for i, payment := range in.Payments {
 			var id string
@@ -279,7 +288,7 @@ func completeTxMode(ctx context.Context, tx *sql.Tx, actor identity.Scope, devic
 				return Result{}, err
 			}
 		}
-		cashID, err := localdb.NewID()
+		cashID, err = localdb.NewID()
 		if err != nil {
 			return Result{}, err
 		}
@@ -293,14 +302,13 @@ func completeTxMode(ctx context.Context, tx *sql.Tx, actor identity.Scope, devic
 		return Result{}, err
 	}
 	if !credit {
-		var cashID string
-		if err = tx.QueryRowContext(ctx, `SELECT id FROM cash_movements WHERE tenant_id=? AND cash_session_id=? AND reason=?`, actor.TenantID, in.CashSessionID, "venda:"+in.SaleID).Scan(&cashID); err != nil {
-			return Result{}, err
-		}
 		if err = cashjournal.CaptureTx(ctx, tx, actor, device, "movement", cashID); err != nil {
 			return Result{}, err
 		}
 	}
+	if credit {
+		return Result{SaleID: in.SaleID, TotalCents: total}, nil
+	} // Single-installation receivable audit owns this new protocol; no unknown peer event.
 	payload, err := json.Marshal(struct {
 		TenantID   string       `json:"tenant_id"`
 		StoreID    string       `json:"store_id"`
@@ -320,7 +328,7 @@ func completeTxMode(ctx context.Context, tx *sql.Tx, actor identity.Scope, devic
 		return Result{}, err
 	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)
-		VALUES (?,?,?,?,?,?,?,?,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.SaleID, map[bool]string{false: "sale.committed", true: "retail.credit_sale"}[credit], map[bool]int{false: 1, true: 2}[taxBindings != nil], string(payload), now)
+		VALUES (?,?,?,?,?,?,?,?,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.SaleID, "sale.committed", map[bool]int{false: 1, true: 2}[taxBindings != nil], string(payload), now)
 	if err != nil {
 		return Result{}, err
 	}

@@ -7,11 +7,9 @@ export const dictionaries={
     "termsConfirm": "Confirmo que os valores e vencimentos informados correspondem às condições comerciais documentadas.",
     "orderNotice": "A origem confirma pedido e quantidade. Preço e vencimentos são informados pelo operador; não há confirmação monetária automática do comprador, recebimento físico ou emissão fiscal.",
     "origin": "Origem do faturamento",
-
     "reconcile": "Conferir e encerrar tentativa sem efeito",
     "reconcileConfirm": "Consultar e, somente se não houver operação aplicada, encerrar esta tentativa no servidor? Um comando atrasado será bloqueado. Isto não cancela recebimento, venda ou pagamento.",
     "notApplied": "Tentativa encerrada sem efeito financeiro. O servidor bloqueará o comando original.",
-
     "recoveryOnly": "Só reenvie enquanto o comando original e a sessão estiverem disponíveis. Após reabrir ou entrar novamente, consulte o resultado; uma tentativa não encontrada continua pendente de reconciliação.",
     "title": "Contas a receber",
     "manual": "Documento comercial externo registrado manualmente. Não cria venda nem movimenta estoque.",
@@ -55,7 +53,8 @@ export const dictionaries={
     "invalid": "Confira datas, referências e valores.",
     "context": "A sessão ou o contexto mudou. Consulte o resultado na sessão correta.",
     "busy": "Há uma operação em andamento.",
-    "documentCount": "Documentos neste estabelecimento"
+    "documentCount": "Documentos neste estabelecimento",
+    "creditPolicy": "Crédito recusado: confira limite, inadimplência e fuso do calendário da empresa antes de confirmar novamente."
   },
   "en": {
     "partial": "Partially received",
@@ -65,11 +64,9 @@ export const dictionaries={
     "termsConfirm": "I confirm the entered amounts and due dates match the documented commercial terms.",
     "orderNotice": "The origin proves the order and quantity. The operator enters prices and due dates; this is not automatic buyer approval of monetary terms, physical receipt or tax issuance.",
     "origin": "Billing origin",
-
     "reconcile": "Reconcile and retire unapplied attempt",
     "reconcileConfirm": "Check and retire this attempt on the server only if it was not applied? Late commands will be blocked. This does not cancel a receipt, sale or payment.",
     "notApplied": "Attempt retired with no financial effect. The server will block the original command.",
-
     "recoveryOnly": "Retry only while the original command and session are available. After reopening or signing in again, check the result; an attempt not found remains pending reconciliation.",
     "title": "Accounts receivable",
     "manual": "Manually recorded external commercial document. Does not create a sale or change inventory.",
@@ -113,7 +110,8 @@ export const dictionaries={
     "invalid": "Check dates, references and amounts.",
     "context": "Session or context changed. Check the result in the correct session.",
     "busy": "An operation is in progress.",
-    "documentCount": "Documents in this store"
+    "documentCount": "Documents in this store",
+    "creditPolicy": "Credit refused: check the limit, overdue debts and company calendar time zone before confirming again."
   },
   "es": {
     "partial": "Cobrado parcialmente",
@@ -123,11 +121,9 @@ export const dictionaries={
     "termsConfirm": "Confirmo que los importes y vencimientos corresponden a las condiciones comerciales documentadas.",
     "orderNotice": "El origen acredita pedido y cantidad. El operador informa precio y vencimientos; no confirma automáticamente condiciones monetarias del comprador, recepción física ni emisión fiscal.",
     "origin": "Origen de facturación",
-
     "reconcile": "Conciliar y cerrar intento no aplicado",
     "reconcileConfirm": "¿Consultar y cerrar este intento en el servidor solo si no fue aplicado? Se bloquearán comandos tardíos. No cancela cobro, venta ni pago.",
     "notApplied": "Intento cerrado sin efecto financiero. El servidor bloqueará el comando original.",
-
     "recoveryOnly": "Reenvíe solo con el comando original y la sesión disponibles. Al reabrir o iniciar sesión de nuevo, consulte el resultado; un intento no encontrado sigue pendiente de conciliación.",
     "title": "Cuentas por cobrar",
     "manual": "Documento comercial externo registrado manualmente. No crea venta ni mueve existencias.",
@@ -171,7 +167,8 @@ export const dictionaries={
     "invalid": "Revise fechas, referencias e importes.",
     "context": "La sesión o el contexto cambió. Consulte en la sesión correcta.",
     "busy": "Hay una operación en curso.",
-    "documentCount": "Documentos de esta tienda"
+    "documentCount": "Documentos de esta tienda",
+    "creditPolicy": "Crédito rechazado: revise límite, deudas vencidas y zona horaria de la empresa antes de confirmar de nuevo."
   },
   "fr": {
     "partial": "Partiellement encaissé",
@@ -181,11 +178,9 @@ export const dictionaries={
     "termsConfirm": "Je confirme que les montants et échéances correspondent aux conditions commerciales documentées.",
     "orderNotice": "L’origine atteste commande et quantité. L’opérateur saisit prix et échéances ; aucune acceptation monétaire automatique de l’acheteur, réception physique ou émission fiscale.",
     "origin": "Origine de facturation",
-
     "reconcile": "Rapprocher et clôturer la tentative non appliquée",
     "reconcileConfirm": "Consulter puis clôturer cette tentative sur le serveur uniquement si elle n’a pas été appliquée ? Les commandes tardives seront bloquées. Cela n’annule ni encaissement, ni vente, ni paiement.",
     "notApplied": "Tentative clôturée sans effet financier. Le serveur bloquera la commande initiale.",
-
     "recoveryOnly": "Renvoyez uniquement avec la commande et la session d’origine disponibles. Après réouverture ou reconnexion, consultez le résultat ; une tentative introuvable reste à rapprocher.",
     "title": "Comptes clients",
     "manual": "Document commercial externe saisi manuellement. Ne crée ni vente ni mouvement de stock.",
@@ -229,7 +224,8 @@ export const dictionaries={
     "invalid": "Vérifiez les dates, références et montants.",
     "context": "Session ou contexte modifié. Consultez dans la bonne session.",
     "busy": "Une opération est en cours.",
-    "documentCount": "Documents de cet établissement"
+    "documentCount": "Documents de cet établissement",
+    "creditPolicy": "Crédit refusé : vérifiez limite, impayés et fuseau de l’entreprise avant de confirmer à nouveau."
   },
   "zh-CN": {
     "partial": "已部分收款",
@@ -239,11 +235,9 @@ export const dictionaries={
     "termsConfirm": "我确认所填金额和到期日符合已记录的商业条款。",
     "orderNotice": "来源仅证明订单和数量。价格和到期日由操作员填写，不代表买方自动确认金额、实际收货或税务开票。",
     "origin": "账款来源",
-
     "reconcile": "核对并关闭未执行的尝试",
     "reconcileConfirm": "是否查询并仅在操作未执行时在服务器关闭该尝试？延迟命令将被阻止。这不会取消收款、销售或付款。",
     "notApplied": "尝试已关闭，没有财务影响。服务器将阻止原始命令。",
-
     "recoveryOnly": "仅在原始命令和会话仍可用时重试。重新打开或登录后，请查询结果；未找到的尝试仍须核对。",
     "title": "应收账款",
     "manual": "手动登记的外部商业单据。不创建销售或变更库存。",
@@ -287,7 +281,8 @@ export const dictionaries={
     "invalid": "请检查日期、参考号和金额。",
     "context": "会话或上下文已更改。请在正确会话中查询结果。",
     "busy": "操作正在进行。",
-    "documentCount": "本门店单据数"
+    "documentCount": "本门店单据数",
+    "creditPolicy": "赊销被拒绝：再次确认前请检查额度、逾期账款及企业日历时区。"
   }
 };
 export function receivableWords(lang){return dictionaries[lang]||dictionaries[lang?.split("-")[0]]||dictionaries["pt-BR"];}

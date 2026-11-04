@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	_ "time/tzdata"
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/fiscal"
@@ -20,12 +21,15 @@ import (
 
 var ErrInvalid = errors.New("invalid retail input")
 var ErrConflict = errors.New("retail revision conflict")
+var ErrCreditConstraint = errors.Join(ErrConflict, errors.New("customer credit limit or overdue conflict"))
+var ErrCalendar = errors.New("explicit credit calendar required")
 var ErrDisabled = errors.New("retail feature disabled or customer not eligible")
 var ID = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$`).MatchString
 
 const Max int64 = 9007199254740991
 
 type Config struct {
+	CreditTimezone    string   `json:"credit_timezone"`
 	RefundEnabled     bool     `json:"refund_enabled"`
 	Revision          int64    `json:"revision"`
 	CreditEnabled     bool     `json:"credit_enabled"`
@@ -132,7 +136,7 @@ func rolesOK(v []string) bool {
 	}
 	seen := map[string]bool{}
 	for _, s := range v {
-		if seen[s] || (s != "owner" && s != "manager" && s != "accountant" && s != "cashier") {
+		if seen[s] || (s != "owner" && s != "manager" && s != "accountant" && s != "cashier" && s != "stock" && s != "production" && s != "employee" && s != "supplier") {
 			return false
 		}
 		seen[s] = true
@@ -147,8 +151,24 @@ func (s Service) Run(ctx context.Context, op, action, id string, input any, work
 	}
 	hash := Hash(input)
 	return sqlitewrite.Run(ctx, s.DB, ErrConflict, func(tx *sql.Tx) error {
-		if e := s.Authorize(ctx, tx); e != nil {
+		var authorization error
+		switch action {
+		case "configure":
+			authorization = s.AuthorizePolicy(ctx, tx)
+		case "store_create", "store_transfer":
+			authorization = s.AuthorizeInventory(ctx, tx)
+		default:
+			authorization = s.Authorize(ctx, tx)
+		}
+		if authorization != nil {
+			return authorization
+		}
+		var retired int
+		if e := tx.QueryRowContext(ctx, `SELECT count(*) FROM retail_operation_fences WHERE tenant_id=? AND operation_id=? AND store_id=? AND device_id=? AND actor_id=?`, s.Actor.TenantID, op, s.Actor.StoreID, s.Device.DeviceID, s.Actor.IdentityID).Scan(&retired); e != nil {
 			return e
+		}
+		if retired != 0 {
+			return ErrConflict
 		}
 		var prior, actor, store, device, act, subject string
 		e := tx.QueryRowContext(ctx, `SELECT request_hash,actor_id,store_id,device_id,action,subject_id FROM retail_operations WHERE tenant_id=? AND operation_id=?`, s.Actor.TenantID, op).Scan(&prior, &actor, &store, &device, &act, &subject)
@@ -169,6 +189,11 @@ func (s Service) Run(ctx context.Context, op, action, id string, input any, work
 	})
 }
 func (s Service) Configure(ctx context.Context, op string, c Config) error {
+	if c.CreditEnabled {
+		if _, e := creditDay(time.Now(), c.CreditTimezone); e != nil {
+			return e
+		}
+	}
 	if c.EarnCents < 0 || c.EarnPoints < 0 || c.RedeemCents < 0 || c.RedeemPoints < 0 || c.ValidDays < 0 {
 		return ErrInvalid
 	}
@@ -189,9 +214,10 @@ func (s Service) Configure(ctx context.Context, op string, c Config) error {
 		if c.Revision != old.Revision {
 			return ErrConflict
 		}
-		c.Revision++
-		b, _ := json.Marshal(c)
-		_, e = tx.ExecContext(ctx, `INSERT INTO retail_config VALUES(?,?,?) ON CONFLICT(tenant_id) DO UPDATE SET revision=excluded.revision,body=excluded.body`, s.Actor.TenantID, c.Revision, string(b))
+		next := c
+		next.Revision++
+		b, _ := json.Marshal(next)
+		_, e = tx.ExecContext(ctx, `INSERT INTO retail_config VALUES(?,?,?) ON CONFLICT(tenant_id) DO UPDATE SET revision=excluded.revision,body=excluded.body`, s.Actor.TenantID, next.Revision, string(b))
 		return e
 	})
 }
@@ -214,10 +240,11 @@ func (s Service) SaveCustomer(ctx context.Context, op string, c Customer) error 
 		if old.Revision != c.Revision || old.Anonymized {
 			return ErrConflict
 		}
-		c.Revision++
-		c.ConsentAt = time.Now().UTC().Format(time.RFC3339Nano)
-		raw, _ := json.Marshal(c)
-		_, e = tx.ExecContext(ctx, `INSERT INTO retail_customers VALUES(?,?,?,?) ON CONFLICT(tenant_id,id) DO UPDATE SET revision=excluded.revision,body=excluded.body`, s.Actor.TenantID, c.ID, c.Revision, string(raw))
+		next := c
+		next.Revision++
+		next.ConsentAt = time.Now().UTC().Format(time.RFC3339Nano)
+		raw, _ := json.Marshal(next)
+		_, e = tx.ExecContext(ctx, `INSERT INTO retail_customers VALUES(?,?,?,?) ON CONFLICT(tenant_id,id) DO UPDATE SET revision=excluded.revision,body=excluded.body`, s.Actor.TenantID, next.ID, next.Revision, string(raw))
 		return e
 	})
 }
@@ -290,13 +317,17 @@ func CreditTx(ctx context.Context, tx *sql.Tx, a identity.Scope, customer string
 	if !person.CreditEnabled || person.Anonymized {
 		return ErrDisabled
 	}
+	day, e := creditDay(time.Now(), c.CreditTimezone)
+	if e != nil {
+		return ErrCalendar
+	}
 	var balance, overdue int64
-	e = tx.QueryRowContext(ctx, `SELECT COALESCE(sum(i.amount_cents-COALESCE((SELECT sum(r.amount_cents) FROM receivable_cash_receipts r WHERE r.tenant_id=i.tenant_id AND r.store_id=i.store_id AND r.document_id=i.document_id AND r.installment_id=i.id),0)+COALESCE((SELECT sum(v.amount_cents) FROM receivable_cash_reversals v WHERE v.tenant_id=i.tenant_id AND v.store_id=i.store_id AND v.document_id=i.document_id AND v.installment_id=i.id),0)),0),COALESCE(sum(CASE WHEN i.due_on<? AND i.amount_cents>COALESCE((SELECT sum(r.amount_cents) FROM receivable_cash_receipts r WHERE r.tenant_id=i.tenant_id AND r.store_id=i.store_id AND r.document_id=i.document_id AND r.installment_id=i.id),0)-COALESCE((SELECT sum(v.amount_cents) FROM receivable_cash_reversals v WHERE v.tenant_id=i.tenant_id AND v.store_id=i.store_id AND v.document_id=i.document_id AND v.installment_id=i.id),0) THEN 1 ELSE 0 END),0) FROM receivable_installments i JOIN receivable_documents d ON d.tenant_id=i.tenant_id AND d.store_id=i.store_id AND d.id=i.document_id WHERE d.tenant_id=? AND d.customer_reference=? AND d.state='open'`, time.Now().UTC().Format("2006-01-02"), a.TenantID, customer).Scan(&balance, &overdue)
+	e = tx.QueryRowContext(ctx, `SELECT COALESCE(sum(i.amount_cents-COALESCE((SELECT sum(r.amount_cents) FROM receivable_cash_receipts r WHERE r.tenant_id=i.tenant_id AND r.store_id=i.store_id AND r.document_id=i.document_id AND r.installment_id=i.id),0)+COALESCE((SELECT sum(v.amount_cents) FROM receivable_cash_reversals v WHERE v.tenant_id=i.tenant_id AND v.store_id=i.store_id AND v.document_id=i.document_id AND v.installment_id=i.id),0)),0),COALESCE(sum(CASE WHEN i.due_on<? AND i.amount_cents>COALESCE((SELECT sum(r.amount_cents) FROM receivable_cash_receipts r WHERE r.tenant_id=i.tenant_id AND r.store_id=i.store_id AND r.document_id=i.document_id AND r.installment_id=i.id),0)-COALESCE((SELECT sum(v.amount_cents) FROM receivable_cash_reversals v WHERE v.tenant_id=i.tenant_id AND v.store_id=i.store_id AND v.document_id=i.document_id AND v.installment_id=i.id),0) THEN 1 ELSE 0 END),0) FROM receivable_installments i JOIN receivable_documents d ON d.tenant_id=i.tenant_id AND d.store_id=i.store_id AND d.id=i.document_id WHERE d.tenant_id=? AND d.customer_reference=? AND d.state='open'`, day, a.TenantID, customer).Scan(&balance, &overdue)
 	if e != nil {
 		return e
 	}
 	if amount < 1 || amount > person.CreditLimitCents || balance > person.CreditLimitCents-amount || (person.BlockOverdue && overdue > 0) {
-		return ErrDisabled
+		return ErrCreditConstraint
 	}
 	return nil
 }
@@ -306,4 +337,40 @@ func (s Service) now() time.Time {
 		return s.Clock().UTC()
 	}
 	return time.Now().UTC()
+}
+
+func creditDay(at time.Time, zone string) (string, error) {
+	if zone == "" || zone == "Local" || len(zone) > 100 {
+		return "", ErrInvalid
+	}
+	loc, e := time.LoadLocation(zone)
+	if e != nil {
+		return "", ErrInvalid
+	}
+	return at.In(loc).Format("2006-01-02"), nil
+}
+
+func (s Service) AuthorizePolicy(ctx context.Context, tx *sql.Tx) error {
+	if e := fiscal.ValidateSaleSessionTx(ctx, tx, s.Actor, s.Device, s.Token); e != nil {
+		return e
+	}
+	return s.Contracts.RequireTx(ctx, tx, s.Actor, s.Device, identity.ManageStaff, modules.Core)
+}
+func (s Service) AuthorizeInventory(ctx context.Context, tx *sql.Tx) error {
+	if e := fiscal.ValidateSaleSessionTx(ctx, tx, s.Actor, s.Device, s.Token); e != nil {
+		return e
+	}
+	return s.Contracts.RequireTx(ctx, tx, s.Actor, s.Device, identity.ManageStock, modules.Inventory)
+}
+func (s Service) AuthorizeRecovery(ctx context.Context, tx *sql.Tx) error {
+	if e := fiscal.ValidateSaleSessionTx(ctx, tx, s.Actor, s.Device, s.Token); e != nil {
+		return e
+	}
+	if e := Owner(ctx, tx, s.Actor); e == nil {
+		return s.AuthorizePolicy(ctx, tx)
+	}
+	if e := s.Authorize(ctx, tx); e == nil {
+		return nil
+	}
+	return s.AuthorizeInventory(ctx, tx)
 }
