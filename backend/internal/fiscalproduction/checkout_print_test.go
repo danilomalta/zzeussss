@@ -47,7 +47,8 @@ func checkoutPrintXMLFixture(t *testing.T) ([]byte, []byte, string) {
 	}
 	digest := doc.Root().FindElement("Signature/SignedInfo/Reference/DigestValue").Text()
 	// The test authority supplies the existing schema's processed envelope.
-	invoice := []byte(fmt.Sprintf(`<nfeProc xmlns="%s" versao="4.00">%s<protNFe versao="4.00"><infProt><tpAmb>2</tpAmb><verAplic>SYNTHETIC1</verAplic><chNFe>%s</chNFe><dhRecbto>%s</dhRecbto><nProt>135260000000001</nProt><digVal>%s</digVal><cStat>100</cStat><xMotivo>Synthetic only</xMotivo></infProt></protNFe></nfeProc>`, fiscalcore.NFeNS, signed, key, time.Now().Format(time.RFC3339), digest))
+	// TDateTimeUTC requires a numeric offset even on UTC CI hosts (not RFC3339's Z).
+	invoice := []byte(fmt.Sprintf(`<nfeProc xmlns="%s" versao="4.00">%s<protNFe versao="4.00"><infProt><tpAmb>2</tpAmb><verAplic>SYNTHETIC1</verAplic><chNFe>%s</chNFe><dhRecbto>%s</dhRecbto><nProt>135260000000001</nProt><digVal>%s</digVal><cStat>100</cStat><xMotivo>Synthetic only</xMotivo></infProt></protNFe></nfeProc>`, fiscalcore.NFeNS, signed, key, time.Now().Format("2006-01-02T15:04:05-07:00"), digest))
 	cancel, e := fiscalcore.BuildCancellation(fiscalcore.Cancellation{Key: key, CNPJ: cnpj, Environment: 2, Time: time.Now(), Protocol: "135260000000001", Reason: "Synthetic cancellation only"})
 	if e != nil {
 		t.Fatal(e)
@@ -56,7 +57,7 @@ func checkoutPrintXMLFixture(t *testing.T) ([]byte, []byte, string) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	event := []byte(fmt.Sprintf(`<procEventoNFe xmlns="%s" versao="1.00">%s<retEvento versao="1.00"><infEvento><tpAmb>2</tpAmb><verAplic>SYNTHETIC1</verAplic><cOrgao>35</cOrgao><cStat>135</cStat><xMotivo>Synthetic only</xMotivo><chNFe>%s</chNFe><tpEvento>110111</tpEvento><xEvento>Cancelamento</xEvento><nSeqEvento>1</nSeqEvento><dhRegEvento>%s</dhRegEvento><nProt>135260000000002</nProt></infEvento></retEvento></procEventoNFe>`, fiscalcore.NFeNS, cancel, key, time.Now().Format(time.RFC3339)))
+	event := []byte(fmt.Sprintf(`<procEventoNFe xmlns="%s" versao="1.00">%s<retEvento versao="1.00"><infEvento><tpAmb>2</tpAmb><verAplic>SYNTHETIC1</verAplic><cOrgao>35</cOrgao><cStat>135</cStat><xMotivo>Synthetic only</xMotivo><chNFe>%s</chNFe><tpEvento>110111</tpEvento><xEvento>Cancelamento</xEvento><nSeqEvento>1</nSeqEvento><dhRegEvento>%s</dhRegEvento><nProt>135260000000002</nProt></infEvento></retEvento></procEventoNFe>`, fiscalcore.NFeNS, cancel, key, time.Now().Format("2006-01-02T15:04:05-07:00")))
 	if e = validateFocusArchiveXML(invoice, key, "invoice", 0); e != nil {
 		t.Fatal("invoice fixture", e)
 	}
