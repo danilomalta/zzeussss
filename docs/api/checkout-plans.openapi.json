@@ -69,7 +69,8 @@
               }
             }
           }
-        }
+        },
+        "description": " P10: a sessão autenticada é revalidada no SQLite dentro da transação, mesmo sem cotação tributária. Revogação, expiração ou token de outro contexto recusam o comando; não confiar apenas na admissão HTTP. As escritas de journal/outbox do plano e o evento da venda exigem confirmação de uma linha; ausência reverte a transação. Repetir conserva os identificadores. Cancelar plano não estorna venda/pagamento nem cancela nota fiscal."
       }
     },
     "/local/v1/checkout/plans/{id}": {
@@ -195,7 +196,8 @@
               }
             }
           }
-        }
+        },
+        "description": " P10: a sessão autenticada é revalidada no SQLite dentro da transação, mesmo sem cotação tributária. Revogação, expiração ou token de outro contexto recusam o comando; não confiar apenas na admissão HTTP. As escritas de journal/outbox do plano e o evento da venda exigem confirmação de uma linha; ausência reverte a transação. Repetir conserva os identificadores. Cancelar plano não estorna venda/pagamento nem cancela nota fiscal."
       }
     },
     "/local/v1/checkout/plans/{id}/finalize-cash": {
@@ -273,7 +275,8 @@
           "503": {
             "description": "Verifier unavailable"
           }
-        }
+        },
+        "description": " P10: a sessão autenticada é revalidada no SQLite dentro da transação, mesmo sem cotação tributária. Revogação, expiração ou token de outro contexto recusam o comando; não confiar apenas na admissão HTTP. As escritas de journal/outbox do plano e o evento da venda exigem confirmação de uma linha; ausência reverte a transação. Repetir conserva os identificadores. Cancelar plano não estorna venda/pagamento nem cancela nota fiscal."
       }
     },
     "/local/v1/checkout/plans/{id}/fiscal/danfe": {

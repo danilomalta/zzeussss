@@ -327,7 +327,7 @@ func completeTxMode(ctx context.Context, tx *sql.Tx, actor identity.Scope, devic
 	if err != nil {
 		return Result{}, err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)
+	err = cancelWrite(ctx, tx, 1, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)
 		VALUES (?,?,?,?,?,?,?,?,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.SaleID, "sale.committed", map[bool]int{false: 1, true: 2}[taxBindings != nil], string(payload), now)
 	if err != nil {
 		return Result{}, err

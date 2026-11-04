@@ -420,7 +420,8 @@
       "method": "POST",
       "path": "/local/v1/checkout/plans",
       "authentication": "session",
-      "source": "backend/internal/localapi/checkout_plans.go"
+      "source": "backend/internal/localapi/checkout_plans.go",
+      "transaction_authentication": "provided HTTP session revalidated in SQLite transaction, including non-tax checkout; journal/outbox writes checked"
     },
     {
       "api": "local",
@@ -434,14 +435,16 @@
       "method": "POST",
       "path": "/local/v1/checkout/plans/:id/cancel",
       "authentication": "session",
-      "source": "backend/internal/localapi/checkout_plans.go"
+      "source": "backend/internal/localapi/checkout_plans.go",
+      "transaction_authentication": "provided HTTP session revalidated in SQLite transaction, including non-tax checkout; journal/outbox writes checked"
     },
     {
       "api": "local",
       "method": "POST",
       "path": "/local/v1/checkout/plans/:id/finalize-cash",
       "authentication": "session",
-      "source": "backend/internal/localapi/checkout_plans.go"
+      "source": "backend/internal/localapi/checkout_plans.go",
+      "transaction_authentication": "provided HTTP session revalidated in SQLite transaction, including non-tax checkout; journal/outbox writes checked"
     },
     {
       "api": "local",
@@ -2864,7 +2867,8 @@
       "method": "POST",
       "path": "/local/v1/sales",
       "authentication": "session",
-      "source": "backend/internal/localapi/sales.go"
+      "source": "backend/internal/localapi/sales.go",
+      "transaction_authentication": "provided HTTP session revalidated in SQLite transaction, including non-tax checkout; journal/outbox writes checked"
     },
     {
       "api": "local",

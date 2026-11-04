@@ -272,6 +272,7 @@ func cancelID(value string) bool {
 }
 
 // Triggers that silently ignore a write must also cause a full rollback.
+// cancelWrite checks exact writes; checkout also reuses this guard for journal/outbox inserts.
 func cancelWrite(ctx context.Context, tx *sql.Tx, expected int64, query string, args ...any) error {
 	result, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {

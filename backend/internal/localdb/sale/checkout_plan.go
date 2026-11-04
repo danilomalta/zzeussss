@@ -116,13 +116,10 @@ func CreatePlanWithContract(ctx context.Context, db *sql.DB, contracts *entitlem
 	if err = contracts.RequireTx(ctx, tx, actor, device, identity.Sell, modules.POS); err != nil {
 		return Plan{}, err
 	}
+	if err = validateCheckoutSessionTx(ctx, tx, actor, device, token, len(in.TaxQuoteOperations) > 0); err != nil {
+		return Plan{}, err
+	}
 	if len(in.TaxQuoteOperations) > 0 {
-		if len(token) != 1 {
-			return Plan{}, ErrInvalid
-		}
-		if err = fiscal.ValidateSaleSessionTx(ctx, tx, actor, device, token[0]); err != nil {
-			return Plan{}, err
-		}
 		if err = contracts.RequireTx(ctx, tx, actor, device, identity.Sell, modules.Fiscal); err != nil {
 			return Plan{}, err
 		}
@@ -279,7 +276,7 @@ func readPlanTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 
 // CancelPlan cancels only the unsubmitted allocation implemented in this release.
 // It never claims that an external charge was cancelled, refunded or reversed.
-func CancelPlan(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, id string, in CancelPlanInput) (Plan, error) {
+func CancelPlan(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, id string, in CancelPlanInput, token ...string) (Plan, error) {
 	if db == nil || !planID(id) || !planID(in.OperationID) || strings.TrimSpace(in.Reason) == "" || len(in.Reason) > 512 {
 		return Plan{}, ErrInvalid
 	}
@@ -289,6 +286,9 @@ func CancelPlan(ctx context.Context, db *sql.DB, actor identity.Scope, device id
 	}
 	defer tx.Rollback()
 	if err = authorizeLegacy(ctx, tx, actor, device); err != nil {
+		return Plan{}, err
+	}
+	if err = validateCheckoutSessionTx(ctx, tx, actor, device, token, false); err != nil {
 		return Plan{}, err
 	}
 	result, err := readPlanTx(ctx, tx, actor, device, id)
@@ -342,7 +342,7 @@ func CancelPlan(ctx context.Context, db *sql.DB, actor identity.Scope, device id
 }
 
 func planEventTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, id, op, action, hash string, input any, now string) error {
-	if _, err := tx.ExecContext(ctx, `INSERT INTO checkout_plan_operations VALUES (?,?,?,?,?,?,?)`, actor.TenantID, device.DeviceID, op, id, action, hash, now); err != nil {
+	if err := cancelWrite(ctx, tx, 1, `INSERT INTO checkout_plan_operations VALUES (?,?,?,?,?,?,?)`, actor.TenantID, device.DeviceID, op, id, action, hash, now); err != nil {
 		return err
 	}
 	payload, err := json.Marshal(struct {
@@ -356,6 +356,6 @@ func planEventTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device i
 	if err != nil {
 		return err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES (?,?,?,?,?,?,?,1,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, op, id, "checkout.plan."+action, string(payload), now)
+	err = cancelWrite(ctx, tx, 1, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES (?,?,?,?,?,?,?,1,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, op, id, "checkout.plan."+action, string(payload), now)
 	return err
 }

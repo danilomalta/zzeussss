@@ -264,7 +264,7 @@ func (s *Server) cancelCheckoutPlan(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	v, err := sale.CancelPlan(c.UserContext(), s.DB, session.Actor, session.Device, c.Params("id"), in)
+	v, err := sale.CancelPlan(c.UserContext(), s.DB, session.Actor, session.Device, c.Params("id"), in, session.Token)
 	if err != nil {
 		return saleError(c, err)
 	}

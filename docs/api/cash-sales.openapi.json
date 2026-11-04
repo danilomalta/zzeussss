@@ -646,7 +646,7 @@
       "post": {
         "operationId": "localCompleteSale",
         "summary": "Registra venda em dinheiro",
-        "description": "sell e contrato POS. JSON exato inclusive objetos aninhados até 128 KiB; IDs até 128 bytes; 1–500 itens e 1–8 pagamentos. Apenas cash; cartão/Pix recusados 409. Total vem do catálogo e pagamento deve ser exatamente igual, sem troco enviado. Produto unit exige quantity_milli múltiplo de 1000; origem shelf. Arredonda cada linha (preço*quantidade+500)/1000 com inteiros exatos. Venda/estoque/caixa/outbox atômicos. Replay idêntico 200; venda já cancelada não pode ser revendida com retry.",
+        "description": "sell e contrato POS. JSON exato inclusive objetos aninhados até 128 KiB; IDs até 128 bytes; 1–500 itens e 1–8 pagamentos. Apenas cash; cartão/Pix recusados 409. Total vem do catálogo e pagamento deve ser exatamente igual, sem troco enviado. Produto unit exige quantity_milli múltiplo de 1000; origem shelf. Arredonda cada linha (preço*quantidade+500)/1000 com inteiros exatos. Venda/estoque/caixa/outbox atômicos. Replay idêntico 200; venda já cancelada não pode ser revendida com retry. P10: o token fornecido pelo handler é verificado na própria transação, também para venda sem cotação fiscal. Evento sale.committed ausente causa rollback, sem caixa/estoque parcialmente confirmados. Não confirma partes eletrônicas não verificadas.",
         "security": [
           {
             "Session": []

@@ -149,6 +149,9 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 	if err = authorizeLegacy(ctx, tx, actor, device); err != nil {
 		return Plan{}, err
 	}
+	if err = validateCheckoutSessionTx(ctx, tx, actor, device, token, false); err != nil {
+		return Plan{}, err
+	}
 	plan, err := readPlanTx(ctx, tx, actor, device, id)
 	if err != nil {
 		return Plan{}, err
@@ -156,9 +159,6 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 	if len(planTaxRefs(plan)) > 0 {
 		if len(token) != 1 {
 			return Plan{}, ErrInvalid
-		}
-		if err = fiscal.ValidateSaleSessionTx(ctx, tx, actor, device, token[0]); err != nil {
-			return Plan{}, err
 		}
 	}
 	hash := planHash(in)
