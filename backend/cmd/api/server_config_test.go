@@ -18,7 +18,7 @@ import (
 )
 
 func TestOnlineListenAddressDefaultsAndRejectsAmbiguity(t *testing.T) {
-	for _, tc := range []struct{ host, port, want string }{{"", "", "0.0.0.0:8080"}, {"127.0.0.1", "8081", "127.0.0.1:8081"}, {"::1", "8080", "[::1]:8080"}} {
+	for _, tc := range []struct{ host, port, want string }{{"", "", "127.0.0.1:8080"}, {"127.0.0.1", "8081", "127.0.0.1:8081"}, {"::1", "8080", "[::1]:8080"}} {
 		got, err := onlineListenAddress(tc.host, tc.port)
 		if err != nil || got != tc.want {
 			t.Fatalf("wrong address %s", got)

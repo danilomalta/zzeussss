@@ -29,7 +29,7 @@ func onlineServerConfig() fiber.Config {
 
 func onlineListenAddress(host, port string) (string, error) {
 	if host == "" {
-		host = "0.0.0.0"
+		host = "127.0.0.1"
 	}
 	if port == "" {
 		port = "8080"

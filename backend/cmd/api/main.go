@@ -44,9 +44,9 @@ func main() {
 	if err := validateStartupSecrets(os.Getenv); err != nil {
 		log.Fatal(err)
 	}
-	addr, err := onlineListenAddress(os.Getenv("TITAN_API_HOST"), os.Getenv("PORT"))
+	exposure, err := readOnlineExposure(os.Getenv, time.Now())
 	if err != nil {
-		log.Fatal("Endereço ou porta da API inválidos. Use TITAN_API_HOST como IP literal e PORT entre 1 e 65535.")
+		log.Fatal(err)
 	}
 	stopContext, stopSignals := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stopSignals()
@@ -77,6 +77,7 @@ func main() {
 	app := fiber.New(onlineServerConfig())
 
 	app.Use(apicontract.Errors())
+	app.Use(exposure.gate)
 
 	// 4. Proteção contra força bruta em tentativas de login (SecOps)
 	limitadorCfg := delivery.ConfiguracaoTentativasLoginPadrao()
@@ -87,12 +88,12 @@ func main() {
 	// 5. Registro de Rotas
 	routes.Registrar(app)
 
-	// 6. Servidor ouvindo na rede local (LAN/Wi-Fi)
+	// 6. Transport was validated before opening the database or any listener.
 	log.Println("────────────────────────────────────────────────────────────────")
-	log.Printf("API HTTP configurada em %s (somente rotas implementadas)", addr)
+	log.Printf("API configurada em %s (somente rotas implementadas)", exposure.profile.Listen)
 	log.Println("────────────────────────────────────────────────────────────────")
 
-	listener, err := net.Listen("tcp", addr)
+	listener, err := exposure.listen()
 	if err != nil {
 		log.Fatal("Falha ao abrir o endereço HTTP configurado. Nenhum servidor iniciado.")
 	}
