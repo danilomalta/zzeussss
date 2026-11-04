@@ -58,6 +58,8 @@ jobs:
           for tool in titan-local titan-backup titan-access titan-peer titan-receive titan-sync titan-trade titan-fiscal; do
             CGO_ENABLED=0 go build -trimpath -o "$RUNNER_TEMP/$tool" "./cmd/$tool"
           done
+      - name: Verify required browser
+        run: command -v google-chrome
       - name: Full backend regression suite with mandatory real integrations
         env:
           TITAN_TRADE_QUEUE: "1"
@@ -69,6 +71,8 @@ jobs:
           TITAN_MAINTENANCE_BRIDGE: ${{ github.workspace }}/frontend-web/tests/internalMaintenance.bridge.mjs
           TITAN_FISCAL_CUSTOMER_BRIDGE: ${{ github.workspace }}/frontend-web/tests/fiscalCustomer.bridge.mjs
           TITAN_FISCAL_CLI: ${{ runner.temp }}/titan-fiscal
+          TITAN_RECEIVABLES_BRIDGE: ${{ github.workspace }}/frontend-web/tests/receivables.bridge.mjs
+          TITAN_RECEIVABLES_BROWSER_BRIDGE: ${{ github.workspace }}/frontend-web/tests/receivables.browser.mjs
         run: |
           set -euo pipefail
           go test ./... -count=1 -timeout=30m -json > "$RUNNER_TEMP/backend-full.jsonl"
