@@ -2,10 +2,9 @@ name: Backend pilot acceptance
 
 on:
   push:
-    branches: [feat/backend-b02a-compat]
-    paths: ['backend/**', '.github/workflows/backend-pilot.yml', 'tools/verify_backend_acceptance.py', 'tools/tests/test_verify_backend_acceptance.py', 'tools/check_api_contracts.py', 'tools/tests/test_api_contracts.py', 'docs/api/**']
+    branches: [main, develop, "integration/**", "feat/backend-*", feat/backend-b02a-compat]
   pull_request:
-    branches: [main, develop, integration/piloto-main-20261027]
+    branches: [main, develop, "integration/**"]
   workflow_dispatch:
 
 permissions:
@@ -43,7 +42,7 @@ jobs:
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
+          cache: false
       - name: Verify acceptance gate regressions
         run: python3 -m unittest discover -s ../tools/tests -p test_verify_backend_acceptance.py -v
       - name: Validate API contracts and complete route map
@@ -86,6 +85,9 @@ jobs:
             -run '^TestTrade|^TestHTTPCustomerReturn|^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore|CustomerReturnRestartAndRestore)$' \
             -count=1 -v -timeout=20m -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" -pilot-trade-cli="$RUNNER_TEMP/titan-trade" -pilot-trade-queue \
             | tee "$RUNNER_TEMP/pilot-cli-race.log"
+      - name: Sanitize structural evidence for this commit
+        if: always()
+        run: python3 ../.github/scripts/ci_evidence.py "$RUNNER_TEMP" "$RUNNER_TEMP/sanitized" "$GITHUB_SHA"
       - name: Upload execution evidence and Linux binaries
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -93,11 +95,7 @@ jobs:
           name: backend-pilot-${{ github.sha }}
           retention-days: 14
           path: |
-            ${{ runner.temp }}/fiscal-journal-core-race.jsonl
-            ${{ runner.temp }}/fiscal-journal-local-race.jsonl
-            ${{ runner.temp }}/backend-integrations.json
-            ${{ runner.temp }}/backend-full.jsonl
-            ${{ runner.temp }}/pilot-cli-race.log
+            ${{ runner.temp }}/sanitized/
             ${{ runner.temp }}/titan-backup
             ${{ runner.temp }}/titan-local
             ${{ runner.temp }}/titan-access

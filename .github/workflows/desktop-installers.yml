@@ -1,8 +1,10 @@
 name: Desktop installer acceptance
 
 on:
+  push:
+    branches: [main, develop, "integration/**", "feat/backend-*"]
   pull_request:
-    branches: [main, develop, integration/piloto-main-20261027]
+    branches: [main, develop, "integration/**"]
   workflow_dispatch:
 
 permissions:
@@ -83,17 +85,20 @@ jobs:
           path: |
             ${{ runner.temp }}/titan-release/*.exe
             ${{ runner.temp }}/titan-release/*.deb
-            ${{ runner.temp }}/installed-evidence/
+            ${{ runner.temp }}/installed-evidence/*.json
+            ${{ runner.temp }}/installed-evidence/*.png
   linux-backend:
     name: Linux backend installer
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
         with:
           go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
+          cache: false
       - name: Build actual managed binaries
         working-directory: backend
         run: |

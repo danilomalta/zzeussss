@@ -2,10 +2,9 @@ name: Desktop launcher and runtime checks
 
 on:
   push:
-    branches: [feat/backend-checkout-authority]
-    paths: ['desktop/**', '.github/workflows/desktop-launcher.yml']
+    branches: [main, develop, "integration/**", "feat/backend-*", feat/backend-checkout-authority]
   pull_request:
-    branches: [main, develop, integration/piloto-main-20261027]
+    branches: [main, develop, "integration/**"]
   workflow_dispatch:
 
 permissions:
@@ -27,10 +26,13 @@ jobs:
         run: |
           set -euo pipefail
           node --test --test-isolation=none desktop/tests/*.test.cjs | tee "$RUNNER_TEMP/desktop-runtime.log"
+      - name: Record exact source revision
+        if: always()
+        run: printf '%s\n' "$GITHUB_SHA" > "$RUNNER_TEMP/desktop-runtime-commit.txt"
       - name: Upload test evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: desktop-runtime-${{ github.sha }}
           retention-days: 14
-          path: ${{ runner.temp }}/desktop-runtime.log
+          path: ${{ runner.temp }}/desktop-runtime-commit.txt
