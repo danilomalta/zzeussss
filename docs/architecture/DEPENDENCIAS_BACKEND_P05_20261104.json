@@ -1,0 +1,969 @@
+{
+  "unit": "P05",
+  "date": "2026-11-04",
+  "base": "5ffc62d46abcedda66457a8981d376471f5a4c4c",
+  "status": "PARTIAL: directed inventory and minimum Go fix delivered; complete govulncheck analysis pending",
+  "scope": {
+    "target": "Linux/amd64, default tags, production imports via go list -deps ./...",
+    "source_code_uploaded": false,
+    "full_vulnerability_scan_performed": false,
+    "not_a_clean_security_attestation": true
+  },
+  "counts": {
+    "external_modules": 76,
+    "direct_requirements": 18
+  },
+  "go": {
+    "minimum_before": "1.26.2",
+    "minimum_after": "1.26.10",
+    "effective_build_version": "go1.26.10",
+    "host_go_outside_module": "go1.24.3",
+    "toolchain_policy": "auto respects minimum; redundant toolchain go1.26.10 removed when minimum made equal",
+    "minimum_floor_advisory": {
+      "id": "GO-2026-6809",
+      "package": "crypto/x509",
+      "symbol": "Certificate.Verify",
+      "fixed_on_go126_branch": "1.26.10",
+      "scope": "TLS certificate verification reached through fiscalcore/transport.go and fiscalproduction/focus.go http.Client TLS; installed builder already fixed; former minimum allowed older builders",
+      "exploitation": "NOT TESTED; no installed credential/certificate read",
+      "source": "https://vuln.go.dev/ID/GO-2026-6809.json"
+    }
+  },
+  "scanner": {
+    "available_executable": false,
+    "path_tools_checked": [
+      "govulncheck",
+      "osv-scanner",
+      "trivy",
+      "grype"
+    ],
+    "cached_source_attempted": "golang.org/x/vuln@v1.4.0",
+    "temporary_build_succeeded": false,
+    "offline_missing_tool_dependencies": [
+      "golang.org/x/tools@v0.46.0",
+      "golang.org/x/telemetry@v0.0.0-20260611141451-d61e87d5f4a3"
+    ],
+    "installed": false,
+    "product_dependency_added": false,
+    "required_next": "Provision an approved compatible govulncheck separately, record version, run full symbol analysis and tests analysis, then re-evaluate pending advisories; no silent installation"
+  },
+  "modules": [
+    {
+      "path": "github.com/DATA-DOG/go-sqlmock",
+      "version": "v1.5.2",
+      "direct": true
+    },
+    {
+      "path": "github.com/andybalholm/brotli",
+      "version": "v1.1.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/beevik/etree",
+      "version": "v1.7.0",
+      "direct": true
+    },
+    {
+      "path": "github.com/boombuler/barcode",
+      "version": "v1.1.0",
+      "direct": true
+    },
+    {
+      "path": "github.com/creack/pty",
+      "version": "v1.1.9",
+      "direct": false
+    },
+    {
+      "path": "github.com/davecgh/go-spew",
+      "version": "v1.1.1",
+      "direct": false
+    },
+    {
+      "path": "github.com/dlclark/regexp2",
+      "version": "v1.12.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/dustin/go-humanize",
+      "version": "v1.0.1",
+      "direct": false
+    },
+    {
+      "path": "github.com/fasthttp/websocket",
+      "version": "v1.5.3",
+      "direct": false
+    },
+    {
+      "path": "github.com/gofiber/fiber/v2",
+      "version": "v2.52.12",
+      "direct": true
+    },
+    {
+      "path": "github.com/gofiber/websocket/v2",
+      "version": "v2.2.1",
+      "direct": true
+    },
+    {
+      "path": "github.com/golang-jwt/jwt/v5",
+      "version": "v5.3.1",
+      "direct": true
+    },
+    {
+      "path": "github.com/google/pprof",
+      "version": "v0.0.0-20250317173921-a4b03ec1a45e",
+      "direct": false
+    },
+    {
+      "path": "github.com/google/uuid",
+      "version": "v1.6.0",
+      "direct": true
+    },
+    {
+      "path": "github.com/hashicorp/golang-lru/v2",
+      "version": "v2.0.7",
+      "direct": false
+    },
+    {
+      "path": "github.com/jackc/pgpassfile",
+      "version": "v1.0.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/jackc/pgservicefile",
+      "version": "v0.0.0-20240606120523-5a60cdf6a761",
+      "direct": false
+    },
+    {
+      "path": "github.com/jackc/pgx/v5",
+      "version": "v5.9.2",
+      "direct": true
+    },
+    {
+      "path": "github.com/jackc/puddle/v2",
+      "version": "v2.2.2",
+      "direct": false
+    },
+    {
+      "path": "github.com/jinzhu/inflection",
+      "version": "v1.0.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/jinzhu/now",
+      "version": "v1.1.5",
+      "direct": false
+    },
+    {
+      "path": "github.com/joho/godotenv",
+      "version": "v1.5.1",
+      "direct": true
+    },
+    {
+      "path": "github.com/jonboulle/clockwork",
+      "version": "v0.5.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/kisielk/sqlstruct",
+      "version": "v0.0.0-20201105191214-5f3e10d3ab46",
+      "direct": false
+    },
+    {
+      "path": "github.com/klauspost/compress",
+      "version": "v1.17.9",
+      "direct": false
+    },
+    {
+      "path": "github.com/kr/pretty",
+      "version": "v0.3.1",
+      "direct": false
+    },
+    {
+      "path": "github.com/kr/text",
+      "version": "v0.2.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/lestrrat-go/helium",
+      "version": "v0.11.0",
+      "direct": true
+    },
+    {
+      "path": "github.com/mattn/go-colorable",
+      "version": "v0.1.13",
+      "direct": false
+    },
+    {
+      "path": "github.com/mattn/go-isatty",
+      "version": "v0.0.20",
+      "direct": false
+    },
+    {
+      "path": "github.com/mattn/go-runewidth",
+      "version": "v0.0.16",
+      "direct": false
+    },
+    {
+      "path": "github.com/mattn/go-sqlite3",
+      "version": "v1.14.22",
+      "direct": false
+    },
+    {
+      "path": "github.com/ncruces/go-strftime",
+      "version": "v1.0.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/philhofer/fwd",
+      "version": "v1.1.3-0.20240916144458-20a13a1f6b7c",
+      "direct": false
+    },
+    {
+      "path": "github.com/pmezard/go-difflib",
+      "version": "v1.0.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/remyoudompheng/bigfft",
+      "version": "v0.0.0-20230129092748-24d4a6f8daec",
+      "direct": false
+    },
+    {
+      "path": "github.com/rivo/uniseg",
+      "version": "v0.2.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/rogpeppe/go-internal",
+      "version": "v1.14.1",
+      "direct": false
+    },
+    {
+      "path": "github.com/russellhaering/goxmldsig",
+      "version": "v1.6.1",
+      "direct": true
+    },
+    {
+      "path": "github.com/savsgio/dictpool",
+      "version": "v0.0.0-20221023140959-7bf2e61cea94",
+      "direct": false
+    },
+    {
+      "path": "github.com/savsgio/gotils",
+      "version": "v0.0.0-20230208104028-c358bd845dee",
+      "direct": false
+    },
+    {
+      "path": "github.com/stretchr/objx",
+      "version": "v0.5.3",
+      "direct": false
+    },
+    {
+      "path": "github.com/stretchr/testify",
+      "version": "v1.12.1",
+      "direct": true
+    },
+    {
+      "path": "github.com/tinylib/msgp",
+      "version": "v1.2.5",
+      "direct": false
+    },
+    {
+      "path": "github.com/valyala/bytebufferpool",
+      "version": "v1.0.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/valyala/fasthttp",
+      "version": "v1.51.0",
+      "direct": false
+    },
+    {
+      "path": "github.com/valyala/tcplisten",
+      "version": "v1.0.0",
+      "direct": false
+    },
+    {
+      "path": "go.yaml.in/yaml/v3",
+      "version": "v3.0.5",
+      "direct": false
+    },
+    {
+      "path": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "direct": true
+    },
+    {
+      "path": "golang.org/x/mod",
+      "version": "v0.41.0",
+      "direct": false
+    },
+    {
+      "path": "golang.org/x/net",
+      "version": "v0.51.0",
+      "direct": false
+    },
+    {
+      "path": "golang.org/x/sync",
+      "version": "v0.23.0",
+      "direct": false
+    },
+    {
+      "path": "golang.org/x/sys",
+      "version": "v0.42.0",
+      "direct": false
+    },
+    {
+      "path": "golang.org/x/term",
+      "version": "v0.41.0",
+      "direct": false
+    },
+    {
+      "path": "golang.org/x/text",
+      "version": "v0.42.0",
+      "direct": true
+    },
+    {
+      "path": "golang.org/x/tools",
+      "version": "v0.49.0",
+      "direct": false
+    },
+    {
+      "path": "gopkg.in/check.v1",
+      "version": "v1.0.0-20201130134442-10cb98267c6c",
+      "direct": false
+    },
+    {
+      "path": "gopkg.in/yaml.v3",
+      "version": "v3.0.1",
+      "direct": false
+    },
+    {
+      "path": "gorm.io/driver/postgres",
+      "version": "v1.6.0",
+      "direct": true
+    },
+    {
+      "path": "gorm.io/driver/sqlite",
+      "version": "v1.6.0",
+      "direct": false
+    },
+    {
+      "path": "gorm.io/gorm",
+      "version": "v1.31.1",
+      "direct": true
+    },
+    {
+      "path": "modernc.org/cc/v4",
+      "version": "v4.28.2",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/ccgo/v4",
+      "version": "v4.34.0",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/fileutil",
+      "version": "v1.4.0",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/gc/v2",
+      "version": "v2.6.5",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/gc/v3",
+      "version": "v3.1.2",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/goabi0",
+      "version": "v0.2.0",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/libc",
+      "version": "v1.72.3",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/mathutil",
+      "version": "v1.7.1",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/memory",
+      "version": "v1.11.0",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/opt",
+      "version": "v0.2.0",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/sortutil",
+      "version": "v1.2.1",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/sqlite",
+      "version": "v1.50.1",
+      "direct": true
+    },
+    {
+      "path": "modernc.org/strutil",
+      "version": "v1.2.1",
+      "direct": false
+    },
+    {
+      "path": "modernc.org/token",
+      "version": "v1.1.0",
+      "direct": false
+    },
+    {
+      "path": "software.sslmate.com/src/go-pkcs12",
+      "version": "v0.7.4",
+      "direct": true
+    }
+  ],
+  "directed_advisories": [
+    {
+      "id": "GO-2026-4918",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/http2"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-4918.json"
+    },
+    {
+      "id": "GO-2026-4950",
+      "module": "github.com/valyala/fasthttp",
+      "version": "v1.51.0",
+      "affected_packages": [
+        "github.com/valyala/fasthttp"
+      ],
+      "compiled_affected_packages_linux_amd64": [
+        "github.com/valyala/fasthttp"
+      ],
+      "reachability": "affected package compiled; vulnerable symbol reachability INVESTIGATION PENDING; no direct application calls found by targeted search",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-4950.json"
+    },
+    {
+      "id": "GO-2026-5005",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh/agent"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5005.json"
+    },
+    {
+      "id": "GO-2026-5006",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh/agent"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5006.json"
+    },
+    {
+      "id": "GO-2026-5013",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5013.json"
+    },
+    {
+      "id": "GO-2026-5014",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5014.json"
+    },
+    {
+      "id": "GO-2026-5015",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5015.json"
+    },
+    {
+      "id": "GO-2026-5016",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5016.json"
+    },
+    {
+      "id": "GO-2026-5017",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5017.json"
+    },
+    {
+      "id": "GO-2026-5018",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5018.json"
+    },
+    {
+      "id": "GO-2026-5019",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5019.json"
+    },
+    {
+      "id": "GO-2026-5020",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5020.json"
+    },
+    {
+      "id": "GO-2026-5021",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh/knownhosts"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5021.json"
+    },
+    {
+      "id": "GO-2026-5023",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5023.json"
+    },
+    {
+      "id": "GO-2026-5024",
+      "module": "golang.org/x/sys",
+      "version": "v0.42.0",
+      "affected_packages": [
+        "golang.org/x/sys/windows"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5024.json"
+    },
+    {
+      "id": "GO-2026-5025",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/html"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5025.json"
+    },
+    {
+      "id": "GO-2026-5026",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/idna"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5026.json"
+    },
+    {
+      "id": "GO-2026-5027",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/html"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5027.json"
+    },
+    {
+      "id": "GO-2026-5028",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/html"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5028.json"
+    },
+    {
+      "id": "GO-2026-5029",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/html"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5029.json"
+    },
+    {
+      "id": "GO-2026-5030",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/html"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5030.json"
+    },
+    {
+      "id": "GO-2026-5033",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh/agent"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5033.json"
+    },
+    {
+      "id": "GO-2026-5585",
+      "module": "github.com/gofiber/fiber/v2",
+      "version": "v2.52.12",
+      "affected_packages": [
+        "github.com/gofiber/fiber/v2"
+      ],
+      "compiled_affected_packages_linux_amd64": [
+        "github.com/gofiber/fiber/v2"
+      ],
+      "reachability": "affected package compiled; vulnerable symbol reachability INVESTIGATION PENDING; no direct application calls found by targeted search",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5585.json"
+    },
+    {
+      "id": "GO-2026-5841",
+      "module": "github.com/klauspost/compress",
+      "version": "v1.17.9",
+      "affected_packages": [
+        "github.com/klauspost/compress/s2"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5841.json"
+    },
+    {
+      "id": "GO-2026-5932",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/openpgp",
+        "golang.org/x/crypto/openpgp/packet",
+        "golang.org/x/crypto/openpgp/armor",
+        "golang.org/x/crypto/openpgp/clearsign",
+        "golang.org/x/crypto/openpgp/errors",
+        "golang.org/x/crypto/openpgp/elgamal",
+        "golang.org/x/crypto/openpgp/s2k"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5932.json"
+    },
+    {
+      "id": "GO-2026-5942",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/dns/dnsmessage"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-5942.json"
+    },
+    {
+      "id": "GO-2026-6303",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-6303.json"
+    },
+    {
+      "id": "GO-2026-6354",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-6354.json"
+    },
+    {
+      "id": "GO-2026-6355",
+      "module": "golang.org/x/crypto",
+      "version": "v0.49.0",
+      "affected_packages": [
+        "golang.org/x/crypto/ssh"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-6355.json"
+    },
+    {
+      "id": "GO-2026-6603",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/http2"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-6603.json"
+    },
+    {
+      "id": "GO-2026-6610",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/http2"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-6610.json"
+    },
+    {
+      "id": "GO-2026-6611",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/http2"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-6611.json"
+    },
+    {
+      "id": "GO-2026-6612",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/http2"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-6612.json"
+    },
+    {
+      "id": "GO-2026-6617",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/http2"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-6617.json"
+    },
+    {
+      "id": "GO-2026-6860",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/html"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-6860.json"
+    },
+    {
+      "id": "GO-2026-6866",
+      "module": "golang.org/x/net",
+      "version": "v0.51.0",
+      "affected_packages": [
+        "golang.org/x/net/html"
+      ],
+      "compiled_affected_packages_linux_amd64": [],
+      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
+      "exploitation": "NOT TESTED; no exploitation established",
+      "source": "https://vuln.go.dev/ID/GO-2026-6866.json"
+    }
+  ],
+  "workflow_inventory": {
+    "ci.yml": {
+      "backend": [
+        "actions/checkout@v3 (tag)",
+        "actions/setup-go@v4 (tag), go-version-file backend/go.mod",
+        "go vet ./...",
+        "go test -timeout=30m -v ./..."
+      ],
+      "related_frontend_tools": [
+        "Node 24",
+        "Python 3 tools unittest"
+      ],
+      "advisory_scan": "not present"
+    },
+    "backend-pilot.yml": {
+      "actions": [
+        "checkout pinned 11d5960a326750d5838078e36cf38b85af677262",
+        "setup-node pinned 49933ea5288caeca8642d1e84afbd3f7d6820020",
+        "setup-go pinned 924ae3a1cded613372ab5595356fb5720e22ba16",
+        "upload-artifact pinned ea165f8d65b6e75b540449e92b4886f43607fa02"
+      ],
+      "runtime_images": [
+        "ubuntu-latest runner",
+        "postgres:17 service"
+      ],
+      "build": "CGO_ENABLED=0 go build -trimpath",
+      "binaries": [
+        "titan-local",
+        "titan-backup",
+        "titan-access",
+        "titan-peer",
+        "titan-receive",
+        "titan-sync",
+        "titan-trade",
+        "titan-fiscal"
+      ],
+      "gates": [
+        "Go vet",
+        "backend full regression and acceptance verifier",
+        "race transport/fiscal/localapi/pilots",
+        "API contracts"
+      ],
+      "advisory_scan": "not present"
+    },
+    "changed": false,
+    "supply_chain_followup": "P06: mutable action tags/runner/image, scanner provisioning and verified provenance; not proof of exploit"
+  },
+  "local_tools": {
+    "git": "2.43.0",
+    "python3": "3.12.3",
+    "node": "24.21.0",
+    "gcc": "13.3.0",
+    "go_effective": "1.26.10"
+  },
+  "integrity": {
+    "go_mod_verify": "all modules verified before and after",
+    "go_sum_unchanged": true,
+    "module_versions_unchanged": true,
+    "api_build_sha256": "d2693c46b7077af9a731b449fc20509b2dbfd0d4212105daeef318d034e8375e"
+  },
+  "validation": {
+    "build_all": "PASS go build -mod=readonly ./...; GOFLAGS=-buildvcs=false",
+    "api_binary": "PASS CGO_ENABLED=0 go build -mod=readonly -trimpath -o /tmp/titan-p05-api ./cmd/api",
+    "focused_tests": {
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0,
+      "timeout": "120s",
+      "count": 1
+    },
+    "focused_race": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "timeout": "120s",
+      "count": 1
+    },
+    "full_backend_suite": "NOT RUN, per unit protocol",
+    "windows": "NOT VALIDATED",
+    "real_fiscal": "NOT RUN",
+    "npm": "OUT OF SCOPE F02"
+  },
+  "sources": [
+    "https://vuln.go.dev/index/modules.json",
+    "https://go.dev/doc/devel/release#go1.26.10",
+    "https://go.dev/doc/security/vuln/"
+  ],
+  "limits": [
+    "go mod verify is checksum verification, not a vulnerability scanner",
+    "symbol reachability and exploitation are distinct from module presence",
+    "directed database consultation is not complete govulncheck coverage",
+    "no real keys, .env, commercial databases, or external credential tests used"
+  ]
+}
