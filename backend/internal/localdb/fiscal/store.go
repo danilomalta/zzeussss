@@ -167,14 +167,15 @@ type Payment struct {
 	AmountCents int64  `json:"amount_cents"`
 }
 type Snapshot struct {
-	Version         int          `json:"version"`
-	Profile         ProfileInput `json:"profile"`
-	ProfileRevision int          `json:"profile_revision"`
-	SaleID          string       `json:"sale_id"`
-	TotalCents      int64        `json:"total_cents"`
-	CommittedAt     string       `json:"committed_at"`
-	Items           []SaleItem   `json:"items"`
-	Payments        []Payment    `json:"payments"`
+	DeferredPayment *DeferredPayment `json:"deferred_payment,omitempty"`
+	Version         int              `json:"version"`
+	Profile         ProfileInput     `json:"profile"`
+	ProfileRevision int              `json:"profile_revision"`
+	SaleID          string           `json:"sale_id"`
+	TotalCents      int64            `json:"total_cents"`
+	CommittedAt     string           `json:"committed_at"`
+	Items           []SaleItem       `json:"items"`
+	Payments        []Payment        `json:"payments"`
 }
 type Intent struct {
 	ID             string      `json:"id"`
@@ -307,7 +308,13 @@ func prepareTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Store,
 		return out, err
 	}
 	if len(snap.Payments) == 0 {
-		return out, ErrIntegrity
+		if p.Input.Environment != "homologation" || p.Input.Model != "65" {
+			return out, ErrIntegrity
+		}
+		snap.DeferredPayment, err = deferredPaymentTx(ctx, tx, a, d, in.SaleID, snap.TotalCents)
+		if err != nil {
+			return out, err
+		}
 	}
 	snapshot, _ := json.Marshal(snap)
 	sum := sha256.Sum256(snapshot)

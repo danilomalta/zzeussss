@@ -116,12 +116,9 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 		}
 		items = append(items, row)
 	}
-	payments := make([]map[string]string, 0, len(snapshot.Payments))
-	for _, payment := range snapshot.Payments {
-		if payment.Method != "cash" || payment.Status != "confirmed" {
-			return nil, fiscalcore.ErrUnsupported
-		}
-		payments = append(payments, map[string]string{"forma_pagamento": "01", "valor_pagamento": focusMoney(payment.AmountCents)})
+	payments, err := focusPayments(snapshot)
+	if err != nil {
+		return nil, err
 	}
 	payload := map[string]any{"cnpj_emitente": p.CNPJ, "serie": fmt.Sprint(p.Series), "inscricao_estadual_emitente": p.StateRegistration, "regime_tributario_emitente": p.CRT, "data_emissao": time.Now().UTC().Format(time.RFC3339), "natureza_operacao": template.Nature, "tipo_documento": "1", "finalidade_emissao": "1", "local_destino": "1", "consumidor_final": "1", "presenca_comprador": template.Presence, "indicador_inscricao_estadual_destinatario": "9", "modalidade_frete": "9", "valor_total": focusMoney(snapshot.TotalCents), "items": items, "formas_pagamento": payments}
 	if p.Model == "55" {
@@ -164,4 +161,25 @@ func focusRecipientPayload(template fiscalcore.Invoice, profile fiscal.ProfileIn
 		}
 	}
 	return json.Marshal(payload)
+}
+
+func focusPayments(snapshot fiscal.Snapshot) ([]map[string]string, error) {
+	payments := make([]map[string]string, 0, len(snapshot.Payments))
+	for _, payment := range snapshot.Payments {
+		if payment.Method != "cash" || payment.Status != "confirmed" {
+			return nil, fiscalcore.ErrUnsupported
+		}
+		payments = append(payments, map[string]string{"forma_pagamento": "01", "valor_pagamento": focusMoney(payment.AmountCents)})
+	}
+	if snapshot.DeferredPayment != nil {
+		deferred := snapshot.DeferredPayment
+		if snapshot.Profile.Model != "65" || len(snapshot.Payments) != 0 || !deferred.Valid(snapshot.TotalCents) {
+			return nil, fiscalcore.ErrUnsupported
+		}
+		payments = append(payments, map[string]string{"indicador_pagamento": "1", "forma_pagamento": deferred.Code, "valor_pagamento": focusMoney(snapshot.TotalCents)})
+	}
+	if len(payments) == 0 {
+		return nil, fiscalcore.ErrUnsupported
+	}
+	return payments, nil
 }

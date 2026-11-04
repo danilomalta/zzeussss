@@ -10,6 +10,12 @@ import (
 
 // Customer NFe follows the owner-only fiscal-registration gate, not POS permissions alone.
 func (r *ProviderRegistry) CustomerNFe55Provider(ctx context.Context, a RequestContext) (FiscalProvider, ProviderBinding, error) {
+	return r.customerFocusProvider(ctx, a, "55")
+}
+func (r *ProviderRegistry) CustomerDeferredNFCeProvider(ctx context.Context, a RequestContext) (FiscalProvider, ProviderBinding, error) {
+	return r.customerFocusProvider(ctx, a, "65")
+}
+func (r *ProviderRegistry) customerFocusProvider(ctx context.Context, a RequestContext, model string) (FiscalProvider, ProviderBinding, error) {
 	if err := authorizeCustomerCredentials(ctx, a); err != nil {
 		return nil, ProviderBinding{}, err
 	}
@@ -27,14 +33,14 @@ func (r *ProviderRegistry) CustomerNFe55Provider(ctx context.Context, a RequestC
 	if c.CertificateType == "A3" {
 		return nil, b, ErrFocusA3
 	}
-	if c.Provider != "external" || c.DocumentModel != "55" {
+	if c.Provider != "external" || (c.DocumentModel != model && !(model == "65" && c.DocumentModel == "")) {
 		return nil, b, ErrUnavailable
 	}
 	p, err := fiscal.ReadProfile(ctx, a.DB, a.Actor, a.Device, b.ProfileID, 0)
 	if err != nil {
 		return nil, b, err
 	}
-	if p.Revision != b.ProfileRevision || p.Input.Model != "55" || p.Input.Environment != "homologation" || p.Input.CRT != c.CRT {
+	if p.Revision != b.ProfileRevision || p.Input.Model != model || p.Input.Environment != "homologation" || p.Input.CRT != c.CRT {
 		return nil, b, fiscal.ErrConflict
 	}
 	return provider, b, nil

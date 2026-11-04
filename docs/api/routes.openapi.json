@@ -21388,6 +21388,12 @@
     },
     "/local/v1/retail/access": {
       "$ref": "./retail.openapi.json#/paths/~1local~1v1~1retail~1access"
+    },
+    "/local/v1/fiscal/deferred/sales/{id}/emit": {
+      "$ref": "./deferred-fiscal.openapi.json#/paths/~1local~1v1~1fiscal~1deferred~1sales~1{id}~1emit"
+    },
+    "/local/v1/fiscal/deferred/sales/{id}/query": {
+      "$ref": "./deferred-fiscal.openapi.json#/paths/~1local~1v1~1fiscal~1deferred~1sales~1{id}~1query"
     }
   },
   "components": {

@@ -1310,8 +1310,49 @@
             "items": {
               "$ref": "#/components/schemas/Payment"
             }
+          },
+          "deferred_payment": {
+            "$ref": "#/components/schemas/DeferredPayment"
           }
-        }
+        },
+        "oneOf": [
+          {
+            "required": [
+              "deferred_payment"
+            ],
+            "properties": {
+              "payments": {
+                "maxItems": 0
+              },
+              "profile": {
+                "properties": {
+                  "model": {
+                    "enum": [
+                      "65"
+                    ]
+                  },
+                  "environment": {
+                    "enum": [
+                      "homologation"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "not": {
+              "required": [
+                "deferred_payment"
+              ]
+            },
+            "properties": {
+              "payments": {
+                "minItems": 1
+              }
+            }
+          }
+        ]
       },
       "Intent": {
         "type": "object",
@@ -1639,6 +1680,37 @@
           "next_after": {
             "type": "string",
             "description": "Último ID da página somente quando has_more=true; vazio ao terminar. Ordenação binária por ID, sem total inventado."
+          }
+        }
+      },
+      "DeferredPayment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "selected_by",
+          "code",
+          "document_id",
+          "total_cents"
+        ],
+        "description": "Immutable explicit deferred method for existing credit-sale origin; NOT a confirmed payment. Owner, homologation model 65 only. Original receivable/installments remain unchanged.",
+        "properties": {
+          "selected_by": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "21",
+              "91"
+            ]
+          },
+          "document_id": {
+            "type": "string"
+          },
+          "total_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
           }
         }
       }

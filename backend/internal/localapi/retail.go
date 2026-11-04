@@ -16,6 +16,7 @@ func (s *Server) retailService(c *fiber.Ctx) retail.Service {
 	return retail.Service{DB: s.DB, Contracts: s.contracts, Actor: ss.Actor, Device: ss.Device, Token: ss.Token}
 }
 func (s *Server) mountRetail(r fiber.Router) {
+	s.mountDeferredFiscal(r)
 	r.Get("/retail/access", s.readRetailAccess)
 	r.Post("/retail/operations/:id/reconcile", s.reconcileRetailOperation)
 	r.Post("/retail/stores", s.createRetailStore)

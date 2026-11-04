@@ -4158,6 +4158,20 @@
       "path": "/local/v1/retail/access",
       "authentication": "session",
       "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/deferred/sales/:id/emit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal_deferred.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/deferred/sales/:id/query",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal_deferred.go"
     }
   ]
 }

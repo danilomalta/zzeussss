@@ -1,0 +1,157 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Explicit customer deferred-sale NFC-e, homologation only",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/local/v1/fiscal/deferred/sales/{id}/emit": {
+      "post": {
+        "operationId": "emitDeferredFiscal",
+        "description": "Owner only; active fiscal contract, external Focus A1, homologation model 65. Explicit deferred code frozen against existing credit-sale/receivable in one immediate transaction. No received payment or cash is created. Source taxes must be supported. Stable sale reference and existing Focus durable claim prevent another submission.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation_id",
+                  "payment_code",
+                  "nature",
+                  "presence",
+                  "confirmed"
+                ],
+                "properties": {
+                  "operation_id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+                  },
+                  "payment_code": {
+                    "type": "string",
+                    "enum": [
+                      "21",
+                      "91"
+                    ]
+                  },
+                  "nature": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
+                  },
+                  "presence": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "4"
+                    ]
+                  },
+                  "confirmed": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fiscal state; never financial settlement. State/key/message/archive_state/sale_id only; no token or source request."
+          },
+          "400": {
+            "description": "Invalid or unconfirmed input"
+          },
+          "401": {
+            "description": "Session revoked or context changed"
+          },
+          "403": {
+            "description": "Owner/session/contract denied"
+          },
+          "409": {
+            "description": "Production/A3/unsupported provider/source/mapping/revision blocked"
+          }
+        }
+      }
+    },
+    "/local/v1/fiscal/deferred/sales/{id}/query": {
+      "post": {
+        "operationId": "queryDeferredFiscal",
+        "description": "Owner only. Explicit recovery by sale ID using existing Focus Reprocess: consultation only, never resends. No original request needed in browser storage.",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fiscal state; never financial settlement. State/key/message/archive_state/sale_id only; no token or source request."
+          },
+          "400": {
+            "description": "Invalid or unconfirmed input"
+          },
+          "401": {
+            "description": "Session revoked or context changed"
+          },
+          "403": {
+            "description": "Owner/session/contract denied"
+          },
+          "409": {
+            "description": "Production/A3/unsupported provider/source/mapping/revision blocked"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
