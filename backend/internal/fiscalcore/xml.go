@@ -12,6 +12,7 @@ import (
 	"encoding/base64"
 	"encoding/xml"
 	"io"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -33,7 +34,13 @@ var schemaCache sync.Map
 var schemaMu sync.Mutex
 
 func parseXML(raw []byte) (*etree.Document, error) {
-	if len(raw) == 0 || len(raw) > MaxXML {
+	return parseXMLLimits(raw, MaxXML, 8192)
+}
+
+// Only the trusted SOAP journal envelope needs extra wrapper space/nodes.
+// Extracted fiscal documents still go through the original strict bounds.
+func parseXMLLimits(raw []byte, byteLimit, nodeLimit int) (*etree.Document, error) {
+	if len(raw) == 0 || len(raw) > byteLimit {
 		return nil, ErrXML
 	}
 	dec := xml.NewDecoder(bytes.NewReader(raw))
@@ -60,7 +67,7 @@ func parseXML(raw []byte) (*etree.Document, error) {
 			}
 			depth++
 			nodes++
-			if depth > 64 || nodes > 8192 || len(t.Attr) > 64 {
+			if depth > 64 || nodes > nodeLimit || len(t.Attr) > 64 {
 				return nil, ErrXML
 			}
 			attrs := map[xml.Name]bool{}
@@ -98,8 +105,28 @@ func schemaPath(kind string) string {
 	switch kind {
 	case "nfe":
 		return "schemas/nfe400/nfe_v4.00.xsd"
+	case "nfe_authorization_response":
+		return "schemas/nfe400/authorization_response_root.xsd"
+	case "nfe_query":
+		return "schemas/nfe400/consSitNFe_v4.00.xsd"
+	case "nfe_query_response":
+		return "schemas/nfe400/retConsSitNFe_v4.00.xsd"
+	case "nfe_process":
+		return "schemas/nfe400/procNFe_v4.00.xsd"
+	case "nfe_invalidation":
+		return "schemas/nfe400/inutNFe_v4.00.xsd"
+	case "nfe_invalidation_response":
+		return "schemas/nfe400/retInutNFe_v4.00.xsd"
+	case "nfe_invalidation_process":
+		return "schemas/nfe400/procInutNFe_v4.00.xsd"
 	case "nfe_event":
 		return "schemas/events100/evento_root.xsd"
+	case "nfe_event_batch":
+		return "schemas/events100/envEvento_v1.00.xsd"
+	case "nfe_event_response":
+		return "schemas/events100/retEnvEvento_v1.00.xsd"
+	case "nfe_event_process":
+		return "schemas/events100/procEventoNFe_v1.00.xsd"
 	case "nfe_cancel_detail":
 		return "schemas/events100/e110111_v1.00.xsd"
 	case "nfse_dps":
@@ -117,7 +144,17 @@ func schemaPath(kind string) string {
 // ValidateXML uses only embedded, hashed official schema files. It never follows
 // a schemaLocation from the document, opens host files or fetches remote schemas.
 func ValidateXML(kind string, raw []byte) error {
-	parsed, err := parseXML(raw)
+	if kind == "nfe_query_response" {
+		return validateNFeQueryResponse(raw)
+	}
+	return validateEmbeddedXML(kind, raw)
+}
+func validateEmbeddedXML(kind string, raw []byte) error {
+	byteLimit, nodeLimit := MaxXML, 8192
+	if kind == "nfe_process" || kind == "nfe_event_process" || kind == "nfe_invalidation_process" {
+		byteLimit, nodeLimit = 2*MaxXML, 8200
+	}
+	parsed, err := parseXMLLimits(raw, byteLimit, nodeLimit)
 	if err != nil {
 		return err
 	}
@@ -268,6 +305,8 @@ func payload(root *etree.Element, kind string) (*etree.Element, error) {
 	switch kind {
 	case "nfe":
 		rootTag, info, ns = "NFe", "infNFe", NFeNS
+	case "nfe_invalidation":
+		rootTag, info, ns = "inutNFe", "infInut", NFeNS
 	case "nfe_event":
 		rootTag, info, ns = "evento", "infEvento", NFeNS
 	case "nfse_dps", "nfse_dps_homolog_20261020":
@@ -320,7 +359,7 @@ func (c *Credential) SignXML(kind string, raw []byte, now time.Time) ([]byte, er
 		return nil, ErrCredential
 	}
 	// TNFe requires Signature: validate the complete schema after signing.
-	if kind != "nfe" && kind != "nfe_event" {
+	if kind != "nfe" && kind != "nfe_event" && kind != "nfe_invalidation" {
 		if err := ValidateXML(kind, raw); err != nil {
 			return nil, err
 		}
@@ -343,7 +382,7 @@ func (c *Credential) SignXML(kind string, raw []byte, now time.Time) ([]byte, er
 	if kind == "nfse_dps" || kind == "nfse_dps_homolog_20261020" {
 		path = "prest/CNPJ"
 	}
-	if kind == "nfe_event" {
+	if kind == "nfe_event" || kind == "nfe_invalidation" {
 		path = "CNPJ"
 	}
 	if kind != "nfse_event" {
@@ -388,6 +427,14 @@ func (c *Credential) VerifyXML(kind string, raw []byte, now time.Time) error {
 	if !c.current(now) {
 		return ErrCredential
 	}
+	return c.verifySignedXML(kind, raw)
+}
+
+// verifySignedXML checks integrity using an already selected public certificate.
+// Live operations must use VerifyXML, which also requires current trusted
+// credentials. Archive recovery selects its certificate only from the original
+// trusted journal, never as a new source of authorization or certificate trust.
+func (c *Credential) verifySignedXML(kind string, raw []byte) error {
 	if err := ValidateXML(kind, raw); err != nil {
 		return err
 	}
@@ -403,7 +450,7 @@ func (c *Credential) VerifyXML(kind string, raw []byte, now time.Time) error {
 	if kind == "nfse_dps" || kind == "nfse_dps_homolog_20261020" {
 		issuerPath = "prest/CNPJ"
 	}
-	if kind == "nfe_event" {
+	if kind == "nfe_event" || kind == "nfe_invalidation" {
 		issuerPath = "CNPJ"
 	}
 	if kind != "nfse_event" {
@@ -426,6 +473,11 @@ func (c *Credential) VerifyXML(kind string, raw []byte, now time.Time) error {
 	}
 	if kind == "nfe_event" {
 		if err = cancellationIdentity(info, c.document); err != nil {
+			return err
+		}
+	}
+	if kind == "nfe_invalidation" {
+		if _, err = invalidationInput(info); err != nil {
 			return err
 		}
 	}
@@ -512,5 +564,17 @@ func compileSchema(kind string) (*xsd.Schema, error) {
 	if root == "" {
 		return nil, ErrUnsupported
 	}
-	return xsd.NewCompiler().FS(schemaFiles).CompileFile(context.Background(), root)
+	// Helium CompileFile opens its initial path through os.ReadFile even when
+	// FS is set. Read the embedded root explicitly; FS resolves only its trusted
+	// includes/imports. Installed executables must never depend on repository CWD.
+	raw, err := schemaFiles.ReadFile(root)
+	if err != nil {
+		return nil, ErrSchema
+	}
+	doc, err := helium.NewParser().Parse(context.Background(), raw)
+	if err != nil {
+		return nil, ErrSchema
+	}
+	defer doc.Free()
+	return xsd.NewCompiler().FS(schemaFiles).BaseDir(path.Dir(root)).Compile(context.Background(), doc)
 }

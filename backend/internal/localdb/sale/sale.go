@@ -16,6 +16,7 @@ import (
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/cashjournal"
+	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
 )
 
@@ -41,11 +42,12 @@ type Payment struct {
 }
 
 type Input struct {
-	OperationID   string    `json:"operation_id"`
-	SaleID        string    `json:"sale_id"`
-	CashSessionID string    `json:"cash_session_id"`
-	Items         []Item    `json:"items"`
-	Payments      []Payment `json:"payments"`
+	TaxQuoteOperations []string  `json:"tax_quote_operations,omitempty"`
+	OperationID        string    `json:"operation_id"`
+	SaleID             string    `json:"sale_id"`
+	CashSessionID      string    `json:"cash_session_id"`
+	Items              []Item    `json:"items"`
+	Payments           []Payment `json:"payments"`
 }
 
 type Result struct {
@@ -60,6 +62,9 @@ type authorization func(context.Context, *sql.Tx, identity.Scope, identity.Devic
 
 // Complete preserves the internal permission-only path. HTTP uses CompleteWithContract.
 func Complete(ctx context.Context, db *sql.DB, actor identity.Scope, device identity.DeviceContext, in Input) (Result, error) {
+	if len(in.TaxQuoteOperations) > 0 {
+		return Result{}, ErrInvalid
+	}
 	return complete(ctx, db, actor, device, in, authorizeLegacy)
 }
 
@@ -89,6 +94,10 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 // commit together. Legacy callers keep random payment IDs and the same v1 hash
 // and event payload. Only the private checkout path supplies stable payment IDs.
 func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, in Input, authorize authorization, paymentIDs []string) (Result, error) {
+	return completeTxMode(ctx, tx, actor, device, in, authorize, paymentIDs, false)
+}
+
+func completeTxMode(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, in Input, authorize authorization, paymentIDs []string, credit bool) (Result, error) {
 	limit := 8
 	if paymentIDs != nil {
 		limit = 20
@@ -154,16 +163,36 @@ func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 	if existingSale != 0 {
 		return Result{}, ErrConflict
 	}
+	// Free-text adjustment reasons cannot become a sale's authoritative cash origin.
+	var reasonCollision int
+	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM cash_movements m JOIN cash_sessions c ON c.tenant_id=m.tenant_id AND c.store_id=m.store_id AND c.id=m.cash_session_id WHERE m.tenant_id=? AND m.store_id=? AND c.device_id=? AND m.reason=?`, actor.TenantID, actor.StoreID, device.DeviceID, "venda:"+in.SaleID).Scan(&reasonCollision); err != nil {
+		return Result{}, err
+	}
+	if reasonCollision != 0 {
+		return Result{}, ErrConflict
+	}
 	if err = checkShiftTx(ctx, tx, actor, device, in.CashSessionID); err != nil {
 		return Result{}, err
 	}
+	required, err := fiscal.TaxPricingRequiredTx(ctx, tx, actor)
+	if err != nil {
+		return Result{}, err
+	}
+	if required && len(in.TaxQuoteOperations) == 0 {
+		return Result{}, ErrConflict
+	}
 	quotedItems, total, err := priceItemsTx(ctx, tx, actor, in.Items)
+	if err != nil {
+		return Result{}, err
+	}
+	taxBindings, total, err := priceTaxesTx(ctx, tx, actor, device, in.TaxQuoteOperations, quotedItems, total)
 	if err != nil {
 		return Result{}, err
 	}
 	prices := make([]int64, len(in.Items))
 	lineTotals := make([]int64, len(in.Items))
 	type pricedItem struct {
+		Tax *fiscal.SaleTaxBinding `json:"tax,omitempty"`
 		Item
 		UnitPriceCents int64 `json:"unit_price_cents"`
 		TotalCents     int64 `json:"total_cents"`
@@ -171,11 +200,14 @@ func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 	pricedItems := make([]pricedItem, 0, len(in.Items))
 	for i, item := range quotedItems {
 		prices[i], lineTotals[i] = item.UnitPriceCents, item.TotalCents
-		pricedItems = append(pricedItems, pricedItem{item.Item, item.UnitPriceCents, item.TotalCents})
+		pricedItems = append(pricedItems, pricedItem{Item: item.Item, UnitPriceCents: item.UnitPriceCents, TotalCents: item.TotalCents})
+		if taxBindings != nil {
+			pricedItems[i].Tax = taxBindings[i]
+		}
 	}
 	var paid int64
 	for _, payment := range in.Payments {
-		if payment.Method != "cash" {
+		if payment.Method != "cash" && !(credit && payment.Method == "receivable") {
 			return Result{}, ErrPaymentUnverified
 		}
 		if payment.AmountCents > math.MaxInt64-paid {
@@ -186,19 +218,21 @@ func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 	if paid != total {
 		return Result{}, ErrInvalid
 	}
-	var opening, movements int64
-	if err = tx.QueryRowContext(ctx, `SELECT opening_cents FROM cash_sessions WHERE tenant_id=? AND id=?`, actor.TenantID, in.CashSessionID).Scan(&opening); err != nil {
-		return Result{}, err
-	}
-	if err = tx.QueryRowContext(ctx, `SELECT COALESCE(SUM(amount_cents),0) FROM cash_movements WHERE tenant_id=? AND store_id=? AND cash_session_id=?`, actor.TenantID, actor.StoreID, in.CashSessionID).Scan(&movements); err != nil {
-		return Result{}, err
-	}
-	if movements > 0 && opening > math.MaxInt64-movements {
-		return Result{}, ErrCashOverflow
-	}
-	current := opening + movements
-	if current < 0 || total > math.MaxInt64-current {
-		return Result{}, ErrCashOverflow
+	if !credit {
+		var opening, movements int64
+		if err = tx.QueryRowContext(ctx, `SELECT opening_cents FROM cash_sessions WHERE tenant_id=? AND id=?`, actor.TenantID, in.CashSessionID).Scan(&opening); err != nil {
+			return Result{}, err
+		}
+		if err = tx.QueryRowContext(ctx, `SELECT COALESCE(SUM(amount_cents),0) FROM cash_movements WHERE tenant_id=? AND store_id=? AND cash_session_id=?`, actor.TenantID, actor.StoreID, in.CashSessionID).Scan(&movements); err != nil {
+			return Result{}, err
+		}
+		if movements > 0 && opening > math.MaxInt64-movements {
+			return Result{}, ErrCashOverflow
+		}
+		current := opening + movements
+		if current < 0 || total > math.MaxInt64-current {
+			return Result{}, ErrCashOverflow
+		}
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	_, err = tx.ExecContext(ctx, `INSERT INTO sales(tenant_id,store_id,device_id,id,cash_session_id,status,total_cents,committed_at)
@@ -215,6 +249,12 @@ func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 		if err != nil {
 			return Result{}, err
 		}
+		if taxBindings != nil {
+			raw, _ := json.Marshal(taxBindings[i])
+			if _, err = tx.ExecContext(ctx, `INSERT INTO sale_tax_bindings VALUES(?,?,?,?,?,?,?)`, actor.TenantID, actor.StoreID, device.DeviceID, in.SaleID, itemID, taxBindings[i].QuoteOperationID, string(raw)); err != nil {
+				return Result{}, err
+			}
+		}
 		movementID, err := localdb.NewID()
 		if err != nil {
 			return Result{}, err
@@ -228,39 +268,47 @@ func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 			return Result{}, err
 		}
 	}
-	for i, payment := range in.Payments {
-		var id string
-		if paymentIDs == nil {
-			id, err = localdb.NewID()
+	var cashID string
+	if !credit {
+		for i, payment := range in.Payments {
+			var id string
+			if paymentIDs == nil {
+				id, err = localdb.NewID()
+				if err != nil {
+					return Result{}, err
+				}
+			} else {
+				id = paymentIDs[i]
+				if !planID(id) {
+					return Result{}, ErrInvalid
+				}
+			}
+			_, err = tx.ExecContext(ctx, `INSERT INTO sale_payments VALUES (?,?,?,'cash','confirmed',?)`, actor.TenantID, in.SaleID, id, payment.AmountCents)
 			if err != nil {
 				return Result{}, err
 			}
-		} else {
-			id = paymentIDs[i]
-			if !planID(id) {
-				return Result{}, ErrInvalid
-			}
 		}
-		_, err = tx.ExecContext(ctx, `INSERT INTO sale_payments VALUES (?,?,?,'cash','confirmed',?)`, actor.TenantID, in.SaleID, id, payment.AmountCents)
+		cashID, err = localdb.NewID()
 		if err != nil {
 			return Result{}, err
 		}
-	}
-	cashID, err := localdb.NewID()
-	if err != nil {
-		return Result{}, err
-	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO cash_movements VALUES (?,?,?,?,?,?,?)`, cashID, actor.TenantID, actor.StoreID, in.CashSessionID, total, "venda:"+in.SaleID, now)
-	if err != nil {
-		return Result{}, err
+		_, err = tx.ExecContext(ctx, `INSERT INTO cash_movements VALUES (?,?,?,?,?,?,?)`, cashID, actor.TenantID, actor.StoreID, in.CashSessionID, total, "venda:"+in.SaleID, now)
+		if err != nil {
+			return Result{}, err
+		}
 	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO sale_operations VALUES (?,?,?,?,?,?,?)`, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, actor.IdentityID, in.SaleID, hash)
 	if err != nil {
 		return Result{}, err
 	}
-	if err = cashjournal.CaptureTx(ctx, tx, actor, device, "movement", cashID); err != nil {
-		return Result{}, err
+	if !credit {
+		if err = cashjournal.CaptureTx(ctx, tx, actor, device, "movement", cashID); err != nil {
+			return Result{}, err
+		}
 	}
+	if credit {
+		return Result{SaleID: in.SaleID, TotalCents: total}, nil
+	} // Single-installation receivable audit owns this new protocol; no unknown peer event.
 	payload, err := json.Marshal(struct {
 		TenantID   string       `json:"tenant_id"`
 		StoreID    string       `json:"store_id"`
@@ -280,7 +328,7 @@ func completeTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 		return Result{}, err
 	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)
-		VALUES (?,?,?,?,?,?,'sale.committed',1,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.SaleID, string(payload), now)
+		VALUES (?,?,?,?,?,?,?,?,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.SaleID, "sale.committed", map[bool]int{false: 1, true: 2}[taxBindings != nil], string(payload), now)
 	if err != nil {
 		return Result{}, err
 	}

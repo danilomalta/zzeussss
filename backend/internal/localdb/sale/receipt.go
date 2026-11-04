@@ -4,18 +4,22 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"math/big"
 	"strings"
 
+	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
 )
 
 type ReceiptItem struct {
-	ItemID         string `json:"item_id"`
-	ProductID      string `json:"product_id"`
-	LocationID     string `json:"location_id"`
-	QuantityMilli  int64  `json:"quantity_milli"`
-	UnitPriceCents int64  `json:"unit_price_cents"`
-	TotalCents     int64  `json:"total_cents"`
+	MerchandiseCents *int64                 `json:"merchandise_cents,omitempty"`
+	Tax              *fiscal.SaleTaxBinding `json:"tax,omitempty"`
+	ItemID           string                 `json:"item_id"`
+	ProductID        string                 `json:"product_id"`
+	LocationID       string                 `json:"location_id"`
+	QuantityMilli    int64                  `json:"quantity_milli"`
+	UnitPriceCents   int64                  `json:"unit_price_cents"`
+	TotalCents       int64                  `json:"total_cents"`
 }
 
 type ReceiptPayment struct {
@@ -99,6 +103,34 @@ func Read(ctx context.Context, db *sql.DB, actor identity.Scope, device identity
 	}
 	if closeErr != nil {
 		return Receipt{}, closeErr
+	}
+	bindings, err := fiscal.StoredSaleTaxesTx(ctx, tx, actor, device, saleID)
+	if err != nil {
+		return Receipt{}, err
+	}
+	if len(bindings) > 0 && len(bindings) != len(result.Items) {
+		return Receipt{}, ErrConflict
+	}
+	for i := range result.Items {
+		if binding, ok := bindings[result.Items[i].ItemID]; ok {
+			base := result.Items[i].TotalCents
+			result.Items[i].MerchandiseCents = &base
+			result.Items[i].Tax = &binding
+			if binding.AdditionalCents > checkoutMaxSafe-base {
+				return Receipt{}, ErrConflict
+			}
+			result.Items[i].TotalCents += binding.AdditionalCents
+		}
+	}
+	grand := new(big.Int)
+	for _, item := range result.Items {
+		if item.TotalCents < 0 {
+			return Receipt{}, ErrConflict
+		}
+		grand.Add(grand, big.NewInt(item.TotalCents))
+	}
+	if grand.Cmp(big.NewInt(result.TotalCents)) != 0 {
+		return Receipt{}, ErrConflict
 	}
 	rows, err = tx.QueryContext(ctx, `SELECT id,method,status,amount_cents FROM sale_payments WHERE tenant_id=? AND sale_id=? ORDER BY id`, actor.TenantID, saleID)
 	if err != nil {

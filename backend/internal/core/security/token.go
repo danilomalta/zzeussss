@@ -3,6 +3,7 @@ package security
 import (
 	"errors"
 	"strings"
+	"titansystem-backend/internal/secretconfig"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -11,7 +12,7 @@ import (
 // It does not replace the live membership lookup or persist individual sessions.
 func ParseSession(raw, secret, kind string) (jwt.MapClaims, error) {
 	invalid := errors.New("sessão inválida")
-	if secret == "" || len(raw) > 8192 || (kind != "access" && kind != "refresh") {
+	if secretconfig.Unsafe(secret) || len(raw) > 8192 || (kind != "access" && kind != "refresh") {
 		return nil, invalid
 	}
 	token, err := jwt.Parse(raw, func(*jwt.Token) (interface{}, error) {

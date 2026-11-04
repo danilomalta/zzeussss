@@ -18,6 +18,35 @@ import (
 //go:embed migrations/*.sql
 var migrations embed.FS
 
+// LatestSchemaVersion derives this executable's schema ceiling from its embedded
+// SQLite migrations, never from a manually maintained backup version list.
+func LatestSchemaVersion() (int, error) {
+	entries, err := migrations.ReadDir("migrations")
+	if err != nil {
+		return 0, err
+	}
+	versions := make(map[int]bool)
+	latest := 0
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".sql") {
+			continue
+		}
+		prefix, _, ok := strings.Cut(entry.Name(), "_")
+		version, err := strconv.Atoi(prefix)
+		if !ok || err != nil || version < 1 || versions[version] {
+			return 0, errors.New("lista de migrações locais inválida")
+		}
+		versions[version] = true
+		if version > latest {
+			latest = version
+		}
+	}
+	if latest == 0 || len(versions) != latest {
+		return 0, errors.New("lista de migrações locais incompleta")
+	}
+	return latest, nil
+}
+
 // Migrate reaplica com segurança apenas migrações novas. Uma migração aplicada
 // com conteúdo diferente interrompe a abertura, preservando os dados.
 func Migrate(ctx context.Context, db *sql.DB) error {

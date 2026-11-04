@@ -29,7 +29,7 @@ var pilotTables = []string{
 	"cash_movements", "cash_sessions", "payable_cash_payments",
 	"purchase_deliveries", "purchase_order_items", "purchase_orders",
 	"purchase_receipts", "purchase_receiving_cases", "purchase_supplier_decisions",
-	"sale_payments", "sales", "stock_movements",
+	"sale_payments", "sale_tax_bindings", "sales", "stock_movements",
 	"supplier_payable_installments", "supplier_payables",
 }
 
@@ -45,6 +45,10 @@ func Inspect(ctx context.Context, archive string, device identity.DeviceContext,
 }
 
 func inspectSnapshot(ctx context.Context, path string, sealed []byte) (Inspection, error) {
+	return inspectTables(ctx, path, sealed, pilotTables)
+}
+
+func inspectTables(ctx context.Context, path string, sealed []byte, tables []string) (Inspection, error) {
 	var out Inspection
 	u := url.URL{Scheme: "file", Path: path}
 	db, err := sql.Open("sqlite", u.String()+"?mode=ro")
@@ -61,7 +65,7 @@ func inspectSnapshot(ctx context.Context, path string, sealed []byte) (Inspectio
 	out.ArchiveSHA256 = hex.EncodeToString(archiveHash[:])
 	h := sha256.New()
 	encode := json.NewEncoder(h)
-	for _, name := range pilotTables {
+	for _, name := range tables {
 		var exists int
 		if err = db.QueryRowContext(ctx, `SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?`, name).Scan(&exists); err != nil {
 			return Inspection{}, ErrBackup
@@ -73,7 +77,7 @@ func inspectSnapshot(ctx context.Context, path string, sealed []byte) (Inspectio
 			}
 			continue
 		}
-		rows, e := db.QueryContext(ctx, `SELECT * FROM "`+name+`" LIMIT 0`)
+		rows, e := db.QueryContext(ctx, `SELECT * FROM "`+strings.ReplaceAll(name, `"`, `""`)+`" LIMIT 0`)
 		if e != nil {
 			return Inspection{}, ErrBackup
 		}
@@ -91,7 +95,7 @@ func inspectSnapshot(ctx context.Context, path string, sealed []byte) (Inspectio
 		}
 		// Ordering by every column remains deterministic after VACUUM/restore,
 		// unlike rowid (which is not a business identifier).
-		rows, e = db.QueryContext(ctx, `SELECT * FROM "`+name+`" ORDER BY `+strings.Join(quoted, ","))
+		rows, e = db.QueryContext(ctx, `SELECT * FROM "`+strings.ReplaceAll(name, `"`, `""`)+`" ORDER BY `+strings.Join(quoted, ","))
 		if e != nil {
 			return Inspection{}, ErrBackup
 		}

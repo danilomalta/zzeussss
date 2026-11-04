@@ -275,6 +275,71 @@
           }
         }
       }
+    },
+    "/local/v1/checkout/plans/{id}/fiscal/danfe": {
+      "get": {
+        "operationId": "readCheckoutFiscalDANFE",
+        "summary": "Archived homologation NFC-e printing; no emission or commercial effect",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "width_mm",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                58,
+                80
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "timezone",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTML with archived access key, QR code and homologation watermark. Own journal or customer encrypted Focus archive.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid paper/timezone/query"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "409": {
+            "description": "No authorized and intact printable NFC-e; no fallback to non-fiscal receipt"
+          }
+        }
+      }
     }
   },
   "components": {

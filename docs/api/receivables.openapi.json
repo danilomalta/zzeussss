@@ -1,0 +1,1126 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Manual external commercial receivables and cash collection",
+    "version": "1.0.0",
+    "description": "Not a fiscal invoice or a second sale. Owner/manager with manage_cash and active finance contract write; view_accounting reads this store, including expired-contract history. Cash receipt also needs POS contract and an open drawer on this device. Receipt, cash supply and immutable audit commit atomically under BEGIN IMMEDIATE. expected_received_cents is per installment; exactly one competing stale revision wins. Same operation+payload+actor replays the original snapshot; altered payload conflicts. A cash supply from this flow cannot be reused as supplier return. Cancellation only before any receipt; no implicit refund, stock or fiscal effect. All currency is BRL integer cents; no interest, TEF or card approval. Recovery GET is limited to original tenant/store/device/actor. Page total is document count, never a monetary total. The document audit is local, with no new peer message type; only the existing cash movement has its existing outbox event. No customer text in transport events/logs. Optional customer_order links this same receivable to verified signed trade history in the same transaction. New debt is manually recorded under explicit documented terms; it is not evidence of monetary acceptance by the buyer. No second sale, stock movement or automatic collection. Paid sales cannot be used as this order origin. Cancellation before receipt releases its active origin for an explicitly corrected new document, preserving history. Optional credit_sale creates a sale and this receivable atomically, after explicit tenant/customer credit opt-in and credit/overdue checks. It creates no cash movement or payment and invokes no fiscal emitter. Its existing tax quote requirements are retained. Credit sale cancellation is refused here. reverse-cash compensates an original receipt, never changing sale, stock or fiscal status; net received is gross receipts minus immutable reversals. Existing role/store and Finance/POS contract restrictions remain prerequisites."
+  },
+  "paths": {
+    "/local/v1/finance/receivables": {
+      "get": {
+        "operationId": "listReceivables",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Persisted result or original idempotent receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Role or contract denied"
+          },
+          "404": {
+            "description": "Not found in this tenant/store/device/actor scope"
+          },
+          "409": {
+            "description": "Revision/operation/source conflict. No partial cash effect."
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createReceivable",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Persisted result or original idempotent receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Role or contract denied"
+          },
+          "404": {
+            "description": "Not found in this tenant/store/device/actor scope"
+          },
+          "409": {
+            "description": "Revision/operation/source conflict. No partial cash effect."
+          },
+          "201": {
+            "description": "Manual external commercial document created; never a sale or fiscal invoice",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Trusted contract verifier/runtime unavailable; no financial effect confirmed"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/finance/receivables/operations/{id}": {
+      "get": {
+        "operationId": "readReceivableOperation",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Persisted result or original idempotent receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Role or contract denied"
+          },
+          "404": {
+            "description": "Not found in this tenant/store/device/actor scope"
+          },
+          "409": {
+            "description": "Revision/operation/source conflict. No partial cash effect."
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/finance/receivables/{id}": {
+      "get": {
+        "operationId": "readReceivable",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Persisted result or original idempotent receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Role or contract denied"
+          },
+          "404": {
+            "description": "Not found in this tenant/store/device/actor scope"
+          },
+          "409": {
+            "description": "Revision/operation/source conflict. No partial cash effect."
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ]
+      }
+    },
+    "/local/v1/finance/receivables/{id}/receive-cash": {
+      "post": {
+        "operationId": "receiveReceivableCash",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Persisted result or original idempotent receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Role or contract denied"
+          },
+          "404": {
+            "description": "Not found in this tenant/store/device/actor scope"
+          },
+          "409": {
+            "description": "Revision/operation/source conflict. No partial cash effect."
+          },
+          "503": {
+            "description": "Trusted contract verifier/runtime unavailable; no financial effect confirmed"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiptInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/finance/receivables/{id}/cancel": {
+      "post": {
+        "operationId": "cancelReceivable",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Persisted result or original idempotent receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Role or contract denied"
+          },
+          "404": {
+            "description": "Not found in this tenant/store/device/actor scope"
+          },
+          "409": {
+            "description": "Revision/operation/source conflict. No partial cash effect."
+          },
+          "503": {
+            "description": "Trusted contract verifier/runtime unavailable; no financial effect confirmed"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/finance/receivables/operations/{id}/reconcile": {
+      "post": {
+        "operationId": "reconcileReceivable",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Persisted result or original idempotent receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Role or contract denied"
+          },
+          "404": {
+            "description": "Not found in this tenant/store/device/actor scope"
+          },
+          "409": {
+            "description": "Revision/operation/source conflict. No partial cash effect."
+          },
+          "503": {
+            "description": "Contract verifier unavailable; no change"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "description": "Explicit original actor/device/store reconciliation with active Finance/manage_cash and current session. Never resends commands or reverses receipts. Returns the existing receipt, or atomically fences an absent operation forever. Concurrent delayed financial writes and reconciliation have one durable outcome. Corrupt/orphan cash evidence refuses reconciliation. Original IDs remain audited; historical GET recovers a lost reconciliation response.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "document_id",
+                  "action",
+                  "confirmed"
+                ],
+                "properties": {
+                  "document_id": {
+                    "type": "string"
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "create",
+                      "receive_cash",
+                      "cancel",
+                      "reverse_cash"
+                    ]
+                  },
+                  "confirmed": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/local/v1/finance/receivables/customer-orders/{id}": {
+      "get": {
+        "operationId": "receivableCustomerOrder",
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verified origin only; enter documented commercial terms explicitly",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerBillingOrder"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ambiguous input"
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Role or contract denied"
+          },
+          "404": {
+            "description": "Not found in this tenant/store/device/actor scope"
+          },
+          "409": {
+            "description": "Revision/operation/source conflict. No partial cash effect."
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+            }
+          }
+        ],
+        "description": "Scope-limited verified customer order preview; requires ViewAccounting and ViewOrders. Outgoing purchase orders, declined/unconfirmed decisions, revoked peers, foreign targets or devices are refused. Never fabricates prices or authorizes collection."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "CreateInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "id",
+          "customer_reference",
+          "document_reference",
+          "description",
+          "issued_on",
+          "total_cents",
+          "installments"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "customer_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "document_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "issued_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "total_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "installments": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 120,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "due_on",
+                "amount_cents"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "due_on": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "amount_cents": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                }
+              }
+            }
+          },
+          "customer_order": {
+            "$ref": "#/components/schemas/CustomerOrderInput"
+          },
+          "credit_sale": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sale_id",
+              "session_id",
+              "items"
+            ],
+            "properties": {
+              "sale_id": {
+                "type": "string"
+              },
+              "session_id": {
+                "type": "string"
+              },
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 500,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "product_id",
+                    "location_id",
+                    "quantity_milli"
+                  ],
+                  "properties": {
+                    "product_id": {
+                      "type": "string"
+                    },
+                    "location_id": {
+                      "type": "string"
+                    },
+                    "quantity_milli": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                }
+              },
+              "tax_quote_operations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ReceiptInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "installment_id",
+          "session_id",
+          "amount_cents",
+          "expected_received_cents"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "installment_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "expected_received_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "CancelInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "Installment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "due_on",
+          "amount_cents",
+          "received_cents"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "due_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "received_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "Receipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "installment_id",
+          "session_id",
+          "movement_id",
+          "actor_id",
+          "created_at",
+          "amount_cents"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "installment_id": {
+            "type": "string"
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "movement_id": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "device_id": {
+            "type": "string"
+          }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "action",
+          "actor_id",
+          "device_id",
+          "reason",
+          "created_at"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "device_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          }
+        }
+      },
+      "Document": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "customer_reference",
+          "document_reference",
+          "description",
+          "issued_on",
+          "created_by",
+          "created_at",
+          "state",
+          "total_cents",
+          "received_cents",
+          "outstanding_cents",
+          "installments",
+          "receipts",
+          "history"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "customer_reference": {
+            "type": "string"
+          },
+          "document_reference": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "issued_on": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "open",
+              "settled",
+              "cancelled"
+            ]
+          },
+          "total_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "received_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outstanding_cents": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "installments": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 120,
+            "items": {
+              "$ref": "#/components/schemas/Installment"
+            }
+          },
+          "receipts": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/Receipt"
+            }
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          },
+          "customer_order": {
+            "$ref": "#/components/schemas/CustomerOrderOrigin"
+          },
+          "credit_sale_id": {
+            "type": "string"
+          },
+          "reversed_cents": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "reversals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "operation_id",
+                "original_device_id",
+                "original_operation_id",
+                "amount_cents"
+              ],
+              "properties": {
+                "operation_id": {
+                  "type": "string"
+                },
+                "original_device_id": {
+                  "type": "string"
+                },
+                "original_operation_id": {
+                  "type": "string"
+                },
+                "amount_cents": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      "Result": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "action",
+          "repeated",
+          "document"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "receive_cash",
+              "cancel",
+              "reverse_cash"
+            ]
+          },
+          "repeated": {
+            "type": "boolean"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        }
+      },
+      "NotApplied": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "document_id",
+          "action",
+          "resolution",
+          "repeated"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "document_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "receive_cash",
+              "cancel",
+              "reverse_cash"
+            ]
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "not_applied"
+            ]
+          },
+          "repeated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RecoveryResult": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Result"
+          },
+          {
+            "$ref": "#/components/schemas/NotApplied"
+          }
+        ]
+      },
+      "CustomerBillingOrder": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "message_id",
+          "decision_id",
+          "order_id",
+          "customer_reference",
+          "product_id",
+          "unit",
+          "offer_sha256",
+          "customer_tenant_id",
+          "customer_store_id",
+          "accepted_milli"
+        ],
+        "properties": {
+          "message_id": {
+            "type": "string"
+          },
+          "decision_id": {
+            "type": "string"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "customer_reference": {
+            "type": "string"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "offer_sha256": {
+            "type": "string"
+          },
+          "customer_tenant_id": {
+            "type": "string"
+          },
+          "customer_store_id": {
+            "type": "string"
+          },
+          "accepted_milli": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "description": "Verified incoming customer order and locally signed confirmed decision. Proves origin and accepted quantity, not buyer approval of monetary terms, delivery, payment or tax issuance."
+      },
+      "CustomerOrderInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "message_id",
+          "terms_reference",
+          "confirmed"
+        ],
+        "properties": {
+          "message_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "terms_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "confirmed": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "description": "Operator explicitly attests documented monetary terms; no default price, due date, interest or tax. Finance and Orders required. Customer reference must match the verified peer. Exactly one active commercial document per customer tenant/store/order; partial billing allocation is not supported."
+      },
+      "CustomerOrderOrigin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source",
+          "terms_reference"
+        ],
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/CustomerBillingOrder"
+          },
+          "terms_reference": {
+            "type": "string"
+          }
+        },
+        "description": "Immutable original source snapshot; preserved after cancellation. Unpaid document cancellation releases the active allocation atomically; it does not cancel the order."
+      }
+    }
+  }
+}

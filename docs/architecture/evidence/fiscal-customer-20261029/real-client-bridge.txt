@@ -1,0 +1,2 @@
+Disposable Go/Node/SQLite fixture; no real issuer or credentials.
+PASS fiscal customer frontend + real Go HTTP: 35 requests, 3 POSTs including rejected conflict; original revisions and operation IDs preserved; lost response recovered by GET; 27 state references; no SEFAZ transmission or fabricated homologation.

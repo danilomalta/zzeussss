@@ -1,0 +1,6 @@
+-- Single-database transfer, explicitly confirmed after physical checking.
+-- Destination movement's device is the approved inventory custodian, not a
+-- claim that it submitted a request. The real writer is separately recorded.
+CREATE TABLE retail_store_transfers(tenant_id TEXT NOT NULL,operation_id TEXT NOT NULL,actor_id TEXT NOT NULL,recorded_store_id TEXT NOT NULL,recorded_device_id TEXT NOT NULL,destination_store_id TEXT NOT NULL,destination_custodian_id TEXT NOT NULL,product_id TEXT NOT NULL,from_location_id TEXT NOT NULL,to_location_id TEXT NOT NULL,quantity_milli INTEGER NOT NULL CHECK(quantity_milli>0),out_movement_id TEXT NOT NULL,in_movement_id TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(tenant_id,operation_id),FOREIGN KEY(out_movement_id) REFERENCES stock_movements(id),FOREIGN KEY(in_movement_id) REFERENCES stock_movements(id),FOREIGN KEY(tenant_id,operation_id) REFERENCES retail_operations(tenant_id,operation_id) DEFERRABLE INITIALLY DEFERRED) STRICT;
+CREATE TRIGGER retail_transfers_no_update BEFORE UPDATE ON retail_store_transfers BEGIN SELECT RAISE(ABORT,'immutable transfer'); END;
+CREATE TRIGGER retail_transfers_no_delete BEFORE DELETE ON retail_store_transfers BEGIN SELECT RAISE(ABORT,'immutable transfer'); END;

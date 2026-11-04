@@ -4,16 +4,43 @@ import json
 from pathlib import Path
 
 REQUIRED = {
+    ('titansystem-backend/cmd/titan-fiscal', 'TestFiscalProductionConfigNativeCLI'),
     ('titansystem-backend/internal/onlinesessions', 'TestPostgresDurableRotationConcurrencyAndRollback'),
     ('titansystem-backend/internal/core/routes', 'TestPostgresCatalogCreationAndDiscountAtomicity'),
     *{('titansystem-backend/internal/localapi', name) for name in (
         'TestCashJournalFrontendBridge', 'TestDeliveryFrontendBridge',
-        'TestMaintenanceFrontendBridge')},
+        'TestMaintenanceFrontendBridge', 'TestFiscalCustomerFrontendBridge',
+        'TestFiscalTaxRealHTTPRestartAndRestore',
+        'TestHTTPFiscalProductionTaxQuotesBuildSignTransmitAndRecover',
+        'TestHTTPFiscalProductionTaxDestinationDIFALAndFCP',
+        'TestHTTPFiscalProductionTaxNativeLoopback',
+        'TestHTTPFiscalProductionTaxDeferment',
+        'TestHTTPFiscalProductionTaxSimpleCredit',
+        'TestHTTPFiscalProductionTaxSimpleSTQuoteAndSaleGuard',
+        'TestHTTPFiscalProductionTaxSimpleSTZeroAdditionalAmount',
+        'TestHTTPFiscalTaxPricedSaleToIssuedXML',
+        'TestHTTPFiscalTaxPricedSaleSessionGuardAndRecovery',
+        'TestHTTPFiscalTaxPricedSaleNativeLoopback',
+        'TestHTTPFiscalTaxPricedSaleIPIIncludedBeforePayment',
+        'TestHTTPFiscalTaxPricedSaleRequiredAcrossWriters',
+        'TestHTTPFiscalTaxPricedSaleModeRequiresExplicitOwnerDecision',
+        'TestHTTPFiscalRetainedSTSaleSignedXMLAndRecovery',
+        'TestHTTPFiscalRetainedSTOwnerAndUnitGuard',
+        'TestHTTPFiscalRetainedSTRejectsMissingAndTamperedSource',
+        'TestHTTPFiscalRetainedSTNativeLoopback')},
 }
 ALLOWED_SKIPS = {
     ('titansystem-backend/internal/localapi', 'TestPilotCashProcess'),
     ('titansystem-backend/internal/localapi', 'TestPilotCashScreenFlow'),
     ('titansystem-backend/internal/localdb', 'TestMigrationCrashChild'),
+}
+
+
+# Customer credentials and explicit CLI opt-in are deliberately absent in CI.
+# This exception applies only to the new real Focus sandbox test; its failures
+# are still rejected above, and no existing required integration is exempted.
+OPTIONAL_EXTERNAL_SKIPS = {
+    ('titansystem-backend/internal/fiscalproduction', 'TestFocusSandboxRealNFCe'),
 }
 
 
@@ -33,7 +60,7 @@ def verify(path):
             if action == 'skip' and test:
                 skipped.add((package, test))
     missing = REQUIRED - passed
-    unexpected = skipped - ALLOWED_SKIPS
+    unexpected = skipped - ALLOWED_SKIPS - OPTIONAL_EXTERNAL_SKIPS
     if missing or unexpected or any(package not in packages for package, _ in REQUIRED):
         raise ValueError(f'Integrações ausentes: {sorted(missing)}; ignorados não permitidos: {sorted(unexpected)}')
     return {'status': 'PASS', 'required_integrations': len(REQUIRED),

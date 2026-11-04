@@ -77,7 +77,7 @@ func Create(ctx context.Context, db *sql.DB, device identity.DeviceContext, key 
 	if err != nil {
 		return err
 	}
-	dir, err := os.MkdirTemp("", "titan-backup-")
+	dir, err := os.MkdirTemp(filepath.Dir(destination), ".titan-backup-")
 	if err != nil {
 		return err
 	}
@@ -129,6 +129,10 @@ func Restore(ctx context.Context, archive, destination string, device identity.D
 }
 
 func withSnapshot(ctx context.Context, archive string, device identity.DeviceContext, key []byte, destination string, report *Inspection) (bool, error) {
+	return withSnapshotAt(ctx, archive, device, key, destination, report, filepath.Dir(archive), false)
+}
+
+func withSnapshotAt(ctx context.Context, archive string, device identity.DeviceContext, key []byte, destination string, report *Inspection, tempRoot string, allTables bool) (bool, error) {
 	crypt, err := aead(key)
 	if err != nil {
 		return false, err
@@ -141,7 +145,7 @@ func withSnapshot(ctx context.Context, archive string, device identity.DeviceCon
 	if err != nil || len(body) > MaxBytes {
 		return false, ErrBackup
 	}
-	dir, err := os.MkdirTemp("", "titan-restore-")
+	dir, err := os.MkdirTemp(tempRoot, "titan-restore-")
 	if err != nil {
 		return false, err
 	}
@@ -154,7 +158,13 @@ func withSnapshot(ctx context.Context, archive string, device identity.DeviceCon
 		return false, err
 	}
 	if report != nil {
-		result, err := inspectSnapshot(ctx, snapshot, sealed)
+		var result Inspection
+		var err error
+		if allTables {
+			result, err = inspectBusinessSnapshot(ctx, snapshot)
+		} else {
+			result, err = inspectSnapshot(ctx, snapshot, sealed)
+		}
 		if err != nil {
 			return false, err
 		}
@@ -182,6 +192,9 @@ func withSnapshot(ctx context.Context, archive string, device identity.DeviceCon
 	}
 	if err == nil {
 		err = blockRestoredCompanyTrade(ctx, db, device)
+	}
+	if err == nil {
+		_, err = db.ExecContext(ctx, `INSERT OR IGNORE INTO fiscal_restore_barriers(tenant_id,restored_at) VALUES(?,?)`, device.TenantID, time.Now().UTC().Format(time.RFC3339Nano))
 	}
 	closeErr := db.Close()
 	if err != nil || closeErr != nil || remaining != 0 || remainingKeys != 0 {
@@ -223,8 +236,14 @@ func validate(ctx context.Context, path string, device identity.DeviceContext) e
 		return ErrBackup
 	}
 	var count int
-	// This release explicitly supports snapshots at schemas 25 through 67.
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || (count != 25 && count != 26 && count != 27 && count != 28 && count != 29 && count != 30 && count != 31 && count != 32 && count != 33 && count != 34 && count != 35 && count != 36 && count != 37 && count != 38 && count != 39 && count != 40 && count != 41 && count != 42 && count != 43 && count != 44 && count != 45 && count != 46 && count != 47 && count != 48 && count != 49 && count != 50 && count != 51 && count != 52 && count != 53 && count != 54 && count != 55 && count != 56 && count != 57 && count != 58 && count != 59 && count != 60 && count != 61 && count != 62 && count != 63 && count != 64 && count != 65 && count != 66 && count != 67) {
+	// Schema 25 is the oldest supported backup format. The ceiling follows the
+	// executable's embedded migrations; ValidateSchema above still checks every
+	// version/checksum and rejects unknown, gapped or tampered histories.
+	latest, err := localdb.LatestSchemaVersion()
+	if err != nil {
+		return ErrBackup
+	}
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count < 25 || count > latest {
 		return ErrBackup
 	}
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM tenants`).Scan(&count); err != nil || count != 1 {

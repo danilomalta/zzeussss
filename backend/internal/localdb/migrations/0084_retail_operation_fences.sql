@@ -1,0 +1,7 @@
+CREATE TABLE retail_operation_fences(tenant_id TEXT NOT NULL,operation_id TEXT NOT NULL,store_id TEXT NOT NULL,device_id TEXT NOT NULL,actor_id TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(tenant_id,store_id,device_id,actor_id,operation_id)) STRICT;
+CREATE TRIGGER retail_fences_no_update BEFORE UPDATE ON retail_operation_fences BEGIN SELECT RAISE(ABORT,'immutable retired operation'); END;
+CREATE TRIGGER retail_fences_no_delete BEFORE DELETE ON retail_operation_fences BEGIN SELECT RAISE(ABORT,'immutable retired operation'); END;
+CREATE TRIGGER retail_fence_no_applied BEFORE INSERT ON retail_operation_fences WHEN EXISTS(SELECT 1 FROM retail_operations o WHERE o.tenant_id=NEW.tenant_id AND o.operation_id=NEW.operation_id) BEGIN SELECT RAISE(ABORT,'operation applied'); END;
+CREATE TRIGGER retail_operation_not_retired BEFORE INSERT ON retail_operations WHEN EXISTS(SELECT 1 FROM retail_operation_fences o WHERE o.tenant_id=NEW.tenant_id AND o.operation_id=NEW.operation_id AND o.store_id=NEW.store_id AND o.device_id=NEW.device_id AND o.actor_id=NEW.actor_id) BEGIN SELECT RAISE(ABORT,'operation retired'); END;
+CREATE TRIGGER immutable_credit_sale_link_update BEFORE UPDATE ON receivable_credit_sales BEGIN SELECT RAISE(ABORT,'immutable sale origin'); END;
+CREATE TRIGGER immutable_credit_sale_link_delete BEFORE DELETE ON receivable_credit_sales BEGIN SELECT RAISE(ABORT,'immutable sale origin'); END;

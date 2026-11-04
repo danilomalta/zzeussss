@@ -1548,6 +1548,18 @@
             },
             "minItems": 1,
             "maxItems": 8
+          },
+          "tax_quote_operations": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Opt-in: one unique scoped tax quote per item in the same order. Price, quantity, current policy/profile, issuer day and 10-minute age are revalidated before payment. No prices/rates are trusted from this request."
           }
         },
         "required": [
@@ -1611,6 +1623,14 @@
             "type": "integer",
             "format": "int64",
             "minimum": 0
+          },
+          "tax": {
+            "$ref": "fiscal-preparation.openapi.json#/components/schemas/SaleTaxBinding"
+          },
+          "merchandise_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": [
@@ -1621,7 +1641,8 @@
           "unit_price_cents",
           "total_cents"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "total_cents includes approved additional taxes for an opt-in tax-priced item; merchandise_cents and tax identify the separate amounts. Legacy items omit both fields."
       },
       "ReceiptPayment": {
         "type": "object",

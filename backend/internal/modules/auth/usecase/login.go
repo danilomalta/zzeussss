@@ -78,6 +78,8 @@ func (u *loginUseCaseImpl) Execute(input LoginInput) (*LoginOutput, error) {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrSessionUnavailable
 		}
+		// Same bcrypt cost for unknown accounts; never grants a session.
+		security.RejectUnknownPassword(input.Password)
 		// [SecOps] Proteção contra enumeração de usuários (retorna erro genérico)
 		return nil, errors.New("e-mail ou senha inválidos")
 	}

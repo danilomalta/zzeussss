@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+	"titansystem-backend/internal/core/security"
 	"titansystem-backend/internal/localdb/identity"
 )
 
@@ -117,6 +118,7 @@ func Login(ctx context.Context, db *sql.DB, device identity.DeviceContext, ident
 		ON m.tenant_id=p.tenant_id AND m.identity_id=p.identity_id
 		WHERE p.tenant_id=? AND p.identity_id=? AND m.status='active'`, device.TenantID, identityID).Scan(&hash, &role)
 	if errors.Is(err, sql.ErrNoRows) {
+		security.RejectUnknownPassword(password)
 		return Session{}, ErrDenied
 	}
 	if err != nil {

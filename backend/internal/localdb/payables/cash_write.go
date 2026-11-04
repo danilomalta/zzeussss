@@ -187,7 +187,7 @@ func ReturnCash(ctx context.Context, db *sql.DB, contracts *entitlementstore.Sto
 		return CashResult{}, ErrConflict
 	}
 	var used int
-	e = tx.QueryRowContext(ctx, `SELECT count(*) FROM cash_vault_entries WHERE tenant_id=? AND device_id=? AND cash_movement_id=?`, a.TenantID, d.DeviceID, src.MovementID).Scan(&used)
+	e = tx.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM cash_vault_entries WHERE tenant_id=? AND device_id=? AND cash_movement_id=?)+(SELECT count(*) FROM receivable_cash_receipts WHERE tenant_id=? AND store_id=? AND device_id=? AND movement_operation_id=?)`, a.TenantID, d.DeviceID, src.MovementID, a.TenantID, a.StoreID, d.DeviceID, in.SupplyOperationID).Scan(&used)
 	if e != nil {
 		return CashResult{}, e
 	}
