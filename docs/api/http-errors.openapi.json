@@ -3,7 +3,7 @@
   "info": {
     "title": "Titan HTTP — negociação de erros",
     "version": "1.0.0",
-    "description": "Contrato opcional compartilhado. O inventário de rotas está em route-inventory.json; este documento não substitui os schemas de cada operação."
+    "description": "Contrato opcional compartilhado. O inventário de rotas está em route-inventory.json; este documento não substitui os schemas de cada operação. No servidor local e na API online, erros de framework/parser usam FrameworkError mesmo sem negociação: diagnóstico bruto não é retornado. Erros explícitos das operações mantêm seus contratos. Não são registrados corpo, token, CPF ou XML por esse handler."
   },
   "paths": {},
   "components": {

@@ -2,7 +2,6 @@ package delivery
 
 import (
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -12,19 +11,19 @@ import (
 )
 
 type ConfiguracaoTentativasLogin struct {
-	CaminhoLogin              string
-	MaxTentativas             int
-	Janela                    time.Duration
-	BloqueioInicial            time.Duration
-	FatorCrescimentoBloqueio   float64
+	CaminhoLogin             string
+	MaxTentativas            int
+	Janela                   time.Duration
+	BloqueioInicial          time.Duration
+	FatorCrescimentoBloqueio float64
 }
 
 func ConfiguracaoTentativasLoginPadrao() ConfiguracaoTentativasLogin {
 	return ConfiguracaoTentativasLogin{
-		CaminhoLogin:            "/api/v1/autenticacao/login",
-		MaxTentativas:           5,
-		Janela:                  10 * time.Minute,
-		BloqueioInicial:         30 * time.Second,
+		CaminhoLogin:             "/api/v1/autenticacao/login",
+		MaxTentativas:            5,
+		Janela:                   10 * time.Minute,
+		BloqueioInicial:          30 * time.Second,
 		FatorCrescimentoBloqueio: 2.0,
 	}
 }
@@ -37,8 +36,8 @@ type estadoIP struct {
 }
 
 type LimitadorTentativasLogin struct {
-	cfg ConfiguracaoTentativasLogin
-	mu  sync.Mutex
+	cfg   ConfiguracaoTentativasLogin
+	mu    sync.Mutex
 	porIP map[string]*estadoIP
 }
 
@@ -59,7 +58,7 @@ func NovoLimitadorTentativasLogin(cfg ConfiguracaoTentativasLogin) *LimitadorTen
 		cfg.CaminhoLogin = "/api/v1/autenticacao/login"
 	}
 	return &LimitadorTentativasLogin{
-		cfg:  cfg,
+		cfg:   cfg,
 		porIP: make(map[string]*estadoIP),
 	}
 }
@@ -132,33 +131,21 @@ func (l *LimitadorTentativasLogin) registrarFalha(ip string, agora time.Time, c 
 	}
 
 	_ = database.DB.Create(&security.AuditLog{
-		Perfil:      "desconhecido",
-		Acao:        "login_falho",
-		Recurso:     "autenticacao",
-		EnderecoIP:  ip,
-		Agente:      limitarAgente(c.Get("User-Agent"), 512),
-		Sucesso:     false,
-		Detalhes:    detalhes,
+		Perfil:       "desconhecido",
+		Acao:         "login_falho",
+		Recurso:      "autenticacao",
+		EnderecoIP:   ip,
+		Agente:       "", // Client-controlled headers can contain credentials or personal data.
+		Sucesso:      false,
+		Detalhes:     detalhes,
 		IDCorrelacao: gerarIDCorrelacaoBasico(c),
 	}).Error
 }
 
-func limitarAgente(agente string, max int) string {
-	agente = strings.TrimSpace(agente)
-	if max <= 0 || len(agente) <= max {
-		return agente
-	}
-	return agente[:max]
-}
-
+// Correlation identifies this server event, not a client-supplied header. It is
+// diagnostic metadata only, never an authorization or idempotency credential.
 func gerarIDCorrelacaoBasico(c *fiber.Ctx) string {
-	// Estratégia simples: reaproveitar um cabeçalho se existir; caso contrário, criar um identificador pobre
-	// usando timestamp+comprimento do caminho. Em produção, ideal é gerar um UUID e propagar.
-	id := strings.TrimSpace(c.Get("X-Correlacao-Id"))
-	if id != "" {
-		return id
-	}
-	return strconv.FormatInt(time.Now().UnixNano(), 10) + "-" + strconv.Itoa(len(c.Path()))
+	return strconv.FormatInt(time.Now().UnixNano(), 10) + "-" + strconv.Itoa(len(c.Route().Path))
 }
 
 func pow(base float64, exp float64) float64 {
@@ -171,4 +158,3 @@ func pow(base float64, exp float64) float64 {
 	}
 	return resultado
 }
-

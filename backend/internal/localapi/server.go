@@ -95,7 +95,7 @@ func NewWithFiscalProvidersAndGate(db *sql.DB, device identity.DeviceContext, ve
 		}
 		s.contracts = contracts
 	}
-	config := fiber.Config{AppName: "Titan Local", DisableStartupMessage: true, BodyLimit: 1 << 20}
+	config := fiber.Config{AppName: "Titan Local", DisableStartupMessage: true, BodyLimit: 1 << 20, ErrorHandler: apicontract.FrameworkError}
 	if gate != nil {
 		config.ReadTimeout = 15 * time.Second
 		config.WriteTimeout = 15 * time.Second

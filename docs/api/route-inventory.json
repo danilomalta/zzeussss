@@ -4187,5 +4187,6 @@
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal_deferred.go"
     }
-  ]
+  ],
+  "framework_error_policy": "local/online: parser and uncaught errors use apicontract.FrameworkError; never echo parser diagnostics or request data"
 }

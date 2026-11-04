@@ -184,8 +184,18 @@ func (s Service) Run(ctx context.Context, op, action, id string, input any, work
 		if e = work(tx); e != nil {
 			return e
 		}
-		_, e = tx.ExecContext(ctx, `INSERT INTO retail_operations VALUES(?,?,?,?,?,?,?,?,?)`, s.Actor.TenantID, s.Actor.StoreID, s.Device.DeviceID, op, s.Actor.IdentityID, action, id, hash, time.Now().UTC().Format(time.RFC3339Nano))
-		return e
+		result, e := tx.ExecContext(ctx, `INSERT INTO retail_operations VALUES(?,?,?,?,?,?,?,?,?)`, s.Actor.TenantID, s.Actor.StoreID, s.Device.DeviceID, op, s.Actor.IdentityID, action, id, hash, time.Now().UTC().Format(time.RFC3339Nano))
+		if e != nil {
+			return e
+		}
+		written, e := result.RowsAffected()
+		if e != nil {
+			return e
+		}
+		if written != 1 {
+			return errors.New("retail audit write failed")
+		}
+		return nil
 	})
 }
 func (s Service) Configure(ctx context.Context, op string, c Config) error {
