@@ -21394,6 +21394,9 @@
     },
     "/local/v1/fiscal/deferred/sales/{id}/query": {
       "$ref": "./deferred-fiscal.openapi.json#/paths/~1local~1v1~1fiscal~1deferred~1sales~1{id}~1query"
+    },
+    "/local/v1/fiscal/nfe55/sales/{id}/correction/query": {
+      "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfe55~1sales~1{id}~1correction~1query"
     }
   },
   "components": {

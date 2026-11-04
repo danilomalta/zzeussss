@@ -147,7 +147,7 @@
   "nfeFreight_4": "Transport propre au destinataire",
   "taxAccountantUnapproved": "HOMOLOGATION : classification sans preuve d’approbation comptable. Cette approbation sera exigée pour la production ; celle-ci reste bloquée.",
   "cceTitle": "Lettre de correction — homologation",
-  "cceLimits": "Ne modifie ni taxes, ni identité des parties, ni dates. Une tentative par facture ; résultat incertain à rapprocher dans Focus, sans renvoi automatique.",
+  "cceLimits": "Ne corrige ni les taxes, ni un changement d’émetteur/destinataire, ni les dates. Ce parcours autorise une tentative par facture ; consultez pour retrouver cette tentative. Les corrections successives exigent une réconciliation spécifique.",
   "cceText": "Correction",
   "cceConfirm": "Je confirme que la correction est permise et ne change ni taxes, ni parties, ni dates.",
   "cceSend": "Envoyer CC-e",
@@ -171,5 +171,9 @@
   "nfePaymentWarning": "Le mode différé est enregistré sur le serveur. Aucun encaissement ni changement de caisse ou d’échéances. Confirmez le mode convenu avec le client.",
   "nfePaymentConfirm": "Je confirme ce mode pour la vente indiquée.",
   "nfePaymentFrozen": "Mode différé enregistré",
-  "nfeError_fiscal_conflict": "Conflit de révision ou opération simultanée. Consultez la vente et le mode enregistré avant de réessayer. Le choix existant n’a pas été remplacé."
+  "nfeError_fiscal_conflict": "Conflit de révision ou opération simultanée. Consultez la vente et le mode enregistré avant de réessayer. Le choix existant n’a pas été remplacé.",
+  "cceQuery": "Consulter la correction",
+  "cceQueryFirst": "Consultez avant l’envoi. La consultation utilise la tentative enregistrée sur le serveur sans la renvoyer. Si le résultat reste incertain, n’envoyez pas une autre correction.",
+  "correction_not_requested": "Aucune tentative de correction enregistrée pour cette vente.",
+  "cceSequence": "Séquence"
 }

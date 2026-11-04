@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
-	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"io"
@@ -73,16 +72,7 @@ func (p *FocusProvider) Correct(ctx context.Context, a RequestContext, in Docume
 		if json.Unmarshal([]byte(marker), &saved) != nil || saved.SHA256 != hex.EncodeToString(sum[:]) {
 			return CorrectionResult{}, fiscal.ErrConflict
 		}
-		var raw string
-		err := a.DB.QueryRowContext(ctx, `SELECT payload_json FROM outbox WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=? AND event_type='checkout.focus_correction_result'`, a.Actor.TenantID, a.Actor.StoreID, a.Device.DeviceID, ref+"-cce-result").Scan(&raw)
-		if err == sql.ErrNoRows {
-			return CorrectionResult{State: "correction_reconciliation_required"}, nil
-		}
-		var result CorrectionResult
-		if err != nil || json.Unmarshal([]byte(raw), &result) != nil {
-			return CorrectionResult{}, ErrUnavailable
-		}
-		return result, nil
+		return readCorrectionResult(ctx, a, in.SaleID, ref)
 	}
 	result := p.sendCorrection(ctx, ref, body)
 	if result.State == "correction_authorized_homologation" {

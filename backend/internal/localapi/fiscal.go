@@ -20,6 +20,7 @@ func (s *Server) mountFiscal(r fiber.Router) {
 	r.Post("/fiscal/nfe55/sales/:id/query", s.fiscalNFe55Query)
 	r.Post("/fiscal/nfe55/sales/:id/cancel", s.fiscalNFe55Cancel)
 	r.Post("/fiscal/nfe55/sales/:id/correction", s.fiscalNFe55Correction)
+	r.Post("/fiscal/nfe55/sales/:id/correction/query", s.fiscalNFe55CorrectionQuery)
 	r.Get("/fiscal/nfe55/sales/:id/danfe", s.fiscalNFe55DANFE)
 
 	r.Post("/fiscal/tax-tables/import", s.importTaxTable)

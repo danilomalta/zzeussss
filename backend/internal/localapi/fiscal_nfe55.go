@@ -196,3 +196,27 @@ func (s *Server) fiscalNFe55Correction(c *fiber.Ctx) error {
 	}
 	return c.JSON(out)
 }
+
+// Query has no original text, reference, sequence, URL or issuer supplied by a client.
+func (s *Server) fiscalNFe55CorrectionQuery(c *fiber.Ctx) error {
+	if !fiscalWrite(c) || string(c.Body()) != "{}" {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	a := s.productionContext(c)
+	provider, _, err := s.fiscalProviders.CustomerNFe55Provider(c.UserContext(), a)
+	if err != nil {
+		return nfe55Failure(c, err)
+	}
+	p, ok := provider.(interface {
+		QueryCorrection(context.Context, fiscalproduction.RequestContext, fiscalproduction.DocumentRequest) (fiscalproduction.CorrectionResult, error)
+	})
+	if !ok {
+		return nfe55Failure(c, fiscalproduction.ErrUnavailable)
+	}
+	out, err := p.QueryCorrection(c.UserContext(), a, fiscalproduction.DocumentRequest{SaleID: c.Params("id"), Model: "55", Environment: 2})
+	if err != nil {
+		return nfe55Failure(c, err)
+	}
+	c.Set("Cache-Control", "no-store")
+	return c.JSON(out)
+}

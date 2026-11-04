@@ -147,7 +147,7 @@
   "nfeFreight_4": "Próprio do destinatário",
   "taxAccountantUnapproved": "HOMOLOGAÇÃO: enquadramento ainda não comprovado como aprovado por contador. A aprovação será exigida para habilitar produção; produção permanece bloqueada.",
   "cceTitle": "Carta de correção — homologação",
-  "cceLimits": "Não corrige imposto, mudança do remetente/destinatário ou data. Uma tentativa por nota neste fluxo; resultado incerto exige conciliação na Focus, sem reenvio automático.",
+  "cceLimits": "Não corrige imposto, mudança do remetente/destinatário ou data. Este fluxo permite uma tentativa por nota; consulte para recuperar a mesma tentativa. Histórico de cartas sucessivas exige conciliação específica.",
   "cceText": "Correção",
   "cceConfirm": "Confirmo que a alteração é permitida e não muda impostos, partes ou datas.",
   "cceSend": "Enviar CC-e",
@@ -171,5 +171,9 @@
   "nfePaymentWarning": "A escolha a prazo fica registrada no servidor. Não registra recebimento nem altera caixa ou parcelas. Confirme a modalidade acordada com o cliente.",
   "nfePaymentConfirm": "Confirmo esta modalidade para a venda informada.",
   "nfePaymentFrozen": "Modalidade a prazo registrada",
-  "nfeError_fiscal_conflict": "Conflito de revisão ou operação concorrente. Consulte a venda e a modalidade registrada antes de tentar novamente. A escolha existente não foi substituída."
+  "nfeError_fiscal_conflict": "Conflito de revisão ou operação concorrente. Consulte a venda e a modalidade registrada antes de tentar novamente. A escolha existente não foi substituída.",
+  "cceQuery": "Consultar CC-e",
+  "cceQueryFirst": "Consulte antes de enviar. A consulta usa a tentativa salva no servidor, sem reenviar a carta. Se o resultado continuar incerto, não envie outra correção.",
+  "correction_not_requested": "Nenhuma tentativa de CC-e registrada para esta venda.",
+  "cceSequence": "Sequência"
 }

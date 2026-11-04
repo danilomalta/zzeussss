@@ -147,7 +147,7 @@
   "nfeFreight_4": "Recipient own transport",
   "taxAccountantUnapproved": "HOMOLOGATION: classification is not yet evidenced as accountant-approved. Approval will be required to enable production; production remains blocked.",
   "cceTitle": "Correction letter — homologation",
-  "cceLimits": "Cannot change tax, issuer/recipient identity or dates. One attempt per invoice in this flow; uncertain results require Focus reconciliation, never automatic resend.",
+  "cceLimits": "Cannot correct taxes, changes of sender/recipient or dates. This flow allows one attempt per invoice; consult to recover that same attempt. Successive corrections require specific history reconciliation.",
   "cceText": "Correction",
   "cceConfirm": "I confirm this is permitted and does not change tax, parties or dates.",
   "cceSend": "Send CC-e",
@@ -171,5 +171,9 @@
   "nfePaymentWarning": "The deferred method is recorded on the server. It records no receipt and changes neither cash nor installments. Confirm the method agreed with the customer.",
   "nfePaymentConfirm": "I confirm this method for the entered sale.",
   "nfePaymentFrozen": "Recorded deferred method",
-  "nfeError_fiscal_conflict": "Revision conflict or concurrent operation. Consult the sale and its recorded method before retrying. The existing choice was not overwritten."
+  "nfeError_fiscal_conflict": "Revision conflict or concurrent operation. Consult the sale and its recorded method before retrying. The existing choice was not overwritten.",
+  "cceQuery": "Consult correction",
+  "cceQueryFirst": "Consult before sending. The query uses the attempt saved on the server without resending it. If the outcome remains uncertain, do not send another correction.",
+  "correction_not_requested": "No correction attempt recorded for this sale.",
+  "cceSequence": "Sequence"
 }

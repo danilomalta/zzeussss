@@ -948,6 +948,13 @@
     },
     {
       "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/sales/:id/correction/query",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
       "method": "GET",
       "path": "/local/v1/fiscal/nfe55/sales/:id/danfe",
       "authentication": "session",

@@ -15,5 +15,5 @@ export function createNFe55Client({token,isCurrent,fetcher=fetch}){
    else if(typeof value.state!=='string')throw new NFe55Error('response');return value;
   }catch(error){if(error instanceof NFe55Error)throw error;throw new NFe55Error('network');}finally{clearTimeout(timer);}
  }
- return {preview:(sale,input)=>{if(input!==undefined&&(!['21','91'].includes(input.payment_code)||input.confirmed!==true))throw new NFe55Error('input_missing');return call(sale,'preview',input);},emit:(sale,input)=>call(sale,'emit',input),query:sale=>call(sale,'query'),correction:(sale,input)=>call(sale,'correction',input),cancel:(sale,input)=>call(sale,'cancel',input),danfe:sale=>call(sale,'danfe',null,true)};
+ return {preview:(sale,input)=>{if(input!==undefined&&(!['21','91'].includes(input.payment_code)||input.confirmed!==true))throw new NFe55Error('input_missing');return call(sale,'preview',input);},emit:(sale,input)=>call(sale,'emit',input),query:sale=>call(sale,'query'),correction:(sale,input)=>call(sale,'correction',input),queryCorrection:sale=>call(sale,'correction/query'),cancel:(sale,input)=>call(sale,'cancel',input),danfe:sale=>call(sale,'danfe',null,true)};
 }
