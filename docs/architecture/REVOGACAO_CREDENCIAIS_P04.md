@@ -148,4 +148,6 @@ P04 encerra o procedimento/documentação, não as revogações externas. O acei
 de implantação que depende dessas credenciais continua pendente até prova do
 titular; trabalho de código/diagnóstico independente pode continuar. Não se
 reescreve histórico nem se faz force push. Próximo ID independente: **P05**;
-não iniciado nesta unidade. P03 permanece WIP separado, não consolidado aqui.
+não iniciado nesta unidade. Na entrega original P04, P03 permanecia WIP separado. A conclusão posterior
+de P03/P05 está registrada em CONTINUIDADE_TITANSYSTEM.md; as revogações reais
+deste checklist continuam EXTERNAS, sem comprovação por esta documentação.

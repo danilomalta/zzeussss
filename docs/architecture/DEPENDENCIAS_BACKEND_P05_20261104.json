@@ -2,11 +2,11 @@
   "unit": "P05",
   "date": "2026-11-04",
   "base": "5ffc62d46abcedda66457a8981d376471f5a4c4c",
-  "status": "PARTIAL: directed inventory and minimum Go fix delivered; complete govulncheck analysis pending",
+  "status": "COMPLETE for P05: inventory, minimum Go remediation, official symbol scans, builds and focused regressions; not a universal security attestation",
   "scope": {
-    "target": "Linux/amd64, default tags, production imports via go list -deps ./...",
+    "target": "Linux/amd64 production and tests; Windows/amd64 production static analysis; default tags",
     "source_code_uploaded": false,
-    "full_vulnerability_scan_performed": false,
+    "full_vulnerability_scan_performed": true,
     "not_a_clean_security_attestation": true
   },
   "counts": {
@@ -30,7 +30,7 @@
     }
   },
   "scanner": {
-    "available_executable": false,
+    "available_executable": true,
     "path_tools_checked": [
       "govulncheck",
       "osv-scanner",
@@ -38,14 +38,40 @@
       "grype"
     ],
     "cached_source_attempted": "golang.org/x/vuln@v1.4.0",
-    "temporary_build_succeeded": false,
-    "offline_missing_tool_dependencies": [
+    "temporary_build_succeeded": true,
+    "installed": true,
+    "product_dependency_added": false,
+    "required_next": "No P05 scanner provisioning pending; P06 must define reproducible CI provisioning/checks without treating module presence as exploit proof",
+    "installation_scope": "temporary executable only in /tmp/titan-p03p05-tools/bin; product modules unchanged",
+    "version": "govulncheck@v1.4.0",
+    "user_authorization": "Explicitly authorized temporary provisioning on 2026-11-04",
+    "telemetry": "off; isolated XDG_CONFIG_HOME=/tmp/titan-p03p05-tools/config with go/telemetry/mode=off",
+    "checksum_verification": "Go module checksum verification enabled; official proxy/sum database",
+    "previous_offline_attempt_missing_dependencies": [
       "golang.org/x/tools@v0.46.0",
       "golang.org/x/telemetry@v0.0.0-20260611141451-d61e87d5f4a3"
     ],
-    "installed": false,
-    "product_dependency_added": false,
-    "required_next": "Provision an approved compatible govulncheck separately, record version, run full symbol analysis and tests analysis, then re-evaluate pending advisories; no silent installation"
+    "binary_sha256": "efdc1427f74545f5280383cb8bc2e128862613953cc4ec3104fa1c860e366342",
+    "tool_dependencies_cache": "Go module cache outside product; only executable provisioned in /tmp",
+    "build_info_sha256": "ee4eb0c9bece947055276804dfbbf94499774ee8aaa533e7584eaed969a012e5",
+    "temporary_build_dependencies": [
+      [
+        "golang.org/x/mod",
+        "v0.37.0"
+      ],
+      [
+        "golang.org/x/sync",
+        "v0.21.0"
+      ],
+      [
+        "golang.org/x/telemetry",
+        "v0.0.0-20260611141451-d61e87d5f4a3"
+      ],
+      [
+        "golang.org/x/tools",
+        "v0.46.0"
+      ]
+    ]
   },
   "modules": [
     {
@@ -438,9 +464,14 @@
         "golang.org/x/net/http2"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-4918.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-4918.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-4950",
@@ -452,9 +483,14 @@
       "compiled_affected_packages_linux_amd64": [
         "github.com/valyala/fasthttp"
       ],
-      "reachability": "affected package compiled; vulnerable symbol reachability INVESTIGATION PENDING; no direct application calls found by targeted search",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-4950.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-4950.json",
+      "scanner_level_by_target": {
+        "linux-production": "package imported, affected symbol not reached",
+        "linux-with-tests": "package imported, affected symbol not reached",
+        "windows-production": "package imported, affected symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5005",
@@ -464,9 +500,14 @@
         "golang.org/x/crypto/ssh/agent"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5005.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5005.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5006",
@@ -476,9 +517,14 @@
         "golang.org/x/crypto/ssh/agent"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5006.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5006.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5013",
@@ -488,9 +534,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5013.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5013.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5014",
@@ -500,9 +551,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5014.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5014.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5015",
@@ -512,9 +568,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5015.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5015.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5016",
@@ -524,9 +585,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5016.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5016.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5017",
@@ -536,9 +602,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5017.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5017.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5018",
@@ -548,9 +619,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5018.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5018.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5019",
@@ -560,9 +636,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5019.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5019.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5020",
@@ -572,9 +653,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5020.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5020.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5021",
@@ -584,9 +670,14 @@
         "golang.org/x/crypto/ssh/knownhosts"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5021.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5021.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5023",
@@ -596,9 +687,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5023.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5023.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5024",
@@ -608,9 +704,14 @@
         "golang.org/x/sys/windows"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5024.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5024.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "package imported, affected symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5025",
@@ -620,9 +721,14 @@
         "golang.org/x/net/html"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5025.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5025.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-5026",
@@ -632,9 +738,14 @@
         "golang.org/x/net/idna"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5026.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5026.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-5027",
@@ -644,9 +755,14 @@
         "golang.org/x/net/html"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5027.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5027.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-5028",
@@ -656,9 +772,14 @@
         "golang.org/x/net/html"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5028.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5028.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-5029",
@@ -668,9 +789,14 @@
         "golang.org/x/net/html"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5029.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5029.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-5030",
@@ -680,9 +806,14 @@
         "golang.org/x/net/html"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5030.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5030.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-5033",
@@ -692,9 +823,14 @@
         "golang.org/x/crypto/ssh/agent"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5033.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5033.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5585",
@@ -706,9 +842,14 @@
       "compiled_affected_packages_linux_amd64": [
         "github.com/gofiber/fiber/v2"
       ],
-      "reachability": "affected package compiled; vulnerable symbol reachability INVESTIGATION PENDING; no direct application calls found by targeted search",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5585.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5585.json",
+      "scanner_level_by_target": {
+        "linux-production": "package imported, affected symbol not reached",
+        "linux-with-tests": "package imported, affected symbol not reached",
+        "windows-production": "package imported, affected symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5841",
@@ -718,9 +859,14 @@
         "github.com/klauspost/compress/s2"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5841.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5841.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5932",
@@ -736,9 +882,14 @@
         "golang.org/x/crypto/openpgp/s2k"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5932.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5932.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-5942",
@@ -748,9 +899,14 @@
         "golang.org/x/net/dns/dnsmessage"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-5942.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-5942.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-6303",
@@ -760,9 +916,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-6303.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-6303.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-6354",
@@ -772,9 +933,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-6354.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-6354.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-6355",
@@ -784,9 +950,14 @@
         "golang.org/x/crypto/ssh"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-6355.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-6355.json",
+      "scanner_level_by_target": {
+        "linux-production": "module finding only; affected package/symbol not reached",
+        "linux-with-tests": "module finding only; affected package/symbol not reached",
+        "windows-production": "module finding only; affected package/symbol not reached"
+      }
     },
     {
       "id": "GO-2026-6603",
@@ -796,9 +967,14 @@
         "golang.org/x/net/http2"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-6603.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-6603.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-6610",
@@ -808,9 +984,14 @@
         "golang.org/x/net/http2"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-6610.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-6610.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-6611",
@@ -820,9 +1001,14 @@
         "golang.org/x/net/http2"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-6611.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-6611.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-6612",
@@ -832,9 +1018,14 @@
         "golang.org/x/net/http2"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-6612.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-6612.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-6617",
@@ -844,9 +1035,14 @@
         "golang.org/x/net/http2"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-6617.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-6617.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-6860",
@@ -856,9 +1052,14 @@
         "golang.org/x/net/html"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-6860.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-6860.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     },
     {
       "id": "GO-2026-6866",
@@ -868,9 +1069,14 @@
         "golang.org/x/net/html"
       ],
       "compiled_affected_packages_linux_amd64": [],
-      "reachability": "affected packages not compiled in default Linux/amd64 backend dependency list; other platforms/tags INVESTIGATION PENDING",
-      "exploitation": "NOT TESTED; no exploitation established",
-      "source": "https://vuln.go.dev/ID/GO-2026-6866.json"
+      "reachability": "No affected symbol reached in the completed official scans for these build targets; version advisory still applies at module level where reported. Other targets/tags/future changes require reanalysis.",
+      "exploitation": "NOT TESTED; no exploitation established; static reachability is not runtime exploit validation",
+      "source": "https://vuln.go.dev/ID/GO-2026-6866.json",
+      "scanner_level_by_target": {
+        "linux-production": "not reported in this analyzed build",
+        "linux-with-tests": "not reported in this analyzed build",
+        "windows-production": "not reported in this analyzed build"
+      }
     }
   ],
   "workflow_inventory": {
@@ -931,29 +1137,49 @@
     "go_mod_verify": "all modules verified before and after",
     "go_sum_unchanged": true,
     "module_versions_unchanged": true,
-    "api_build_sha256": "d2693c46b7077af9a731b449fc20509b2dbfd0d4212105daeef318d034e8375e"
+    "api_build_sha256": "624da23774d7c01fc22c873001453c66b944dab87ba77c1d14f7e595d19bda3d"
   },
   "validation": {
-    "build_all": "PASS go build -mod=readonly ./...; GOFLAGS=-buildvcs=false",
-    "api_binary": "PASS CGO_ENABLED=0 go build -mod=readonly -trimpath -o /tmp/titan-p05-api ./cmd/api",
+    "build_all": "PASS on final consolidated sources, GOFLAGS=-buildvcs=false go build -mod=readonly ./...",
+    "api_binary": "PASS CGO_ENABLED=0 go build -mod=readonly -trimpath -o /tmp/titan-p03p05-api ./cmd/api; buildinfo go1.26.10",
     "focused_tests": {
       "passed": 26,
       "failed": 0,
       "skipped": 0,
       "timeout": "120s",
-      "count": 1
+      "count": 1,
+      "evidence": "P05 initial Go-floor validation, fc0f094; source dependencies/compiler unchanged during completion"
     },
     "focused_race": {
       "passed": 3,
       "failed": 0,
       "skipped": 0,
       "timeout": "120s",
+      "count": 1,
+      "evidence": "P05 initial Go-floor validation, fc0f094; source dependencies/compiler unchanged during completion"
+    },
+    "full_backend_suite": "NOT RUN: P03/P05 focused gates passed; complete CI belongs to P06",
+    "windows": "Official source-symbol scan only; no Windows executable installation/runtime validated",
+    "real_fiscal": "NOT RUN",
+    "npm": "OUT OF SCOPE F02",
+    "p03_focused_tests": {
+      "passed": 77,
+      "failed": 0,
+      "skipped": 0,
+      "timeout": "120s",
+      "count": 1,
+      "postgresql": "17 disposable loopback; schemas isolated",
+      "source_commit": "0c71587; relevant code/tests identical after cherry-pick 9a628d2"
+    },
+    "p03_focused_race": {
+      "passed": 77,
+      "failed": 0,
+      "skipped": 0,
+      "data_race_warnings": 0,
+      "timeout": "120s",
       "count": 1
     },
-    "full_backend_suite": "NOT RUN, per unit protocol",
-    "windows": "NOT VALIDATED",
-    "real_fiscal": "NOT RUN",
-    "npm": "OUT OF SCOPE F02"
+    "contracts": "PASS: 594 routes on combined P03/P05 sources"
   },
   "sources": [
     "https://vuln.go.dev/index/modules.json",
@@ -961,9 +1187,78 @@
     "https://go.dev/doc/security/vuln/"
   ],
   "limits": [
-    "go mod verify is checksum verification, not a vulnerability scanner",
-    "symbol reachability and exploitation are distinct from module presence",
-    "directed database consultation is not complete govulncheck coverage",
-    "no real keys, .env, commercial databases, or external credential tests used"
+    "No affected symbols reported in these govulncheck scans is not a claim of no vulnerabilities",
+    "Module/package warnings remain; other architectures, custom tags, deployment and future code require reanalysis",
+    "No exploitation, installed credential/certificate, real fiscal emission, TEF, hardware or Windows runtime was tested",
+    "Workflows and npm dependencies unchanged; P06/F02 remain separate"
+  ],
+  "completion_date": "2026-11-04",
+  "consolidation": {
+    "p03_original_commit": "0c715870db9dda2c36d05d823033cc100b2dd62d",
+    "p03_cherry_pick_on_p05": "9a628d2f4cfd2e933a93654aee9afb4e938f22d8",
+    "base_before_completion": "fc0f094bb292c7e8a96e3b499326aa9f4a063ce8",
+    "no_merge_or_force": true
+  },
+  "official_symbol_scans": [
+    {
+      "name": "linux-production",
+      "scope": "Linux/amd64, default tags, production sources on fc0f094 before P03 consolidation",
+      "config": {
+        "protocol_version": "v1.0.0",
+        "scanner_name": "govulncheck",
+        "scanner_version": "v1.4.0",
+        "db": "https://vuln.go.dev",
+        "db_last_modified": "2026-11-02T22:01:43Z",
+        "go_version": "go1.26.10",
+        "scan_level": "symbol",
+        "scan_mode": "source"
+      },
+      "unique_module_advisories": 21,
+      "unique_imported_package_advisories": 2,
+      "unique_reachable_symbol_advisories": 0,
+      "exit_code": 0,
+      "stderr_bytes": 0,
+      "json_sha256": "d5dbf7e0e9959652cd2e96001546d3f4db3bd34f5d7740daedb413f83910e73a"
+    },
+    {
+      "name": "linux-with-tests",
+      "scope": "Linux/amd64, default tags, all backend sources and test files on 9a628d2",
+      "config": {
+        "protocol_version": "v1.0.0",
+        "scanner_name": "govulncheck",
+        "scanner_version": "v1.4.0",
+        "db": "https://vuln.go.dev",
+        "db_last_modified": "2026-11-02T22:01:43Z",
+        "go_version": "go1.26.10",
+        "scan_level": "symbol",
+        "scan_mode": "source"
+      },
+      "unique_module_advisories": 21,
+      "unique_imported_package_advisories": 2,
+      "unique_reachable_symbol_advisories": 0,
+      "exit_code": 0,
+      "stderr_bytes": 0,
+      "json_sha256": "4d00d0e9e02ef20716c4d795cc8863ca836c1a1d82e7b1391f8d8c81f511bddd"
+    },
+    {
+      "name": "windows-production",
+      "scope": "Windows/amd64, CGO_ENABLED=0, default tags, production sources on 9a628d2; static analysis only",
+      "config": {
+        "protocol_version": "v1.0.0",
+        "scanner_name": "govulncheck",
+        "scanner_version": "v1.4.0",
+        "db": "https://vuln.go.dev",
+        "db_last_modified": "2026-11-02T22:01:43Z",
+        "go_version": "go1.26.10",
+        "scan_level": "symbol",
+        "scan_mode": "source"
+      },
+      "unique_module_advisories": 21,
+      "unique_imported_package_advisories": 3,
+      "unique_reachable_symbol_advisories": 0,
+      "exit_code": 0,
+      "stderr_bytes": 0,
+      "json_sha256": "38bd4e999af81a0edd7e505c27278489d7d66027f4c28bd0791ad0bf1aa4a1f2"
+    }
   ]
 }
