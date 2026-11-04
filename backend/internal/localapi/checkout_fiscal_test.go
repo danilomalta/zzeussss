@@ -80,7 +80,8 @@ func TestHTTPCheckoutNFCeHomologationIntegration(t *testing.T) {
 		}
 		p.lock.Lock()
 		p.lastSigned = xml
-		p.authorizedAt = time.Now().Format(time.RFC3339)
+		// Preserve the fiscal XSD's numeric offset on UTC runners as well.
+		p.authorizedAt = time.Now().Format("2006-01-02T15:04:05-07:00")
 		p.lock.Unlock()
 		w.Header().Set("Content-Type", "application/xml")
 		_, _ = w.Write(bytes.ReplaceAll(p.response(false, "100"), []byte("<tpAmb>1</tpAmb>"), []byte("<tpAmb>2</tpAmb>")))
