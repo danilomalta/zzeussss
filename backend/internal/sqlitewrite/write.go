@@ -48,8 +48,8 @@ func RunCleanup(ctx context.Context, source *sql.DB, conflict error, fn func(*sq
 
 func runAttempt(ctx context.Context, source *sql.DB, fn func(*sql.Tx) (func(bool), error)) error {
 	// Metadata only: no business/credential read is performed before BEGIN IMMEDIATE.
-	var file string
-	if err := source.QueryRowContext(ctx, `SELECT file FROM pragma_database_list WHERE name='main'`).Scan(&file); err != nil {
+	file, err := databaseFile(ctx, source)
+	if err != nil {
 		return err
 	}
 	if file == "" {
@@ -85,4 +85,33 @@ func runAttempt(ctx context.Context, source *sql.DB, fn func(*sql.Tx) (func(bool
 		cleanup(err == nil)
 	}
 	return err
+}
+
+func databaseFile(ctx context.Context, source *sql.DB) (string, error) {
+	conn, err := source.Conn(ctx)
+	if err != nil {
+		return "", fmt.Errorf("SQLite writer metadata connection: %w", err)
+	}
+	defer conn.Close()
+	// A cold source connection can encounter an exclusive writer before the
+	// separately configured writer connection is opened. Set the same bounded
+	// wait on the exact connection used for metadata, not an arbitrary pool member.
+	var timeout int
+	if err := conn.QueryRowContext(ctx, `PRAGMA busy_timeout`).Scan(&timeout); err != nil {
+		return "", fmt.Errorf("SQLite writer metadata timeout query: %w", err)
+	}
+	// Other callers can already configure a longer wait (localdb uses 5000ms).
+	// Never shorten that policy when preparing a cold/unconfigured connection.
+	if timeout < 1000 {
+		if _, err := conn.ExecContext(ctx, `PRAGMA busy_timeout(1000)`); err != nil {
+			return "", fmt.Errorf("SQLite writer metadata timeout: %w", err)
+		}
+	}
+	var file string
+	if err := conn.QueryRowContext(ctx, `SELECT file FROM pragma_database_list WHERE name='main'`).Scan(&file); err != nil {
+		return "", fmt.Errorf("SQLite writer metadata query: %w", err)
+	}
+	// The connection must return to the pool before BEGIN IMMEDIATE/callback;
+	// callers may have a one-connection source pool.
+	return file, nil
 }
