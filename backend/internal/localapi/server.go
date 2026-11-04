@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 	"titansystem-backend/internal/apicontract"
+	"titansystem-backend/internal/authabuse"
 	"titansystem-backend/internal/fiscalproduction"
 
 	"github.com/gofiber/fiber/v2"
@@ -119,8 +120,8 @@ func NewWithFiscalProvidersAndGate(db *sql.DB, device identity.DeviceContext, ve
 	app.Use("/local/v1/fiscal", func(c *fiber.Ctx) error { c.Set(fiber.HeaderCacheControl, "no-store"); return c.Next() })
 	v1 := app.Group("/local/v1")
 	v1.Get("/health", func(c *fiber.Ctx) error { return c.JSON(fiber.Map{"status": "local"}) })
-	v1.Post("/login", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.login)
-	v1.Post("/account/recover", limiter.New(limiter.Config{Max: 5, Expiration: time.Minute}), s.recoverOwner)
+	v1.Post("/login", localAuthOrigin, authabuse.HTTP(func() authabuse.Store { return authabuse.Store{DB: db} }, device.TenantID, "login", "identity_id"), s.login)
+	v1.Post("/account/recover", localAuthOrigin, authabuse.HTTP(func() authabuse.Store { return authabuse.Store{DB: db} }, device.TenantID, "recovery", "identity_id"), s.recoverOwner)
 	protected := v1.Group("", s.requireSession)
 	protected.Get("/me", func(c *fiber.Ctx) error {
 		c.Set(fiber.HeaderCacheControl, "no-store")

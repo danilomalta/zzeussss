@@ -110,7 +110,7 @@
       "post": {
         "operationId": "localLogin",
         "summary": "Abre sessão humana local",
-        "description": "JSON exato de identity_id/password até 4096 bytes; rejeita campos extras, duplicados, ausentes, null, tipos incompatíveis e JSON adicional. Formulários deixam de ser aceitos nesta revisão. Empresa/loja/aparelho derivados da estação; senha incorreta ou identidade sem acesso retornam 401. Limitador atual de 5 requisições por minuto pela chave padrão do middleware (IP), não quota global distribuída. Token de 32 bytes aleatórios em base64url sem padding; somente digest é persistido. Validade de oito horas; sem refresh local. Cache-Control: no-store. Contratação de módulo não é requisito para autenticar.",
+        "description": "JSON exato de identity_id/password até 4096 bytes; rejeita campos extras, duplicados, ausentes, null, tipos incompatíveis e JSON adicional. Formulários deixam de ser aceitos nesta revisão. Empresa/loja/aparelho derivados da estação; senha incorreta ou identidade sem acesso retornam 401. Token de 32 bytes aleatórios em base64url sem padding; somente digest é persistido. Validade de oito horas; sem refresh local. Cache-Control: no-store. Contratação de módulo não é requisito para autenticar. P08: orçamento durável no banco do cliente, compartilhado entre processos que usam o mesmo banco: 5 admissões por peer real e 120 por instalação/canal em janela de 60s iniciada na primeira tentativa. Forwarded/X-Forwarded-For/X-Real-IP não definem o peer. Login e recuperação têm canais separados. Falhas por conta são agregadas entre peers e retornam 429 após cinco falhas; a verificação válida não é bloqueada pelo contador de falhas da conta. Este contador não substitui o limite de admissão: tentativas distribuídas ainda consomem o orçamento da instalação. Erro de persistência recusa com 503; rejeição durável retorna Retry-After: 60 e no-store. Não existe bloqueio permanente nem incremento exponencial neste orçamento. Reiniciar o processo não apaga contadores. Atrás de proxy, o peer e seu orçamento são compartilhados; headers não autorizam obter quota individual. Bancos separados não compartilham orçamento. Identificadores persistidos somente como SHA-256 com escopo; não são anonimização nem substituem proteção do banco. MFA não implementado; fatores e recuperação dependem de aprovação do dono. Origem de navegador deve ser autorizada antes do orçamento. Sec-Fetch-Site: cross-site, Origin null/* e origem não autorizada recebem 403. Cliente nativo sem Origin continua sujeito à autenticação. No núcleo local, ALLOWED_ORIGINS configura a lista; sem configuração, localhost:3000 e titan://app, além do mesmo host da requisição, são aceitos. Vite/proxy com mudança de Host requer ALLOWED_ORIGINS explícito. Online reutiliza RefreshOrigin e ALLOWED_ORIGINS; não basta CORS.",
         "security": [],
         "parameters": [
           {
@@ -174,7 +174,7 @@
             }
           },
           "429": {
-            "description": "Erro legado; JSON Error quando negociado. 429 no login após limite de tentativas.",
+            "description": "Orçamento de autenticação excedido, resposta uniforme sem identificadores.",
             "content": {
               "text/plain": {
                 "schema": {
@@ -202,6 +202,12 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Origem de navegador recusada antes do orçamento/credenciais."
+          },
+          "503": {
+            "description": "Proteção durável indisponível: operação não autorizada."
           }
         },
         "requestBody": {

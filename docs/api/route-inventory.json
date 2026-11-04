@@ -34,7 +34,8 @@
       "method": "POST",
       "path": "/local/v1/account/recover",
       "authentication": "public",
-      "source": "backend/internal/localapi/server.go"
+      "source": "backend/internal/localapi/server.go",
+      "abuse_protection": "authabuse: DB-shared peer/installation budgets, failed-account pressure (where identity exists), origin validation; no trusted forwarded identity"
     },
     {
       "api": "local",
@@ -1665,7 +1666,8 @@
       "method": "POST",
       "path": "/local/v1/login",
       "authentication": "public",
-      "source": "backend/internal/localapi/server.go"
+      "source": "backend/internal/localapi/server.go",
+      "abuse_protection": "authabuse: DB-shared peer/installation budgets, failed-account pressure (where identity exists), origin validation; no trusted forwarded identity"
     },
     {
       "api": "local",
@@ -3083,7 +3085,8 @@
       "path": "/api/v1/auth/login",
       "authentication": "public",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "implemented"
+      "state": "implemented",
+      "abuse_protection": "authabuse: DB-shared peer/installation budgets, failed-account pressure (where identity exists), origin validation; no trusted forwarded identity"
     },
     {
       "api": "online",
@@ -3116,7 +3119,8 @@
       "path": "/api/v1/auth/recovery/reset",
       "authentication": "public",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "implemented"
+      "state": "implemented",
+      "abuse_protection": "authabuse: DB-shared peer/installation budgets, failed-account pressure (where identity exists), origin validation; no trusted forwarded identity"
     },
     {
       "api": "online",

@@ -44,11 +44,11 @@ func Registrar(app *fiber.App) {
 	authGroup := v1.Group("/auth")
 
 	// Limitador estrito para rota de login (máximo 5 req/min por IP) para proteção contra Brute Force
-	authGroup.Post("/login", middleware.RateLimitLogin(), authHandler.Login)
+	authGroup.Post("/login", authDelivery.RefreshOrigin, authDelivery.DurableAuthBudget("login", "email"), middleware.RateLimitLogin(), authHandler.Login)
 	authGroup.Post("/refresh", authDelivery.RefreshOrigin, authHandler.RefreshToken)
 	authGroup.Post("/password", middleware.AuthGuard(), middleware.RateLimitLogin(), middleware.CurrentUser(), authHandler.ChangePassword)
 	authGroup.Post("/recovery/key", middleware.AuthGuard(), middleware.RateLimitLogin(), middleware.CurrentUser(), authHandler.IssueRecovery)
-	authGroup.Post("/recovery/reset", authDelivery.RefreshOrigin, middleware.RateLimitLogin(), authHandler.Recover)
+	authGroup.Post("/recovery/reset", authDelivery.RefreshOrigin, middleware.RateLimitLogin(), authDelivery.DurableAuthBudget("recovery", ""), authHandler.Recover)
 	authGroup.Post("/logout", authDelivery.RefreshOrigin, middleware.AuthGuard(), middleware.CurrentUser(), authHandler.Logout)
 	authGroup.Get("/sessions", middleware.AuthGuard(), middleware.CurrentUser(), authHandler.Sessions)
 	authGroup.Post("/sessions/revoke-others", authDelivery.RefreshOrigin, middleware.AuthGuard(), middleware.CurrentUser(), authHandler.RevokeOthers)

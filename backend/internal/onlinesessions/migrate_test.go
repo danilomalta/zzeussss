@@ -112,6 +112,9 @@ func TestCheckSchemaRequiresCompleteHistoryAndPasswordTable(t *testing.T) {
 			}
 			if state != "only-five" && state != "only-six" {
 				rows.AddRow(7, migrationDigest(securityMigrations[2].sql))
+				if state != "changed-five" {
+					rows.AddRow(24, migrationDigest(securityMigrations[3].sql))
+				}
 			}
 			m.ExpectQuery("SELECT version, checksum").WillReturnRows(rows)
 			if state == "complete" || state == "missing-table" || state == "missing-recovery" {
@@ -125,6 +128,7 @@ func TestCheckSchemaRequiresCompleteHistoryAndPasswordTable(t *testing.T) {
 						r.WillReturnError(errors.New("private"))
 					} else {
 						r.WillReturnRows(sqlmock.NewRows([]string{"digest"}))
+						m.ExpectQuery("SELECT budget_key,window_unix,attempts FROM auth_attempt_budgets").WillReturnRows(sqlmock.NewRows([]string{"budget_key"}))
 					}
 				}
 			}

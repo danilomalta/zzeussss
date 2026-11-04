@@ -59,10 +59,10 @@
             }
           },
           "429": {
-            "description": "Limite de solicitações; formato do middleware Fiber"
+            "description": "Orçamento de autenticação excedido, resposta uniforme sem identificadores."
           },
           "503": {
-            "description": "Serviço de sessão indisponível",
+            "description": "Proteção durável indisponível: operação não autorizada.",
             "content": {
               "application/json": {
                 "schema": {
@@ -70,8 +70,12 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Origem de navegador recusada antes do orçamento/credenciais."
           }
-        }
+        },
+        "description": " P08: orçamento durável no banco do cliente, compartilhado entre processos que usam o mesmo banco: 5 admissões por peer real e 120 por instalação/canal em janela de 60s iniciada na primeira tentativa. Forwarded/X-Forwarded-For/X-Real-IP não definem o peer. Login e recuperação têm canais separados. Falhas por conta são agregadas entre peers e retornam 429 após cinco falhas; a verificação válida não é bloqueada pelo contador de falhas da conta. Este contador não substitui o limite de admissão: tentativas distribuídas ainda consomem o orçamento da instalação. Erro de persistência recusa com 503; rejeição durável retorna Retry-After: 60 e no-store. Não existe bloqueio permanente nem incremento exponencial neste orçamento. Reiniciar o processo não apaga contadores. Atrás de proxy, o peer e seu orçamento são compartilhados; headers não autorizam obter quota individual. Bancos separados não compartilham orçamento. Identificadores persistidos somente como SHA-256 com escopo; não são anonimização nem substituem proteção do banco. MFA não implementado; fatores e recuperação dependem de aprovação do dono. Origem de navegador deve ser autorizada antes do orçamento. Sec-Fetch-Site: cross-site, Origin null/* e origem não autorizada recebem 403. Cliente nativo sem Origin continua sujeito à autenticação. No núcleo local, ALLOWED_ORIGINS configura a lista; sem configuração, localhost:3000 e titan://app, além do mesmo host da requisição, são aceitos. Vite/proxy com mudança de Host requer ALLOWED_ORIGINS explícito. Online reutiliza RefreshOrigin e ALLOWED_ORIGINS; não basta CORS."
       }
     },
     "/api/v1/auth/refresh": {
@@ -430,7 +434,7 @@
     "/api/v1/auth/recovery/reset": {
       "post": {
         "summary": "Redefinir senha com chave pessoal de uso único",
-        "description": "Chave previamente preparada. Consumo, senha, revogação e auditoria na mesma transação. Não cria sessão; exige novo login. JSON estrito, sem query e sem chave em URL. Sem repetição automática após resposta incerta.",
+        "description": "Chave previamente preparada. Consumo, senha, revogação e auditoria na mesma transação. Não cria sessão; exige novo login. JSON estrito, sem query e sem chave em URL. Sem repetição automática após resposta incerta. P08: orçamento durável no banco do cliente, compartilhado entre processos que usam o mesmo banco: 5 admissões por peer real e 120 por instalação/canal em janela de 60s iniciada na primeira tentativa. Forwarded/X-Forwarded-For/X-Real-IP não definem o peer. Login e recuperação têm canais separados. Falhas por conta são agregadas entre peers e retornam 429 após cinco falhas; a verificação válida não é bloqueada pelo contador de falhas da conta. Este contador não substitui o limite de admissão: tentativas distribuídas ainda consomem o orçamento da instalação. Erro de persistência recusa com 503; rejeição durável retorna Retry-After: 60 e no-store. Não existe bloqueio permanente nem incremento exponencial neste orçamento. Reiniciar o processo não apaga contadores. Atrás de proxy, o peer e seu orçamento são compartilhados; headers não autorizam obter quota individual. Bancos separados não compartilham orçamento. Identificadores persistidos somente como SHA-256 com escopo; não são anonimização nem substituem proteção do banco. MFA não implementado; fatores e recuperação dependem de aprovação do dono. Origem de navegador deve ser autorizada antes do orçamento. Sec-Fetch-Site: cross-site, Origin null/* e origem não autorizada recebem 403. Cliente nativo sem Origin continua sujeito à autenticação. No núcleo local, ALLOWED_ORIGINS configura a lista; sem configuração, localhost:3000 e titan://app, além do mesmo host da requisição, são aceitos. Vite/proxy com mudança de Host requer ALLOWED_ORIGINS explícito. Online reutiliza RefreshOrigin e ALLOWED_ORIGINS; não basta CORS. Chave de recuperação sintaticamente inválida é recusada sem consulta ao banco; o limitador IP existente protege esse caminho barato. Chave bem formada sempre usa o orçamento durável antes de acessar a conta. A recuperação online não recebe nome de conta: somente orçamentos por origem/instalação, sem criar índice ou revelar titular de chave inválida.",
         "security": [],
         "requestBody": {
           "required": true,
@@ -459,13 +463,13 @@
             "description": "Content-Type inválido"
           },
           "429": {
-            "description": "Limite de tentativas/emissão"
+            "description": "Orçamento de autenticação excedido, resposta uniforme sem identificadores."
           },
           "503": {
-            "description": "Serviço indisponível; commit pode ser incerto"
+            "description": "Proteção durável indisponível: operação não autorizada."
           },
           "403": {
-            "description": "Origem não autorizada"
+            "description": "Origem de navegador recusada antes do orçamento/credenciais."
           }
         }
       }
