@@ -8,6 +8,7 @@ import (
 	"titansystem-backend/internal/fiscalcore"
 	"titansystem-backend/internal/fiscalproduction"
 	"titansystem-backend/internal/localdb/fiscal"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 type nfeRecipientInput struct {
@@ -29,6 +30,11 @@ type nfeRecipientInput struct {
 func nfe55Failure(c *fiber.Ctx, err error) error {
 	code := ""
 	switch {
+	// Preparing a choice can race the fiscal gate's contract-clock write.
+	// The authoritative selection already uses BEGIN IMMEDIATE and bounded
+	// retries. Never turn a losing SQLite writer into an opaque server error.
+	case sqlitewrite.Contention(err):
+		return fiscalFailure(c, fiscal.ErrConflict)
 	case errors.Is(err, fiscalproduction.ErrCheckoutProduction):
 		code = "production_blocked"
 	case errors.Is(err, fiscalproduction.ErrFocusA3):
@@ -48,8 +54,23 @@ func nfe55Failure(c *fiber.Ctx, err error) error {
 	return fiscalFailure(c, err)
 }
 func (s *Server) fiscalNFe55Preview(c *fiber.Ctx) error {
-	if !fiscalWrite(c) || string(c.Body()) != "{}" {
+	if !fiscalWrite(c) {
 		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	var in struct {
+		PaymentCode string `json:"payment_code"`
+		Confirmed   bool   `json:"confirmed"`
+	}
+	if fiscalcore.DecodeInput(c.Body(), &in) != nil ||
+		(in.PaymentCode == "" && in.Confirmed) ||
+		(in.PaymentCode != "" && (!in.Confirmed || (in.PaymentCode != "21" && in.PaymentCode != "91"))) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	c.Set("Cache-Control", "no-store")
+	if in.PaymentCode != "" {
+		if err := s.fiscalProviders.PrepareCustomerDeferredNFe55(c.UserContext(), s.productionContext(c), c.Params("id"), in.PaymentCode); err != nil {
+			return nfe55Failure(c, err)
+		}
 	}
 	out, err := s.fiscalProviders.PreviewCustomerNFe55(c.UserContext(), s.productionContext(c), c.Params("id"))
 	if err != nil {

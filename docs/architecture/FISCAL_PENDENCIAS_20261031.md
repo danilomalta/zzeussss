@@ -90,3 +90,7 @@ Fontes oficiais consultadas somente para leitura: https://doc.focusnfe.com.br/re
 8. Homologação real e produção: dependem de configuração/credenciamento/chaves de cada cliente; não do dono do ERP. Produção continua bloqueada. Código escrito para prazo não equivale a aceite oficial.
 
 Retomada de código: E1 exige primeiro uma origem fiscal tipada para entrada/devolução e conciliação de frete com a cotação/pagamento, preservando a venda original. Não reutilizar snapshots de venda comum mudando apenas finalidade/CFOP. Retomar E5 somente com contrato municipal definido, mantendo digitação manual e isolamento. Nenhuma dessas áreas foi marcada como concluída.
+
+## Preparação posterior — NF-e 55 a prazo (WIP)
+
+Branch `feat/fiscal-nfe55-prazo`, base755e717: integração da escolha21/91 à prévia/tela do modelo55 em preparação. Não considerar entregue nem instalada: o gate `TestHTTPNFe55DeferredConcurrentChoice` continua falhando com zero vencedores em disputas. Duas rodadas executadas; parada obrigatória. Retomada e evidências em `CONTINUIDADE_TITANSYSTEM.md`, seção “Preparação NF-e55 a prazo”. A transação de autorização grava o relógio do contrato após leitura, concorrendo com a seleção/preparação; o tratamento superficial de erro como409 é insuficiente. Não enfraquecer o teste. Nenhuma validação Focus real ou habilitação de produção.

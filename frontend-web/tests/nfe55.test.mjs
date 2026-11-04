@@ -45,3 +45,39 @@ test('every literal NF-e screen label resolves in the fiscal dictionary in five 
   for(const key of [...keys,...states])assert.ok(typeof words[key]==='string'&&words[key].trim(),`${lang}:${key}`);
  }
 });
+
+test('NF-e deferred preview freezes only an explicit confirmed method, without financial overrides',async()=>{
+ const calls=[];
+ const fetcher=async(url,options)=>{const body=JSON.parse(options.body);calls.push({url,body});return new Response(JSON.stringify({sale_id:'credit-sale',total_cents:3198,items:[],mapping_supported:true,deferred_payment_code:body.payment_code||'21'}));};
+ for(const code of ['21','91']){
+  const api=createNFe55Client({token:'synthetic',isCurrent:()=>true,fetcher});
+  const result=await api.preview('credit-sale',{payment_code:code,confirmed:true});
+  assert.equal(result.deferred_payment_code,code);
+  assert.deepEqual(calls.at(-1).body,{payment_code:code,confirmed:true});
+  assert.equal(calls.at(-1).url,'/local/v1/fiscal/nfe55/sales/credit-sale/preview');
+ }
+ const api=createNFe55Client({token:'synthetic',isCurrent:()=>true,fetcher});
+ await api.preview('credit-sale');assert.deepEqual(calls.at(-1).body,{});
+ const before=calls.length;
+ for(const input of [{payment_code:'01',confirmed:true},{payment_code:'91',confirmed:false},{}])assert.throws(()=>api.preview('credit-sale',input),e=>e.code==='input_missing');
+ assert.equal(calls.length,before);
+});
+
+test('NF-e deferred selection never repeats an uncertain POST and recovery uses just the sale ID',async()=>{
+ const calls=[];
+ const api=createNFe55Client({token:'synthetic',isCurrent:()=>true,fetcher:async(url,options)=>{calls.push({url,body:JSON.parse(options.body)});if(url.endsWith('/preview'))throw Error('synthetic lost response');return new Response(JSON.stringify({state:'recovery_required'}));}});
+ await assert.rejects(api.preview('credit-sale',{payment_code:'91',confirmed:true}),e=>e.code==='network');
+ assert.equal(calls.length,1);
+ await api.query('credit-sale');assert.equal(calls.length,2);assert.deepEqual(calls[1].body,{});assert.ok(calls[1].url.endsWith('/query'));
+});
+
+test('NF-e deferred selection rejects stale sessions before any mutation or publishing a response',async()=>{
+ let current=false,calls=0;
+ const api=createNFe55Client({token:'synthetic',isCurrent:()=>current,fetcher:async()=>{calls++;current=false;return new Response(JSON.stringify({sale_id:'credit-sale',total_cents:3198,items:[],mapping_supported:true,deferred_payment_code:'21'}));}});
+ await assert.rejects(api.preview('credit-sale',{payment_code:'21',confirmed:true}),e=>e.code==='session');assert.equal(calls,0);
+ current=true;await assert.rejects(api.preview('credit-sale',{payment_code:'21',confirmed:true}),e=>e.code==='session');assert.equal(calls,1);
+ for(const lang of ['pt-BR','en','es','fr','zh-CN']){
+  const words=JSON.parse(await readFile(new URL(`../src/i18n/fiscalCustomer/${lang}.json`,import.meta.url)));
+  for(const key of ['nfePaymentChoice','nfePaymentRecorded','nfePayment21','nfePayment91','nfePaymentWarning','nfePaymentConfirm','nfePaymentFrozen'])assert.ok(words[key]?.trim(),`${lang}:${key}`);
+ }
+});

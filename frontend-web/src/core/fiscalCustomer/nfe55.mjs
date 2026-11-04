@@ -11,9 +11,9 @@ export function createNFe55Client({token,isCurrent,fetcher=fetch}){
    if(download){if(!response.headers.get('content-type')?.includes('application/pdf'))throw new NFe55Error('response');const blob=await response.blob();current();return blob;}
    const text=await response.text();current();if(text.length>524288)throw new NFe55Error('response');
    const value=JSON.parse(text);if(!value||typeof value!=='object'||Array.isArray(value))throw new NFe55Error('response');
-   if(action==='preview'){if(value.sale_id!==sale||!Number.isSafeInteger(value.total_cents)||!Array.isArray(value.items)||typeof value.mapping_supported!=='boolean')throw new NFe55Error('response');}
+   if(action==='preview'){if(value.sale_id!==sale||!Number.isSafeInteger(value.total_cents)||!Array.isArray(value.items)||typeof value.mapping_supported!=='boolean'||(value.deferred_payment_code!==undefined&&!['21','91'].includes(value.deferred_payment_code)))throw new NFe55Error('response');}
    else if(typeof value.state!=='string')throw new NFe55Error('response');return value;
   }catch(error){if(error instanceof NFe55Error)throw error;throw new NFe55Error('network');}finally{clearTimeout(timer);}
  }
- return {preview:sale=>call(sale,'preview'),emit:(sale,input)=>call(sale,'emit',input),query:sale=>call(sale,'query'),correction:(sale,input)=>call(sale,'correction',input),cancel:(sale,input)=>call(sale,'cancel',input),danfe:sale=>call(sale,'danfe',null,true)};
+ return {preview:(sale,input)=>{if(input!==undefined&&(!['21','91'].includes(input.payment_code)||input.confirmed!==true))throw new NFe55Error('input_missing');return call(sale,'preview',input);},emit:(sale,input)=>call(sale,'emit',input),query:sale=>call(sale,'query'),correction:(sale,input)=>call(sale,'correction',input),cancel:(sale,input)=>call(sale,'cancel',input),danfe:sale=>call(sale,'danfe',null,true)};
 }

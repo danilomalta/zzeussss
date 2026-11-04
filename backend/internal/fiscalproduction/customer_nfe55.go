@@ -46,14 +46,33 @@ func (r *ProviderRegistry) customerFocusProvider(ctx context.Context, a RequestC
 	return provider, b, nil
 }
 
+// PrepareCustomerDeferredNFe55 records an explicit commercial payment method,
+// never a receipt. The existing selection transaction validates the AR origin,
+// session and owner; its stable operation survives a lost response/client reset.
+func (r *ProviderRegistry) PrepareCustomerDeferredNFe55(ctx context.Context, a RequestContext, sale, code string) error {
+	provider, _, err := r.CustomerNFe55Provider(ctx, a)
+	if err != nil {
+		return err
+	}
+	// ValidateCheckout is intentionally NFC-e-only. Keep the model-55 gate
+	// separate; do not relax that existing checkout boundary.
+	if focus, ok := provider.(*FocusProvider); ok {
+		if err = focus.validateModel(ctx, a, 2, "55"); err != nil {
+			return err
+		}
+	}
+	return fiscal.SelectDeferredPayment(ctx, a.DB, a.License, a.Actor, a.Device, a.Token, sale, "nfe55-"+focusReference(a.Actor.TenantID, sale), code)
+}
+
 type CustomerNFePreview struct {
-	AccountantApproved bool                  `json:"accountant_approved"`
-	SaleID             string                `json:"sale_id"`
-	IntentID           string                `json:"intent_id"`
-	TotalCents         int64                 `json:"total_cents"`
-	Items              []fiscal.SaleItem     `json:"items"`
-	MappingSupported   bool                  `json:"mapping_supported"`
-	Status             fiscal.CheckoutStatus `json:"status"`
+	DeferredPaymentCode string                `json:"deferred_payment_code,omitempty"`
+	AccountantApproved  bool                  `json:"accountant_approved"`
+	SaleID              string                `json:"sale_id"`
+	IntentID            string                `json:"intent_id"`
+	TotalCents          int64                 `json:"total_cents"`
+	Items               []fiscal.SaleItem     `json:"items"`
+	MappingSupported    bool                  `json:"mapping_supported"`
+	Status              fiscal.CheckoutStatus `json:"status"`
 }
 
 func (r *ProviderRegistry) PreviewCustomerNFe55(ctx context.Context, a RequestContext, sale string) (CustomerNFePreview, error) {
@@ -66,6 +85,9 @@ func (r *ProviderRegistry) PreviewCustomerNFe55(ctx context.Context, a RequestCo
 		return CustomerNFePreview{}, err
 	}
 	out := CustomerNFePreview{SaleID: sale, IntentID: intent.ID, TotalCents: intent.Snapshot.TotalCents, Items: intent.Snapshot.Items, MappingSupported: true, Status: fiscal.CheckoutStatus{State: "not_requested"}}
+	if intent.Snapshot.DeferredPayment != nil {
+		out.DeferredPaymentCode = intent.Snapshot.DeferredPayment.Code
+	}
 	for _, item := range out.Items {
 		if item.Tax == nil || focusTaxFields(map[string]any{}, item.Tax.Taxes) != nil {
 			out.MappingSupported = false

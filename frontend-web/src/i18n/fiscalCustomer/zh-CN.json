@@ -77,7 +77,7 @@
   "providerCredentialsSave": "保存到凭据库",
   "nfeTitle": "客户 NF-e 55",
   "nfeBanner": "认证测试环境 - 无财政效力",
-  "nfeScope": "仅支持州内现金销售、非纳税最终消费者、现场交易且无运费。商品和税款取自已记录销售。",
+  "nfeScope": "州内现场销售给非纳税最终消费者，不收取运费。采用已记录的现金付款或明确确认的延期付款方式；商品和税款来自原始销售。",
   "nfeUnavailable": "此流程禁止生产环境、A3 和号码作废。",
   "nfeSale": "已记录销售编号",
   "nfeLoad": "加载销售",
@@ -121,7 +121,7 @@
   "nfeError_production_blocked": "禁止在生产环境开票。",
   "nfeError_a3_unsupported": "不支持 A3；Focus 需要 A1。",
   "nfeError_invalidation_unavailable": "暂不支持号码作废。",
-  "nfeError_input_missing": "请填写收件人、地址、业务性质、普通开票目的及无运费选项。",
+  "nfeError_input_missing": "请检查必填项：销售、付款方式、确认、收件人、地址、业务性质和目的。此流程不支持收取运费。",
   "nfeError_tax_mapping_unsupported": "税种尚未映射或缺少税费报价。请修正财政配置；系统不会编造税款。",
   "nfeError_provider_unavailable": "请为本公司配置 NF-e 55 档案和私密 Focus 令牌。",
   "nfeError_network": "响应不确定。请查询同一销售，不要重新发送开票请求。",
@@ -163,5 +163,13 @@
   "exportDownload": "选择目录并导出",
   "exportSaved": "文件已交付到所选目录或下载管理器。请检查 READ_ME.txt 和 CSV 中缺失的记录。",
   "exportFailed": "导出取消或不可用。请检查会话、权限、目录及限制。",
-  "nfeArchivePending": "XML 尚未在本地归档。请检查私有备份密钥并查询同一张发票；不要重新创建销售或发票。"
+  "nfeArchivePending": "XML 尚未在本地归档。请检查私有备份密钥并查询同一张发票；不要重新创建销售或发票。",
+  "nfePaymentChoice": "销售付款方式",
+  "nfePaymentRecorded": "使用原始销售记录",
+  "nfePayment21": "21 — 店内赊账",
+  "nfePayment91": "91 — 稍后付款",
+  "nfePaymentWarning": "延期付款方式将记录在服务器上，不记录收款，也不更改现金或分期付款。请确认与客户约定的付款方式。",
+  "nfePaymentConfirm": "我确认所填销售采用此付款方式。",
+  "nfePaymentFrozen": "已记录的延期付款方式",
+  "nfeError_fiscal_conflict": "版本冲突或并发操作。重试前请查询销售及其已记录的付款方式。原有选择未被覆盖。"
 }

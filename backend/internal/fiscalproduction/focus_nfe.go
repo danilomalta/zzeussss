@@ -17,7 +17,7 @@ import (
 
 // Contract: https://campos.focusnfe.com.br/nfe_homologacao/NotaFiscalXML.html
 // Only the existing frozen cash-sale tax case is mapped. No tax defaults.
-var ErrFocusNFeIncomplete = errors.New("NF-e requires explicit nature, direction, destination, final consumer, purpose, freight mode and recipient identity/address; only normal internal consumer cash sales without freight are supported")
+var ErrFocusNFeIncomplete = errors.New("NF-e requires explicit nature, direction, destination, final consumer, purpose, freight mode and recipient identity/address; only normal internal consumer sales with recorded cash or explicit deferred payment and without freight charges are supported")
 var ErrFocusInvalidationUnavailable = errors.New("Focus invalidation unavailable: year contract not established")
 
 func (p *FocusProvider) documentModel() string {

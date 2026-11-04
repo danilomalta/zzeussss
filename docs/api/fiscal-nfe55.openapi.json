@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Customer NF-e 55 screen — homologation only",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": " Focus: XML obtido só pelos caminhos oficiais em homologação, sem redirecionamento. xml_archive_key_file é a chave privada de backup do cliente, 32 bytes, 0600, configuração local de confiança. Arquivo cifrado AES-GCM na outbox do banco escolhido, incluído no snapshot; guardar chave fora do backup. archive_state indica archived/pending/unavailable, sem alterar autorização. Consulta da mesma referência pode repetir GET de XML, nunca reemitir. Exportação é local e nunca consulta terceiros."
   },
   "paths": {
@@ -25,7 +25,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer sale with recorded cash or explicitly selected deferred method 21/91, without freight charges. Deferred choice preserves the AR origin and creates no receipt or cash movement. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale. Optional confirmed payment_code freezes an idempotent server-side selection before preparing the snapshot; only for an existing credit sale with matching AR installments and no sale payments. A changed method conflicts; {} reopens an already prepared snapshot. No issuance from preview.",
         "responses": {
           "200": {
             "description": "HOMOLOGAÇÃO - SEM VALOR FISCAL. Cache-Control: no-store.",
@@ -64,8 +64,35 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "additionalProperties": false
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "payment_code",
+                      "confirmed"
+                    ],
+                    "properties": {
+                      "payment_code": {
+                        "type": "string",
+                        "enum": [
+                          "21",
+                          "91"
+                        ]
+                      },
+                      "confirmed": {
+                        "type": "boolean",
+                        "enum": [
+                          true
+                        ]
+                      }
+                    }
+                  }
+                ]
               }
             }
           }
@@ -91,7 +118,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer sale with recorded cash or explicitly selected deferred method 21/91, without freight charges. Deferred choice preserves the AR origin and creates no receipt or cash movement. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
         "responses": {
           "200": {
             "description": "HOMOLOGAÇÃO - SEM VALOR FISCAL. Cache-Control: no-store.",
@@ -156,7 +183,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer sale with recorded cash or explicitly selected deferred method 21/91, without freight charges. Deferred choice preserves the AR origin and creates no receipt or cash movement. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
         "responses": {
           "200": {
             "description": "HOMOLOGAÇÃO - SEM VALOR FISCAL. Cache-Control: no-store.",
@@ -222,7 +249,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer sale with recorded cash or explicitly selected deferred method 21/91, without freight charges. Deferred choice preserves the AR origin and creates no receipt or cash movement. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
         "responses": {
           "200": {
             "description": "HOMOLOGAÇÃO - SEM VALOR FISCAL. Cache-Control: no-store.",
@@ -287,7 +314,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer sale with recorded cash or explicitly selected deferred method 21/91, without freight charges. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
         "responses": {
           "200": {
             "description": "HOMOLOGAÇÃO - SEM VALOR FISCAL. Cache-Control: no-store.",
@@ -343,7 +370,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer cash sale without freight. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
+        "description": "Owner only, active session and fiscal contract. Model 55, homologation only. Normal internal consumer sale with recorded cash or explicitly selected deferred method 21/91, without freight charges. Deferred choice preserves the AR origin and creates no receipt or cash movement. Query only consults; never resends. No recipient data in logs, telemetry or browser persistence. Items and taxes come from the recorded sale.",
         "responses": {
           "200": {
             "description": "Separate correction status; no sale, stock or payment effect",
@@ -766,6 +793,14 @@
           "accountant_approved": {
             "type": "boolean",
             "default": false
+          },
+          "deferred_payment_code": {
+            "type": "string",
+            "enum": [
+              "21",
+              "91"
+            ],
+            "description": "Frozen explicit method, absent for a recorded cash payment. Never a receipt."
           }
         },
         "required": [

@@ -77,7 +77,7 @@
   "providerCredentialsSave": "Guardar no cofre",
   "nfeTitle": "NF-e 55 do cliente",
   "nfeBanner": "HOMOLOGAÇÃO - SEM VALOR FISCAL",
-  "nfeScope": "Somente venda interna em dinheiro, consumidor final não contribuinte, presencial e sem frete. Itens e impostos vêm da venda registrada.",
+  "nfeScope": "Venda interna a consumidor final não contribuinte, presencial e sem cobrança de frete. Dinheiro registrado ou modalidade a prazo explicitamente confirmada; itens e impostos vêm da venda original.",
   "nfeUnavailable": "Produção, A3 e inutilização estão indisponíveis neste fluxo.",
   "nfeSale": "ID da venda registrada",
   "nfeLoad": "Carregar venda",
@@ -121,7 +121,7 @@
   "nfeError_production_blocked": "Emissão em produção bloqueada.",
   "nfeError_a3_unsupported": "A3 indisponível; Focus exige A1.",
   "nfeError_invalidation_unavailable": "Inutilização indisponível.",
-  "nfeError_input_missing": "Informe destinatário, endereço, natureza, finalidade normal e ausência de frete.",
+  "nfeError_input_missing": "Verifique os campos obrigatórios: venda, modalidade, confirmação, destinatário, endereço, natureza e finalidade. Não informe cobrança de frete neste fluxo.",
   "nfeError_tax_mapping_unsupported": "Grupo tributário sem mapeamento ou cotação fiscal ausente. Corrija o cadastro fiscal; nenhum imposto foi inventado.",
   "nfeError_provider_unavailable": "Configure o provedor Focus da empresa com perfil NF-e 55 e token privado.",
   "nfeError_network": "Resposta incerta. Consulte a mesma venda; não reenvie a emissão.",
@@ -163,5 +163,13 @@
   "exportDownload": "Escolher destino e exportar",
   "exportSaved": "Arquivo entregue ao destino ou gerenciador de downloads. Confira READ_ME.txt e ausências no CSV.",
   "exportFailed": "Exportação cancelada ou indisponível. Verifique sessão, permissão, destino e limites.",
-  "nfeArchivePending": "O XML ainda não está arquivado localmente. Confira a chave privada de backup e consulte a mesma nota; não emita outra venda ou nota."
+  "nfeArchivePending": "O XML ainda não está arquivado localmente. Confira a chave privada de backup e consulte a mesma nota; não emita outra venda ou nota.",
+  "nfePaymentChoice": "Modalidade da venda",
+  "nfePaymentRecorded": "Usar registro original da venda",
+  "nfePayment21": "21 — Crédito em loja",
+  "nfePayment91": "91 — Pagamento posterior",
+  "nfePaymentWarning": "A escolha a prazo fica registrada no servidor. Não registra recebimento nem altera caixa ou parcelas. Confirme a modalidade acordada com o cliente.",
+  "nfePaymentConfirm": "Confirmo esta modalidade para a venda informada.",
+  "nfePaymentFrozen": "Modalidade a prazo registrada",
+  "nfeError_fiscal_conflict": "Conflito de revisão ou operação concorrente. Consulte a venda e a modalidade registrada antes de tentar novamente. A escolha existente não foi substituída."
 }

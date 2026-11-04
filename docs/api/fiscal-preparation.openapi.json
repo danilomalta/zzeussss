@@ -1328,7 +1328,8 @@
                 "properties": {
                   "model": {
                     "enum": [
-                      "65"
+                      "65",
+                      "55"
                     ]
                   },
                   "environment": {
@@ -1692,7 +1693,7 @@
           "document_id",
           "total_cents"
         ],
-        "description": "Immutable explicit deferred method for existing credit-sale origin; NOT a confirmed payment. Owner, homologation model 65 only. Original receivable/installments remain unchanged.",
+        "description": "Immutable explicit deferred method for existing credit-sale origin; NOT a confirmed payment. Owner, homologation models 65/55 only. Original receivable/installments remain unchanged.",
         "properties": {
           "selected_by": {
             "type": "string"

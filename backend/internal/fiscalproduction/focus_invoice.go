@@ -173,7 +173,7 @@ func focusPayments(snapshot fiscal.Snapshot) ([]map[string]string, error) {
 	}
 	if snapshot.DeferredPayment != nil {
 		deferred := snapshot.DeferredPayment
-		if snapshot.Profile.Model != "65" || len(snapshot.Payments) != 0 || !deferred.Valid(snapshot.TotalCents) {
+		if (snapshot.Profile.Model != "65" && snapshot.Profile.Model != "55") || snapshot.Profile.Environment != "homologation" || len(snapshot.Payments) != 0 || !deferred.Valid(snapshot.TotalCents) {
 			return nil, fiscalcore.ErrUnsupported
 		}
 		payments = append(payments, map[string]string{"indicador_pagamento": "1", "forma_pagamento": deferred.Code, "valor_pagamento": focusMoney(snapshot.TotalCents)})

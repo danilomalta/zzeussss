@@ -77,7 +77,7 @@
   "providerCredentialsSave": "Save in vault",
   "nfeTitle": "Customer NF-e 55",
   "nfeBanner": "HOMOLOGATION - NO FISCAL VALUE",
-  "nfeScope": "Internal cash consumer sale only: non-taxpayer, in person, no freight. Items and taxes come from the recorded sale.",
+  "nfeScope": "Internal in-person sale to a non-taxpayer final consumer, without freight charges. Recorded cash or an explicitly confirmed deferred method; items and taxes come from the original sale.",
   "nfeUnavailable": "Production, A3 and number invalidation are unavailable in this flow.",
   "nfeSale": "Recorded sale ID",
   "nfeLoad": "Load sale",
@@ -121,7 +121,7 @@
   "nfeError_production_blocked": "Production issuance is blocked.",
   "nfeError_a3_unsupported": "A3 unavailable; Focus requires A1.",
   "nfeError_invalidation_unavailable": "Number invalidation unavailable.",
-  "nfeError_input_missing": "Enter recipient, address, nature, normal purpose and no freight.",
+  "nfeError_input_missing": "Check required fields: sale, method, confirmation, recipient, address, nature and purpose. Freight charges are not supported by this flow.",
   "nfeError_tax_mapping_unsupported": "Unmapped tax group or missing tax quote. Correct fiscal configuration; no tax was invented.",
   "nfeError_provider_unavailable": "Configure this company’s Focus provider with NF-e 55 profile and private token.",
   "nfeError_network": "Uncertain response. Consult the same sale; do not resend issuance.",
@@ -163,5 +163,13 @@
   "exportDownload": "Choose destination and export",
   "exportSaved": "File delivered to the destination or download manager. Check READ_ME.txt and missing records in CSV.",
   "exportFailed": "Export cancelled or unavailable. Check session, permission, destination and limits.",
-  "nfeArchivePending": "XML is not yet archived locally. Check the private backup key and query the same invoice; do not issue another sale or invoice."
+  "nfeArchivePending": "XML is not yet archived locally. Check the private backup key and query the same invoice; do not issue another sale or invoice.",
+  "nfePaymentChoice": "Sale payment method",
+  "nfePaymentRecorded": "Use the original sale record",
+  "nfePayment21": "21 — Store credit",
+  "nfePayment91": "91 — Later payment",
+  "nfePaymentWarning": "The deferred method is recorded on the server. It records no receipt and changes neither cash nor installments. Confirm the method agreed with the customer.",
+  "nfePaymentConfirm": "I confirm this method for the entered sale.",
+  "nfePaymentFrozen": "Recorded deferred method",
+  "nfeError_fiscal_conflict": "Revision conflict or concurrent operation. Consult the sale and its recorded method before retrying. The existing choice was not overwritten."
 }

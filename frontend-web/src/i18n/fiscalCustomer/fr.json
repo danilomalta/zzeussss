@@ -77,7 +77,7 @@
   "providerCredentialsSave": "Enregistrer dans le coffre",
   "nfeTitle": "NF-e 55 du client",
   "nfeBanner": "HOMOLOGATION - SANS VALEUR FISCALE",
-  "nfeScope": "Vente interne en espèces uniquement, consommateur final non assujetti, en personne et sans transport. Articles et taxes issus de la vente enregistrée.",
+  "nfeScope": "Vente interne en personne à un consommateur final non assujetti, sans frais de transport. Espèces enregistrées ou mode différé explicitement confirmé ; articles et taxes issus de la vente originale.",
   "nfeUnavailable": "Production, A3 et invalidation des numéros indisponibles dans ce parcours.",
   "nfeSale": "ID de vente enregistrée",
   "nfeLoad": "Charger la vente",
@@ -121,7 +121,7 @@
   "nfeError_production_blocked": "Émission en production bloquée.",
   "nfeError_a3_unsupported": "A3 indisponible ; Focus exige A1.",
   "nfeError_invalidation_unavailable": "Invalidation des numéros indisponible.",
-  "nfeError_input_missing": "Renseignez destinataire, adresse, nature, finalité normale et absence de transport.",
+  "nfeError_input_missing": "Vérifiez les champs requis : vente, mode, confirmation, destinataire, adresse, nature et finalité. Ce parcours ne permet pas les frais de transport.",
   "nfeError_tax_mapping_unsupported": "Groupe fiscal non mappé ou calcul fiscal absent. Corrigez la configuration ; aucune taxe inventée.",
   "nfeError_provider_unavailable": "Configurez Focus pour cette entreprise avec profil NF-e 55 et jeton privé.",
   "nfeError_network": "Réponse incertaine. Consultez la même vente sans renvoyer l’émission.",
@@ -163,5 +163,13 @@
   "exportDownload": "Choisir le dossier et exporter",
   "exportSaved": "Fichier remis au dossier ou gestionnaire de téléchargements. Vérifiez READ_ME.txt et absences dans le CSV.",
   "exportFailed": "Export annulé ou indisponible. Vérifiez session, permission, dossier et limites.",
-  "nfeArchivePending": "Le XML n’est pas encore archivé localement. Vérifiez la clé privée de sauvegarde et consultez la même facture ; ne créez pas une autre vente ou facture."
+  "nfeArchivePending": "Le XML n’est pas encore archivé localement. Vérifiez la clé privée de sauvegarde et consultez la même facture ; ne créez pas une autre vente ou facture.",
+  "nfePaymentChoice": "Mode de paiement de la vente",
+  "nfePaymentRecorded": "Utiliser l’enregistrement original de la vente",
+  "nfePayment21": "21 — Crédit du magasin",
+  "nfePayment91": "91 — Paiement ultérieur",
+  "nfePaymentWarning": "Le mode différé est enregistré sur le serveur. Aucun encaissement ni changement de caisse ou d’échéances. Confirmez le mode convenu avec le client.",
+  "nfePaymentConfirm": "Je confirme ce mode pour la vente indiquée.",
+  "nfePaymentFrozen": "Mode différé enregistré",
+  "nfeError_fiscal_conflict": "Conflit de révision ou opération simultanée. Consultez la vente et le mode enregistré avant de réessayer. Le choix existant n’a pas été remplacé."
 }

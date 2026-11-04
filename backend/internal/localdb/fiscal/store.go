@@ -308,7 +308,7 @@ func prepareTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Store,
 		return out, err
 	}
 	if len(snap.Payments) == 0 {
-		if p.Input.Environment != "homologation" || p.Input.Model != "65" {
+		if p.Input.Environment != "homologation" || (p.Input.Model != "65" && p.Input.Model != "55") {
 			return out, ErrIntegrity
 		}
 		snap.DeferredPayment, err = deferredPaymentTx(ctx, tx, a, d, in.SaleID, snap.TotalCents)
