@@ -227,7 +227,7 @@ func (s Service) Configure(ctx context.Context, op string, c Config) error {
 		next := c
 		next.Revision++
 		b, _ := json.Marshal(next)
-		_, e = tx.ExecContext(ctx, `INSERT INTO retail_config VALUES(?,?,?) ON CONFLICT(tenant_id) DO UPDATE SET revision=excluded.revision,body=excluded.body`, s.Actor.TenantID, next.Revision, string(b))
+		e = storeWriteOne(ctx, tx, `INSERT INTO retail_config VALUES(?,?,?) ON CONFLICT(tenant_id) DO UPDATE SET revision=excluded.revision,body=excluded.body`, s.Actor.TenantID, next.Revision, string(b))
 		return e
 	})
 }
@@ -254,7 +254,7 @@ func (s Service) SaveCustomer(ctx context.Context, op string, c Customer) error 
 		next.Revision++
 		next.ConsentAt = time.Now().UTC().Format(time.RFC3339Nano)
 		raw, _ := json.Marshal(next)
-		_, e = tx.ExecContext(ctx, `INSERT INTO retail_customers VALUES(?,?,?,?) ON CONFLICT(tenant_id,id) DO UPDATE SET revision=excluded.revision,body=excluded.body`, s.Actor.TenantID, next.ID, next.Revision, string(raw))
+		e = storeWriteOne(ctx, tx, `INSERT INTO retail_customers VALUES(?,?,?,?) ON CONFLICT(tenant_id,id) DO UPDATE SET revision=excluded.revision,body=excluded.body`, s.Actor.TenantID, next.ID, next.Revision, string(raw))
 		return e
 	})
 }
@@ -287,7 +287,7 @@ func (s Service) Privacy(ctx context.Context, op, id string, revision int64, ano
 			c.Revision++
 			out = c
 			raw, _ := json.Marshal(c)
-			_, e = tx.ExecContext(ctx, `UPDATE retail_customers SET revision=?,body=? WHERE tenant_id=? AND id=?`, c.Revision, string(raw), s.Actor.TenantID, id)
+			e = storeWriteOne(ctx, tx, `UPDATE retail_customers SET revision=?,body=? WHERE tenant_id=? AND id=?`, c.Revision, string(raw), s.Actor.TenantID, id)
 			return e
 		}
 		return nil

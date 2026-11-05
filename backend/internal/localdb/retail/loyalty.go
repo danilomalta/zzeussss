@@ -74,8 +74,7 @@ func pointsEntry(ctx context.Context, tx *sql.Tx, tenant, customer, sale, entry,
 	if kind != "reverse" {
 		entry = "command-" + entry
 	}
-	_, e := tx.ExecContext(ctx, `INSERT INTO retail_points VALUES(?,?,?,?,?,?,?,?)`, tenant, customer, sale, entry, kind, delta, expires, time.Now().UTC().Format(time.RFC3339Nano))
-	return e
+	return storeWriteOne(ctx, tx, `INSERT INTO retail_points VALUES(?,?,?,?,?,?,?,?)`, tenant, customer, sale, entry, kind, delta, expires, time.Now().UTC().Format(time.RFC3339Nano))
 }
 
 // synchronizePoints never trusts the client: cancellations/refunds are read from
@@ -259,7 +258,7 @@ func (s Service) Award(ctx context.Context, customer string, in PointsInput) err
 			return ErrConflict
 		}
 		expires := s.now().Unix() + c.ValidDays*86400
-		_, e = tx.ExecContext(ctx, `INSERT INTO retail_point_awards VALUES(?,?,?,?,?,?,?,?,?)`, s.Actor.TenantID, s.Actor.StoreID, in.SaleID, customer, points, total, c.EarnCents, c.EarnPoints, expires)
+		e = storeWriteOne(ctx, tx, `INSERT INTO retail_point_awards VALUES(?,?,?,?,?,?,?,?,?)`, s.Actor.TenantID, s.Actor.StoreID, in.SaleID, customer, points, total, c.EarnCents, c.EarnPoints, expires)
 		if e != nil {
 			return e
 		}
@@ -329,7 +328,6 @@ func (s Service) Redeem(ctx context.Context, customer string, in PointsInput) er
 		if remaining != 0 {
 			return ErrConflict
 		}
-		_, e = tx.ExecContext(ctx, `INSERT INTO retail_point_redemptions VALUES(?,?,?,?,?)`, s.Actor.TenantID, customer, in.OperationID, in.Points, benefit)
-		return e
+		return storeWriteOne(ctx, tx, `INSERT INTO retail_point_redemptions VALUES(?,?,?,?,?)`, s.Actor.TenantID, customer, in.OperationID, in.Points, benefit)
 	})
 }
