@@ -3,7 +3,7 @@
   "info": {
     "title": "Titan local fiscal preparation",
     "version": "0.1.0",
-    "description": "Preparação durável, não emissão fiscal. Oito operações. Sem endpoint de ativação, transmissão, autorização, cancelamento fiscal, numeração ou credencial. Não substitui contrato de emissão/homologação posterior. Rejeita campos desconhecidos, duplicados, nulos, query duplicada e corpos em GET."
+    "description": "Preparação durável, não emissão fiscal. Oito operações. Sem endpoint de ativação, transmissão, autorização, cancelamento fiscal, numeração ou credencial. Não substitui contrato de emissão/homologação posterior. Rejeita campos desconhecidos, duplicados, nulos, query duplicada e corpos em GET. Cadastro/revisão exige sessão atual, proprietário, contrato e revisão esperada na transação imediata existente. A revisão só é confirmada se exatamente uma linha for persistida; ausência de escrita retorna conflito409/rollback e permite recuperar pelo mesmo operation_id sem duplicar. Modelo, regime, UF, inscrições e ambiente são informados explicitamente; validação local não comprova credenciamento fiscal."
   },
   "servers": [
     {

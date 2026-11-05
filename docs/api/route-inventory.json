@@ -996,7 +996,8 @@
       "method": "POST",
       "path": "/local/v1/fiscal/onboarding",
       "authentication": "session",
-      "source": "backend/internal/localapi/fiscal.go"
+      "source": "backend/internal/localapi/fiscal.go",
+      "integrity": "Current owner session, contract and expected revision checked inside the existing immediate writer. Exactly one profile revision must be inserted before success; missing write returns 409/rollback. Replay preserves the original revision and operation_id. Production profile is only a draft; provider is chosen from server configuration."
     },
     {
       "api": "local",
@@ -1038,7 +1039,8 @@
       "method": "POST",
       "path": "/local/v1/fiscal/profiles",
       "authentication": "session",
-      "source": "backend/internal/localapi/fiscal.go"
+      "source": "backend/internal/localapi/fiscal.go",
+      "integrity": "Current owner session, contract and expected revision checked inside the existing immediate writer. Exactly one profile revision must be inserted before success; missing write returns 409/rollback. Replay preserves the original revision and operation_id. Production profile is only a draft; provider is chosen from server configuration."
     },
     {
       "api": "local",

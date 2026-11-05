@@ -99,9 +99,16 @@ func configureTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Stor
 		return out, ErrConflict
 	}
 	out = Profile{Input: in, Revision: revision + 1, CreatedAt: time.Now().UTC().Format(time.RFC3339Nano), Readiness: Unavailable()}
-	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_profiles(tenant_id,store_id,profile_id,revision,device_id,actor_id,operation_id,request_json,created_at) VALUES(?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, in.ProfileID, out.Revision, d.DeviceID, a.IdentityID, in.OperationID, string(body), out.CreatedAt)
+	result, err := tx.ExecContext(ctx, `INSERT INTO fiscal_profiles(tenant_id,store_id,profile_id,revision,device_id,actor_id,operation_id,request_json,created_at) VALUES(?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, in.ProfileID, out.Revision, d.DeviceID, a.IdentityID, in.OperationID, string(body), out.CreatedAt)
 	if err != nil {
 		return Profile{}, err
+	}
+	written, err := result.RowsAffected()
+	if err != nil {
+		return Profile{}, err
+	}
+	if written != 1 {
+		return Profile{}, ErrConflict
 	}
 	return out, nil
 }
