@@ -451,7 +451,8 @@
       "method": "GET",
       "path": "/local/v1/checkout/plans/:id/fiscal/danfe",
       "authentication": "session",
-      "source": "backend/internal/localapi/checkout_plans.go"
+      "source": "backend/internal/localapi/checkout_plans.go",
+      "integrity": " Focus XML archive uses customer-scoped authenticated ciphertext and requires its durable row before archived status. Missing, tampered or wrong-key evidence must not yield a document; a configured download/persistence failure keeps the note and remains pending (missing configuration remains unavailable). Native homologation journals are a separate, not yet encrypted persistence path."
     },
     {
       "api": "local",
@@ -842,7 +843,8 @@
       "method": "GET",
       "path": "/local/v1/fiscal/accounting-export",
       "authentication": "session",
-      "source": "backend/internal/localapi/fiscal.go"
+      "source": "backend/internal/localapi/fiscal.go",
+      "integrity": " Focus XML archive uses customer-scoped authenticated ciphertext and requires its durable row before archived status. Missing, tampered or wrong-key evidence must not yield a document; a configured download/persistence failure keeps the note and remains pending (missing configuration remains unavailable). Native homologation journals are a separate, not yet encrypted persistence path."
     },
     {
       "api": "local",

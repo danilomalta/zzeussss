@@ -260,8 +260,18 @@ func (p *FocusProvider) storeArchive(ctx context.Context, a RequestContext, sale
 		if !errors.Is(e, sql.ErrNoRows) {
 			return e
 		}
-		_, e = tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)VALUES(?,?,?,?,?,?,'checkout.focus_xml_archive',1,?,?)`, id, a.Actor.TenantID, a.Actor.StoreID, a.Device.DeviceID, operation, sale, string(raw), time.Now().UTC().Format(time.RFC3339Nano))
-		return e
+		result, e := tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at)VALUES(?,?,?,?,?,?,'checkout.focus_xml_archive',1,?,?)`, id, a.Actor.TenantID, a.Actor.StoreID, a.Device.DeviceID, operation, sale, string(raw), time.Now().UTC().Format(time.RFC3339Nano))
+		if e != nil {
+			return e
+		}
+		written, e := result.RowsAffected()
+		if e != nil {
+			return e
+		}
+		if written != 1 {
+			return fiscal.ErrConflict
+		}
+		return nil
 	})
 }
 func (p *FocusProvider) archiveResult(ctx context.Context, a RequestContext, sale, intent string, out DocumentResult) string {
