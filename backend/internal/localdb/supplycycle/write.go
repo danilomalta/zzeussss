@@ -6,10 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb/entitlementstore"
+	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/payables"
 	"titansystem-backend/internal/localdb/purchases"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 func RecordDecision(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in DecisionInput) (Result, error) {
@@ -250,15 +253,32 @@ func Receive(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a ident
 	}
 	return finish(ctx, tx, a, d, "delivery", id, body, v.Revision, Result{OperationID: in.OperationID, Delivery: &v, Receipt: &r.Receipt})
 }
-func CreatePayable(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in FinanceInput) (Result, error) {
-	if !key(id) || !key(in.OperationID) || in.ExpectedRevision < 1 || !text(in.SourceReference, 255, false) {
+func CreatePayable(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in FinanceInput, token string) (Result, error) {
+	if db == nil || c == nil || !key(id) || !key(in.OperationID) || in.ExpectedRevision < 1 || !text(in.SourceReference, 255, false) {
 		return Result{}, purchases.ErrInvalid
 	}
-	tx, e := begin(ctx, db, c, a, d, true)
-	if e != nil {
-		return Result{}, e
+	var out Result
+	err := sqlitewrite.Run(ctx, db, purchases.ErrConflict, func(tx *sql.Tx) error {
+		if err := fiscal.ValidateSaleSessionTx(ctx, tx, a, d, token); err != nil {
+			return err
+		}
+		if err := c.RequireTx(ctx, tx, a, d, identity.ManageCash, modules.Finance); err != nil {
+			return err
+		}
+		if err := authorize(ctx, tx, a, d, true); err != nil {
+			return err
+		}
+		var err error
+		out, err = createPayableTx(ctx, tx, c, a, d, id, in)
+		return err
+	})
+	if err != nil {
+		return Result{}, err
 	}
-	defer tx.Rollback()
+	return out, nil
+}
+
+func createPayableTx(ctx context.Context, tx *sql.Tx, c *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in FinanceInput) (Result, error) {
 	body := request(id, "finance", in)
 	if r, ok, e := prior(ctx, tx, a, d, in.OperationID, body); ok || e != nil {
 		return r, e
@@ -294,7 +314,11 @@ func CreatePayable(ctx context.Context, db *sql.DB, c *entitlementstore.Store, a
 	if e = payables.CheckReceivingOriginTx(ctx, tx, a, d, o.PayableID); e != nil {
 		return Result{}, e
 	}
-	return finish(ctx, tx, a, d, "finance", in.PayableID, body, 1, Result{OperationID: in.OperationID, Payable: &r.Payable, Origin: &o})
+	out := Result{OperationID: in.OperationID, Payable: &r.Payable, Origin: &o}
+	if e := saveCycleOperationTx(ctx, tx, a, d, "finance", in.PayableID, body, 1, out); e != nil {
+		return Result{}, e
+	}
+	return out, nil
 }
 
 // IsConflict allows the HTTP layer to retain the established error vocabulary.

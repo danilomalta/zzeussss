@@ -647,7 +647,8 @@
       "method": "POST",
       "path": "/local/v1/finance/payable-cash/:id/return",
       "authentication": "session",
-      "source": "backend/internal/localapi/payable_cash.go"
+      "source": "backend/internal/localapi/payable_cash.go",
+      "integrity": "Session token revalidated within immediate SQLite writer before replay/business reads; revoked/context-mismatched session returns 401; existing cash links never move money again."
     },
     {
       "api": "local",
@@ -675,7 +676,8 @@
       "method": "POST",
       "path": "/local/v1/finance/payables",
       "authentication": "session",
-      "source": "backend/internal/localapi/payables.go"
+      "source": "backend/internal/localapi/payables.go",
+      "integrity": "Session token revalidated within immediate SQLite writer before replay/business reads; revoked/context-mismatched session returns 401; existing cash links never move money again."
     },
     {
       "api": "local",
@@ -689,14 +691,16 @@
       "method": "POST",
       "path": "/local/v1/finance/payables/:id/approve",
       "authentication": "session",
-      "source": "backend/internal/localapi/payables.go"
+      "source": "backend/internal/localapi/payables.go",
+      "integrity": "Session token revalidated within immediate SQLite writer before replay/business reads; revoked/context-mismatched session returns 401; existing cash links never move money again."
     },
     {
       "api": "local",
       "method": "POST",
       "path": "/local/v1/finance/payables/:id/cancel",
       "authentication": "session",
-      "source": "backend/internal/localapi/payables.go"
+      "source": "backend/internal/localapi/payables.go",
+      "integrity": "Session token revalidated within immediate SQLite writer before replay/business reads; revoked/context-mismatched session returns 401; existing cash links never move money again."
     },
     {
       "api": "local",
@@ -710,7 +714,8 @@
       "method": "POST",
       "path": "/local/v1/finance/payables/:id/cash-payments",
       "authentication": "session",
-      "source": "backend/internal/localapi/payable_cash.go"
+      "source": "backend/internal/localapi/payable_cash.go",
+      "integrity": "Session token revalidated within immediate SQLite writer before replay/business reads; revoked/context-mismatched session returns 401; existing cash links never move money again."
     },
     {
       "api": "local",
@@ -731,7 +736,8 @@
       "method": "POST",
       "path": "/local/v1/finance/payables/:id/reject",
       "authentication": "session",
-      "source": "backend/internal/localapi/payables.go"
+      "source": "backend/internal/localapi/payables.go",
+      "integrity": "Session token revalidated within immediate SQLite writer before replay/business reads; revoked/context-mismatched session returns 401; existing cash links never move money again."
     },
     {
       "api": "local",
@@ -2468,7 +2474,8 @@
       "method": "POST",
       "path": "/local/v1/purchase-deliveries/:id/payable",
       "authentication": "session",
-      "source": "backend/internal/localapi/supply_cycle.go"
+      "source": "backend/internal/localapi/supply_cycle.go",
+      "integrity": "Current session revalidated within immediate writer before origin/replay; obligation, origin and audit commit atomically without another stock or cash effect."
     },
     {
       "api": "local",

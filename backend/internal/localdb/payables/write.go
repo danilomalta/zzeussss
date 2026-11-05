@@ -10,7 +10,9 @@ import (
 	"time"
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb/entitlementstore"
+	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 func hash(v any) string { b, _ := json.Marshal(v); return fmt.Sprintf("%x", sha256.Sum256(b)) }
@@ -39,13 +41,6 @@ func replay(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.Device
 	r.Repeated = true
 	return r, true, nil
 }
-func finish(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, p Payable, e Event, h string) (Result, error) {
-	r, err := finishTx(ctx, tx, a, d, p, e, h)
-	if err != nil {
-		return Result{}, err
-	}
-	return r, tx.Commit()
-}
 func finishTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, p Payable, e Event, h string) (Result, error) {
 	p.History = append(p.History, e)
 	if err := valid(p); err != nil {
@@ -64,20 +59,31 @@ func finishTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.Devi
 	}
 	return r, nil
 }
-func Create(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in CreateInput) (Result, error) {
+
+// writeWithSession acquires the established immediate writer before checking
+// the HTTP session or business state. It never accepts identity from a payload.
+func writeWithSession(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, token string, work func(*sql.Tx) error) error {
+	return sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+		if err := fiscal.ValidateSaleSessionTx(ctx, tx, a, d, token); err != nil {
+			return err
+		}
+		return work(tx)
+	})
+}
+func Create(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in CreateInput, token string) (Result, error) {
 	if db == nil {
 		return Result{}, ErrInvalid
 	}
-	tx, err := db.BeginTx(ctx, nil)
+	var out Result
+	err := writeWithSession(ctx, db, a, d, token, func(tx *sql.Tx) error {
+		var err error
+		out, err = CreateTx(ctx, tx, contracts, a, d, in)
+		return err
+	})
 	if err != nil {
 		return Result{}, err
 	}
-	defer tx.Rollback()
-	out, err := CreateTx(ctx, tx, contracts, a, d, in)
-	if err != nil {
-		return Result{}, err
-	}
-	return out, tx.Commit()
+	return out, nil
 }
 
 // CreateTx participates in an enclosing business transaction, without commit.
@@ -116,15 +122,24 @@ func CreateTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store
 	}
 	return finishTx(ctx, tx, a, d, p, Event{in.OperationID, a.IdentityID, "create", "", "pending", p.Description, now}, h)
 }
-func Transition(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id, action string, in ActionInput) (Result, error) {
+func Transition(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id, action string, in ActionInput, token string) (Result, error) {
 	if db == nil || contracts == nil || !key(id) || !key(in.OperationID) || !text(in.Reason, 500) || (action != "approve" && action != "reject" && action != "cancel") {
 		return Result{}, ErrInvalid
 	}
-	tx, err := db.BeginTx(ctx, nil)
+	var out Result
+	err := writeWithSession(ctx, db, a, d, token, func(tx *sql.Tx) error {
+		var err error
+		out, err = transitionTx(ctx, tx, contracts, a, d, id, action, in)
+		return err
+	})
 	if err != nil {
 		return Result{}, err
 	}
-	defer tx.Rollback()
+	return out, nil
+}
+
+func transitionTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id, action string, in ActionInput) (Result, error) {
+	var err error
 	if err = contracts.RequireTx(ctx, tx, a, d, identity.ManageCash, modules.Finance); err != nil {
 		return Result{}, err
 	}
@@ -181,5 +196,5 @@ func Transition(ctx context.Context, db *sql.DB, contracts *entitlementstore.Sto
 	if err = checked(ctx, tx, `UPDATE supplier_payables SET state=?,updated_at=?,last_operation_id=? WHERE tenant_id=? AND store_id=? AND device_id=? AND id=? AND state=?`, after, now, in.OperationID, a.TenantID, a.StoreID, d.DeviceID, id, before); err != nil {
 		return Result{}, err
 	}
-	return finish(ctx, tx, a, d, p, Event{in.OperationID, a.IdentityID, action, before, after, in.Reason, now}, h)
+	return finishTx(ctx, tx, a, d, p, Event{in.OperationID, a.IdentityID, action, before, after, in.Reason, now}, h)
 }

@@ -27,7 +27,7 @@ func (s *Server) recordPayableCash(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	ss := c.Locals("session").(localauth.Session)
-	r, e := payables.PayCash(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, c.Params("id"), in)
+	r, e := payables.PayCash(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, c.Params("id"), in, ss.Token)
 	if e != nil {
 		return payableError(c, e)
 	}
@@ -52,7 +52,7 @@ func (s *Server) returnPayableCash(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	ss := c.Locals("session").(localauth.Session)
-	r, e := payables.ReturnCash(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, c.Params("id"), in)
+	r, e := payables.ReturnCash(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, c.Params("id"), in, ss.Token)
 	if e != nil {
 		return payableError(c, e)
 	}

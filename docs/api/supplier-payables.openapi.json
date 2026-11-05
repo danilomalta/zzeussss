@@ -14,7 +14,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados. Sessao autenticada revalidada na transacao antes de consultar replay ou gravar; logout ou contexto divergente retorna401. Escritor SQLite imediato com busy_timeout e retentativa limitada; documento/vinculo/recibo/auditoria confirmam juntos ou revertem juntos. O token vem somente da sessao, nunca do corpo.",
         "responses": {
           "400": {
             "description": "Entrada invalida"
@@ -451,7 +451,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados. Sessao autenticada revalidada na transacao antes de consultar replay ou gravar; logout ou contexto divergente retorna401. Escritor SQLite imediato com busy_timeout e retentativa limitada; documento/vinculo/recibo/auditoria confirmam juntos ou revertem juntos. O token vem somente da sessao, nunca do corpo.",
         "responses": {
           "400": {
             "description": "Entrada invalida"
@@ -524,7 +524,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados. Sessao autenticada revalidada na transacao antes de consultar replay ou gravar; logout ou contexto divergente retorna401. Escritor SQLite imediato com busy_timeout e retentativa limitada; documento/vinculo/recibo/auditoria confirmam juntos ou revertem juntos. O token vem somente da sessao, nunca do corpo.",
         "responses": {
           "400": {
             "description": "Entrada invalida"
@@ -597,7 +597,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados.",
+        "description": "Leitura: ViewAccounting. Escrita: ManageCash + Finance. Aprovar nao executa pagamento. Escopo local da sessao; campos extras e duplicados recusados. Sessao autenticada revalidada na transacao antes de consultar replay ou gravar; logout ou contexto divergente retorna401. Escritor SQLite imediato com busy_timeout e retentativa limitada; documento/vinculo/recibo/auditoria confirmam juntos ou revertem juntos. O token vem somente da sessao, nunca do corpo.",
         "responses": {
           "400": {
             "description": "Entrada invalida"

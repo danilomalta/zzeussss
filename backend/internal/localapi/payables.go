@@ -23,6 +23,8 @@ func (s *Server) mountPayables(r fiber.Router) {
 }
 func payableError(c *fiber.Ctx, e error) error {
 	switch {
+	case errors.Is(e, localauth.ErrDenied):
+		return c.SendStatus(401)
 	case errors.Is(e, payables.ErrInvalid):
 		return c.SendStatus(400)
 	case errors.Is(e, payables.ErrNotFound):
@@ -62,7 +64,7 @@ func (s *Server) createPayable(c *fiber.Ctx) error {
 		}
 	}
 	ss := c.Locals("session").(localauth.Session)
-	r, e := payables.Create(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, in)
+	r, e := payables.Create(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, in, ss.Token)
 	if e != nil {
 		return payableError(c, e)
 	}
@@ -87,7 +89,7 @@ func (s *Server) changePayable(c *fiber.Ctx, action string) error {
 		return c.SendStatus(400)
 	}
 	ss := c.Locals("session").(localauth.Session)
-	r, e := payables.Transition(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, c.Params("id"), action, in)
+	r, e := payables.Transition(c.UserContext(), s.DB, s.contracts, ss.Actor, ss.Device, c.Params("id"), action, in, ss.Token)
 	if e != nil {
 		return payableError(c, e)
 	}

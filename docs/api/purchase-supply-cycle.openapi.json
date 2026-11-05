@@ -613,7 +613,8 @@
           "manage_cash",
           "view_orders",
           "manage_stock"
-        ]
+        ],
+        "description": " Revalida o token da sessao na transacao com escritor SQLite imediato antes de replay/origem. Sessao encerrada ou contexto divergente retorna401. Origem, obrigacao, recibo e auditoria confirmam juntos; o recebimento nao vira baixa nem novo movimento de dinheiro."
       }
     },
     "/local/v1/purchase-cycle-operations/{id}": {

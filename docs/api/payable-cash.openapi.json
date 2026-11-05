@@ -27,7 +27,7 @@
             }
           }
         ],
-        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator.",
+        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator. Sessao autenticada revalidada na transacao antes de consultar replay ou gravar; logout ou contexto divergente retorna401. Escritor SQLite imediato com busy_timeout e retentativa limitada; documento/vinculo/recibo/auditoria confirmam juntos ou revertem juntos. O token vem somente da sessao, nunca do corpo.",
         "responses": {
           "200": {
             "description": "Consulta ou recibo original em replay",
@@ -191,7 +191,7 @@
             }
           }
         ],
-        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator.",
+        "description": "Escrita:ManageCash+Finance; leitura:ViewAccounting. Escopo da sessao. Classifica caixa ja auditado; nao executa novo movimento nem comprova banco/fornecedor. Recibo de operacao apenas ao proprio ator. Sessao autenticada revalidada na transacao antes de consultar replay ou gravar; logout ou contexto divergente retorna401. Escritor SQLite imediato com busy_timeout e retentativa limitada; documento/vinculo/recibo/auditoria confirmam juntos ou revertem juntos. O token vem somente da sessao, nunca do corpo.",
         "responses": {
           "200": {
             "description": "Consulta ou recibo original em replay",

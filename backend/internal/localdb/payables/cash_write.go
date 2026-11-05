@@ -52,17 +52,26 @@ func finishCash(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.De
 	if e = checked(ctx, tx, `INSERT INTO payable_cash_events VALUES(?,?,?,?,?,1,?,?)`, a.TenantID, a.StoreID, d.DeviceID, op, "payable.cash."+action, string(b), now); e != nil {
 		return CashResult{}, e
 	}
-	return r, tx.Commit()
+	return r, nil
 }
-func PayCash(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in CashInput) (CashResult, error) {
+func PayCash(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in CashInput, token string) (CashResult, error) {
 	if db == nil || contracts == nil || !key(id) || !key(in.OperationID) || !key(in.PaymentID) || !key(in.InstallmentID) || !key(in.WithdrawalOperationID) || !text(in.Recipient, 255) || !key(in.Reference) {
 		return CashResult{}, ErrInvalid
 	}
-	tx, e := db.BeginTx(ctx, nil)
-	if e != nil {
-		return CashResult{}, e
+	var out CashResult
+	err := writeWithSession(ctx, db, a, d, token, func(tx *sql.Tx) error {
+		var err error
+		out, err = payCashTx(ctx, tx, contracts, a, d, id, in)
+		return err
+	})
+	if err != nil {
+		return CashResult{}, err
 	}
-	defer tx.Rollback()
+	return out, nil
+}
+
+func payCashTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in CashInput) (CashResult, error) {
+	var e error
 	if e = contracts.RequireTx(ctx, tx, a, d, identity.ManageCash, modules.Finance); e != nil {
 		return CashResult{}, e
 	}
@@ -134,15 +143,24 @@ func PayCash(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store,
 	}
 	return finishCash(ctx, tx, a, d, v, in.OperationID, "pay", h, now)
 }
-func ReturnCash(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in CashReturnInput) (CashResult, error) {
+func ReturnCash(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in CashReturnInput, token string) (CashResult, error) {
 	if db == nil || contracts == nil || !key(id) || !key(in.OperationID) || !key(in.SupplyOperationID) || !text(in.Reason, 500) {
 		return CashResult{}, ErrInvalid
 	}
-	tx, e := db.BeginTx(ctx, nil)
-	if e != nil {
-		return CashResult{}, e
+	var out CashResult
+	err := writeWithSession(ctx, db, a, d, token, func(tx *sql.Tx) error {
+		var err error
+		out, err = returnCashTx(ctx, tx, contracts, a, d, id, in)
+		return err
+	})
+	if err != nil {
+		return CashResult{}, err
 	}
-	defer tx.Rollback()
+	return out, nil
+}
+
+func returnCashTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in CashReturnInput) (CashResult, error) {
+	var e error
 	if e = contracts.RequireTx(ctx, tx, a, d, identity.ManageCash, modules.Finance); e != nil {
 		return CashResult{}, e
 	}
