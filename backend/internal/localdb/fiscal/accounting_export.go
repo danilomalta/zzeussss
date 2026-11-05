@@ -86,7 +86,7 @@ func AccountingExport(ctx context.Context, db *sql.DB, license *entitlementstore
 			if e := db.QueryRowContext(ctx, `SELECT request_json FROM fiscal_cancellation_requests WHERE tenant_id=? AND store_id=? AND intent_id=?`, a.TenantID, a.StoreID, ref.id).Scan(&raw); e == nil {
 				var req fiscalcore.RecordedRequest
 				event := exportRow{Kind: "cancellation", ID: ref.id, State: "xml_unavailable"}
-				if fiscalcore.DecodeInput([]byte(raw), &req) == nil {
+				if decodeNativeJournal(a, ref.id, "cancel.request", &raw, &req) == nil {
 					r := &HomologationCancellationRecorder{db: db, license: license, actor: a, device: d, token: token, intentID: ref.id, key: req.Key}
 					if proof, e := fiscalcore.RecoverHomologationCancellation(ctx, r); e == nil && len(proof.ProcessedXML) > 0 {
 						event.Key = req.Key
@@ -105,7 +105,7 @@ func AccountingExport(ctx context.Context, db *sql.DB, license *entitlementstore
 			var revision int
 			e := db.QueryRowContext(ctx, `SELECT request_json,profile_id,profile_revision,approval_reference FROM fiscal_invalidation_requests WHERE tenant_id=? AND store_id=? AND operation_id=?`, a.TenantID, a.StoreID, ref.id).Scan(&raw, &profile, &revision, &approval)
 			var req fiscalcore.RecordedRequest
-			if e == nil && fiscalcore.DecodeInput([]byte(raw), &req) == nil {
+			if e == nil && decodeNativeJournal(a, ref.id, "invalidate.request", &raw, &req) == nil {
 				if original, e := fiscalcore.OriginalInvalidationFromRequest(req); e == nil {
 					r, e := NewHomologationInvalidationRecorder(ctx, db, license, a, d, profile, revision, ref.id, req.URL, approval, token, original.Input)
 					if e == nil {

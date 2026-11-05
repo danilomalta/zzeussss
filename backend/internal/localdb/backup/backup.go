@@ -6,7 +6,6 @@ package backup
 import (
 	"bytes"
 	"context"
-	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"database/sql"
@@ -17,6 +16,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"titansystem-backend/internal/archivecrypto"
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
 )
@@ -27,33 +27,17 @@ var magic = []byte("TYTBKP01")
 var ErrBackup = errors.New("backup inválido, incompatível ou não autorizado")
 
 func aead(key []byte) (cipher.AEAD, error) {
-	if len(key) != 32 {
-		return nil, ErrBackup
-	}
-	block, err := aes.NewCipher(key)
+	c, err := archivecrypto.NewCipher(key)
 	if err != nil {
 		return nil, ErrBackup
 	}
-	return cipher.NewGCM(block)
+	return c, nil
 }
 
 // ReadKey accepts only a private regular 32-byte key, never a symlink.
 func ReadKey(path string) ([]byte, error) {
-	info, err := os.Lstat(path)
-	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 || info.Size() != 32 {
-		return nil, ErrBackup
-	}
-	f, err := os.Open(path)
+	key, err := archivecrypto.ReadKey(path)
 	if err != nil {
-		return nil, ErrBackup
-	}
-	defer f.Close()
-	opened, err := f.Stat()
-	if err != nil || !os.SameFile(info, opened) {
-		return nil, ErrBackup
-	}
-	key, err := io.ReadAll(io.LimitReader(f, 33))
-	if err != nil || len(key) != 32 {
 		return nil, ErrBackup
 	}
 	return key, nil

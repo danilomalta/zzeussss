@@ -113,7 +113,11 @@ func (r *HomologationRecorder) Reserve(ctx context.Context, in fiscalcore.Record
 		return fiscalcore.ErrRecorded
 	}
 	body, _ := json.Marshal(in)
-	written, err := tx.ExecContext(ctx, `INSERT INTO fiscal_transmission_requests(tenant_id,store_id,intent_id,device_id,actor_id,operation_id,access_key,request_json,request_sha256,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, r.device.DeviceID, r.actor.IdentityID, in.OperationID, r.key, string(body), in.RequestSHA256, time.Now().UTC().Format(time.RFC3339Nano))
+	protected, err := sealNativeJournal(r.actor, r.intentID, "issue.request", string(body))
+	if err != nil {
+		return err
+	}
+	written, err := tx.ExecContext(ctx, `INSERT INTO fiscal_transmission_requests(tenant_id,store_id,intent_id,device_id,actor_id,operation_id,access_key,request_json,request_sha256,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, r.device.DeviceID, r.actor.IdentityID, in.OperationID, r.key, protected, in.RequestSHA256, time.Now().UTC().Format(time.RFC3339Nano))
 	if err != nil {
 		return err
 	}
@@ -159,7 +163,7 @@ func (r *HomologationRecorder) Complete(ctx context.Context, in fiscalcore.Excha
 	var old string
 	err = tx.QueryRowContext(ctx, `SELECT result_json FROM fiscal_transmission_results WHERE tenant_id=? AND store_id=? AND intent_id=?`, r.actor.TenantID, r.actor.StoreID, r.intentID).Scan(&old)
 	if err == nil {
-		if old != string(body) {
+		if !sameNativeJournal(r.actor, r.intentID, "issue.result", old, string(body)) {
 			return ErrConflict
 		}
 		return tx.Commit()
@@ -167,7 +171,11 @@ func (r *HomologationRecorder) Complete(ctx context.Context, in fiscalcore.Excha
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
-	written, err := tx.ExecContext(ctx, `INSERT INTO fiscal_transmission_results VALUES(?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, string(body), time.Now().UTC().Format(time.RFC3339Nano))
+	protected, err := sealNativeJournal(r.actor, r.intentID, "issue.result", string(body))
+	if err != nil {
+		return err
+	}
+	written, err := tx.ExecContext(ctx, `INSERT INTO fiscal_transmission_results VALUES(?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, protected, time.Now().UTC().Format(time.RFC3339Nano))
 	if err != nil {
 		return err
 	}
@@ -188,7 +196,7 @@ func (r *HomologationRecorder) readTx(ctx context.Context, tx *sql.Tx) (fiscalco
 	if err != nil {
 		return req, result, err
 	}
-	if fiscalcore.DecodeInput([]byte(body), &req) != nil {
+	if decodeNativeJournal(r.actor, r.intentID, "issue.request", &body, &req) != nil {
 		return req, result, ErrIntegrity
 	}
 	canonical, _ := json.Marshal(req)
@@ -204,7 +212,7 @@ func (r *HomologationRecorder) readTx(ctx context.Context, tx *sql.Tx) (fiscalco
 	if err != nil {
 		return req, result, err
 	}
-	if fiscalcore.DecodeInput([]byte(body), &result) != nil {
+	if decodeNativeJournal(r.actor, r.intentID, "issue.result", &body, &result) != nil {
 		return req, result, ErrIntegrity
 	}
 	canonical, _ = json.Marshal(result)

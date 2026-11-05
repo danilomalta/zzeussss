@@ -15,14 +15,11 @@ import (
 
 func TestHTTPFiscalAccountingExportContainsExactArchivedXMLAndRequiresOwner(t *testing.T) {
 	f, intent, original := danfeSQLFixture(t)
-	var requestRaw, resultRaw string
-	if f.db.QueryRow(`SELECT request_json FROM fiscal_query_requests WHERE tenant_id=? AND query_id='danfe-authorized'`, f.owner.TenantID).Scan(&requestRaw) != nil || f.db.QueryRow(`SELECT result_json FROM fiscal_query_results WHERE tenant_id=? AND query_id='danfe-authorized'`, f.owner.TenantID).Scan(&resultRaw) != nil {
-		t.Fatal("archive fixture")
+	r := querySQLRecorder(t, f, f.db, intent, "danfe-authorized", f.token)
+	requestRecord, resultRecord, readErr := r.Read(context.Background())
+	if readErr != nil {
+		t.Fatal("archive fixture", readErr)
 	}
-	var requestRecord fiscalcore.RecordedRequest
-	var resultRecord fiscalcore.ExchangeResult
-	json.Unmarshal([]byte(requestRaw), &requestRecord)
-	json.Unmarshal([]byte(resultRaw), &resultRecord)
 	proof, e := fiscalcore.ReconcileHomologationNFe(original, requestRecord, resultRecord)
 	if e != nil || len(proof.ProcessedXML) == 0 {
 		t.Fatal("original proof", e)

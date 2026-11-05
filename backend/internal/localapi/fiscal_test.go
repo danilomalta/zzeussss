@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -26,8 +27,37 @@ import (
 const fiscalProfileBody = `{"operation_id":"issuer-create","profile_id":"issuer-one","expected_revision":0,"cnpj":"12ABC34501DE35","legal_name":"Synthetic test issuer","state":"SP","municipality_ibge":"3550308","state_registration":"123456789","crt":"1","model":"65","environment":"homologation","series":1}`
 const fiscalIntentBody = `{"operation_id":"fiscal-one","sale_id":"sale-one","profile_id":"issuer-one","profile_revision":1}`
 
+// Reuse a disposable key across multiple fixtures in ONE test, including
+// restarts. Never use an installed environment key. Repeated -count runs create
+// a new key after the preceding test's temporary directory has been removed.
+var syntheticJournalKeys = struct {
+	sync.Mutex
+	files map[string]string
+}{files: map[string]string{}}
+
+func syntheticNativeJournalKey(t *testing.T) string {
+	t.Helper()
+	syntheticJournalKeys.Lock()
+	defer syntheticJournalKeys.Unlock()
+	name := strings.SplitN(t.Name(), "/", 2)[0]
+	if key := syntheticJournalKeys.files[name]; key != "" {
+		if _, err := os.Stat(key); err == nil {
+			return key
+		}
+	}
+	key := filepath.Join(t.TempDir(), "synthetic-native-journal.key")
+	if err := backup.InitKey(key); err != nil {
+		t.Fatal(err)
+	}
+	syntheticJournalKeys.files[name] = key
+	return key
+}
+
 func fiscalFixture(t *testing.T, model ...string) *stockHTTPFixture {
 	t.Helper()
+	key := syntheticNativeJournalKey(t)
+	t.Setenv("TITAN_FISCAL_JOURNAL_KEY_FILE", key)
+	t.Setenv("TITAN_FISCAL_JOURNAL_PREVIOUS_KEY_FILES", "")
 	f := salesSetup(t)
 	f.install(t, signedTestContract(t, f.private, f.owner.TenantID, 3, []modules.ID{modules.Core, modules.Inventory, modules.POS, modules.Fiscal, modules.Staff}), 200)
 	salesRequest(t, f, salesInput(f), 201)
