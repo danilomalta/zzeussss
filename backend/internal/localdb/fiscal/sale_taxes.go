@@ -12,6 +12,7 @@ import (
 
 // SaleTaxBinding is frozen with the payment, not added after a sale completes.
 type SaleTaxBinding struct {
+	Freight          *SaleFreightContract  `json:"freight,omitempty"`
 	CatalogUnit      string                `json:"catalog_unit"`
 	Context          fiscalcore.TaxContext `json:"context"`
 	Case             fiscalcore.TaxCase    `json:"case"`
@@ -57,7 +58,21 @@ func saleTaxBinding(q TaxQuote, p TaxPolicy) (SaleTaxBinding, error) {
 	if extra != total-net {
 		return out, ErrInvalid
 	}
-	return SaleTaxBinding{CatalogUnit: q.CatalogUnit, Context: q.Input.Context, Case: q.Input.Case, QuoteOperationID: q.Input.OperationID, ResultSHA256: q.ResultSHA256, ProfileID: p.Input.ProfileID, ProfileRevision: p.Input.ProfileRevision, AdditionalCents: extra, Taxes: mapped.Taxes, Totals: mapped.Totals}, nil
+	freight, err := saleFreightCents(q)
+	if err != nil {
+		return out, err
+	}
+	if freight > 9007199254740991-extra {
+		return out, ErrInvalid
+	}
+	if q.Input.Freight != nil {
+		gross, e := taxCents(q.Result.Gross)
+		if e != nil || gross > 9007199254740991-freight || net != gross+freight {
+			return out, ErrInvalid
+		}
+	}
+	extra += freight
+	return SaleTaxBinding{Freight: q.Input.Freight, CatalogUnit: q.CatalogUnit, Context: q.Input.Context, Case: q.Input.Case, QuoteOperationID: q.Input.OperationID, ResultSHA256: q.ResultSHA256, ProfileID: p.Input.ProfileID, ProfileRevision: p.Input.ProfileRevision, AdditionalCents: extra, Taxes: mapped.Taxes, Totals: mapped.Totals}, nil
 }
 
 // ResolveSaleTaxTx checks current policy/profile/date, exact catalogue price and
@@ -92,12 +107,28 @@ func ResolveSaleTaxTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d ident
 		return out, ErrConflict
 	}
 	item := q.Input.Item
-	if q.CatalogUnit == "" || q.CatalogUnit != unit || item.ProductID != product || !equalScaled(item.Quantity, quantity, 1000) || !equalScaled(item.UnitPrice, price, 100) || !equalScaled(q.Result.Net, total, 100) {
+	if q.CatalogUnit == "" || q.CatalogUnit != unit || item.ProductID != product || !equalScaled(item.Quantity, quantity, 1000) || !equalScaled(item.UnitPrice, price, 100) || !equalScaled(saleQuoteMerchandise(q), total, 100) {
 		return out, ErrConflict
 	}
-	for _, v := range []string{item.Discount, item.Freight, item.Insurance, item.Other} {
+	for _, v := range []string{item.Discount, item.Insurance, item.Other} {
 		if !equalScaled(v, 0, 1) {
 			return out, ErrInvalid
+		}
+	}
+	if q.Input.Freight == nil {
+		if !equalScaled(item.Freight, 0, 1) {
+			return out, ErrInvalid
+		}
+	} else {
+		if profile.Input.Environment != "homologation" || profile.Input.Model != "55" {
+			return out, ErrInvalid
+		}
+		var used int
+		if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM sale_tax_bindings WHERE tenant_id=? AND store_id=? AND quote_operation_id=?`, a.TenantID, a.StoreID, operation).Scan(&used); err != nil {
+			return out, err
+		}
+		if used != 0 {
+			return out, ErrConflict
 		}
 	}
 	return saleTaxBinding(q, p)
@@ -153,10 +184,17 @@ func StoredSaleTaxesTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d iden
 		if err = tx.QueryRowContext(ctx, `SELECT product_id,quantity_milli,unit_price_cents,total_cents FROM sale_items WHERE tenant_id=? AND sale_id=? AND id=?`, a.TenantID, sale, r.item).Scan(&product, &quantity, &price, &total); err != nil {
 			return nil, err
 		}
-		if q.Input.Item.ProductID != product || !equalScaled(q.Input.Item.Quantity, quantity, 1000) || !equalScaled(q.Input.Item.UnitPrice, price, 100) || !equalScaled(q.Result.Net, total, 100) {
+		if q.Input.Item.ProductID != product || !equalScaled(q.Input.Item.Quantity, quantity, 1000) || !equalScaled(q.Input.Item.UnitPrice, price, 100) || !equalScaled(saleQuoteMerchandise(q), total, 100) {
 			return nil, ErrIntegrity
 		}
 		out[r.item] = expected
+	}
+	all := make([]SaleTaxBinding, 0, len(out))
+	for _, b := range out {
+		all = append(all, b)
+	}
+	if err := ValidateSaleFreightOrigin(all, sale); err != nil {
+		return nil, err
 	}
 	return out, nil
 }
@@ -167,4 +205,13 @@ func TaxPricingRequiredTx(ctx context.Context, tx *sql.Tx, a identity.Scope) (bo
 	var required bool
 	err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM fiscal_profiles p WHERE p.tenant_id=? AND p.store_id=? AND json_extract(p.request_json,'$.require_tax_pricing')=1 AND NOT EXISTS(SELECT 1 FROM fiscal_profiles newer WHERE newer.tenant_id=p.tenant_id AND newer.store_id=p.store_id AND newer.profile_id=p.profile_id AND newer.revision>p.revision))`, a.TenantID, a.StoreID).Scan(&required)
 	return required, err
+}
+
+// Historical bindings retain their original Net validation. Only the explicit
+// freight contract separates merchandise Gross from the pre-payment surcharge.
+func saleQuoteMerchandise(q TaxQuote) string {
+	if q.Input.Freight != nil {
+		return q.Result.Gross
+	}
+	return q.Result.Net
 }

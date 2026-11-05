@@ -215,7 +215,7 @@
     "/fiscal/tax-quotes": {
       "post": {
         "operationId": "createTaxQuote",
-        "description": "Empresa/loja/aparelho/ator derivados da sessão. Sem emissão, homologação, apuração ou alteração de venda/estoque/caixa. Histórico imutável e recuperação idempotente.",
+        "description": "Empresa/loja/aparelho/ator derivados da sessão. Sem emissão, homologação, apuração ou alteração de venda/estoque/caixa. Histórico imutável e recuperação idempotente. Optional freight is owner-only, homologation/model55, exact before-payment allocation. Immediate writer with bounded retry and checked insert; quote alone neither charges nor emits.",
         "responses": {
           "200": {
             "description": "Evidência real de configuração/cálculo; não equivale a enquadramento legal ou autorização fiscal.",
@@ -861,6 +861,9 @@
           },
           "item": {
             "$ref": "#/components/schemas/Item"
+          },
+          "freight": {
+            "$ref": "#/components/schemas/SaleFreightContract"
           }
         }
       },
@@ -1614,6 +1617,97 @@
             "description": "SHA-256 dos bytes originais do arquivo, calculado pelo servidor na importação; não representa aprovação contábil."
           }
         }
+      },
+      "SaleFreightContract": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "allocation",
+          "freight_mode",
+          "refund_policy",
+          "source_reference",
+          "review_reference",
+          "sale_id"
+        ],
+        "properties": {
+          "allocation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "method",
+              "total_cents",
+              "items"
+            ],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "largest_remainder_v1"
+                ]
+              },
+              "total_cents": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "item_id",
+                    "weight"
+                  ],
+                  "properties": {
+                    "item_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+                    },
+                    "weight": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "freight_mode": {
+            "type": "string",
+            "enum": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4"
+            ]
+          },
+          "refund_policy": {
+            "type": "string",
+            "enum": [
+              "proportional_with_item"
+            ]
+          },
+          "source_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "review_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "sale_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          }
+        },
+        "description": "Explicit before-payment customer contract. Allocation item IDs are quote operation IDs; consume the whole group once. Homologation/model55 only. Review reference is provenance, not proof of accountant approval. No default tax, allocation basis or refund policy. sale_id is the planned checkout/sale identity and must match the server command and frozen invoice snapshot."
       }
     }
   }

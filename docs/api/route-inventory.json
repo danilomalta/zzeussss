@@ -421,7 +421,8 @@
       "path": "/local/v1/checkout/plans",
       "authentication": "session",
       "source": "backend/internal/localapi/checkout_plans.go",
-      "transaction_authentication": "provided HTTP session revalidated in SQLite transaction, including non-tax checkout; journal/outbox writes checked"
+      "transaction_authentication": "provided HTTP session revalidated in SQLite transaction, including non-tax checkout; journal/outbox writes checked",
+      "freight_policy": "explicit freight=true selects immediate transaction; must match frozen quote group and sale/plan; false cannot confirm freight; no role/environment/amount override; legacy path preserved"
     },
     {
       "api": "local",
@@ -444,7 +445,8 @@
       "path": "/local/v1/checkout/plans/:id/finalize-cash",
       "authentication": "session",
       "source": "backend/internal/localapi/checkout_plans.go",
-      "transaction_authentication": "provided HTTP session revalidated in SQLite transaction, including non-tax checkout; journal/outbox writes checked"
+      "transaction_authentication": "provided HTTP session revalidated in SQLite transaction, including non-tax checkout; journal/outbox writes checked",
+      "freight_policy": "explicit freight=true selects immediate transaction; must match frozen quote group and sale/plan; false cannot confirm freight; no role/environment/amount override; legacy path preserved"
     },
     {
       "api": "local",
@@ -1077,7 +1079,8 @@
       "method": "POST",
       "path": "/local/v1/fiscal/tax-quotes",
       "authentication": "session",
-      "source": "backend/internal/localapi/fiscal.go"
+      "source": "backend/internal/localapi/fiscal.go",
+      "freight_policy": "optional explicit complete quote group; owner; homologation/model55; immediate writer; no default charge, tax or refund rule"
     },
     {
       "api": "local",
@@ -2894,7 +2897,8 @@
       "path": "/local/v1/sales",
       "authentication": "session",
       "source": "backend/internal/localapi/sales.go",
-      "transaction_authentication": "provided HTTP session revalidated in SQLite transaction, including non-tax checkout; journal/outbox writes checked"
+      "transaction_authentication": "provided HTTP session revalidated in SQLite transaction, including non-tax checkout; journal/outbox writes checked",
+      "freight_policy": "explicit freight=true selects immediate transaction; must match frozen quote group and sale/plan; false cannot confirm freight; no role/environment/amount override; legacy path preserved"
     },
     {
       "api": "local",
@@ -2955,7 +2959,8 @@
       "method": "POST",
       "path": "/local/v1/sales/quote",
       "authentication": "session",
-      "source": "backend/internal/localapi/sale_quote.go"
+      "source": "backend/internal/localapi/sale_quote.go",
+      "freight_policy": "explicit freight=true selects immediate transaction; must match frozen quote group and sale/plan; false cannot confirm freight; no role/environment/amount override; legacy path preserved"
     },
     {
       "api": "local",

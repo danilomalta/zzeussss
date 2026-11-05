@@ -1560,6 +1560,10 @@
               "maxLength": 128
             },
             "description": "Opt-in: one unique scoped tax quote per item in the same order. Price, quantity, current policy/profile, issuer day and 10-minute age are revalidated before payment. No prices/rates are trusted from this request."
+          },
+          "freight": {
+            "type": "boolean",
+            "description": "Explicit selection of the frozen freight quote contract. Required true for freight-backed commands; cannot override source, amount, role or tax. Omit for legacy non-freight behavior."
           }
         },
         "required": [

@@ -38,7 +38,7 @@ func (s *Server) finalizeCashCheckoutPlan(c *fiber.Ctx) error {
 	if len(c.Body()) > 128*1024 {
 		return c.SendStatus(413)
 	}
-	values, err := exactSaleObject(c.Body(), []string{"operation_id", "received_cents"}, "fiscal_invoice")
+	values, err := exactSaleObject(c.Body(), []string{"operation_id", "received_cents"}, "fiscal_invoice", "freight")
 	if err != nil {
 		return c.SendStatus(400)
 	}
@@ -153,7 +153,7 @@ func (s *Server) createCheckoutPlan(c *fiber.Ctx) error {
 	if len(c.Body()) > 128*1024 {
 		return c.SendStatus(413)
 	}
-	values, err := exactSaleObject(c.Body(), []string{"operation_id", "checkout_id", "cash_session_id", "expected_total_cents", "items", "parts"}, "tax_quote_operations")
+	values, err := exactSaleObject(c.Body(), []string{"operation_id", "checkout_id", "cash_session_id", "expected_total_cents", "items", "parts"}, "tax_quote_operations", "freight")
 	if err != nil {
 		return c.SendStatus(400)
 	}

@@ -199,6 +199,7 @@ func ReadTaxPolicy(ctx context.Context, db *sql.DB, a identity.Scope, d identity
 }
 
 type TaxQuoteInput struct {
+	Freight        *SaleFreightContract  `json:"freight,omitempty"`
 	OperationID    string                `json:"operation_id"`
 	PolicyID       string                `json:"policy_id"`
 	PolicyRevision int                   `json:"policy_revision"`
@@ -257,15 +258,39 @@ func taxQuoteTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.De
 // Quote is calculation evidence only. It neither emits a document nor changes a
 // sale, stock, cash or tax ledger. Recovery never recalculates with newer rules.
 func CreateTaxQuote(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in TaxQuoteInput, token string) (TaxQuote, error) {
+	if in.Freight != nil {
+		var out TaxQuote
+		err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+			var e error
+			out, e = createTaxQuoteTx(ctx, tx, license, a, d, in, token)
+			return e
+		})
+		if err != nil {
+			return TaxQuote{}, err
+		}
+		return out, nil
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return TaxQuote{}, err
+	}
+	defer tx.Rollback()
+	out, err := createTaxQuoteTx(ctx, tx, license, a, d, in, token)
+	if err != nil {
+		return TaxQuote{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return TaxQuote{}, err
+	}
+	return out, nil
+}
+
+func createTaxQuoteTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in TaxQuoteInput, token string) (TaxQuote, error) {
 	var out TaxQuote
 	if !idPattern.MatchString(in.OperationID) || !idPattern.MatchString(in.PolicyID) || in.PolicyRevision < 1 {
 		return out, ErrInvalid
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return out, err
-	}
-	defer tx.Rollback()
+	var err error
 	if err = fiscalSessionTx(ctx, tx, a, d, token); err != nil {
 		return out, err
 	}
@@ -289,7 +314,7 @@ func CreateTaxQuote(ctx context.Context, db *sql.DB, license *entitlementstore.S
 			return out, ErrConflict
 		}
 		old.Repeated = true
-		return old, tx.Commit()
+		return old, nil
 	}
 	if !errors.Is(err, ErrNotFound) {
 		return out, err
@@ -311,6 +336,21 @@ func CreateTaxQuote(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	if in.Case != p.Input.Case {
 		return out, ErrInvalid
 	}
+	if in.Freight != nil {
+		if profile.Input.Environment != "homologation" || profile.Input.Model != "55" {
+			return out, ErrInvalid
+		}
+		var role string
+		if err = tx.QueryRowContext(ctx, `SELECT role FROM memberships WHERE tenant_id=? AND identity_id=? AND status='active'`, a.TenantID, a.IdentityID).Scan(&role); err != nil {
+			return out, err
+		}
+		if role != "owner" {
+			return out, identity.ErrDenied
+		}
+		if _, err = saleFreightCents(TaxQuote{Input: in}); err != nil {
+			return out, err
+		}
+	}
 	result, err := fiscalcore.Calculate(in.Context, in.Item, []fiscalcore.TaxRule{p.Input.Rule})
 	if err != nil {
 		return out, ErrInvalid
@@ -324,11 +364,14 @@ func CreateTaxQuote(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	if in.Item.RetainedST != nil && (out.CatalogUnit == "" || in.Item.RetainedST.Unit != out.CatalogUnit) {
 		return out, ErrInvalid
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_tax_quotes(tenant_id,store_id,operation_id,device_id,actor_id,policy_id,policy_revision,request_json,request_sha256,policy_sha256,result_json,result_sha256,created_at,catalog_unit) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, in.OperationID, d.DeviceID, a.IdentityID, in.PolicyID, in.PolicyRevision, string(body), taxHash(body), p.SHA256, string(encoded), out.ResultSHA256, out.CreatedAt, out.CatalogUnit)
+	write, err := tx.ExecContext(ctx, `INSERT INTO fiscal_tax_quotes(tenant_id,store_id,operation_id,device_id,actor_id,policy_id,policy_revision,request_json,request_sha256,policy_sha256,result_json,result_sha256,created_at,catalog_unit) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, a.TenantID, a.StoreID, in.OperationID, d.DeviceID, a.IdentityID, in.PolicyID, in.PolicyRevision, string(body), taxHash(body), p.SHA256, string(encoded), out.ResultSHA256, out.CreatedAt, out.CatalogUnit)
 	if err != nil {
 		return TaxQuote{}, err
 	}
-	return out, tx.Commit()
+	if count, e := write.RowsAffected(); e != nil || count != 1 {
+		return TaxQuote{}, ErrConflict
+	}
+	return out, nil
 }
 func ReadTaxQuote(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, operation string) (TaxQuote, error) {
 	if !idPattern.MatchString(operation) {

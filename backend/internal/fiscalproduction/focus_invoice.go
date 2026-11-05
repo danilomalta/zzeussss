@@ -85,6 +85,19 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 			return nil, err
 		}
 	}
+	// Freight is admitted only from the BEFORE-payment owner-reviewed quote
+	// group. The fiscal request cannot alter its mode, allocation or price.
+	freightTotal, quotedTotal := int64(0), int64(0)
+	hasFreight := false
+	bindings := make([]fiscal.SaleTaxBinding, 0, len(snapshot.Items))
+	for _, item := range snapshot.Items {
+		if item.Tax != nil {
+			bindings = append(bindings, *item.Tax)
+		}
+	}
+	if err := fiscal.ValidateSaleFreightOrigin(bindings, snapshot.SaleID); err != nil {
+		return nil, err
+	}
 	items := make([]map[string]any, 0, len(snapshot.Items))
 	for i, item := range snapshot.Items {
 		if item.Tax == nil || item.QuantityMilli <= 0 || item.UnitPriceCents < 0 {
@@ -103,6 +116,30 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 		if quote.ResultSHA256 != item.Tax.ResultSHA256 || quote.Input.Item.ProductID != item.ProductID || item.Tax.ProfileID != p.ProfileID || item.Tax.ProfileRevision != intent.Snapshot.ProfileRevision {
 			return nil, fiscal.ErrConflict
 		}
+		quoteFreight, _ := json.Marshal(quote.Input.Freight)
+		boundFreight, _ := json.Marshal(item.Tax.Freight)
+		if string(quoteFreight) != string(boundFreight) {
+			return nil, fiscal.ErrIntegrity
+		}
+		if quote.Input.Freight != nil {
+			if p.Model != "55" || in.FreightMode != quote.Input.Freight.FreightMode {
+				return nil, fiscal.ErrConflict
+			}
+			hasFreight = true
+		}
+		amount, err := fiscal.FreightQuoteCents(quote)
+		if err != nil {
+			return nil, err
+		}
+		if amount > 9007199254740991-freightTotal {
+			return nil, fiscal.ErrInvalid
+		}
+		freightTotal += amount
+		lineTotal := item.TotalCents + item.Tax.AdditionalCents
+		if lineTotal < item.TotalCents || lineTotal > 9007199254740991-quotedTotal {
+			return nil, fiscal.ErrInvalid
+		}
+		quotedTotal += lineTotal
 		var name string
 		if err = a.DB.QueryRowContext(ctx, `SELECT name FROM products WHERE tenant_id=? AND id=?`, a.Actor.TenantID, item.ProductID).Scan(&name); err != nil {
 			return nil, err
@@ -115,6 +152,9 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 			return nil, fiscalcore.ErrUnsupported
 		}
 		items = append(items, row)
+	}
+	if hasFreight && (quotedTotal != snapshot.TotalCents || len(bindings) != len(snapshot.Items)) {
+		return nil, fiscal.ErrIntegrity
 	}
 	payments, err := focusPayments(snapshot)
 	if err != nil {
@@ -133,9 +173,14 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 		// Issuer registration is authoritative; addresses are configured in Focus.
 		payload["nome_emitente"] = p.LegalName
 		payload["uf_emitente"] = p.State
-		for _, row := range items {
-			if row["valor_frete"] != "0.00" {
-				return nil, fiscalcore.ErrUnsupported
+		if hasFreight {
+			// Official NotaFiscalXML vFrete / ItemNotaFiscalXML vFrete.
+			payload["valor_frete"] = focusMoney(freightTotal)
+		} else {
+			for _, row := range items {
+				if row["valor_frete"] != "0.00" {
+					return nil, fiscalcore.ErrUnsupported
+				}
 			}
 		}
 	}

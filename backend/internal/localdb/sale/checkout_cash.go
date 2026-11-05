@@ -11,9 +11,11 @@ import (
 	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 type FinalizeCashPlanInput struct {
+	Freight             bool   `json:"freight,omitempty"`
 	FiscalRequestSHA256 string `json:"fiscal_request_sha256,omitempty"`
 	OperationID         string `json:"operation_id"`
 	ReceivedCents       int64  `json:"received_cents"`
@@ -89,7 +91,7 @@ func readPlanCompletionTx(ctx context.Context, tx *sql.Tx, actor identity.Scope,
 		if plan.State == "prepared" && cashOnly(*plan) && checkShiftTx(ctx, tx, actor, device, plan.CashSessionID) == nil {
 			items, total, e := priceItemsTx(ctx, tx, actor, planItems(*plan))
 			if e == nil {
-				bindings, newTotal, err := priceTaxesTx(ctx, tx, actor, device, planTaxRefs(*plan), items, total)
+				bindings, newTotal, err := priceTaxesTx(ctx, tx, actor, device, planTaxRefs(*plan), items, total, plan.CheckoutID, plan.Freight)
 				e = err
 				total = newTotal
 				for i, b := range bindings {
@@ -141,11 +143,36 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 	if db == nil || !planID(id) || !planID(in.OperationID) || in.ReceivedCents <= 0 || in.ReceivedCents > checkoutMaxSafe {
 		return Plan{}, ErrInvalid
 	}
+	if in.Freight {
+		var result Plan
+		err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+			var e error
+			result, e = finalizeCashPlanTx(ctx, tx, contracts, actor, device, id, in, token...)
+			return e
+		})
+		if err != nil {
+			return Plan{}, err
+		}
+		return result, nil
+	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return Plan{}, err
 	}
 	defer tx.Rollback()
+	result, err := finalizeCashPlanTx(ctx, tx, contracts, actor, device, id, in, token...)
+	if err != nil {
+		return Plan{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return Plan{}, err
+	}
+	return result, nil
+}
+
+func finalizeCashPlanTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, id string, in FinalizeCashPlanInput, token ...string) (Plan, error) {
+	var err error
+
 	if err = authorizeLegacy(ctx, tx, actor, device); err != nil {
 		return Plan{}, err
 	}
@@ -155,6 +182,9 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 	plan, err := readPlanTx(ctx, tx, actor, device, id)
 	if err != nil {
 		return Plan{}, err
+	}
+	if plan.Freight != in.Freight {
+		return Plan{}, ErrConflict
 	}
 	if len(planTaxRefs(plan)) > 0 {
 		if len(token) != 1 {
@@ -171,9 +201,6 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 			return Plan{}, ErrConflict
 		}
 		plan.Repeated = true
-		if err = tx.Commit(); err != nil {
-			return Plan{}, err
-		}
 		return plan, nil
 	}
 	if plan.State != "prepared" {
@@ -213,7 +240,7 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 	if err != nil {
 		return Plan{}, err
 	}
-	bindings, total, err := priceTaxesTx(ctx, tx, actor, device, planTaxRefs(plan), items, total)
+	bindings, total, err := priceTaxesTx(ctx, tx, actor, device, planTaxRefs(plan), items, total, plan.CheckoutID, plan.Freight)
 	if err != nil {
 		return Plan{}, err
 	}
@@ -223,7 +250,7 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 	if total != plan.TotalCents || !samePlanPrices(plan.Items, items) {
 		return Plan{}, ErrConflict
 	}
-	saleInput := Input{TaxQuoteOperations: planTaxRefs(plan), OperationID: in.OperationID, SaleID: plan.CheckoutID, CashSessionID: plan.CashSessionID, Items: planItems(plan)}
+	saleInput := Input{Freight: plan.Freight, TaxQuoteOperations: planTaxRefs(plan), OperationID: in.OperationID, SaleID: plan.CheckoutID, CashSessionID: plan.CashSessionID, Items: planItems(plan)}
 	ids := make([]string, len(plan.Parts))
 	for i, p := range plan.Parts {
 		saleInput.Payments = append(saleInput.Payments, Payment{Method: "cash", AmountCents: p.AmountCents})
@@ -250,9 +277,6 @@ func FinalizeCashPlan(ctx context.Context, db *sql.DB, contracts *entitlementsto
 	}
 	if plan.Completion == nil {
 		return Plan{}, ErrConflict
-	}
-	if err = tx.Commit(); err != nil {
-		return Plan{}, err
 	}
 	return plan, nil
 }

@@ -8,8 +8,11 @@ import (
 	"titansystem-backend/internal/localdb/identity"
 )
 
-func priceTaxesTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, refs []string, items []QuoteItem, total int64) ([]*fiscal.SaleTaxBinding, int64, error) {
+func priceTaxesTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, refs []string, items []QuoteItem, total int64, commercialID string, freightSelected bool) ([]*fiscal.SaleTaxBinding, int64, error) {
 	if len(refs) == 0 {
+		if freightSelected {
+			return nil, 0, ErrInvalid
+		}
 		return nil, total, nil
 	}
 	if len(refs) != len(items) || len(refs) > 100 {
@@ -48,6 +51,25 @@ func priceTaxesTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.
 		}
 		total += binding.AdditionalCents
 		bindings[i] = &binding
+	}
+	all := make([]fiscal.SaleTaxBinding, len(bindings))
+	for i, b := range bindings {
+		all[i] = *b
+	}
+	hasFreight := false
+	for _, b := range all {
+		hasFreight = hasFreight || b.Freight != nil
+	}
+	if hasFreight != freightSelected {
+		return nil, 0, ErrInvalid
+	}
+	if err := fiscal.ValidateSaleFreightBindings(all); err != nil {
+		return nil, 0, ErrConflict
+	}
+	if commercialID != "" {
+		if err := fiscal.ValidateSaleFreightOrigin(all, commercialID); err != nil {
+			return nil, 0, ErrConflict
+		}
 	}
 	return bindings, total, nil
 }

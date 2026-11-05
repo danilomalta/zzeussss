@@ -15,6 +15,7 @@ import (
 	"titansystem-backend/internal/localdb/entitlementstore"
 	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 const checkoutMaxSafe int64 = 9007199254740991
@@ -27,6 +28,7 @@ type PlanPartInput struct {
 }
 
 type PlanInput struct {
+	Freight            bool            `json:"freight,omitempty"`
 	TaxQuoteOperations []string        `json:"tax_quote_operations,omitempty"`
 	OperationID        string          `json:"operation_id"`
 	CheckoutID         string          `json:"checkout_id"`
@@ -49,6 +51,7 @@ type PlanCancellation struct {
 }
 
 type Plan struct {
+	Freight       bool                   `json:"freight,omitempty"`
 	Fiscal        *fiscal.CheckoutStatus `json:"fiscal,omitempty"`
 	CheckoutID    string                 `json:"checkout_id"`
 	OperationID   string                 `json:"operation_id"`
@@ -108,11 +111,36 @@ func CreatePlanWithContract(ctx context.Context, db *sql.DB, contracts *entitlem
 	if db == nil || contracts == nil || !validPlan(in) {
 		return Plan{}, ErrInvalid
 	}
+	if in.Freight {
+		var result Plan
+		err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+			var e error
+			result, e = createPlanTx(ctx, tx, contracts, actor, device, in, token...)
+			return e
+		})
+		if err != nil {
+			return Plan{}, err
+		}
+		return result, nil
+	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return Plan{}, err
 	}
 	defer tx.Rollback()
+	result, err := createPlanTx(ctx, tx, contracts, actor, device, in, token...)
+	if err != nil {
+		return Plan{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return Plan{}, err
+	}
+	return result, nil
+}
+
+func createPlanTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, in PlanInput, token ...string) (Plan, error) {
+	var err error
+
 	if err = contracts.RequireTx(ctx, tx, actor, device, identity.Sell, modules.POS); err != nil {
 		return Plan{}, err
 	}
@@ -136,9 +164,6 @@ func CreatePlanWithContract(ctx context.Context, db *sql.DB, contracts *entitlem
 			return Plan{}, e
 		}
 		result.Repeated = true
-		if e = tx.Commit(); e != nil {
-			return Plan{}, e
-		}
 		return result, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
@@ -158,7 +183,7 @@ func CreatePlanWithContract(ctx context.Context, db *sql.DB, contracts *entitlem
 	if err != nil {
 		return Plan{}, err
 	}
-	bindings, total, err := priceTaxesTx(ctx, tx, actor, device, in.TaxQuoteOperations, items, total)
+	bindings, total, err := priceTaxesTx(ctx, tx, actor, device, in.TaxQuoteOperations, items, total, in.CheckoutID, in.Freight)
 	if err != nil {
 		return Plan{}, err
 	}
@@ -195,9 +220,6 @@ func CreatePlanWithContract(ctx context.Context, db *sql.DB, contracts *entitlem
 	}
 	result, err := readPlanTx(ctx, tx, actor, device, in.CheckoutID)
 	if err != nil {
-		return Plan{}, err
-	}
-	if err = tx.Commit(); err != nil {
 		return Plan{}, err
 	}
 	return result, nil
@@ -267,6 +289,9 @@ func readPlanTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device id
 		result.Cancellation = cancel
 	} else if !errors.Is(err, sql.ErrNoRows) {
 		return Plan{}, err
+	}
+	for _, item := range result.Items {
+		result.Freight = result.Freight || item.Tax != nil && item.Tax.Freight != nil
 	}
 	if err = readPlanCompletionTx(ctx, tx, actor, device, &result); err != nil {
 		return Plan{}, err

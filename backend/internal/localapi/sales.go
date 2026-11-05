@@ -111,7 +111,7 @@ func exactSaleObject(body []byte, fields []string, optional ...string) (map[stri
 }
 
 func decodeSale(body []byte) (sale.Input, error) {
-	values, err := exactSaleObject(body, []string{"operation_id", "sale_id", "cash_session_id", "items", "payments"}, "tax_quote_operations")
+	values, err := exactSaleObject(body, []string{"operation_id", "sale_id", "cash_session_id", "items", "payments"}, "tax_quote_operations", "freight")
 	if err != nil {
 		return sale.Input{}, err
 	}
