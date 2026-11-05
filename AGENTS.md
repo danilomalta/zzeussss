@@ -23,3 +23,10 @@
 3. Cada cliente tem as PRÓPRIAS chaves (chave mestra do cofre, tokens, certificados), geradas na instalação dele, sob controle dele. O cliente é responsável pelo backup. Chaves de um cliente nunca abrem dados de outro.
 4. Existem DOIS cadastros: (a) PRÉ-CADASTRO, o mínimo para a pessoa começar; (b) CADASTRO COMPLETO, dentro do sistema, onde se registram meios fiscais, funcionários e o resto. Os dados podem ser puxados de uma fonte automática OU digitados à mão; a digitação manual sempre funciona.
 5. Produção fiscal continua BLOQUEADA. Nada é simulado como oficial.
+
+## Relatórios fiscais — recorte v1
+
+- Relatar SOMENTE contra o checklist de `docs/architecture/FISCAL_V1_DEFINICAO.md`,
+  com FEITO ou PENDENTE e evidência do alcance observado. Não repetir o backlog.
+- Incluir apenas uma linha: "itens fora do v1: ver o documento".
+- Continua PROIBIDO declarar aceitação oficial sem teste real e habilitar produção.
