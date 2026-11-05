@@ -134,7 +134,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Prior financial compensation for this sale refuses return commands and quotes with 409; history remains readable. No overlapping refund, stock movement or fiscal cancellation is performed."
       }
     },
     "/local/v1/sales/{id}/returns/quote": {
@@ -202,7 +203,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Prior financial compensation for this sale refuses return commands and quotes with 409; history remains readable. No overlapping refund, stock movement or fiscal cancellation is performed."
       }
     },
     "/local/v1/sale-return-operations/{id}": {
@@ -336,7 +338,7 @@
             }
           }
         },
-        "description": "Requires CancelSale and ManageCash. Explicit open shift must belong to current operator on the same device; a different original shift must be officially closed. Cash, stock, provenance and outbox commit atomically. Same operation ID recovers its original result even after closure. No implicit selection or automatic retry."
+        "description": "Requires CancelSale and ManageCash. Explicit open shift must belong to current operator on the same device; a different original shift must be officially closed. Cash, stock, provenance and outbox commit atomically. Same operation ID recovers its original result even after closure. No implicit selection or automatic retry.Prior financial compensation for this sale refuses return commands and quotes with 409; history remains readable. No overlapping refund, stock movement or fiscal cancellation is performed."
       }
     },
     "/local/v1/sales/{id}/returns/cash-session/quote": {
@@ -405,7 +407,7 @@
             }
           }
         },
-        "description": "Requires CancelSale and ManageCash. Explicit open shift must belong to current operator on the same device; a different original shift must be officially closed. Cash, stock, provenance and outbox commit atomically. Same operation ID recovers its original result even after closure. No implicit selection or automatic retry."
+        "description": "Requires CancelSale and ManageCash. Explicit open shift must belong to current operator on the same device; a different original shift must be officially closed. Cash, stock, provenance and outbox commit atomically. Same operation ID recovers its original result even after closure. No implicit selection or automatic retry.Prior financial compensation for this sale refuses return commands and quotes with 409; history remains readable. No overlapping refund, stock movement or fiscal cancellation is performed."
       }
     }
   },

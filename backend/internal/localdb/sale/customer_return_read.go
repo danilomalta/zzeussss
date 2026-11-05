@@ -54,6 +54,9 @@ func quoteCustomerReturn(ctx context.Context, db *sql.DB, actor identity.Scope, 
 	if err != nil {
 		return CustomerReturnQuote{}, err
 	}
+	if err = noFinancialRefundTx(ctx, tx, actor.TenantID, saleID); err != nil {
+		return CustomerReturnQuote{}, err
+	}
 	if err = checkReturnUnitsTx(ctx, tx, actor, h, items); err != nil {
 		return CustomerReturnQuote{}, err
 	}

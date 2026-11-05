@@ -492,7 +492,7 @@
     "/local/v1/retail/sales/{id}/refund": {
       "post": {
         "operationId": "refundRetailSale",
-        "description": "Opt-in financial refund for an original cash sale, by item and explicit quantity; expected quantity and cents required. Original sale, stock and tax status remain unchanged. Refuses credit/tax-bound sales and overlap with physical returns; uses cumulative integer allocation. Idempotent operation_id. Only configured refund roles under existing session/store/Finance/POS authorization.",
+        "description": "Opt-in financial refund for an original cash sale, by item and explicit quantity; expected quantity and cents required. Original sale, stock and tax status remain unchanged. Refuses credit/tax-bound sales and overlap with physical returns; uses cumulative integer allocation. Idempotent operation_id. Only configured refund roles under existing session/store/Finance/POS authorization. Compensation allocation, cash movement and audit must all be persisted exactly once; an ignored allocation returns 409 and rolls back the complete transaction. Retry with the same original operation after rollback is safe.",
         "security": [
           {
             "localSession": []

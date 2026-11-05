@@ -104,6 +104,9 @@ func CreateCustomerReturn(ctx context.Context, db *sql.DB, contracts *entitlemen
 	if err != nil {
 		return CustomerReturn{}, err
 	}
+	if err = noFinancialRefundTx(ctx, tx, a.TenantID, in.SaleID); err != nil {
+		return CustomerReturn{}, err
+	}
 	if len(h.Returns) >= 1000 {
 		return CustomerReturn{}, ErrReturnRange
 	}

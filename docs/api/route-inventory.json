@@ -2846,7 +2846,8 @@
       "method": "POST",
       "path": "/local/v1/retail/sales/:id/refund",
       "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
+      "source": "backend/internal/localapi/retail.go",
+      "integrity": "Compensation allocation/cash/audit commit together; prior financial refund conflicts with cancellation/physical return; no duplicate cash or stock effect."
     },
     {
       "api": "local",
@@ -2882,7 +2883,8 @@
       "method": "POST",
       "path": "/local/v1/sales/:id/cancel",
       "authentication": "session",
-      "source": "backend/internal/localapi/sales.go"
+      "source": "backend/internal/localapi/sales.go",
+      "integrity": "Compensation allocation/cash/audit commit together; prior financial refund conflicts with cancellation/physical return; no duplicate cash or stock effect."
     },
     {
       "api": "local",
@@ -2896,28 +2898,32 @@
       "method": "POST",
       "path": "/local/v1/sales/:id/returns",
       "authentication": "session",
-      "source": "backend/internal/localapi/customer_returns.go"
+      "source": "backend/internal/localapi/customer_returns.go",
+      "integrity": "Compensation allocation/cash/audit commit together; prior financial refund conflicts with cancellation/physical return; no duplicate cash or stock effect."
     },
     {
       "api": "local",
       "method": "POST",
       "path": "/local/v1/sales/:id/returns/cash-session",
       "authentication": "session",
-      "source": "backend/internal/localapi/customer_returns.go"
+      "source": "backend/internal/localapi/customer_returns.go",
+      "integrity": "Compensation allocation/cash/audit commit together; prior financial refund conflicts with cancellation/physical return; no duplicate cash or stock effect."
     },
     {
       "api": "local",
       "method": "POST",
       "path": "/local/v1/sales/:id/returns/cash-session/quote",
       "authentication": "session",
-      "source": "backend/internal/localapi/customer_returns.go"
+      "source": "backend/internal/localapi/customer_returns.go",
+      "integrity": "Compensation allocation/cash/audit commit together; prior financial refund conflicts with cancellation/physical return; no duplicate cash or stock effect."
     },
     {
       "api": "local",
       "method": "POST",
       "path": "/local/v1/sales/:id/returns/quote",
       "authentication": "session",
-      "source": "backend/internal/localapi/customer_returns.go"
+      "source": "backend/internal/localapi/customer_returns.go",
+      "integrity": "Compensation allocation/cash/audit commit together; prior financial refund conflicts with cancellation/physical return; no duplicate cash or stock effect."
     },
     {
       "api": "local",

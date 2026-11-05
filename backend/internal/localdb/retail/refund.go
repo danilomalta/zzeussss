@@ -81,7 +81,17 @@ func (s Service) RefundSale(ctx context.Context, sale string, in RefundInput) er
 		if movement.Repeated {
 			return ErrConflict
 		}
-		_, e = tx.ExecContext(ctx, `INSERT INTO retail_sale_refunds VALUES(?,?,?,?,?,?,?,?)`, s.Actor.TenantID, s.Actor.StoreID, sale, in.ItemID, in.OperationID, in.QuantityMilli, amount, movement.MovementID)
-		return e
+		result, e := tx.ExecContext(ctx, `INSERT INTO retail_sale_refunds VALUES(?,?,?,?,?,?,?,?)`, s.Actor.TenantID, s.Actor.StoreID, sale, in.ItemID, in.OperationID, in.QuantityMilli, amount, movement.MovementID)
+		if e != nil {
+			return e
+		}
+		written, e := result.RowsAffected()
+		if e != nil {
+			return e
+		}
+		if written != 1 {
+			return ErrConflict
+		}
+		return nil
 	})
 }

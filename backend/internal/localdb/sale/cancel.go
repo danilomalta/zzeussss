@@ -111,6 +111,9 @@ func CancelWithContract(ctx context.Context, db *sql.DB, contracts *entitlements
 	if status != "committed" || total <= 0 {
 		return CancelResult{}, ErrConflict
 	}
+	if err = noFinancialRefundTx(ctx, tx, actor.TenantID, in.SaleID); err != nil {
+		return CancelResult{}, err
+	}
 	var opening int64
 	err = tx.QueryRowContext(ctx, `SELECT opening_cents FROM cash_sessions
 		WHERE tenant_id=? AND store_id=? AND device_id=? AND id=? AND closed_at IS NULL`,
@@ -265,6 +268,19 @@ func CancelWithContract(ctx context.Context, db *sql.DB, contracts *entitlements
 		return CancelResult{}, err
 	}
 	return CancelResult{SaleID: in.SaleID, OperationID: in.OperationID, RefundedCents: total, CancelledAt: now}, nil
+}
+
+// Keep the existing database backstops and report incompatible compensations
+// as a business conflict before attempting another cash or stock movement.
+func noFinancialRefundTx(ctx context.Context, tx *sql.Tx, tenant, saleID string) error {
+	var n int
+	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM retail_sale_refunds WHERE tenant_id=? AND sale_id=?`, tenant, saleID).Scan(&n); err != nil {
+		return err
+	}
+	if n != 0 {
+		return ErrConflict
+	}
+	return nil
 }
 
 func cancelID(value string) bool {

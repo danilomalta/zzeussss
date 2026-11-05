@@ -1141,7 +1141,7 @@
       "post": {
         "operationId": "localCancelSale",
         "summary": "Cancela integralmente venda local",
-        "description": "cancel_sale e contrato POS. JSON exato até 8192 bytes. Devolve estoque e dinheiro no turno original ainda aberto e aparelho original; não exclui histórico. Repetição idêntica não duplica devolução; conflito ou dinheiro insuficiente 409. Não faz cancelamento fiscal, devolução parcial ou estorno de cartão.",
+        "description": "cancel_sale e contrato POS. JSON exato até 8192 bytes. Devolve estoque e dinheiro no turno original ainda aberto e aparelho original; não exclui histórico. Repetição idêntica não duplica devolução; conflito ou dinheiro insuficiente 409. Não faz cancelamento fiscal, devolução parcial ou estorno de cartão. Estorno financeiro prévio por item impede este cancelamento integral com 409, sem novo movimento de caixa/estoque; preserva o histórico e os gatilhos de proteção existentes.",
         "security": [
           {
             "Session": []
