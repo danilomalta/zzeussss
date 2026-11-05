@@ -3,7 +3,7 @@
   "info": {
     "title": "Customer NF-e 55 screen — homologation only",
     "version": "1.1.0",
-    "description": " Focus: XML obtido só pelos caminhos oficiais em homologação, sem redirecionamento. xml_archive_key_file é a chave privada de backup do cliente, 32 bytes, 0600, configuração local de confiança. Arquivo cifrado AES-GCM na outbox do banco escolhido, incluído no snapshot; guardar chave fora do backup. archive_state indica archived/pending/unavailable, sem alterar autorização. Consulta da mesma referência pode repetir GET de XML, nunca reemitir. Exportação é local e nunca consulta terceiros."
+    "description": " Focus: XML obtido só pelos caminhos oficiais em homologação, sem redirecionamento. xml_archive_key_file é a chave privada de backup do cliente, 32 bytes, 0600, configuração local de confiança. Arquivo cifrado AES-GCM na outbox do banco escolhido, incluído no snapshot; guardar chave fora do backup. archive_state indica archived/pending/unavailable, sem alterar autorização. Consulta da mesma referência pode repetir GET de XML, nunca reemitir. Exportação é local e nunca consulta terceiros. Focus archive state is archived only after the encrypted customer-scoped row is actually persisted. An ignored write is a conflict/rollback and leaves archive_state=pending without discarding the authorized note; retry/query preserves its IDs and never implies another issuance. HTML/cupom rendering and PDF download tests do not approve physical printing or official Focus/SEFAZ acceptance."
   },
   "paths": {
     "/local/v1/fiscal/nfe55/sales/{id}/preview": {
