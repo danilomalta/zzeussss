@@ -33,7 +33,7 @@ func (s *Server) recordProductionQuality(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	out, err := production.RecordQualityReview(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	out, err := production.RecordQualityReview(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return qualityError(c, err)
 	}

@@ -126,7 +126,16 @@ func stageEvent(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.De
 	return one(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`, id, a.TenantID, a.StoreID, d.DeviceID, op, result.OrderID, "production.stage."+kind, 1, string(payload), now)
 }
 
-func ConfigureStagePlan(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in StagePlanInput) (StageResult, error) {
+func ConfigureStagePlan(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in StagePlanInput, sessionToken ...string) (StageResult, error) {
+	if db == nil || license == nil {
+		return StageResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (StageResult, error) {
+		return configureStagePlanTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func configureStagePlanTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in StagePlanInput, tx *sql.Tx) (StageResult, error) {
 	if db == nil {
 		return StageResult{}, errors.New("banco local indisponivel")
 	}
@@ -138,11 +147,7 @@ func ConfigureStagePlan(ctx context.Context, db *sql.DB, license *entitlementsto
 	if err != nil {
 		return StageResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return StageResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return StageResult{}, err
 	}
@@ -151,7 +156,7 @@ func ConfigureStagePlan(ctx context.Context, db *sql.DB, license *entitlementsto
 		return StageResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	order, err := scanOrder(tx.QueryRowContext(ctx, `SELECT `+orderColumns+` FROM production_orders WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.OrderID))
 	if err != nil {
@@ -192,7 +197,7 @@ func ConfigureStagePlan(ctx context.Context, db *sql.DB, license *entitlementsto
 	if err = stageEvent(ctx, tx, a, d, in.OperationID, "configured", in.Reason, string(body), now, result); err != nil {
 		return StageResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 
 const stageColumns = `id,name,responsible_id,position,status,revision,updated_at`
@@ -261,7 +266,16 @@ func guardStagesCompleted(ctx context.Context, tx *sql.Tx, a identity.Scope, id 
 	}
 	return nil
 }
-func ChangeStageState(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in StageStateInput) (StageResult, error) {
+func ChangeStageState(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in StageStateInput, sessionToken ...string) (StageResult, error) {
+	if db == nil || license == nil {
+		return StageResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (StageResult, error) {
+		return changeStageStateTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func changeStageStateTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in StageStateInput, tx *sql.Tx) (StageResult, error) {
 	if db == nil {
 		return StageResult{}, errors.New("banco local indisponivel")
 	}
@@ -273,11 +287,7 @@ func ChangeStageState(ctx context.Context, db *sql.DB, license *entitlementstore
 	if err != nil {
 		return StageResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return StageResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return StageResult{}, err
 	}
@@ -286,7 +296,7 @@ func ChangeStageState(ctx context.Context, db *sql.DB, license *entitlementstore
 		return StageResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	order, err := scanOrder(tx.QueryRowContext(ctx, `SELECT `+orderColumns+` FROM production_orders WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.OrderID))
 	if err != nil {
@@ -334,7 +344,7 @@ func ChangeStageState(ctx context.Context, db *sql.DB, license *entitlementstore
 	if err = stageEvent(ctx, tx, a, d, in.OperationID, in.Status, in.Reason, string(body), now, result); err != nil {
 		return StageResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 func GetStagePlan(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, id string) (StagePlan, error) {
 	if !validID(id) {

@@ -139,7 +139,16 @@ func validateMaterialUnit(ctx context.Context, tx *sql.Tx, a identity.Scope, ite
 	return nil
 }
 
-func ReserveMaterials(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ReserveInput) (MaterialResult, error) {
+func ReserveMaterials(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ReserveInput, sessionToken ...string) (MaterialResult, error) {
+	if db == nil || license == nil {
+		return MaterialResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (MaterialResult, error) {
+		return reserveMaterialsTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func reserveMaterialsTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ReserveInput, tx *sql.Tx) (MaterialResult, error) {
 	if db == nil {
 		return MaterialResult{}, errors.New("banco local indisponivel")
 	}
@@ -151,11 +160,7 @@ func ReserveMaterials(ctx context.Context, db *sql.DB, license *entitlementstore
 	if err != nil {
 		return MaterialResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return MaterialResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return MaterialResult{}, err
 	}
@@ -164,7 +169,7 @@ func ReserveMaterials(ctx context.Context, db *sql.DB, license *entitlementstore
 		return MaterialResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	order, err := scanOrder(tx.QueryRowContext(ctx, `SELECT `+orderColumns+` FROM production_orders WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.OrderID))
 	if err != nil {
@@ -222,10 +227,19 @@ func ReserveMaterials(ctx context.Context, db *sql.DB, license *entitlementstore
 	if err = materialEvent(ctx, tx, a, d, in.OperationID, "reserve", string(body), now, result); err != nil {
 		return MaterialResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 
-func ChangeMaterials(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in MaterialChangeInput) (MaterialResult, error) {
+func ChangeMaterials(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in MaterialChangeInput, sessionToken ...string) (MaterialResult, error) {
+	if db == nil || license == nil {
+		return MaterialResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (MaterialResult, error) {
+		return changeMaterialsTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func changeMaterialsTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in MaterialChangeInput, tx *sql.Tx) (MaterialResult, error) {
 	if db == nil {
 		return MaterialResult{}, errors.New("banco local indisponivel")
 	}
@@ -237,11 +251,7 @@ func ChangeMaterials(ctx context.Context, db *sql.DB, license *entitlementstore.
 	if err != nil {
 		return MaterialResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return MaterialResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return MaterialResult{}, err
 	}
@@ -250,7 +260,7 @@ func ChangeMaterials(ctx context.Context, db *sql.DB, license *entitlementstore.
 		return MaterialResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	reservation, err := materialGetTx(ctx, tx, a, in.ReservationID)
 	if err != nil {
@@ -307,7 +317,7 @@ func ChangeMaterials(ctx context.Context, db *sql.DB, license *entitlementstore.
 	if err = materialEvent(ctx, tx, a, d, in.OperationID, in.Action, string(body), now, result); err != nil {
 		return MaterialResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 
 func GetMaterials(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, id string) (MaterialReservation, error) {

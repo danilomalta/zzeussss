@@ -38,7 +38,7 @@ func (s *Server) recordProductionLot(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	out, err := production.RecordProductionLot(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	out, err := production.RecordProductionLot(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return lotError(c, err)
 	}
@@ -64,7 +64,7 @@ func (s *Server) voidProductionLot(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	out, err := production.VoidProductionLot(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	out, err := production.VoidProductionLot(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return lotError(c, err)
 	}

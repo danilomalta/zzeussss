@@ -3,7 +3,7 @@
   "info": {
     "title": "TitanSystem P08 production stages",
     "version": "P08",
-    "description": "Optional immutable stage definitions per frozen order. Current manage_production and device authorization are always required. Writes require an active Production contract. Stage state changes require the actor to be the assigned responsible, consumed P05 ingredients, an approved order and all earlier stages completed. Stages never reserve, consume or produce stock. P06 completion now rejects incomplete configured plans; orders without plans retain the P06 contract. Strict required fields: unknown, duplicate, null and trailing JSON rejected, including nested stage definitions."
+    "description": "Optional immutable stage definitions per frozen order. Current manage_production and device authorization are always required. Writes require an active Production contract. Stage state changes require the actor to be the assigned responsible, consumed P05 ingredients, an approved order and all earlier stages completed. Stages never reserve, consume or produce stock. P06 completion now rejects incomplete configured plans; orders without plans retain the P06 contract. Strict required fields: unknown, duplicate, null and trailing JSON rejected, including nested stage definitions. Writes acquire the existing immediate SQLite writer before session/business reads, with bounded contention retries. HTTP revalidates the admitted token, actor, tenant, store and device inside that transaction before replay or mutation; a revoked or mismatched session returns 401. Receipt, audit, stock effects and outbox commit or roll back together; only the outer writer commits."
   },
   "security": [
     {

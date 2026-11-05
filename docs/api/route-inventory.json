@@ -2152,7 +2152,8 @@
       "method": "POST",
       "path": "/local/v1/production/losses",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_losses.go"
+      "source": "backend/internal/localapi/production_losses.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
@@ -2173,7 +2174,8 @@
       "method": "POST",
       "path": "/local/v1/production/losses/void",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_losses.go"
+      "source": "backend/internal/localapi/production_losses.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
@@ -2187,7 +2189,8 @@
       "method": "POST",
       "path": "/local/v1/production/lots",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_lots.go"
+      "source": "backend/internal/localapi/production_lots.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
@@ -2222,14 +2225,16 @@
       "method": "POST",
       "path": "/local/v1/production/lots/void",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_lots.go"
+      "source": "backend/internal/localapi/production_lots.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
       "method": "POST",
       "path": "/local/v1/production/material-reservations",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_materials.go"
+      "source": "backend/internal/localapi/production_materials.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
@@ -2243,7 +2248,8 @@
       "method": "POST",
       "path": "/local/v1/production/material-reservations/state",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_materials.go"
+      "source": "backend/internal/localapi/production_materials.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
@@ -2271,7 +2277,8 @@
       "method": "POST",
       "path": "/local/v1/production/orders",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_orders.go"
+      "source": "backend/internal/localapi/production_orders.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
@@ -2320,21 +2327,24 @@
       "method": "POST",
       "path": "/local/v1/production/orders/state",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_orders.go"
+      "source": "backend/internal/localapi/production_orders.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
       "method": "POST",
       "path": "/local/v1/production/quality-reviews",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_quality.go"
+      "source": "backend/internal/localapi/production_quality.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
       "method": "POST",
       "path": "/local/v1/production/recipe-state",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_recipe_state.go"
+      "source": "backend/internal/localapi/production_recipe_state.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
@@ -2348,7 +2358,8 @@
       "method": "POST",
       "path": "/local/v1/production/recipe-versions",
       "authentication": "session",
-      "source": "backend/internal/localapi/production.go"
+      "source": "backend/internal/localapi/production.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
@@ -2376,7 +2387,8 @@
       "method": "POST",
       "path": "/local/v1/production/results",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_results.go"
+      "source": "backend/internal/localapi/production_results.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
@@ -2404,14 +2416,16 @@
       "method": "POST",
       "path": "/local/v1/production/stage-plans",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_stages.go"
+      "source": "backend/internal/localapi/production_stages.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",
       "method": "POST",
       "path": "/local/v1/production/stages/state",
       "authentication": "session",
-      "source": "backend/internal/localapi/production_stages.go"
+      "source": "backend/internal/localapi/production_stages.go",
+      "integrity": "Admitted HTTP session revalidated inside immediate SQLite writer before replay/business reads; revoked or mismatched context returns 401. Existing receipt, audit, stock effects and outbox commit or roll back together."
     },
     {
       "api": "local",

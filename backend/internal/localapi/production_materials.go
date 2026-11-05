@@ -37,7 +37,7 @@ func (s *Server) reserveProductionMaterials(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	v, err := production.ReserveMaterials(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	v, err := production.ReserveMaterials(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return materialsError(c, err)
 	}
@@ -63,7 +63,7 @@ func (s *Server) changeProductionMaterials(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	v, err := production.ChangeMaterials(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	v, err := production.ChangeMaterials(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return materialsError(c, err)
 	}

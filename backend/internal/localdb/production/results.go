@@ -130,7 +130,16 @@ func consumedForOrder(ctx context.Context, tx *sql.Tx, a identity.Scope, order O
 	return reservation.ID, nil
 }
 
-func CompleteProduction(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ResultInput) (CompletionResult, error) {
+func CompleteProduction(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ResultInput, sessionToken ...string) (CompletionResult, error) {
+	if db == nil || license == nil {
+		return CompletionResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (CompletionResult, error) {
+		return completeProductionTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func completeProductionTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in ResultInput, tx *sql.Tx) (CompletionResult, error) {
 	if db == nil {
 		return CompletionResult{}, errors.New("banco local indisponivel")
 	}
@@ -142,11 +151,7 @@ func CompleteProduction(ctx context.Context, db *sql.DB, license *entitlementsto
 	if err != nil {
 		return CompletionResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return CompletionResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return CompletionResult{}, err
 	}
@@ -155,7 +160,7 @@ func CompleteProduction(ctx context.Context, db *sql.DB, license *entitlementsto
 		return CompletionResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	var count int
 	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM production_results WHERE tenant_id=? AND store_id=? AND (id=? OR order_id=?)`, a.TenantID, a.StoreID, in.ResultID, in.OrderID).Scan(&count); err != nil {
@@ -243,7 +248,7 @@ func CompleteProduction(ctx context.Context, db *sql.DB, license *entitlementsto
 	if err = one(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`, eventID, a.TenantID, a.StoreID, d.DeviceID, in.OperationID, in.ResultID, "production.result.completed", 1, string(payload), now); err != nil {
 		return CompletionResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 
 func GetProductionResult(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, id string) (ProductionResult, error) {

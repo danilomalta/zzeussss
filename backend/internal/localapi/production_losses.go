@@ -38,7 +38,7 @@ func (s *Server) recordProductionLoss(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	out, err := production.RecordProductionLoss(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	out, err := production.RecordProductionLoss(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return lossError(c, err)
 	}
@@ -64,7 +64,7 @@ func (s *Server) voidProductionLoss(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	out, err := production.VoidProductionLoss(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	out, err := production.VoidProductionLoss(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return lossError(c, err)
 	}

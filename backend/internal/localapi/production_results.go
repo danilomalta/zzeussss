@@ -26,7 +26,7 @@ func (s *Server) completeProduction(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	v, err := production.CompleteProduction(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	v, err := production.CompleteProduction(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return materialsError(c, err)
 	}

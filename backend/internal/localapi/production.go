@@ -19,6 +19,8 @@ func (s *Server) mountProduction(r fiber.Router) {
 
 func productionError(c *fiber.Ctx, err error) error {
 	switch {
+	case errors.Is(err, localauth.ErrDenied):
+		return c.SendStatus(401)
 	case errors.Is(err, production.ErrInvalid):
 		return c.SendStatus(400)
 	case errors.Is(err, production.ErrConflict), errors.Is(err, production.ErrMaterials), errors.Is(err, production.ErrResult), errors.Is(err, production.ErrStages):
@@ -89,7 +91,7 @@ func (s *Server) publishRecipe(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	v, err := production.Publish(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	v, err := production.Publish(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return productionError(c, err)
 	}

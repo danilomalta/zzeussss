@@ -204,7 +204,16 @@ func validLotMetadata(code, made, expiry string) bool {
 	return err == nil && end.Format("2006-01-02") == expiry && !end.Before(date)
 }
 
-func RecordProductionLot(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in LotInput) (LotResult, error) {
+func RecordProductionLot(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in LotInput, sessionToken ...string) (LotResult, error) {
+	if db == nil || license == nil {
+		return LotResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (LotResult, error) {
+		return recordProductionLotTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func recordProductionLotTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in LotInput, tx *sql.Tx) (LotResult, error) {
 	if db == nil {
 		return LotResult{}, errors.New("banco local indisponivel")
 	}
@@ -217,11 +226,7 @@ func RecordProductionLot(ctx context.Context, db *sql.DB, license *entitlementst
 	if err != nil {
 		return LotResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return LotResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return LotResult{}, err
 	}
@@ -230,7 +235,7 @@ func RecordProductionLot(ctx context.Context, db *sql.DB, license *entitlementst
 		return LotResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	var count int
 	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM production_lots WHERE tenant_id=? AND store_id=? AND (id=? OR code=?)`, a.TenantID, a.StoreID, in.LotID, in.Code).Scan(&count); err != nil {
@@ -257,10 +262,19 @@ func RecordProductionLot(ctx context.Context, db *sql.DB, license *entitlementst
 	if err = recordLotEvent(ctx, tx, a, d, in.OperationID, "recorded", in.Reason, string(body), now, result); err != nil {
 		return LotResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 
-func VoidProductionLot(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in VoidLotInput) (LotResult, error) {
+func VoidProductionLot(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in VoidLotInput, sessionToken ...string) (LotResult, error) {
+	if db == nil || license == nil {
+		return LotResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (LotResult, error) {
+		return voidProductionLotTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func voidProductionLotTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in VoidLotInput, tx *sql.Tx) (LotResult, error) {
 	if db == nil {
 		return LotResult{}, errors.New("banco local indisponivel")
 	}
@@ -272,11 +286,7 @@ func VoidProductionLot(ctx context.Context, db *sql.DB, license *entitlementstor
 	if err != nil {
 		return LotResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return LotResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return LotResult{}, err
 	}
@@ -285,7 +295,7 @@ func VoidProductionLot(ctx context.Context, db *sql.DB, license *entitlementstor
 		return LotResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	lot, err := scanLot(tx.QueryRowContext(ctx, `SELECT `+lotColumns+` FROM production_lots WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.LotID))
 	if err != nil {
@@ -302,7 +312,7 @@ func VoidProductionLot(ctx context.Context, db *sql.DB, license *entitlementstor
 	if err = recordLotEvent(ctx, tx, a, d, in.OperationID, "voided", in.Reason, string(body), now, result); err != nil {
 		return LotResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 
 func GetProductionLot(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, id string) (ProductionLot, error) {

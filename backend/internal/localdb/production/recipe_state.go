@@ -57,7 +57,16 @@ func GetRecipeState(ctx context.Context, db *sql.DB, a identity.Scope, d identit
 	}
 	return out, tx.Commit()
 }
-func ChangeRecipeState(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in RecipeStateInput) (RecipeState, error) {
+func ChangeRecipeState(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in RecipeStateInput, sessionToken ...string) (RecipeState, error) {
+	if db == nil || license == nil {
+		return RecipeState{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (RecipeState, error) {
+		return changeRecipeStateTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func changeRecipeStateTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in RecipeStateInput, tx *sql.Tx) (RecipeState, error) {
 	in.Reason = strings.TrimSpace(in.Reason)
 	if !validID(in.OperationID) || !validID(in.RecipeID) || in.ExpectedRevision < 0 || in.ExpectedRevision >= MaxRevision || (in.Status != "active" && in.Status != "inactive") || len(in.Reason) == 0 || len(in.Reason) > 255 {
 		return RecipeState{}, ErrInvalid
@@ -65,11 +74,7 @@ func ChangeRecipeState(ctx context.Context, db *sql.DB, license *entitlementstor
 	if db == nil {
 		return RecipeState{}, errors.New("banco indisponivel")
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return RecipeState{}, err
-	}
-	defer tx.Rollback()
+	var err error
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return RecipeState{}, err
 	}
@@ -84,7 +89,7 @@ func ChangeRecipeState(ctx context.Context, db *sql.DB, license *entitlementstor
 		if saved != string(b) || actor != a.IdentityID || store != a.StoreID {
 			return RecipeState{}, ErrConflict
 		}
-		return RecipeState{in.RecipeID, status, revision, true}, tx.Commit()
+		return RecipeState{in.RecipeID, status, revision, true}, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return RecipeState{}, err
@@ -116,5 +121,5 @@ func ChangeRecipeState(ctx context.Context, db *sql.DB, license *entitlementstor
 	if err = one(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,'production.recipe.state.changed',1,?,?)`, eventID, a.TenantID, a.StoreID, d.DeviceID, in.OperationID, in.RecipeID, string(b), time.Now().UTC().Format(time.RFC3339Nano)); err != nil {
 		return RecipeState{}, err
 	}
-	return RecipeState{in.RecipeID, in.Status, revision, false}, tx.Commit()
+	return RecipeState{in.RecipeID, in.Status, revision, false}, nil
 }

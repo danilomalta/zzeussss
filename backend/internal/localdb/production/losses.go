@@ -177,7 +177,16 @@ func recordLossEvent(ctx context.Context, tx *sql.Tx, a identity.Scope, d identi
 	return one(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`, id, a.TenantID, a.StoreID, d.DeviceID, op, result.LossID, "production.loss.changed", 1, string(payload), now)
 }
 
-func RecordProductionLoss(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in LossInput) (LossResult, error) {
+func RecordProductionLoss(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in LossInput, sessionToken ...string) (LossResult, error) {
+	if db == nil || license == nil {
+		return LossResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (LossResult, error) {
+		return recordProductionLossTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func recordProductionLossTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in LossInput, tx *sql.Tx) (LossResult, error) {
 	if db == nil {
 		return LossResult{}, errors.New("banco local indisponivel")
 	}
@@ -189,11 +198,7 @@ func RecordProductionLoss(ctx context.Context, db *sql.DB, license *entitlements
 	if err != nil {
 		return LossResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return LossResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return LossResult{}, err
 	}
@@ -202,7 +207,7 @@ func RecordProductionLoss(ctx context.Context, db *sql.DB, license *entitlements
 		return LossResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	var count int
 	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM production_losses WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.LossID).Scan(&count); err != nil {
@@ -229,10 +234,19 @@ func RecordProductionLoss(ctx context.Context, db *sql.DB, license *entitlements
 	if err = recordLossEvent(ctx, tx, a, d, in.OperationID, "recorded", in.Reason, string(body), now, result); err != nil {
 		return LossResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 
-func VoidProductionLoss(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in VoidLossInput) (LossResult, error) {
+func VoidProductionLoss(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in VoidLossInput, sessionToken ...string) (LossResult, error) {
+	if db == nil || license == nil {
+		return LossResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (LossResult, error) {
+		return voidProductionLossTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func voidProductionLossTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in VoidLossInput, tx *sql.Tx) (LossResult, error) {
 	if db == nil {
 		return LossResult{}, errors.New("banco local indisponivel")
 	}
@@ -244,11 +258,7 @@ func VoidProductionLoss(ctx context.Context, db *sql.DB, license *entitlementsto
 	if err != nil {
 		return LossResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return LossResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return LossResult{}, err
 	}
@@ -257,7 +267,7 @@ func VoidProductionLoss(ctx context.Context, db *sql.DB, license *entitlementsto
 		return LossResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	loss, err := scanLoss(tx.QueryRowContext(ctx, `SELECT `+lossColumns+` FROM production_losses WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.LossID))
 	if err != nil {
@@ -274,7 +284,7 @@ func VoidProductionLoss(ctx context.Context, db *sql.DB, license *entitlementsto
 	if err = recordLossEvent(ctx, tx, a, d, in.OperationID, "voided", in.Reason, string(body), now, result); err != nil {
 		return LossResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 
 func GetProductionLoss(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, id string) (ProductionLoss, error) {

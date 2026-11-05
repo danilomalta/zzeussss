@@ -3,7 +3,7 @@
   "info": {
     "title": "TitanSystem P10 human production quality assessments",
     "version": "P10",
-    "description": "Append immutable whole-lot human quality assessments with explicit criterion, reason, authenticated actor, device and frozen lot metadata. Not a medical/food certification, automated quality test, quarantine stock ledger or sale gate. Does not change quantity, recipe, order, loss, lot state or inventory. All operations require current manage_production and approved device. Writes including replay require valid Production contract. Scope derives only from session. Strict required JSON: no unknown, duplicated or null fields, fractional revisions or trailing JSON."
+    "description": "Append immutable whole-lot human quality assessments with explicit criterion, reason, authenticated actor, device and frozen lot metadata. Not a medical/food certification, automated quality test, quarantine stock ledger or sale gate. Does not change quantity, recipe, order, loss, lot state or inventory. All operations require current manage_production and approved device. Writes including replay require valid Production contract. Scope derives only from session. Strict required JSON: no unknown, duplicated or null fields, fractional revisions or trailing JSON. Writes acquire the existing immediate SQLite writer before session/business reads, with bounded contention retries. HTTP revalidates the admitted token, actor, tenant, store and device inside that transaction before replay or mutation; a revoked or mismatched session returns 401. Receipt, audit, stock effects and outbox commit or roll back together; only the outer writer commits."
   },
   "security": [
     {

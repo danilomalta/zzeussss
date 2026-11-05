@@ -106,7 +106,16 @@ func qualityRevisionTx(ctx context.Context, tx *sql.Tx, a identity.Scope, id str
 	}
 	return revision, nil
 }
-func RecordQualityReview(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in QualityInput) (QualityResult, error) {
+func RecordQualityReview(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in QualityInput, sessionToken ...string) (QualityResult, error) {
+	if db == nil || license == nil {
+		return QualityResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (QualityResult, error) {
+		return recordQualityReviewTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func recordQualityReviewTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in QualityInput, tx *sql.Tx) (QualityResult, error) {
 	if db == nil {
 		return QualityResult{}, errors.New("banco local indisponivel")
 	}
@@ -118,11 +127,7 @@ func RecordQualityReview(ctx context.Context, db *sql.DB, license *entitlementst
 	if err != nil {
 		return QualityResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return QualityResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return QualityResult{}, err
 	}
@@ -131,7 +136,7 @@ func RecordQualityReview(ctx context.Context, db *sql.DB, license *entitlementst
 		return QualityResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	lot, err := scanLot(tx.QueryRowContext(ctx, `SELECT `+lotColumns+` FROM production_lots WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.LotID))
 	if err != nil {
@@ -181,7 +186,7 @@ func RecordQualityReview(ctx context.Context, db *sql.DB, license *entitlementst
 	if err = one(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`, id, a.TenantID, a.StoreID, d.DeviceID, in.OperationID, lot.ID, "production.quality.reviewed", 1, string(payload), now); err != nil {
 		return QualityResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 func GetLotQuality(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, id string) (LotQuality, error) {
 	if !validID(id) {

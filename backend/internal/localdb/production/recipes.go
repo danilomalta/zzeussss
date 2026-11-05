@@ -108,7 +108,16 @@ func one(ctx context.Context, tx *sql.Tx, query string, args ...any) error {
 
 // Publish compares the current revision, then records the version, ingredients,
 // audit and pending outbox event in the same authorization transaction.
-func Publish(ctx context.Context, db *sql.DB, license *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, input PublishInput) (Result, error) {
+func Publish(ctx context.Context, db *sql.DB, license *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, input PublishInput, sessionToken ...string) (Result, error) {
+	if db == nil || license == nil {
+		return Result{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, actor, device, sessionToken, func(tx *sql.Tx) (Result, error) {
+		return publishTx(ctx, db, license, actor, device, input, tx)
+	})
+}
+
+func publishTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, input PublishInput, tx *sql.Tx) (Result, error) {
 	if db == nil {
 		return Result{}, errors.New("banco local indisponivel")
 	}
@@ -116,11 +125,7 @@ func Publish(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 	if err != nil {
 		return Result{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return Result{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, actor, device, identity.ManageProduction, modules.Production); err != nil {
 		return Result{}, err
 	}
@@ -131,7 +136,7 @@ func Publish(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 		if body != previousBody || previousActor != actor.IdentityID || previousStore != actor.StoreID {
 			return Result{}, ErrConflict
 		}
-		err = tx.Commit()
+		err = nil
 		return Result{previousRecipe, previousVersion, revision, true}, err
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
@@ -211,7 +216,7 @@ func Publish(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a
 	if err = one(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`, eventID, actor.TenantID, actor.StoreID, device.DeviceID, in.OperationID, in.VersionID, "production.recipe.published", 1, string(payload), now); err != nil {
 		return Result{}, err
 	}
-	err = tx.Commit()
+	err = nil
 	return Result{in.RecipeID, in.VersionID, revision, false}, err
 }
 

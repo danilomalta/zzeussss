@@ -3,7 +3,7 @@
   "info": {
     "title": "TitanSystem P09 production lot declarations",
     "version": "P09",
-    "description": "Identify quantities of finished goods already registered by a P06 result. Does not produce, reserve, consume, reverse stock or change an order. Dates are declarations, not inferred validation of shelf life. Not stock balance by lot, FEFO, sale allocation or a recall workflow. Current manage_production permission and trusted device required; writes also require valid Production contract. Tenant/store derive only from session. Strict required JSON fields: no nulls, duplicates, unknown fields or trailing JSON."
+    "description": "Identify quantities of finished goods already registered by a P06 result. Does not produce, reserve, consume, reverse stock or change an order. Dates are declarations, not inferred validation of shelf life. Not stock balance by lot, FEFO, sale allocation or a recall workflow. Current manage_production permission and trusted device required; writes also require valid Production contract. Tenant/store derive only from session. Strict required JSON fields: no nulls, duplicates, unknown fields or trailing JSON. Writes acquire the existing immediate SQLite writer before session/business reads, with bounded contention retries. HTTP revalidates the admitted token, actor, tenant, store and device inside that transaction before replay or mutation; a revoked or mismatched session returns 401. Receipt, audit, stock effects and outbox commit or roll back together; only the outer writer commits."
   },
   "security": [
     {

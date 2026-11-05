@@ -30,7 +30,7 @@ func (s *Server) changeRecipeState(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	out, err := production.ChangeRecipeState(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	out, err := production.ChangeRecipeState(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return productionError(c, err)
 	}

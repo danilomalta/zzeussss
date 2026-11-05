@@ -47,7 +47,7 @@ func (s *Server) createProductionOrder(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	v, err := production.CreateOrder(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	v, err := production.CreateOrder(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return productionError(c, err)
 	}
@@ -73,7 +73,7 @@ func (s *Server) changeProductionOrder(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	v, err := production.ChangeOrderState(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	v, err := production.ChangeOrderState(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return productionError(c, err)
 	}

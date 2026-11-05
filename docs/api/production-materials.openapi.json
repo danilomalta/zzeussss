@@ -3,7 +3,7 @@
   "info": {
     "title": "TitanSystem P05 production materials",
     "version": "P05",
-    "description": "Tenant/store are obtained from the verified session. Writes require manage_production and a valid Production contract; reserve/consume also recheck the assigned responsible identity. No floating quantities or caller-selected ingredient amounts. No finished-goods output in this phase. Query parameters are refused."
+    "description": "Tenant/store are obtained from the verified session. Writes require manage_production and a valid Production contract; reserve/consume also recheck the assigned responsible identity. No floating quantities or caller-selected ingredient amounts. No finished-goods output in this phase. Query parameters are refused. Writes acquire the existing immediate SQLite writer before session/business reads, with bounded contention retries. HTTP revalidates the admitted token, actor, tenant, store and device inside that transaction before replay or mutation; a revoked or mismatched session returns 401. Receipt, audit, stock effects and outbox commit or roll back together; only the outer writer commits."
   },
   "security": [
     {

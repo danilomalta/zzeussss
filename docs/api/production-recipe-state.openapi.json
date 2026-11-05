@@ -2,7 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "P22 estado operacional das receitas",
-    "version": "P22"
+    "version": "P22",
+    "description": " Writes acquire the existing immediate SQLite writer before session/business reads, with bounded contention retries. HTTP revalidates the admitted token, actor, tenant, store and device inside that transaction before replay or mutation; a revoked or mismatched session returns 401. Receipt, audit, stock effects and outbox commit or roll back together; only the outer writer commits."
   },
   "servers": [
     {

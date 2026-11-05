@@ -3,7 +3,7 @@
   "info": {
     "title": "TitanSystem P07 declared production losses",
     "version": "P07",
-    "description": "Explicitly classify shortfall from a completed P06 result. Does not withdraw stock, reverse consumption, alter good output or reopen orders. Current manage_production permission and device authorization are always required; writes also require a valid Production contract. Tenant/store derive only from the session. Query parameters are refused except a single offset on the result summary."
+    "description": "Explicitly classify shortfall from a completed P06 result. Does not withdraw stock, reverse consumption, alter good output or reopen orders. Current manage_production permission and device authorization are always required; writes also require a valid Production contract. Tenant/store derive only from the session. Query parameters are refused except a single offset on the result summary. Writes acquire the existing immediate SQLite writer before session/business reads, with bounded contention retries. HTTP revalidates the admitted token, actor, tenant, store and device inside that transaction before replay or mutation; a revoked or mismatched session returns 401. Receipt, audit, stock effects and outbox commit or roll back together; only the outer writer commits."
   },
   "security": [
     {

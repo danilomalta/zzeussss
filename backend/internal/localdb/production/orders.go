@@ -113,7 +113,16 @@ func recordOrderEvent(ctx context.Context, tx *sql.Tx, a identity.Scope, d ident
 	return one(ctx, tx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`, eventID, a.TenantID, a.StoreID, d.DeviceID, operationID, result.OrderID, "production.order.changed", 1, string(payload), now)
 }
 
-func CreateOrder(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in OrderInput) (OrderResult, error) {
+func CreateOrder(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in OrderInput, sessionToken ...string) (OrderResult, error) {
+	if db == nil || license == nil {
+		return OrderResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (OrderResult, error) {
+		return createOrderTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func createOrderTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in OrderInput, tx *sql.Tx) (OrderResult, error) {
 	if db == nil {
 		return OrderResult{}, errors.New("banco local indisponivel")
 	}
@@ -124,11 +133,7 @@ func CreateOrder(ctx context.Context, db *sql.DB, license *entitlementstore.Stor
 	if err != nil {
 		return OrderResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return OrderResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return OrderResult{}, err
 	}
@@ -137,7 +142,7 @@ func CreateOrder(ctx context.Context, db *sql.DB, license *entitlementstore.Stor
 		return OrderResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	var count int
 	if err = tx.QueryRowContext(ctx, `SELECT count(*) FROM production_orders WHERE tenant_id=? AND store_id=? AND id=?`, a.TenantID, a.StoreID, in.OrderID).Scan(&count); err != nil {
@@ -215,12 +220,21 @@ func CreateOrder(ctx context.Context, db *sql.DB, license *entitlementstore.Stor
 	if err = recordOrderEvent(ctx, tx, a, d, in.OperationID, "created", string(request), "", "", now, result); err != nil {
 		return OrderResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 
 // Approval authorizes a PLAN, not material availability. Execution/completion
 // remain unavailable until material reservation/consumption/results exist.
-func ChangeOrderState(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in OrderStateInput) (OrderResult, error) {
+func ChangeOrderState(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in OrderStateInput, sessionToken ...string) (OrderResult, error) {
+	if db == nil || license == nil {
+		return OrderResult{}, ErrInvalid
+	}
+	return writeProduction(ctx, db, a, d, sessionToken, func(tx *sql.Tx) (OrderResult, error) {
+		return changeOrderStateTx(ctx, db, license, a, d, in, tx)
+	})
+}
+
+func changeOrderStateTx(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in OrderStateInput, tx *sql.Tx) (OrderResult, error) {
 	if db == nil {
 		return OrderResult{}, errors.New("banco local indisponivel")
 	}
@@ -232,11 +246,7 @@ func ChangeOrderState(ctx context.Context, db *sql.DB, license *entitlementstore
 	if err != nil {
 		return OrderResult{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return OrderResult{}, err
-	}
-	defer tx.Rollback()
+
 	if err = license.RequireTx(ctx, tx, a, d, identity.ManageProduction, modules.Production); err != nil {
 		return OrderResult{}, err
 	}
@@ -245,7 +255,7 @@ func ChangeOrderState(ctx context.Context, db *sql.DB, license *entitlementstore
 		return OrderResult{}, err
 	}
 	if repeated {
-		return result, tx.Commit()
+		return result, nil
 	}
 	var status string
 	var revision int64
@@ -279,7 +289,7 @@ func ChangeOrderState(ctx context.Context, db *sql.DB, license *entitlementstore
 	if err = recordOrderEvent(ctx, tx, a, d, in.OperationID, "state", string(request), status, in.Reason, now, result); err != nil {
 		return OrderResult{}, err
 	}
-	return result, tx.Commit()
+	return result, nil
 }
 
 const orderColumns = `id,version_id,location_id,responsible_id,planned_batches,planned_output_milli,recipe_json,

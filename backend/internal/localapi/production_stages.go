@@ -57,7 +57,7 @@ func (s *Server) configureProductionStages(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	out, err := production.ConfigureStagePlan(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	out, err := production.ConfigureStagePlan(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return productionError(c, err)
 	}
@@ -82,7 +82,7 @@ func (s *Server) changeProductionStage(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	out, err := production.ChangeStageState(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	out, err := production.ChangeStageState(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return productionError(c, err)
 	}
