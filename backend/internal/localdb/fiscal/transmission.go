@@ -113,9 +113,12 @@ func (r *HomologationRecorder) Reserve(ctx context.Context, in fiscalcore.Record
 		return fiscalcore.ErrRecorded
 	}
 	body, _ := json.Marshal(in)
-	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_transmission_requests(tenant_id,store_id,intent_id,device_id,actor_id,operation_id,access_key,request_json,request_sha256,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, r.device.DeviceID, r.actor.IdentityID, in.OperationID, r.key, string(body), in.RequestSHA256, time.Now().UTC().Format(time.RFC3339Nano))
+	written, err := tx.ExecContext(ctx, `INSERT INTO fiscal_transmission_requests(tenant_id,store_id,intent_id,device_id,actor_id,operation_id,access_key,request_json,request_sha256,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, r.device.DeviceID, r.actor.IdentityID, in.OperationID, r.key, string(body), in.RequestSHA256, time.Now().UTC().Format(time.RFC3339Nano))
 	if err != nil {
 		return err
+	}
+	if n, err := written.RowsAffected(); err != nil || n != 1 {
+		return ErrConflict
 	}
 	return tx.Commit()
 }
@@ -164,9 +167,12 @@ func (r *HomologationRecorder) Complete(ctx context.Context, in fiscalcore.Excha
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_transmission_results VALUES(?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, string(body), time.Now().UTC().Format(time.RFC3339Nano))
+	written, err := tx.ExecContext(ctx, `INSERT INTO fiscal_transmission_results VALUES(?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, string(body), time.Now().UTC().Format(time.RFC3339Nano))
 	if err != nil {
 		return err
+	}
+	if n, err := written.RowsAffected(); err != nil || n != 1 {
+		return ErrConflict
 	}
 	return tx.Commit()
 }
