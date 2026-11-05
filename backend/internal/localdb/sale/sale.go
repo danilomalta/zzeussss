@@ -18,6 +18,7 @@ import (
 	"titansystem-backend/internal/localdb/cashjournal"
 	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 var (
@@ -42,6 +43,7 @@ type Payment struct {
 }
 
 type Input struct {
+	Freight            bool      `json:"freight,omitempty"`
 	TaxQuoteOperations []string  `json:"tax_quote_operations,omitempty"`
 	OperationID        string    `json:"operation_id"`
 	SaleID             string    `json:"sale_id"`
@@ -74,6 +76,18 @@ func complete(ctx context.Context, db *sql.DB, actor identity.Scope, device iden
 	}
 	if !valid(in) {
 		return Result{}, ErrInvalid
+	}
+	if in.Freight {
+		var result Result
+		err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+			var e error
+			result, e = completeTx(ctx, tx, actor, device, in, authorize, nil)
+			return e
+		})
+		if err != nil {
+			return Result{}, err
+		}
+		return result, nil
 	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -185,7 +199,7 @@ func completeTxMode(ctx context.Context, tx *sql.Tx, actor identity.Scope, devic
 	if err != nil {
 		return Result{}, err
 	}
-	taxBindings, total, err := priceTaxesTx(ctx, tx, actor, device, in.TaxQuoteOperations, quotedItems, total)
+	taxBindings, total, err := priceTaxesTx(ctx, tx, actor, device, in.TaxQuoteOperations, quotedItems, total, in.SaleID, in.Freight)
 	if err != nil {
 		return Result{}, err
 	}
@@ -251,8 +265,12 @@ func completeTxMode(ctx context.Context, tx *sql.Tx, actor identity.Scope, devic
 		}
 		if taxBindings != nil {
 			raw, _ := json.Marshal(taxBindings[i])
-			if _, err = tx.ExecContext(ctx, `INSERT INTO sale_tax_bindings VALUES(?,?,?,?,?,?,?)`, actor.TenantID, actor.StoreID, device.DeviceID, in.SaleID, itemID, taxBindings[i].QuoteOperationID, string(raw)); err != nil {
+			write, err := tx.ExecContext(ctx, `INSERT INTO sale_tax_bindings VALUES(?,?,?,?,?,?,?)`, actor.TenantID, actor.StoreID, device.DeviceID, in.SaleID, itemID, taxBindings[i].QuoteOperationID, string(raw))
+			if err != nil {
 				return Result{}, err
+			}
+			if count, e := write.RowsAffected(); e != nil || count != 1 {
+				return Result{}, ErrConflict
 			}
 		}
 		movementID, err := localdb.NewID()

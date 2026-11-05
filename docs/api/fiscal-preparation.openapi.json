@@ -1655,9 +1655,12 @@
           "catalog_unit": {
             "type": "string",
             "minLength": 1
+          },
+          "freight": {
+            "$ref": "fiscal-tax-policy.openapi.json#/components/schemas/SaleFreightContract"
           }
         },
-        "description": "Immutable price evidence attached atomically to a completed sale item. Additional ST/FCP-ST/IPI is included in sale/cash/payment total; merchandise remains separately identified. It does not authorize an invoice."
+        "description": "Immutable price evidence attached atomically to a completed sale item. Additional ST/FCP-ST/IPI is included in sale/cash/payment total; merchandise remains separately identified. It does not authorize an invoice. Optional freight is frozen from an explicit complete quote group. Additional cents include its charge; merchandise remains separate. Never attach to a completed sale."
       },
       "ProfilePage": {
         "type": "object",

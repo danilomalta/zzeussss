@@ -1271,7 +1271,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TaxNode"
-            }
+            },
+            "nullable": true
           }
         },
         "required": [

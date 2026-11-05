@@ -3,7 +3,7 @@
   "info": {
     "title": "TitanSystem durable checkout allocations",
     "version": "B02B3",
-    "description": "Durable allocations with atomic cash-only finalization. Noncash parts stay not_requested; electronic confirmation and financial ledger unavailable. Cash finalization requires received_cents and rechecks current POS contract, shift, active products, exact prices/units and free stock. Can_finalize is a cash readiness hint, not an authorization or reservation. Replays recover the stored completion and do not sell again, even after sale cancellation. Existing sale receipt endpoint provides the operational record; no fiscal authorization. B02B9: plano com qualquer historico de comprovante externo recusa cancelamento automatico409, inclusive apos retirada/rejeicao/revogacao documental; essas acoes nao provam estorno. Os estados de pagamento e can_finalize permanecem inalterados."
+    "description": "Durable allocations with atomic cash-only finalization. Noncash parts stay not_requested; electronic confirmation and financial ledger unavailable. Cash finalization requires received_cents and rechecks current POS contract, shift, active products, exact prices/units and free stock. Can_finalize is a cash readiness hint, not an authorization or reservation. Replays recover the stored completion and do not sell again, even after sale cancellation. Existing sale receipt endpoint provides the operational record; no fiscal authorization. B02B9: plano com qualquer historico de comprovante externo recusa cancelamento automatico409, inclusive apos retirada/rejeicao/revogacao documental; essas acoes nao provam estorno. Os estados de pagamento e can_finalize permanecem inalterados. Tax-priced totals include pre-sale freight and tax; merchandise_cents retains the catalogue subtotal. Incomplete/reused/mixed freight groups are refused."
   },
   "paths": {
     "/local/v1/checkout/plans": {
@@ -449,6 +449,10 @@
             "items": {
               "$ref": "#/components/schemas/PartInput"
             }
+          },
+          "freight": {
+            "type": "boolean",
+            "description": "Explicit selection of the frozen freight quote contract. Required true for freight-backed commands; cannot override source, amount, role or tax. Omit for legacy non-freight behavior."
           }
         },
         "required": [
@@ -570,6 +574,14 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 9007199254740991
+          },
+          "tax": {
+            "$ref": "#/components/schemas/SaleTaxBinding"
+          },
+          "merchandise_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": [
@@ -670,6 +682,10 @@
           },
           "completion": {
             "$ref": "#/components/schemas/Completion"
+          },
+          "freight": {
+            "type": "boolean",
+            "description": "Explicit selection of the frozen freight quote contract. Required true for freight-backed commands; cannot override source, amount, role or tax. Omit for legacy non-freight behavior."
           }
         },
         "required": [
@@ -743,12 +759,260 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 9007199254740991
+          },
+          "freight": {
+            "type": "boolean",
+            "description": "Explicit selection of the frozen freight quote contract. Required true for freight-backed commands; cannot override source, amount, role or tax. Omit for legacy non-freight behavior."
           }
         },
         "required": [
           "operation_id",
           "received_cents"
         ]
+      },
+      "SaleTaxBinding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "context",
+          "case",
+          "quote_operation_id",
+          "result_sha256",
+          "profile_id",
+          "profile_revision",
+          "additional_cents",
+          "taxes",
+          "totals",
+          "catalog_unit"
+        ],
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/FiscalContext"
+          },
+          "case": {
+            "$ref": "#/components/schemas/FiscalCase"
+          },
+          "quote_operation_id": {
+            "type": "string"
+          },
+          "result_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "profile_id": {
+            "type": "string"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "additional_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "taxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxNode"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "properties": {}
+          },
+          "catalog_unit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "freight": {
+            "$ref": "#/components/schemas/SaleFreightContract"
+          }
+        },
+        "description": "Immutable price evidence attached atomically to a completed sale item. Additional ST/FCP-ST/IPI is included in sale/cash/payment total; merchandise remains separately identified. It does not authorize an invoice. Optional freight is frozen from an explicit complete quote group. Additional cents include its charge; merchandise remains separate. Never attach to a completed sale."
+      },
+      "FiscalContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "origin_uf",
+          "destination_uf",
+          "crt",
+          "model",
+          "date"
+        ],
+        "properties": {
+          "origin_uf": {
+            "type": "string"
+          },
+          "destination_uf": {
+            "type": "string"
+          },
+          "crt": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          }
+        }
+      },
+      "FiscalCase": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "purpose",
+          "origin_municipality",
+          "destination_municipality",
+          "recipient_status",
+          "final_consumer",
+          "product_origin"
+        ],
+        "properties": {
+          "operation": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "origin_municipality": {
+            "type": "string"
+          },
+          "destination_municipality": {
+            "type": "string"
+          },
+          "recipient_status": {
+            "type": "string"
+          },
+          "final_consumer": {
+            "type": "string"
+          },
+          "product_origin": {
+            "type": "string"
+          },
+          "cest": {
+            "type": "string"
+          }
+        }
+      },
+      "TaxNode": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "Name": {
+            "type": "string"
+          },
+          "Value": {
+            "type": "string"
+          },
+          "Children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxNode"
+            },
+            "nullable": true
+          }
+        },
+        "required": [
+          "Name"
+        ]
+      },
+      "SaleFreightContract": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "allocation",
+          "freight_mode",
+          "refund_policy",
+          "source_reference",
+          "review_reference",
+          "sale_id"
+        ],
+        "properties": {
+          "allocation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "method",
+              "total_cents",
+              "items"
+            ],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "largest_remainder_v1"
+                ]
+              },
+              "total_cents": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "item_id",
+                    "weight"
+                  ],
+                  "properties": {
+                    "item_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+                    },
+                    "weight": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "freight_mode": {
+            "type": "string",
+            "enum": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4"
+            ]
+          },
+          "refund_policy": {
+            "type": "string",
+            "enum": [
+              "proportional_with_item"
+            ]
+          },
+          "source_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "review_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "sale_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+          }
+        },
+        "description": "Explicit before-payment customer contract. Allocation item IDs are quote operation IDs; consume the whole group once. Homologation/model55 only. Review reference is provenance, not proof of accountant approval. No default tax, allocation basis or refund policy. sale_id is the planned checkout/sale identity and must match the server command and frozen invoice snapshot."
       }
     }
   }

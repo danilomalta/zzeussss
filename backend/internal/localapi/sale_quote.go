@@ -16,7 +16,7 @@ func (s *Server) quoteSale(c *fiber.Ctx) error {
 	if len(c.Body()) > 128*1024 {
 		return c.SendStatus(fiber.StatusRequestEntityTooLarge)
 	}
-	values, err := exactSaleObject(c.Body(), []string{"cash_session_id", "items"}, "tax_quote_operations")
+	values, err := exactSaleObject(c.Body(), []string{"cash_session_id", "items"}, "tax_quote_operations", "freight")
 	if err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}

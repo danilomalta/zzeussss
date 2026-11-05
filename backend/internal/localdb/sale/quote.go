@@ -13,10 +13,12 @@ import (
 	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/stockreservation"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 // QuoteInput carries no prices, payment approval, tenant or identity claims.
 type QuoteInput struct {
+	Freight            bool     `json:"freight,omitempty"`
 	TaxQuoteOperations []string `json:"tax_quote_operations,omitempty"`
 	CashSessionID      string   `json:"cash_session_id"`
 	Items              []Item   `json:"items"`
@@ -51,11 +53,36 @@ func QuoteWithContract(ctx context.Context, db *sql.DB, contracts *entitlementst
 	if db == nil || !validQuote(in) {
 		return Quote{}, ErrInvalid
 	}
+	if in.Freight {
+		var result Quote
+		err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+			var e error
+			result, e = quoteTx(ctx, tx, contracts, actor, device, in, token...)
+			return e
+		})
+		if err != nil {
+			return Quote{}, err
+		}
+		return result, nil
+	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return Quote{}, err
 	}
 	defer tx.Rollback()
+	result, err := quoteTx(ctx, tx, contracts, actor, device, in, token...)
+	if err != nil {
+		return Quote{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return Quote{}, err
+	}
+	return result, nil
+}
+
+func quoteTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, actor identity.Scope, device identity.DeviceContext, in QuoteInput, token ...string) (Quote, error) {
+	var err error
+
 	if err = contracts.RequireTx(ctx, tx, actor, device, identity.Sell, modules.POS); err != nil {
 		return Quote{}, err
 	}
@@ -84,7 +111,7 @@ func QuoteWithContract(ctx context.Context, db *sql.DB, contracts *entitlementst
 	if err != nil {
 		return Quote{}, err
 	}
-	bindings, total, err := priceTaxesTx(ctx, tx, actor, device, in.TaxQuoteOperations, items, total)
+	bindings, total, err := priceTaxesTx(ctx, tx, actor, device, in.TaxQuoteOperations, items, total, "", in.Freight)
 	if err != nil {
 		return Quote{}, err
 	}
@@ -103,9 +130,6 @@ func QuoteWithContract(ctx context.Context, db *sql.DB, contracts *entitlementst
 		if item.QuantityMilli > maxSafe || item.UnitPriceCents > maxSafe || item.AvailableMilli > maxSafe {
 			return Quote{}, ErrInvalid
 		}
-	}
-	if err = tx.Commit(); err != nil {
-		return Quote{}, err
 	}
 	return Quote{CashSessionID: in.CashSessionID, Items: items, TotalCents: total, PaymentMethods: []string{"cash"}}, nil
 }
