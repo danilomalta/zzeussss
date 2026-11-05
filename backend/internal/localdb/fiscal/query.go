@@ -84,7 +84,7 @@ func originalTransmissionTx(ctx context.Context, tx *sql.Tx, a identity.Scope, i
 	if err != nil {
 		return req, fiscalcore.ExchangeResult{}, err
 	}
-	if fiscalcore.DecodeInput([]byte(body), &req) != nil {
+	if decodeNativeJournal(a, intentID, "issue.request", &body, &req) != nil {
 		return req, fiscalcore.ExchangeResult{}, ErrIntegrity
 	}
 	if !fiscalcore.ValidAccessKey(key) {
@@ -162,9 +162,16 @@ func (r *HomologationQueryRecorder) Reserve(ctx context.Context, in fiscalcore.R
 	}
 	body, _ := json.Marshal(in)
 	sessionHash := sha256.Sum256([]byte(r.token))
-	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_query_requests VALUES(?,?,?,?,?,?,?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.queryID, r.intentID, r.device.DeviceID, r.actor.IdentityID, sessionHash[:], r.originalHash, string(body), in.RequestSHA256, time.Now().UTC().Format(time.RFC3339Nano))
+	protected, err := sealNativeJournal(r.actor, r.queryID, "query.request", string(body))
 	if err != nil {
 		return err
+	}
+	written, err := tx.ExecContext(ctx, `INSERT INTO fiscal_query_requests VALUES(?,?,?,?,?,?,?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.queryID, r.intentID, r.device.DeviceID, r.actor.IdentityID, sessionHash[:], r.originalHash, protected, in.RequestSHA256, time.Now().UTC().Format(time.RFC3339Nano))
+	if err != nil {
+		return err
+	}
+	if count, err := written.RowsAffected(); err != nil || count != 1 {
+		return ErrConflict
 	}
 	return tx.Commit()
 }
@@ -213,7 +220,7 @@ func (r *HomologationQueryRecorder) Complete(ctx context.Context, in fiscalcore.
 	var old string
 	err = tx.QueryRowContext(ctx, `SELECT result_json FROM fiscal_query_results WHERE tenant_id=? AND store_id=? AND query_id=?`, r.actor.TenantID, r.actor.StoreID, r.queryID).Scan(&old)
 	if err == nil {
-		if old != string(body) {
+		if !sameNativeJournal(r.actor, r.queryID, "query.result", old, string(body)) {
 			return ErrConflict
 		}
 		return tx.Commit()
@@ -221,9 +228,16 @@ func (r *HomologationQueryRecorder) Complete(ctx context.Context, in fiscalcore.
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_query_results VALUES(?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.queryID, string(body), time.Now().UTC().Format(time.RFC3339Nano))
+	protected, err := sealNativeJournal(r.actor, r.queryID, "query.result", string(body))
 	if err != nil {
 		return err
+	}
+	written, err := tx.ExecContext(ctx, `INSERT INTO fiscal_query_results VALUES(?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.queryID, protected, time.Now().UTC().Format(time.RFC3339Nano))
+	if err != nil {
+		return err
+	}
+	if count, err := written.RowsAffected(); err != nil || count != 1 {
+		return ErrConflict
 	}
 	return tx.Commit()
 }
@@ -251,7 +265,7 @@ func (r *HomologationQueryRecorder) readTx(ctx context.Context, tx *sql.Tx) (fis
 	if err != nil {
 		return req, result, err
 	}
-	if fiscalcore.DecodeInput([]byte(body), &req) != nil {
+	if decodeNativeJournal(r.actor, r.queryID, "query.request", &body, &req) != nil {
 		return req, result, ErrIntegrity
 	}
 	canonical, _ := json.Marshal(req)
@@ -267,7 +281,7 @@ func (r *HomologationQueryRecorder) readTx(ctx context.Context, tx *sql.Tx) (fis
 	if err != nil {
 		return req, result, err
 	}
-	if fiscalcore.DecodeInput([]byte(body), &result) != nil {
+	if decodeNativeJournal(r.actor, r.queryID, "query.result", &body, &result) != nil {
 		return req, result, ErrIntegrity
 	}
 	canonical, _ = json.Marshal(result)

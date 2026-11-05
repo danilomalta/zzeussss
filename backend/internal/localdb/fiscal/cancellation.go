@@ -73,7 +73,7 @@ func cancellationAuthorizationTx(ctx context.Context, tx *sql.Tx, a identity.Sco
 		return empty, "", err
 	}
 	var req fiscalcore.RecordedRequest
-	if fiscalcore.DecodeInput([]byte(raw), &req) != nil {
+	if decodeNativeJournal(a, queryID, "query.request", &raw, &req) != nil {
 		return empty, "", ErrIntegrity
 	}
 	encoded, _ := json.Marshal([]string{a.TenantID, a.StoreID, intentID, queryID, original.RequestSHA256})
@@ -179,9 +179,16 @@ func (r *HomologationCancellationRecorder) Reserve(ctx context.Context, in fisca
 	}
 	raw, _ := json.Marshal(in)
 	session := sha256.Sum256([]byte(r.token))
-	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_cancellation_requests VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, r.queryID, r.operationID, r.device.DeviceID, r.actor.IdentityID, session[:], r.authorizationHash, r.approval, string(raw), in.RequestSHA256, time.Now().UTC().Format(time.RFC3339Nano))
+	protected, err := sealNativeJournal(r.actor, r.intentID, "cancel.request", string(raw))
 	if err != nil {
 		return err
+	}
+	written, err := tx.ExecContext(ctx, `INSERT INTO fiscal_cancellation_requests VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, r.queryID, r.operationID, r.device.DeviceID, r.actor.IdentityID, session[:], r.authorizationHash, r.approval, protected, in.RequestSHA256, time.Now().UTC().Format(time.RFC3339Nano))
+	if err != nil {
+		return err
+	}
+	if count, err := written.RowsAffected(); err != nil || count != 1 {
+		return ErrConflict
 	}
 	return tx.Commit()
 }
@@ -230,7 +237,7 @@ func (r *HomologationCancellationRecorder) Complete(ctx context.Context, in fisc
 	var previous string
 	err = tx.QueryRowContext(ctx, `SELECT result_json FROM fiscal_cancellation_results WHERE tenant_id=? AND store_id=? AND intent_id=?`, r.actor.TenantID, r.actor.StoreID, r.intentID).Scan(&previous)
 	if err == nil {
-		if previous != string(raw) {
+		if !sameNativeJournal(r.actor, r.intentID, "cancel.result", previous, string(raw)) {
 			return ErrConflict
 		}
 		return tx.Commit()
@@ -238,9 +245,16 @@ func (r *HomologationCancellationRecorder) Complete(ctx context.Context, in fisc
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO fiscal_cancellation_results VALUES(?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, string(raw), time.Now().UTC().Format(time.RFC3339Nano))
+	protected, err := sealNativeJournal(r.actor, r.intentID, "cancel.result", string(raw))
 	if err != nil {
 		return err
+	}
+	written, err := tx.ExecContext(ctx, `INSERT INTO fiscal_cancellation_results VALUES(?,?,?,?,?)`, r.actor.TenantID, r.actor.StoreID, r.intentID, protected, time.Now().UTC().Format(time.RFC3339Nano))
+	if err != nil {
+		return err
+	}
+	if count, err := written.RowsAffected(); err != nil || count != 1 {
+		return ErrConflict
 	}
 	return tx.Commit()
 }
@@ -255,7 +269,7 @@ func (r *HomologationCancellationRecorder) readTx(ctx context.Context, tx *sql.T
 	if err != nil {
 		return req, result, err
 	}
-	if fiscalcore.DecodeInput([]byte(raw), &req) != nil {
+	if decodeNativeJournal(r.actor, r.intentID, "cancel.request", &raw, &req) != nil {
 		return req, result, ErrIntegrity
 	}
 	canonical, _ := json.Marshal(req)
@@ -270,7 +284,7 @@ func (r *HomologationCancellationRecorder) readTx(ctx context.Context, tx *sql.T
 	if err != nil {
 		return req, result, err
 	}
-	if fiscalcore.DecodeInput([]byte(raw), &result) != nil {
+	if decodeNativeJournal(r.actor, r.intentID, "cancel.result", &raw, &result) != nil {
 		return req, result, ErrIntegrity
 	}
 	canonical, _ = json.Marshal(result)
@@ -299,7 +313,7 @@ func (r *HomologationCancellationRecorder) Read(ctx context.Context) (fiscalcore
 		return fiscalcore.RecordedRequest{}, fiscalcore.ExchangeResult{}, err
 	}
 	var stored fiscalcore.RecordedRequest
-	if fiscalcore.DecodeInput([]byte(raw), &stored) != nil {
+	if decodeNativeJournal(r.actor, r.intentID, "cancel.request", &raw, &stored) != nil {
 		return fiscalcore.RecordedRequest{}, fiscalcore.ExchangeResult{}, ErrIntegrity
 	}
 	proof, originalHash, err := cancellationAuthorizationTx(ctx, tx, r.actor, r.device, r.intentID, query, r.token, false)

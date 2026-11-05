@@ -1719,5 +1719,13 @@
         }
       }
     }
+  },
+  "x-native-journal-encryption": {
+    "scope": "New native homologation issue/query/cancellation/invalidation request/result rows. No change to production enablement or fiscal semantics.",
+    "key": "Trusted customer process environment TITAN_FISCAL_JOURNAL_KEY_FILE: absolute path to a private regular 0600 32-byte file, provisioned with the existing titan-backup key-init command. No fallback, automatic generation, HTTP upload, key response or provider recovery. Missing/unreadable key refuses new journal writes before transmission.",
+    "historical_keys": "TITAN_FISCAL_JOURNAL_PREVIOUS_KEY_FILES is an optional JSON array of up to 16 customer-controlled private key paths. New writes use only the active key; historical keys permit reading older encrypted rows. Preserve old keys until backups are reencrypted and restoration is proven. This is NOT vault key rotation.",
+    "record": "Versioned AES-GCM envelope; tenant, store, journal kind, record ID and key ID authenticated as associated data. Original digests, IDs, no-repost barrier, current-session checks and immutable triggers retained. Ciphertext participates in existing business DB backup/restore.",
+    "legacy": "Existing immutable plaintext rows are neither deleted nor rewritten. Plaintext reads are refused by default; the customer may explicitly enable historical read compatibility via TITAN_FISCAL_JOURNAL_LEGACY_READ=true. This never permits new plaintext writes and retains all original digest/session/origin checks. Historical rows are NOT claimed to be encrypted; a customer-controlled migration remains pending.",
+    "privacy": "No key/path/XML in errors or logs. Authorized document downloads/export remain explicit. No new HTTP routes or fields. No real emission or official acceptance demonstrated."
   }
 }
