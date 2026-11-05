@@ -28,6 +28,8 @@ func (s *Server) mountReviewedInventory(r fiber.Router) {
 }
 func inventoryError(c *fiber.Ctx, err error) error {
 	switch {
+	case errors.Is(err, localauth.ErrDenied):
+		return c.SendStatus(401)
 	case errors.Is(err, stocktaking.ErrInvalid):
 		return c.Status(400).JSON(fiber.Map{"code": "inventory_invalid"})
 	case errors.Is(err, stocktaking.ErrNotFound):
@@ -154,7 +156,7 @@ func (s *Server) openReviewedInventory(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	r, err := stocktaking.Open(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in)
+	r, err := stocktaking.Open(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, in, session.Token)
 	if err != nil {
 		return inventoryError(c, err)
 	}
@@ -176,7 +178,7 @@ func (s *Server) countReviewedInventory(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	r, err := stocktaking.Count(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, c.Params("id"), in)
+	r, err := stocktaking.Count(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, c.Params("id"), in, session.Token)
 	if err != nil {
 		return inventoryError(c, err)
 	}
@@ -194,7 +196,7 @@ func (s *Server) stateReviewedInventory(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	session := c.Locals("session").(localauth.Session)
-	r, err := stocktaking.ChangeState(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, c.Params("id"), in)
+	r, err := stocktaking.ChangeState(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, c.Params("id"), in, session.Token)
 	if err != nil {
 		return inventoryError(c, err)
 	}

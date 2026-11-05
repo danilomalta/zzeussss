@@ -80,13 +80,13 @@ func (s Service) Transfer(ctx context.Context, in TransferInput) error {
 		outID := "rt-" + Hash([]string{s.Actor.TenantID, in.OperationID, "out"})
 		inID := "rt-" + Hash([]string{s.Actor.TenantID, in.OperationID, "in"})
 		reason := "retail-transfer:" + in.OperationID
-		if _, e = tx.ExecContext(ctx, `INSERT INTO stock_movements VALUES(?,?,?,?,?,?,?,?,?)`, outID, s.Actor.TenantID, s.Actor.StoreID, s.Device.DeviceID, in.ProductID, in.FromLocationID, -in.QuantityMilli, reason, now); e != nil {
+		if e = storeWriteOne(ctx, tx, `INSERT INTO stock_movements VALUES(?,?,?,?,?,?,?,?,?)`, outID, s.Actor.TenantID, s.Actor.StoreID, s.Device.DeviceID, in.ProductID, in.FromLocationID, -in.QuantityMilli, reason, now); e != nil {
 			return e
 		}
-		if _, e = tx.ExecContext(ctx, `INSERT INTO stock_movements VALUES(?,?,?,?,?,?,?,?,?)`, inID, s.Actor.TenantID, target.StoreID, in.DestinationCustodianID, in.ProductID, in.ToLocationID, in.QuantityMilli, reason, now); e != nil {
+		if e = storeWriteOne(ctx, tx, `INSERT INTO stock_movements VALUES(?,?,?,?,?,?,?,?,?)`, inID, s.Actor.TenantID, target.StoreID, in.DestinationCustodianID, in.ProductID, in.ToLocationID, in.QuantityMilli, reason, now); e != nil {
 			return e
 		}
-		_, e = tx.ExecContext(ctx, `INSERT INTO retail_store_transfers VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, s.Actor.TenantID, in.OperationID, s.Actor.IdentityID, s.Actor.StoreID, s.Device.DeviceID, target.StoreID, in.DestinationCustodianID, in.ProductID, in.FromLocationID, in.ToLocationID, in.QuantityMilli, outID, inID, now)
+		e = storeWriteOne(ctx, tx, `INSERT INTO retail_store_transfers VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, s.Actor.TenantID, in.OperationID, s.Actor.IdentityID, s.Actor.StoreID, s.Device.DeviceID, target.StoreID, in.DestinationCustodianID, in.ProductID, in.FromLocationID, in.ToLocationID, in.QuantityMilli, outID, inID, now)
 		return e
 	})
 }
@@ -251,7 +251,22 @@ func (s Service) CreateStore(ctx context.Context, op, id, name string) error {
 		if n != 0 {
 			return ErrConflict
 		}
-		_, e := tx.ExecContext(ctx, `INSERT INTO stores VALUES(?,?,?)`, s.Actor.TenantID, id, name)
+		e := storeWriteOne(ctx, tx, `INSERT INTO stores VALUES(?,?,?)`, s.Actor.TenantID, id, name)
 		return e
 	})
+}
+
+func storeWriteOne(ctx context.Context, tx *sql.Tx, query string, args ...any) error {
+	r, e := tx.ExecContext(ctx, query, args...)
+	if e != nil {
+		return e
+	}
+	n, e := r.RowsAffected()
+	if e != nil {
+		return e
+	}
+	if n != 1 {
+		return ErrConflict
+	}
+	return nil
 }

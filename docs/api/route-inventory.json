@@ -2993,7 +2993,8 @@
       "method": "POST",
       "path": "/local/v1/stock/inventories",
       "authentication": "session",
-      "source": "backend/internal/localapi/reviewed_inventory.go"
+      "source": "backend/internal/localapi/reviewed_inventory.go",
+      "integrity": "Immediate writer; current HTTP session and scoped permissions before replay/mutation; exact movement/binding/audit/outbox writes or rollback. Inter-store transfer is local only."
     },
     {
       "api": "local",
@@ -3007,7 +3008,8 @@
       "method": "POST",
       "path": "/local/v1/stock/inventories/:id/counts",
       "authentication": "session",
-      "source": "backend/internal/localapi/reviewed_inventory.go"
+      "source": "backend/internal/localapi/reviewed_inventory.go",
+      "integrity": "Immediate writer; current HTTP session and scoped permissions before replay/mutation; exact movement/binding/audit/outbox writes or rollback. Inter-store transfer is local only."
     },
     {
       "api": "local",
@@ -3028,7 +3030,8 @@
       "method": "POST",
       "path": "/local/v1/stock/inventories/:id/state",
       "authentication": "session",
-      "source": "backend/internal/localapi/reviewed_inventory.go"
+      "source": "backend/internal/localapi/reviewed_inventory.go",
+      "integrity": "Immediate writer; current HTTP session and scoped permissions before replay/mutation; exact movement/binding/audit/outbox writes or rollback. Inter-store transfer is local only."
     },
     {
       "api": "local",
@@ -3042,7 +3045,8 @@
       "method": "POST",
       "path": "/local/v1/stock/operations",
       "authentication": "session",
-      "source": "backend/internal/localapi/stock.go"
+      "source": "backend/internal/localapi/stock.go",
+      "integrity": "Immediate writer; current HTTP session and scoped permissions before replay/mutation; exact movement/binding/audit/outbox writes or rollback. Inter-store transfer is local only."
     },
     {
       "api": "local",
@@ -4160,14 +4164,16 @@
       "method": "POST",
       "path": "/local/v1/retail/stores",
       "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
+      "source": "backend/internal/localapi/retail.go",
+      "integrity": "Immediate writer; current HTTP session and scoped permissions before replay/mutation; exact movement/binding/audit/outbox writes or rollback. Inter-store transfer is local only."
     },
     {
       "api": "local",
       "method": "POST",
       "path": "/local/v1/retail/stores/transfer",
       "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
+      "source": "backend/internal/localapi/retail.go",
+      "integrity": "Immediate writer; current HTTP session and scoped permissions before replay/mutation; exact movement/binding/audit/outbox writes or rollback. Inter-store transfer is local only."
     },
     {
       "api": "local",

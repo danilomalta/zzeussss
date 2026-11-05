@@ -13,6 +13,7 @@ import (
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/stockreservation"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
 var (
@@ -62,16 +63,16 @@ func record(ctx context.Context, db *sql.DB, actor identity.Scope, device identi
 		in.Reason == "" || len(in.Reason) > 255 || !validLocations(in) || (in.ExpectedUnit != "" && (!validAvailabilityUnit(in.ExpectedUnit) || in.QuantityMilli > MaxAvailabilityQuantity)) {
 		return Result{}, ErrInvalidOperation
 	}
-	tx, err := db.BeginTx(ctx, nil)
+	var out Result
+	err := sqlitewrite.Run(ctx, db, ErrOperationConflict, func(tx *sql.Tx) error {
+		var err error
+		out, err = recordTx(ctx, tx, actor, device, in, authorize)
+		return err
+	})
 	if err != nil {
 		return Result{}, err
 	}
-	defer tx.Rollback()
-	out, err := recordTx(ctx, tx, actor, device, in, authorize)
-	if err != nil {
-		return Result{}, err
-	}
-	return out, tx.Commit()
+	return out, nil
 }
 
 func recordTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device identity.DeviceContext, in Input, authorize stockAuthorization) (Result, error) {
@@ -152,7 +153,7 @@ func recordTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device iden
 		}
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
-	_, err = tx.ExecContext(ctx, `INSERT INTO stock_operations
+	err = writeOne(ctx, tx, `INSERT INTO stock_operations
 		(id, tenant_id, store_id, device_id, actor_identity_id, kind, product_id,
 		 from_location_id, to_location_id, quantity_milli, reason, occurred_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -187,7 +188,7 @@ func recordTx(ctx context.Context, tx *sql.Tx, actor identity.Scope, device iden
 	if err != nil {
 		return Result{}, err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO outbox
+	err = writeOne(ctx, tx, `INSERT INTO outbox
 		(event_id, tenant_id, store_id, device_id, operation_id, aggregate_id,
 		 event_type, schema_version, payload_json, created_at)
 		VALUES (?, ?, ?, ?, ?, ?, 'stock.operation', 1, ?, ?)`,
@@ -242,14 +243,14 @@ func addMovement(ctx context.Context, tx *sql.Tx, actor identity.Scope, device i
 	if err != nil {
 		return err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO stock_movements
+	err = writeOne(ctx, tx, `INSERT INTO stock_movements
 		(id, tenant_id, store_id, device_id, product_id, location_id, quantity_milli, reason, created_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		id, actor.TenantID, actor.StoreID, device.DeviceID, in.ProductID, locationID, quantity, in.Reason, now)
 	if err != nil {
 		return err
 	}
-	_, err = tx.ExecContext(ctx, "INSERT INTO stock_operation_movements VALUES (?, ?)", in.OperationID, id)
+	err = writeOne(ctx, tx, "INSERT INTO stock_operation_movements VALUES (?, ?)", in.OperationID, id)
 	return err
 }
 
@@ -271,4 +272,19 @@ func nullable(value string) any {
 		return nil
 	}
 	return value
+}
+
+func writeOne(ctx context.Context, tx *sql.Tx, query string, args ...any) error {
+	r, e := tx.ExecContext(ctx, query, args...)
+	if e != nil {
+		return e
+	}
+	n, e := r.RowsAffected()
+	if e != nil {
+		return e
+	}
+	if n != 1 {
+		return ErrOperationConflict
+	}
+	return nil
 }

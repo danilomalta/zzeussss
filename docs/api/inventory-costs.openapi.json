@@ -67,7 +67,8 @@
               }
             }
           }
-        }
+        },
+        "description": " Token da sessao HTTP revalidado dentro do escritor SQLite imediato antes de replay/negocio; sessao encerrada/contexto divergente retorna401. Movimento, vinculos, recibo e outbox exigem escrita exata; falha reverte a transacao sem perder/duplicar unidades."
       },
       "get": {
         "operationId": "reviewed_inventory_list",
@@ -267,7 +268,8 @@
               }
             }
           }
-        }
+        },
+        "description": " Token da sessao HTTP revalidado dentro do escritor SQLite imediato antes de replay/negocio; sessao encerrada/contexto divergente retorna401. Movimento, vinculos, recibo e outbox exigem escrita exata; falha reverte a transacao sem perder/duplicar unidades."
       }
     },
     "/local/v1/stock/inventories/{id}/state": {
@@ -332,7 +334,8 @@
               }
             }
           }
-        }
+        },
+        "description": " Token da sessao HTTP revalidado dentro do escritor SQLite imediato antes de replay/negocio; sessao encerrada/contexto divergente retorna401. Movimento, vinculos, recibo e outbox exigem escrita exata; falha reverte a transacao sem perder/duplicar unidades."
       }
     },
     "/local/v1/stock/inventories/{id}/history": {

@@ -44,7 +44,7 @@ func (s *Server) recordStock(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 	session := c.Locals("session").(localauth.Session)
-	result, err := stock.RecordWithContract(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, input)
+	result, err := stock.RecordWithContract(c.UserContext(), s.DB, s.contracts, session.Actor, session.Device, input, session.Token)
 	if err != nil {
 		return stockError(c, err)
 	}
@@ -57,6 +57,8 @@ func (s *Server) recordStock(c *fiber.Ctx) error {
 
 func stockError(c *fiber.Ctx, err error) error {
 	switch {
+	case errors.Is(err, localauth.ErrDenied):
+		return c.SendStatus(401)
 	case errors.Is(err, stock.ErrInvalidOperation):
 		return c.SendStatus(fiber.StatusBadRequest)
 	case errors.Is(err, stock.ErrOperationConflict), errors.Is(err, stock.ErrInsufficientStock), errors.Is(err, stock.ErrStockOverflow):

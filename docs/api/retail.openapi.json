@@ -723,7 +723,7 @@
     "/local/v1/retail/stores": {
       "post": {
         "operationId": "createRetailStore",
-        "description": "Owner-only creation in the current tenant; opt-in, idempotent, no device or key is silently created. Existing pairing/provisioning must authorize the actual destination custodian.",
+        "description": "Owner-only creation in the current tenant; opt-in, idempotent, no device or key is silently created. Existing pairing/provisioning must authorize the actual destination custodian. Transferencia local exige escrita exata das duas pernas e vinculo na mesma transacao; ausencia provoca409 e rollback. Criacao de loja tambem exige uma linha. Mantidas reservas/autorizacao por loja. Nao sincroniza servidores nem compartilha SQLite por rede.",
         "security": [
           {
             "localSession": []
@@ -783,7 +783,7 @@
     "/local/v1/retail/stores/transfer": {
       "post": {
         "operationId": "retailStoreTransfer",
-        "description": "Single existing shared database only. Source session, both stores permissions, active contract, approved destination inventory custodian, physical confirmation, original unit, reservations and expected quantities are checked inside BEGIN IMMEDIATE. Both movements and audit commit together. Destination device denotes custodian, not request author; original actor/device are recorded separately. No peer message or remote command is generated.",
+        "description": "Single existing shared database only. Source session, both stores permissions, active contract, approved destination inventory custodian, physical confirmation, original unit, reservations and expected quantities are checked inside BEGIN IMMEDIATE. Both movements and audit commit together. Destination device denotes custodian, not request author; original actor/device are recorded separately. No peer message or remote command is generated. Transferencia local exige escrita exata das duas pernas e vinculo na mesma transacao; ausencia provoca409 e rollback. Criacao de loja tambem exige uma linha. Mantidas reservas/autorizacao por loja. Nao sincroniza servidores nem compartilha SQLite por rede.",
         "security": [
           {
             "localSession": []

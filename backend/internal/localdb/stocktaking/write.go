@@ -8,11 +8,13 @@ import (
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/entitlementstore"
+	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/localdb/identity"
 	"titansystem-backend/internal/localdb/stockreservation"
+	"titansystem-backend/internal/sqlitewrite"
 )
 
-func Open(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in OpenInput) (Result, error) {
+func Open(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in OpenInput, sessionTokens ...string) (Result, error) {
 	if db == nil || !validID(in.OperationID) || !validID(in.ID) || !validID(in.LocationID) || !validText(in.Title, 160) || len(in.Items) < 1 || len(in.Items) > MaxLines {
 		return Result{}, ErrInvalid
 	}
@@ -27,11 +29,10 @@ func Open(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a 
 	if err != nil {
 		return Result{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return Result{}, err
-	}
-	defer tx.Rollback()
+	return writeSession(ctx, db, a, d, sessionTokens, func(tx *sql.Tx) (Result, error) { return openTx(ctx, tx, contracts, a, d, in, hash) })
+}
+func openTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in OpenInput, hash string) (Result, error) {
+	var err error
 	if err = authorize(ctx, tx, a, d); err != nil {
 		return Result{}, err
 	}
@@ -77,7 +78,7 @@ func Open(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a 
 	return finish(ctx, tx, a, d, hash, in.Title, Result{OperationID: in.OperationID, InventoryID: in.ID, Action: "open", Revision: 1, Status: "open", OccurredAt: now}, in)
 }
 
-func Count(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in CountInput) (Result, error) {
+func Count(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in CountInput, sessionTokens ...string) (Result, error) {
 	if db == nil || !validID(id) || !validID(in.OperationID) || in.ExpectedRevision < 1 || in.ExpectedRevision >= MaxQuantity || len(in.Items) < 1 || len(in.Items) > MaxLines {
 		return Result{}, ErrInvalid
 	}
@@ -92,11 +93,10 @@ func Count(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a
 	if err != nil {
 		return Result{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return Result{}, err
-	}
-	defer tx.Rollback()
+	return writeSession(ctx, db, a, d, sessionTokens, func(tx *sql.Tx) (Result, error) { return countTx(ctx, tx, contracts, a, d, id, in, hash) })
+}
+func countTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in CountInput, hash string) (Result, error) {
+	var err error
 	if err = authorize(ctx, tx, a, d); err != nil {
 		return Result{}, err
 	}
@@ -145,7 +145,7 @@ func Count(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a
 	return finish(ctx, tx, a, d, hash, "", Result{OperationID: in.OperationID, InventoryID: id, Action: "count", Revision: s.Revision + 1, Status: s.Status, OccurredAt: now}, in)
 }
 
-func ChangeState(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in StateInput) (Result, error) {
+func ChangeState(ctx context.Context, db *sql.DB, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in StateInput, sessionTokens ...string) (Result, error) {
 	if db == nil || !validID(id) || !validID(in.OperationID) || in.ExpectedRevision < 1 || in.ExpectedRevision >= MaxQuantity || !validText(in.Reason, 255) {
 		return Result{}, ErrInvalid
 	}
@@ -158,11 +158,10 @@ func ChangeState(ctx context.Context, db *sql.DB, contracts *entitlementstore.St
 	if err != nil {
 		return Result{}, err
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return Result{}, err
-	}
-	defer tx.Rollback()
+	return writeSession(ctx, db, a, d, sessionTokens, func(tx *sql.Tx) (Result, error) { return changeStateTx(ctx, tx, contracts, a, d, id, in, hash) })
+}
+func changeStateTx(ctx context.Context, tx *sql.Tx, contracts *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, id string, in StateInput, hash string) (Result, error) {
+	var err error
 	if err = authorize(ctx, tx, a, d); err != nil {
 		return Result{}, err
 	}
@@ -293,4 +292,27 @@ func applyCounts(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.D
 		changed++
 	}
 	return changed, nil
+}
+
+// Trusted in-process callers retain the existing optional-token API.
+// HTTP always supplies one token, which is revalidated before any business read.
+func writeSession(ctx context.Context, db *sql.DB, a identity.Scope, d identity.DeviceContext, tokens []string, work func(*sql.Tx) (Result, error)) (Result, error) {
+	if len(tokens) > 1 {
+		return Result{}, ErrInvalid
+	}
+	var out Result
+	err := sqlitewrite.Run(ctx, db, ErrConflict, func(tx *sql.Tx) error {
+		if len(tokens) == 1 {
+			if err := fiscal.ValidateSaleSessionTx(ctx, tx, a, d, tokens[0]); err != nil {
+				return err
+			}
+		}
+		var err error
+		out, err = work(tx)
+		return err
+	})
+	if err != nil {
+		return Result{}, err
+	}
+	return out, nil
 }

@@ -954,7 +954,7 @@
       "post": {
         "operationId": "localStockOperation",
         "summary": "Registra entrada, transferência ou perda",
-        "description": "manage_stock e contrato inventory válido. Body até 16 KiB; objeto JSON estrito rejeita campos desconhecidos, duplicados e conteúdo extra. entry exige to e from vazio; loss exige from e to vazio; transfer exige ambos distintos. operation_id repete somente com contexto e conteúdo originais; divergência 409. Saldo insuficiente/overflow: 409. Movimento e outbox são atômicos. Não é recebimento de pedido entre empresas. O exemplo exige substituir IDs por referências reais; quantity_milli=4000 representa 4 unidades da unidade cadastrada (4 kg se unit=kg).",
+        "description": "manage_stock e contrato inventory válido. Body até 16 KiB; objeto JSON estrito rejeita campos desconhecidos, duplicados e conteúdo extra. entry exige to e from vazio; loss exige from e to vazio; transfer exige ambos distintos. operation_id repete somente com contexto e conteúdo originais; divergência 409. Saldo insuficiente/overflow: 409. Movimento e outbox são atômicos. Não é recebimento de pedido entre empresas. O exemplo exige substituir IDs por referências reais; quantity_milli=4000 representa 4 unidades da unidade cadastrada (4 kg se unit=kg). Token da sessao HTTP revalidado dentro do escritor SQLite imediato antes de replay/negocio; sessao encerrada/contexto divergente retorna401. Movimento, vinculos, recibo e outbox exigem escrita exata; falha reverte a transacao sem perder/duplicar unidades.",
         "security": [
           {
             "Session": []

@@ -201,8 +201,5 @@ func finish(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.Device
 	if err != nil {
 		return Result{}, err
 	}
-	if err = tx.Commit(); err != nil {
-		return Result{}, err
-	}
 	return r, nil
 }
