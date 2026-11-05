@@ -827,6 +827,150 @@
         ],
         "description": "Only arrived delivery, exact revision. Empty existing_rejection_id creates a refusal atomically; an explicit ID binds original matching evidence without duplicating it. Rejected releases commitment but does not cancel order, schedule replacement, settle money or authorize fiscal documents. Original IDs/actor/device govern recovery. Historical arrived SQL row is frozen and terminal state is overlaid from an immutable additive ledger."
       }
+    },
+    "/local/v1/purchase-suppliers/{id}/contact-alert": {
+      "get": {
+        "summary": "Read advisory refusal alert",
+        "operationId": "supplier_contact_get",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Result or original exact replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactAlert"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or unknown fields, malformed body/query"
+          },
+          "401": {
+            "description": "Missing, foreign or revoked session"
+          },
+          "403": {
+            "description": "Effective permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not present in permitted context or not original actor"
+          },
+          "409": {
+            "description": "Revision/state/quantity/idempotency/source conflict"
+          },
+          "413": {
+            "description": "Body exceeds 32768 bytes"
+          },
+          "422": {
+            "description": "Source exceeds 1000 records"
+          },
+          "503": {
+            "description": "Backend or contracts unavailable"
+          }
+        },
+        "x-context": "tenant/store/user/device derived from authenticated local session",
+        "x-external-confirmation": false,
+        "x-permissions": [
+          "view_accounting",
+          "manage_cash",
+          "view_orders",
+          "manage_stock"
+        ],
+        "description": "Disabled by default; never creates orders, contacts, payments or stock effects. Owner + Orders/manage_replenishment and current session configure by explicit revision/idempotent operation. Read requires ViewOrders. Count mode must explicitly be current_declined_orders: distinct orders with a current explicit refusal recorded at/after since; later confirmation removes that order from the current count. Manual attestations and authenticated company decisions have separate counts, never relabeled. At most 1000 decision-bearing orders; excess refuses the report, never partial. Disabled does not scan sources: source_complete=false and counts are uncomputed. This is an advisory for a human, not an accepted purchase or promised delivery."
+      },
+      "post": {
+        "summary": "Owner configures advisory refusal policy",
+        "operationId": "supplier_contact_post",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Result or original exact replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or unknown fields, malformed body/query"
+          },
+          "401": {
+            "description": "Missing, foreign or revoked session"
+          },
+          "403": {
+            "description": "Effective permission or licensed module denied"
+          },
+          "404": {
+            "description": "Not present in permitted context or not original actor"
+          },
+          "409": {
+            "description": "Revision/state/quantity/idempotency/source conflict"
+          },
+          "413": {
+            "description": "Body exceeds 32768 bytes"
+          },
+          "422": {
+            "description": "Source exceeds 1000 records"
+          },
+          "503": {
+            "description": "Backend or contracts unavailable"
+          }
+        },
+        "x-context": "tenant/store/user/device derived from authenticated local session",
+        "x-external-confirmation": false,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactPolicyInput"
+              }
+            }
+          }
+        },
+        "x-permissions": [
+          "view_accounting",
+          "manage_cash",
+          "view_orders",
+          "manage_stock"
+        ],
+        "description": "Disabled by default; never creates orders, contacts, payments or stock effects. Owner + Orders/manage_replenishment and current session configure by explicit revision/idempotent operation. Read requires ViewOrders. Count mode must explicitly be current_declined_orders: distinct orders with a current explicit refusal recorded at/after since; later confirmation removes that order from the current count. Manual attestations and authenticated company decisions have separate counts, never relabeled. At most 1000 decision-bearing orders; excess refuses the report, never partial. Disabled does not scan sources: source_complete=false and counts are uncomputed. This is an advisory for a human, not an accepted purchase or promised delivery."
+      }
     }
   },
   "components": {
@@ -2100,6 +2244,9 @@
           },
           "rejection_evidence": {
             "$ref": "#/components/schemas/FullRejectionEvidence"
+          },
+          "contact_policy": {
+            "$ref": "#/components/schemas/ContactPolicy"
           }
         }
       },
@@ -2458,6 +2605,119 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 9007199254740991
+          }
+        }
+      },
+      "ContactPolicy": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "enabled",
+          "threshold",
+          "since",
+          "count_mode"
+        ],
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "threshold": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "since": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "count_mode": {
+            "type": "string",
+            "enum": [
+              "",
+              "current_declined_orders"
+            ]
+          }
+        }
+      },
+      "ContactPolicyInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "enabled",
+          "threshold",
+          "since",
+          "count_mode"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 999999
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "threshold": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "since": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "count_mode": {
+            "type": "string",
+            "enum": [
+              "",
+              "current_declined_orders"
+            ]
+          }
+        }
+      },
+      "ContactAlert": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "supplier_id",
+          "policy",
+          "manual_declined_orders",
+          "authenticated_declined_orders",
+          "source_complete",
+          "recommended"
+        ],
+        "properties": {
+          "supplier_id": {
+            "type": "string"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/ContactPolicy"
+          },
+          "manual_declined_orders": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "authenticated_declined_orders": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "source_complete": {
+            "type": "boolean"
+          },
+          "recommended": {
+            "type": "boolean"
           }
         }
       }

@@ -4209,6 +4209,20 @@
       "path": "/local/v1/fiscal/deferred/sales/:id/query",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal_deferred.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/purchase-suppliers/:id/contact-alert",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-suppliers/:id/contact-alert",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
     }
   ],
   "framework_error_policy": "local/online: parser and uncaught errors use apicontract.FrameworkError; never echo parser diagnostics or request data"

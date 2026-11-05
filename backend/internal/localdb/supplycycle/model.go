@@ -129,6 +129,7 @@ type Origin struct {
 	FiscalAuthorizationVerified bool   `json:"fiscal_authorization_verified"`
 }
 type Result struct {
+	ContactPolicy     *ContactPolicy               `json:"contact_policy,omitempty"`
 	Rejection         *purchases.DeliveryRejection `json:"rejection,omitempty"`
 	RejectionEvidence *FullRejectionEvidence       `json:"rejection_evidence,omitempty"`
 	Action            *ActionInput                 `json:"action_evidence,omitempty"`

@@ -11,6 +11,8 @@ import (
 )
 
 func (s *Server) mountSupplyCycle(r fiber.Router) {
+	r.Get("/purchase-suppliers/:id/contact-alert", s.supplierContact)
+	r.Post("/purchase-suppliers/:id/contact-alert", s.supplierContact)
 	g := r.Group("", func(c *fiber.Ctx) error { c.Set("Cache-Control", "no-store"); return c.Next() })
 	g.Post("/purchase-orders/:id/supplier-decisions", s.cycleDecision)
 	g.Get("/purchase-orders/:id/supply-cycle", s.cycleRead)
