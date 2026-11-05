@@ -2,7 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Customer fiscal onboarding and encrypted Focus credentials",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "description": " Manual profiles and encrypted credential status reuse the existing server-selected provider. Profile revisions commit only when their record is actually written; ignored writes return 409 and roll back. Diagnostics are offline configuration/presence checks, never official issuer/Focus authorization or proof of an externally held A1 certificate validity. Production drafts do not enable checkout/Focus; A3 remains refused. No secrets, private paths or key material are returned."
   },
   "paths": {
     "/fiscal/onboarding/{id}": {
