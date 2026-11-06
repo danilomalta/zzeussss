@@ -125,6 +125,9 @@ func (s *Server) accountingCashCSV(c *fiber.Ctx) error {
 	if err != nil {
 		return accountingCashError(c, err)
 	}
+	if err = s.recordReportExport(c, "closed_cash_period", w.From, w.To, data); err != nil {
+		return accountingCashError(c, err)
+	}
 	c.Set(fiber.HeaderContentType, "text/csv; charset=utf-8")
 	c.Set(fiber.HeaderContentDisposition, `attachment; filename="titan-caixas-encerrados.csv"`)
 	return c.Send(data)

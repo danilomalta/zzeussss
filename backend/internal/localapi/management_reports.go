@@ -116,6 +116,9 @@ func (s *Server) managementSales(c *fiber.Ctx) error {
 		if err = management.ExportSales(&b, result); err != nil {
 			return c.SendStatus(500)
 		}
+		if err = s.recordReportExport(c, "management_sales_page", result.From, result.To, b.Bytes()); err != nil {
+			return managementError(c, err)
+		}
 		c.Set("Content-Type", "text/csv; charset=utf-8")
 		c.Set("Content-Disposition", `attachment; filename="vendas-produtos-pagina.csv"`)
 		return c.Send(b.Bytes())

@@ -25,6 +25,9 @@ func (s *Server) fiscalAccountingExport(c *fiber.Ctx) error {
 	if err != nil {
 		return fiscalFailure(c, err)
 	}
+	if err = s.recordReportExport(c, "fiscal_homologation_period", c.Query("from"), c.Query("until"), zip); err != nil {
+		return fiscalFailure(c, err)
+	}
 	c.Set("Cache-Control", "no-store")
 	c.Set("Content-Disposition", `attachment; filename="fiscal-homologacao.zip"`)
 	c.Type("zip")

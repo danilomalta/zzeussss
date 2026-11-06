@@ -530,7 +530,8 @@
           "403": {
             "description": "Owner required"
           }
-        }
+        },
+        "description": "Owner-only local archived homologation XML and CSV; UTC local-record period; missing documents explicit Before returning the artifact, the server revalidates the original session, tenant/store/device and view_accounting in the existing immediate SQLite writer, then persists audit.report_export in the local outbox: actor, period, artifact SHA-256 and scope IDs only. Ignored/failed audit writes release no artifact. This records an artifact prepared for response, not proof that a client received it. No financial posting, secret, customer name or document bytes enter that audit. Existing owner-only fiscal export authorization remains unchanged; accountant access to cash reports grants no fiscal-export privilege."
       }
     },
     "/local/v1/fiscal/nfe55/sales/{id}/correction/query": {

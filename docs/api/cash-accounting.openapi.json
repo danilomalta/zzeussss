@@ -247,7 +247,7 @@
     "/local/v1/accounting/cash/report.csv": {
       "get": {
         "summary": "Consulta operacional contabil de caixas encerrados: report.csv",
-        "description": "ViewAccounting existente; tenant/loja/aparelho da sessao. Periodo de encerramento [from,to), max31dias. Valida relatorio/journal em transacao unica, sem POS atual para historico. Somatorios de aberturas/fechamentos nao sao saldo disponivel. Comprovantes manuais e cofres nao entram.",
+        "description": "ViewAccounting existente; tenant/loja/aparelho da sessao. Periodo de encerramento [from,to), max31dias. Valida relatorio/journal em transacao unica, sem POS atual para historico. Somatorios de aberturas/fechamentos nao sao saldo disponivel. Comprovantes manuais e cofres nao entram. Before returning the artifact, the server revalidates the original session, tenant/store/device and view_accounting in the existing immediate SQLite writer, then persists audit.report_export in the local outbox: actor, period, artifact SHA-256 and scope IDs only. Ignored/failed audit writes release no artifact. This records an artifact prepared for response, not proof that a client received it. No financial posting, secret, customer name or document bytes enter that audit.",
         "security": [
           {
             "localSession": []

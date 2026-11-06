@@ -77,7 +77,8 @@
       "method": "GET",
       "path": "/local/v1/accounting/cash/report.csv",
       "authentication": "session",
-      "source": "backend/internal/localapi/cash_accounting.go"
+      "source": "backend/internal/localapi/cash_accounting.go",
+      "integrity": "Authorized artifact preparation is audited transactionally in the existing local outbox before response: original session/context and permission revalidated; SHA-256, period and scoped actor metadata only; audit failure releases no file and never moves cash/stock. Audit is not proof of delivery."
     },
     {
       "api": "local",
@@ -846,7 +847,7 @@
       "path": "/local/v1/fiscal/accounting-export",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go",
-      "integrity": " Focus XML archive uses customer-scoped authenticated ciphertext and requires its durable row before archived status. Missing, tampered or wrong-key evidence must not yield a document; a configured download/persistence failure keeps the note and remains pending (missing configuration remains unavailable). Native homologation journals are a separate, not yet encrypted persistence path."
+      "integrity": "Authorized artifact preparation is audited transactionally in the existing local outbox before response: original session/context and permission revalidated; SHA-256, period and scoped actor metadata only; audit failure releases no file and never moves cash/stock. Audit is not proof of delivery. XML and available events remain customer-key encrypted, tenant-scoped and archive-integrity checked; production stays blocked."
     },
     {
       "api": "local",
@@ -2033,7 +2034,8 @@
       "method": "GET",
       "path": "/local/v1/management/sales/products.csv",
       "authentication": "session",
-      "source": "backend/internal/localapi/management_reports.go"
+      "source": "backend/internal/localapi/management_reports.go",
+      "integrity": "Authorized artifact preparation is audited transactionally in the existing local outbox before response: original session/context and permission revalidated; SHA-256, period and scoped actor metadata only; audit failure releases no file and never moves cash/stock. Audit is not proof of delivery. CSV always includes a coverage record, including empty pages; page and full-period totals are distinct."
     },
     {
       "api": "local",
