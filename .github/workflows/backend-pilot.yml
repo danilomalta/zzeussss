@@ -67,6 +67,8 @@ jobs:
           done
       - name: Verify required browser
         run: command -v google-chrome
+      - name: Install locked dependencies for rendered checkout acceptance
+        run: npm ci --prefix ../frontend-web
       - name: Full backend regression suite with mandatory real integrations
         env:
           TITAN_TRADE_QUEUE: "1"
@@ -80,6 +82,8 @@ jobs:
           TITAN_FISCAL_CLI: ${{ runner.temp }}/titan-fiscal
           TITAN_RECEIVABLES_BRIDGE: ${{ github.workspace }}/frontend-web/tests/receivables.bridge.mjs
           TITAN_RECEIVABLES_BROWSER_BRIDGE: ${{ github.workspace }}/frontend-web/tests/receivables.browser.mjs
+          TITAN_CHECKOUT_NFCE_BRIDGE: ${{ github.workspace }}/frontend-web/tests/checkoutNFCe.bridge.mjs
+          TITAN_CHECKOUT_FOCUS_SCREEN: ${{ github.workspace }}/frontend-web/tests/checkoutFocus.screen.mjs
         run: |
           set -euo pipefail
           go test ./... -count=1 -timeout=30m -json > "$RUNNER_TEMP/backend-full.jsonl"
