@@ -217,5 +217,6 @@ func TestHTTPCheckoutNFCeHomologationIntegration(t *testing.T) {
 	if p.issues.Load() != 2 {
 		t.Fatal("wrong number of authority requests", p.issues.Load())
 	}
+	runCheckoutNFCeFrontendBridge(t, p, policy.Rule.ID)
 	t.Log("PASS checkout -> authorized NFC-e homologation; production blocked; failed emission keeps sale/change and durable status; retry/recovery does not duplicate sale or POST.")
 }

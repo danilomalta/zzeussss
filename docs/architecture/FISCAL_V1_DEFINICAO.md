@@ -24,6 +24,15 @@ com evidência do mesmo candidato consolidado. Produção continua proibida.
   `backend/internal/localapi/checkout_fiscal_test.go`,
   `TestHTTPCheckoutNFCeHomologationIntegration`, prova o circuito técnico com
   autoridade descartável; não substitui o ensaio da tela instalada com a Focus.
+  Implementação da primeira emissão no checkout existente: `frontend-web/src/core/local/checkoutNFCe.mjs`,
+  `Checkout96.tsx` e `CheckoutNFCeSetup.tsx`. Cliente consulta perfil/regras do cliente,
+  solicita cotações tributária e comercial, cria plano e finaliza em dinheiro com
+  Environment=2; configuração de provedor continua resolvida pelo servidor.
+  `checkoutNFCe.test.mjs` cobre recusas, perda de resposta, privacidade, cinco idiomas
+  e venda preservada após falha fiscal. O bridge `checkoutNFCe.bridge.mjs`, ativado
+  por `TITAN_CHECKOUT_NFCE_BRIDGE` no teste HTTP acima, atravessa JavaScript, API Go,
+  SQLite e autoridade mTLS descartáveis, incluindo consulta após recriar o cliente
+  e cupom 80mm. Isso é evidência técnica local, não aceite Focus/SEFAZ ou instalação.
 - **V1-03 — FEITO, geração e autorização de acesso em código:** cupom com QR,
   chave e destaque SEM VALOR FISCAL, obtidos da evidência autorizada. Fontes:
   `backend/internal/fiscalproduction/checkout_print.go` e `backend/internal/fiscalproduction/checkout_print_test.go`,
@@ -85,7 +94,7 @@ builds, instalação backend em diretório novo e abertura do pacote Linux
 com perfil descartável. Contagens, árvores Git, limites e logs estruturais
 sanitizados: `docs/evidence/fiscal-v1-20261106/summary.json`.
 Esse registro e seus artefatos não alteram código operacional.
-**PENDENTES V1-02/07/08/09:** integração operacional da tela e ensaio Focus,
+**PENDENTES V1-02/07/08/09:** ensaio da tela instalada com Focus,
 aceite da infraestrutura/chaves do cliente, revogações históricas,
 checks remotos e instalação em OS limpo/Windows/impressora real.
 A abertura da configuração desktop em 1.028 ms não mede login ou emissão.
