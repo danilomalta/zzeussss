@@ -91,6 +91,14 @@ checks remotos e instalação em OS limpo/Windows/impressora real.
 A abertura da configuração desktop em 1.028 ms não mede login ou emissão.
 Nenhuma emissão real executada; produção permanece bloqueada.
 
+**FEITO no alcance da recuperação, após esse gate:** ação explícita na tela
+para `recovery_required`, pelo ID e corpo original do servidor; sem retry
+automático ou armazenamento da solicitação no navegador. Gravação do status
+exige evento efetivamente persistido. Evidência focada e falha anterior
+reproduzida: `docs/evidence/fiscal-recovery-20261106/summary.json`.
+O gate integral acima pertence ao candidato anterior; não é apresentado
+como reexecução integral dessa correção. Os aceites pendentes não mudam.
+
 ## Registros antigos de homologação
 
 Enquanto NÃO houver produção, o cliente pode optar por descartar seus

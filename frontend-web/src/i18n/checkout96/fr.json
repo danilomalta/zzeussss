@@ -89,5 +89,7 @@
   "checkoutFiscalPrint": "Imprimer la NFC-e de test",
   "checkoutFiscalPaper": "Papier de la NFC-e",
   "checkoutFiscalPrintHelp": "Le document utilise le XML autorisé archivé, avec code QR et clé d’accès. TEST — SANS VALEUR FISCALE. Choisissez le même papier dans le pilote d’impression.",
-  "checkoutFiscalPrintUnavailable": "Impossible d’ouvrir le document fiscal. Vérifiez l’archive, la session et les fenêtres autorisées. La vente reste enregistrée."
+  "checkoutFiscalPrintUnavailable": "Impossible d’ouvrir le document fiscal. Vérifiez l’archive, la session et les fenêtres autorisées. La vente reste enregistrée.",
+  "checkoutFiscalRecover": "Récupérer la tentative initiale",
+  "checkoutFiscalRecoverHelp": "Le serveur utilise la demande initiale et les enregistrements d’émission. Ne créez pas une autre vente ou facture pour résoudre une réponse incertaine."
 }

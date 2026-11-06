@@ -89,5 +89,7 @@
   "checkoutFiscalPrint": "Imprimir NFC-e de homologação",
   "checkoutFiscalPaper": "Papel da NFC-e",
   "checkoutFiscalPrintHelp": "O documento vem do XML autorizado arquivado, com QR Code e chave de acesso. HOMOLOGAÇÃO — SEM VALOR FISCAL. Configure o mesmo papel no driver da impressora.",
-  "checkoutFiscalPrintUnavailable": "Não foi possível abrir o documento fiscal. Confira o arquivo fiscal, a sessão e a permissão de pop-ups. A venda permanece registrada."
+  "checkoutFiscalPrintUnavailable": "Não foi possível abrir o documento fiscal. Confira o arquivo fiscal, a sessão e a permissão de pop-ups. A venda permanece registrada.",
+  "checkoutFiscalRecover": "Recuperar tentativa original",
+  "checkoutFiscalRecoverHelp": "O servidor usa a solicitação original e os registros da emissão. Não crie outra venda ou nota para resolver uma resposta incerta."
 }

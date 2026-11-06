@@ -13,10 +13,10 @@ export default function CheckoutFiscalStatus({checkout,canReprocess=true}:{check
  const identity=useMemo(()=>({scope,checkout}),[scope,checkout,token]);
  const client=useMemo(()=>token&&session?checkoutFiscalClient.bind({token,session}):null,[token,session]);
  const [result,setResult]=useState<{identity:{scope:string;checkout:string};view:CheckoutFiscalView|null;busy:boolean;error:boolean}|null>(null),generation=useRef(0),abort=useRef<AbortController|null>(null),latch=useRef(false);
- async function load(retry=false){
+ async function load(action:'read'|'retry'|'recover'='read'){
   if(!client||demo||latch.current)return;latch.current=true;const g=++generation.current,c=new AbortController();abort.current?.abort();abort.current=c;
   setResult(previous=>({identity,view:previous?.identity===identity?previous.view:null,busy:true,error:false}));
-  try{const view=await (retry?client.retry(checkout,c.signal):client.read(checkout,c.signal));if(g===generation.current&&!c.signal.aborted)setResult({identity,view,busy:false,error:false});}
+  try{const view=await (action==='recover'?client.recover(checkout,c.signal):action==='retry'?client.retry(checkout,c.signal):client.read(checkout,c.signal));if(g===generation.current&&!c.signal.aborted)setResult({identity,view,busy:false,error:false});}
   catch{if(g===generation.current&&!c.signal.aborted)setResult({identity,view:null,busy:false,error:true});}
   finally{if(g===generation.current)latch.current=false;}
  }
@@ -32,10 +32,10 @@ export default function CheckoutFiscalStatus({checkout,canReprocess=true}:{check
  }
  useEffect(()=>{setPrintError(false);},[identity]);
  const current=result?.identity===identity?result:null,view=current?.view,busy=!!current?.busy;
- return <CheckoutFiscalStatusView view={view||null} busy={busy} unavailable={!client||!!current?.error} demo={demo} canReprocess={canReprocess} connected={!!client} w={w} printing={printing} printError={printError} onPrint={paper=>void print(paper)} onRetry={()=>void load(true)} onRefresh={()=>void load()}/>;
+ return <CheckoutFiscalStatusView view={view||null} busy={busy} unavailable={!client||!!current?.error} demo={demo} canReprocess={canReprocess} connected={!!client} w={w} printing={printing} printError={printError} onPrint={paper=>void print(paper)} onRetry={()=>void load('retry')} onRecover={()=>void load('recover')} onRefresh={()=>void load()}/>;
 }
 
-export function CheckoutFiscalStatusView({view,busy,unavailable,demo,canReprocess=true,connected,w,onRetry,onRefresh,onPrint,printing=false,printError=false}:{view:CheckoutFiscalView|null;busy:boolean;unavailable:boolean;demo:boolean;canReprocess?:boolean;connected:boolean;w:Record<string,string>;onRetry:()=>void;onRefresh:()=>void;onPrint?:(paper:58|80)=>void;printing?:boolean;printError?:boolean}){
+export function CheckoutFiscalStatusView({view,busy,unavailable,demo,canReprocess=true,connected,w,onRetry,onRefresh,onRecover,onPrint,printing=false,printError=false}:{view:CheckoutFiscalView|null;busy:boolean;unavailable:boolean;demo:boolean;canReprocess?:boolean;connected:boolean;w:Record<string,string>;onRetry:()=>void;onRefresh:()=>void;onRecover?:()=>void;onPrint?:(paper:58|80)=>void;printing?:boolean;printError?:boolean}){
  const [paper,setPaper]=useState<58|80>(80);
  return <section className="brand-panel" aria-label={w.checkoutFiscalTitle} aria-busy={busy}>
   <strong>{w.checkoutFiscalTitle}</strong>
@@ -46,6 +46,7 @@ export function CheckoutFiscalStatusView({view,busy,unavailable,demo,canReproces
   {view?.state==='authorized'&&!demo&&<div><label>{w.checkoutFiscalPaper}<select value={paper} disabled={busy||printing} onChange={e=>setPaper(Number(e.target.value) as 58|80)}><option value={58}>58 mm</option><option value={80}>80 mm</option></select></label><button type="button" disabled={busy||printing||!connected||!onPrint} onClick={()=>onPrint?.(paper)}>{w.checkoutFiscalPrint}</button><p>{w.checkoutFiscalPrintHelp}</p></div>}
   {printError&&<p role="alert">{w.checkoutFiscalPrintUnavailable}</p>}
   {view?.state==='failed'&&canReprocess&&<><button type="button" className="brand-secondary" disabled={busy||!view.canRetry||!connected||demo} onClick={onRetry}>{w.checkoutFiscalRetry}</button>{!view.canRetry&&<p>{w.checkoutFiscalMissingRequest}</p>}</>}
+  {view?.state==='pending'&&view.canRecover&&canReprocess&&!demo&&onRecover&&<><button type="button" className="brand-secondary" disabled={busy||!connected} onClick={onRecover}>{w.checkoutFiscalRecover}</button><p>{w.checkoutFiscalRecoverHelp}</p></>}
   {!demo&&<button type="button" className="brand-secondary" disabled={busy||!connected} onClick={onRefresh}>{w.checkoutFiscalRefresh}</button>}
  </section>;
 }
