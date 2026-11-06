@@ -3,7 +3,7 @@
   "info": {
     "title": "Titan NF-e / NFC-e homologation print archive",
     "version": "1.1.0",
-    "description": " Focus archive state is archived only after the encrypted customer-scoped row is actually persisted. An ignored write is a conflict/rollback and leaves archive_state=pending without discarding the authorized note; retry/query preserves its IDs and never implies another issuance. HTML/cupom rendering and PDF download tests do not approve physical printing or official Focus/SEFAZ acceptance."
+    "description": " Focus archive state is archived only after the encrypted customer-scoped row is actually persisted. An ignored write is a conflict/rollback and leaves archive_state=pending without discarding the authorized note; retry/query preserves its IDs and never implies another issuance. HTML/cupom rendering and PDF download tests do not approve physical printing or official Focus/SEFAZ acceptance. Idempotent archive replay also requires the existing envelope version to be supported. Unknown versions leave archive_state=pending while retaining the original note and stored evidence; they never imply a new issuance or an automatic rewrite."
   },
   "servers": [
     {

@@ -243,7 +243,7 @@ func (p *FocusProvider) storeArchive(ctx context.Context, a RequestContext, sale
 		e := tx.QueryRowContext(ctx, `SELECT payload_json FROM outbox WHERE tenant_id=? AND store_id=? AND device_id=? AND operation_id=? AND event_type='checkout.focus_xml_archive'`, a.Actor.TenantID, a.Actor.StoreID, a.Device.DeviceID, operation).Scan(&old)
 		if e == nil {
 			var prior focusArchiveRecord
-			if json.Unmarshal([]byte(old), &prior) != nil || prior.SHA256 != record.SHA256 || prior.Sale != sale || prior.Intent != intent {
+			if json.Unmarshal([]byte(old), &prior) != nil || prior.Version != record.Version || prior.SHA256 != record.SHA256 || prior.Sale != sale || prior.Intent != intent {
 				return fiscal.ErrConflict
 			}
 			n := crypt.NonceSize()
