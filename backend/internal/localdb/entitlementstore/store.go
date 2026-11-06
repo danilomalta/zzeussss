@@ -33,6 +33,22 @@ type InstallResult struct {
 	Repeated bool
 }
 
+// A successful statement is not proof that its required row was persisted
+// (for example a SQLite trigger may silently ignore a write).
+func persistedOne(result sql.Result, err error) error {
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return ErrCorrupt
+	}
+	return nil
+}
+
 // New recebe uma conexao local migrada e um verificador de chaves confiaveis.
 // clock pertence a configuracao do backend; nunca e recebido em pedido HTTP.
 func New(db *sql.DB, verifier *entitlements.Verifier, clock func() time.Time) (*Store, error) {
@@ -105,7 +121,7 @@ func (s *Store) Install(ctx context.Context, actor identity.Scope, device identi
 			if envelope.KeyID != previous.envelope.KeyID || !bytes.Equal(envelope.Payload, previous.envelope.Payload) || !bytes.Equal(envelope.Signature, previous.envelope.Signature) {
 				return InstallResult{}, ErrConflict
 			}
-			if _, err := tx.ExecContext(ctx, `UPDATE module_contract_state SET last_observed_unix=? WHERE tenant_id=?`, now.Unix(), actor.TenantID); err != nil {
+			if err := persistedOne(tx.ExecContext(ctx, `UPDATE module_contract_state SET last_observed_unix=? WHERE tenant_id=?`, now.Unix(), actor.TenantID)); err != nil {
 				return InstallResult{}, err
 			}
 			if err := tx.Commit(); err != nil {
@@ -114,14 +130,14 @@ func (s *Store) Install(ctx context.Context, actor identity.Scope, device identi
 			return InstallResult{Revision: claims.Revision, Repeated: true}, nil
 		}
 	}
-	if _, err := tx.ExecContext(ctx, `INSERT INTO module_contract_history
+	if err := persistedOne(tx.ExecContext(ctx, `INSERT INTO module_contract_history
 		(tenant_id,revision,key_id,payload,signature,installed_by,installed_at_unix) VALUES (?,?,?,?,?,?,?)`,
-		actor.TenantID, claims.Revision, envelope.KeyID, envelope.Payload, envelope.Signature, actor.IdentityID, now.Unix()); err != nil {
+		actor.TenantID, claims.Revision, envelope.KeyID, envelope.Payload, envelope.Signature, actor.IdentityID, now.Unix())); err != nil {
 		return InstallResult{}, err
 	}
-	if _, err := tx.ExecContext(ctx, `INSERT INTO module_contract_state(tenant_id,revision,last_observed_unix) VALUES (?,?,?)
+	if err := persistedOne(tx.ExecContext(ctx, `INSERT INTO module_contract_state(tenant_id,revision,last_observed_unix) VALUES (?,?,?)
 		ON CONFLICT(tenant_id) DO UPDATE SET revision=excluded.revision,last_observed_unix=excluded.last_observed_unix`,
-		actor.TenantID, claims.Revision, now.Unix()); err != nil {
+		actor.TenantID, claims.Revision, now.Unix())); err != nil {
 		return InstallResult{}, err
 	}
 	if err := tx.Commit(); err != nil {
@@ -159,6 +175,5 @@ func (s *Store) RequireTx(ctx context.Context, tx *sql.Tx, actor identity.Scope,
 	if err := modules.Require(module, claims.Modules); err != nil {
 		return err
 	}
-	_, err = tx.ExecContext(ctx, `UPDATE module_contract_state SET last_observed_unix=? WHERE tenant_id=?`, now.Unix(), actor.TenantID)
-	return err
+	return persistedOne(tx.ExecContext(ctx, `UPDATE module_contract_state SET last_observed_unix=? WHERE tenant_id=?`, now.Unix(), actor.TenantID))
 }

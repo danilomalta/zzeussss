@@ -10,7 +10,7 @@
       "get": {
         "operationId": "localCapabilities",
         "summary": "Consulta permissões e contrato",
-        "description": "Sessão ativa, loja e aparelho aprovados. Retorna subconjunto de dez permissões operacionais; não é inventário completo de administração. Permissões independem da lista de módulos: UI deve combinar permissão, módulo e vigência; backend revalida em cada ação. Nenhuma permissão informada substitui autorização no servidor. Consulta pode avançar last_observed_unix do contrato. Ausência de verificador: unavailable; sem contrato: not_installed; assinatura inválida: invalid; relógio retrocedido: clock_blocked.",
+        "description": "Sessão ativa, loja e aparelho aprovados. Retorna subconjunto de dez permissões operacionais; não é inventário completo de administração. Permissões independem da lista de módulos: UI deve combinar permissão, módulo e vigência; backend revalida em cada ação. Nenhuma permissão informada substitui autorização no servidor. Consulta pode avançar last_observed_unix do contrato. Ausência de verificador: unavailable; sem contrato: not_installed; assinatura inválida: invalid; relógio retrocedido: clock_blocked. Metadados de licença limitados a state, modules, expires_unix e remaining_days; não incluem vendas, CNPJ, certificado, token, senha, payload ou assinatura. Não há consulta remota nem renovação implícita. Falha na persistência da observação não anuncia estado ativo.",
         "security": [
           {
             "Session": []
@@ -430,7 +430,7 @@
       "post": {
         "operationId": "localInstallModuleContract",
         "summary": "Instala contrato assinado",
-        "description": "Exige manage_staff e papel owner; aparelho autorizado. JSON exato key_id/payload/signature até 64 KiB. Chave emissora deve ser previamente confiável no servidor; key_id apenas a seleciona. Assinatura, empresa, validade, dependências e revisão verificadas. Novo e replay idêntico 200; revisão obsoleta/conflitante ou relógio bloqueado 409; assinatura/claims inválidos 400; verificador ausente 503. Não emite licença, fatura, cobrança nem aplica tolerância comercial de três dias.",
+        "description": "Exige manage_staff e papel owner; aparelho autorizado. JSON exato key_id/payload/signature até 64 KiB. Chave emissora deve ser previamente confiável no servidor; key_id apenas a seleciona. Assinatura, empresa, validade, dependências e revisão verificadas. Novo e replay idêntico 200; revisão obsoleta/conflitante ou relógio bloqueado 409; assinatura/claims inválidos 400; verificador ausente 503. Não emite licença, fatura, cobrança nem aplica tolerância comercial de três dias. Confirmação exige uma linha persistida no histórico e no estado ativo, na mesma transação; escrita ignorada resulta em erro, rollback e nenhuma revisão anunciada. Retirada de módulos exige revisão assinada maior; contrato antigo não reativa acesso. Expiração ou retirada bloqueiam novos comandos protegidos, sem apagar dados; leituras autorizadas, recuperação de conta e backup permanecem independentes de renovação. Sem servidor de licença remoto, plano, prazo offline ou acesso de suporte presumidos.",
         "security": [
           {
             "Session": []
