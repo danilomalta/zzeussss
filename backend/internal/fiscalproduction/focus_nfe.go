@@ -144,7 +144,9 @@ func (p *FocusProvider) downloadDANFE(ctx context.Context, resource, key string)
 	return data, nil
 }
 
-// Invalidation remains explicitly unavailable: no guessed fiscal year.
+// Invalidation remains unavailable: the documented request has no explicit year,
+// and listing completed invalidations does not reconcile remote reserved, used
+// or uncertain numbers. Local absence cannot authorize a destructive POST.
 func (p *FocusProvider) Invalidate(context.Context, RequestContext, DocumentRequest) (DocumentResult, error) {
 	return DocumentResult{State: "unavailable", ErrorCode: "focus_invalidation_unavailable"}, ErrFocusInvalidationUnavailable
 }
