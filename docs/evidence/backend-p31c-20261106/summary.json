@@ -1,0 +1,227 @@
+{
+  "date": "2026-11-06",
+  "branch": "feat/backend-p31c",
+  "base": "cd11211cb2e8e14fc1f388287e77263685df6b04",
+  "consolidated_before_test_commit": "7027fb302951f34cf8011e78bedea888f4f2ce13",
+  "source_checkout": "ee3d0fd4203bcd8bd80b65a06d7f755711e02106",
+  "license_equivalence": {
+    "original": "87ce4488350cf806411a8b8945c17120a420a003",
+    "equivalent_ancestor": "ce41182",
+    "files_identical_to_base": [
+      "backend/internal/localdb/entitlementstore/store.go",
+      "backend/internal/localdb/entitlementstore/status.go",
+      "backend/internal/localdb/entitlementstore/persistence_test.go",
+      "backend/internal/localapi/license_preservation_test.go",
+      "backend/cmd/titan-local/installation_isolation_test.go",
+      "docs/api/staff-capabilities.openapi.json"
+    ],
+    "guard": "backend/internal/localdb/entitlementstore/store.go:38 persistedOne requires RowsAffected=1"
+  },
+  "cherry_equivalence_after": [
+    "- 9025a5c08e4fd5ca3d87efd50e41507af6b9daca docs(licensing): prove P29 persistence fix is present in P31",
+    "- 8a15ddd7a578ae30f538332527d538f664422d34 test(fiscal): prove Focus invalidation stays closed without remote reconciliation",
+    "- 0bc771ebf0fc772ac8be2183d9048080aad209cb docs(fiscal): record P19 origin prerequisite on consolidated line",
+    "- 0d2421f5df8a674662c530b51e44db3fd8232d46 test(fiscal): publish clean local v1 acceptance evidence",
+    "- ad84fe2899e5d6eeb97bb9808b93d19c3d502892 fix(fiscal): persist checkout status and expose explicit original-attempt recovery",
+    "- ee3d0fd4203bcd8bd80b65a06d7f755711e02106 Integra emissão NFC-e ao checkout operacional em homologação"
+  ],
+  "conflicts": [],
+  "test_results": {
+    "license": {
+      "pass_including_subtests": 440,
+      "failures": [],
+      "skips": [],
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/core/entitlements",
+          "seconds": 0.049
+        },
+        {
+          "package": "titansystem-backend/internal/localdb/entitlementstore",
+          "seconds": 67.949
+        }
+      ],
+      "log_sha256": "8f7f22db6898b6325efdeaa7de69e17f9c9e4a733e0a3b9ea915bfa93948dc12"
+    },
+    "license-http": {
+      "pass_including_subtests": 40,
+      "failures": [],
+      "skips": [],
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "seconds": 21.676
+        }
+      ],
+      "log_sha256": "faa6856018c4ab0644cc77d8f88f30e09414d325e7c99034cd7ab887d0523190"
+    },
+    "installation-keys": {
+      "pass_including_subtests": 20,
+      "failures": [],
+      "skips": [],
+      "packages": [
+        {
+          "package": "titansystem-backend/cmd/titan-local",
+          "seconds": 13.195
+        }
+      ],
+      "log_sha256": "eb99316dcf95b21bbdeab605d80ae9a41f74315f9f982977f1dbe8480b76d153"
+    },
+    "vault": {
+      "pass_including_subtests": 180,
+      "failures": [],
+      "skips": [],
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/fiscalproduction",
+          "seconds": 31.165
+        }
+      ],
+      "log_sha256": "3e3881763098d4575369d05d1b82cef848dbc83669ee79258fb8e9d2122970a7"
+    },
+    "vault-isolation": {
+      "pass_including_subtests": 60,
+      "failures": [],
+      "skips": [],
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/fiscalproduction",
+          "seconds": 5.6
+        }
+      ],
+      "log_sha256": "0e13e8dd5350e3959ddb5f165a78c7032c600ca68a3546c84b29953c8e773081"
+    },
+    "fiscal-utc": {
+      "pass_including_subtests": 609,
+      "failures": [],
+      "skips": [
+        "TestFocusSandboxRealNFCe"
+      ],
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/localdb/fiscal",
+          "seconds": 0.695
+        },
+        {
+          "package": "titansystem-backend/internal/fiscalcore",
+          "seconds": 4.6899999999999995
+        },
+        {
+          "package": "titansystem-backend/internal/fiscalproduction",
+          "seconds": 24.919
+        }
+      ],
+      "log_sha256": "acc948bb551fc6e225d854e3170ff3bb7f97455e4667b0f4599a9bd59aa89a11"
+    },
+    "fiscal-sp": {
+      "pass_including_subtests": 609,
+      "failures": [],
+      "skips": [
+        "TestFocusSandboxRealNFCe"
+      ],
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/localdb/fiscal",
+          "seconds": 0.69
+        },
+        {
+          "package": "titansystem-backend/internal/fiscalcore",
+          "seconds": 4.592
+        },
+        {
+          "package": "titansystem-backend/internal/fiscalproduction",
+          "seconds": 24.614
+        }
+      ],
+      "log_sha256": "962c79a0d0762d0d4de030728bd8d93176f8f0093e6e40fe2af5ba9e6da2e0e4"
+    },
+    "http-utc": {
+      "pass_including_subtests": 10,
+      "failures": [],
+      "skips": [],
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "seconds": 9.404
+        }
+      ],
+      "log_sha256": "2594ab07ef7376b62dfd3a28446861eb7cc726808c1257d9030c1bd1a023717f"
+    },
+    "http-sp": {
+      "pass_including_subtests": 10,
+      "failures": [],
+      "skips": [],
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "seconds": 9.182
+        }
+      ],
+      "log_sha256": "2a1d10a26a6df9c5453dd92fe471256848487734f8cf4caad6d4e8e37c3dcc8f"
+    },
+    "screen-race": {
+      "pass_including_subtests": 1,
+      "failures": [],
+      "skips": [],
+      "packages": [
+        {
+          "package": "titansystem-backend/internal/localapi",
+          "seconds": 15.103
+        }
+      ],
+      "log_sha256": "321519b3f541ed4c5c6994aafcb4d05ad0c29c6445f6a08d27092a9521de71b6"
+    }
+  },
+  "frontend": {
+    "passed_files": 135,
+    "failed": 0,
+    "skipped": 0
+  },
+  "contracts": {
+    "tests_passed": 10,
+    "routes": 596
+  },
+  "typescript_vite": {
+    "passed": true,
+    "seconds": 22.48,
+    "existing_large_chunk_warning": true
+  },
+  "screen_proof": {
+    "actual_components": [
+      "Checkout96",
+      "CheckoutFiscalStatus",
+      "LocalAccessProvider"
+    ],
+    "browser": "installed Chromium headless with isolated temporary profile and sandbox",
+    "api": "actual Go/Fiber HTTP and SQLite disposable database",
+    "provider": "existing Focus adapter via test-only local TLS redirect with trusted fixture certificate; no external fallback",
+    "sales": 2,
+    "upstream_posts": 2,
+    "lost_response": "mock accepts second POST then closes TCP/TLS connection",
+    "recovery": "explicit rendered recovery button; queries same reference; no second emission or sale",
+    "cupom": "80mm HTML/QR from archived processed XML; not physical printing",
+    "xml": "two encrypted archives; authenticated export ZIP contains original XML bytes",
+    "production": "two explicit production probes refused with 400"
+  },
+  "new_test_sha256": {
+    "backend/internal/localapi/checkout_focus_screen_test.go": "cd720528d00a9a18db9c5d29c215173e5300b70c462cf5022d371c3160de166c",
+    "frontend-web/tests/checkoutFocus.screen.mjs": "90abfd0d53780a2722716621b0ea5e715b78ebb41630c61b6419c33cf2695ddb",
+    "frontend-web/tests/checkoutFocus.screen.tsx": "a221b8a105517f50d709fdfae74296723c16623dbf90f8100a2da6dc87f5ef91"
+  },
+  "test_harness_corrections": [
+    "existing XSD name nfe_process",
+    "documented POST response 201",
+    "wait for mounted cash control",
+    "mock protocol digest matches existing XML signature; existing print guard rejects mismatches"
+  ],
+  "wip": {
+    "main_head": "8fccfadaf3c155df102a8b9c042b8602a41f02ad",
+    "nine_status_and_sha256_unchanged": true
+  },
+  "new_routes": false,
+  "new_product_features": false,
+  "tools_or_workflows_changed": false,
+  "real_focus_run": false,
+  "production_enabled": false,
+  "remote_ci_claimed_green": false
+}
