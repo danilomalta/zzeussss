@@ -76,6 +76,21 @@ com evidência do mesmo candidato consolidado. Produção continua proibida.
   critério. Não enviar segredos em conversa, log ou relatório. Responsáveis:
   dono/cliente configura; Focus responde pelo contrato e aceite do serviço.
 
+## Evidência local do candidato — 06/11/2026
+
+**FEITO no alcance técnico local:** candidato `0bc771ebf0fc772ac8be2183d9048080aad209cb`,
+clone só commitado, suíte completa/25 integrações obrigatórias aprovadas,
+regressões fiscais e pilotos com race detector, contratos, frontend,
+builds, instalação backend em diretório novo e abertura do pacote Linux
+com perfil descartável. Contagens, árvores Git, limites e logs estruturais
+sanitizados: `docs/evidence/fiscal-v1-20261106/summary.json`.
+Esse registro e seus artefatos não alteram código operacional.
+**PENDENTES V1-02/07/08/09:** integração operacional da tela e ensaio Focus,
+aceite da infraestrutura/chaves do cliente, revogações históricas,
+checks remotos e instalação em OS limpo/Windows/impressora real.
+A abertura da configuração desktop em 1.028 ms não mede login ou emissão.
+Nenhuma emissão real executada; produção permanece bloqueada.
+
 ## Registros antigos de homologação
 
 Enquanto NÃO houver produção, o cliente pode optar por descartar seus

@@ -1,0 +1,225 @@
+{
+  "tested_commit": "0bc771ebf0fc772ac8be2183d9048080aad209cb",
+  "execution": "LOCAL, not GitHub Actions",
+  "source_trees": {
+    "backend": "778bb18268f3bdf1d5fc92b495023f52b4d52c4e",
+    "frontend-web": "1dff46d50009619e2ec167069be9a2d8110b79c5",
+    "desktop": "9487d087ed66a18f9c5ef7c87a8d91ae01f950b2"
+  },
+  "toolchain": {
+    "backend_go": "go1.26.10",
+    "node": "v24.21.0",
+    "postgresql": "17.9"
+  },
+  "clean_clone": true,
+  "private_fixtures_used": false,
+  "dependencies": "Existing installed Node dependencies reused through symlinks; no clean dependency installation claimed.",
+  "go_reports": {
+    "fiscal": {
+      "passed_top_level": 152,
+      "passed_including_subtests": 606,
+      "skipped_tests": [
+        "TestFocusSandboxRealNFCe"
+      ],
+      "package_elapsed_seconds": {
+        "titansystem-backend/internal/localdb/fiscal": 0.079,
+        "titansystem-backend/internal/fiscalcore": 4.538,
+        "titansystem-backend/internal/fiscalproduction": 24.575
+      }
+    },
+    "backend-full": {
+      "passed_top_level": 1829,
+      "passed_including_subtests": 4179,
+      "skipped_tests": [
+        "TestMigrationCrashChild",
+        "TestFocusSandboxRealNFCe",
+        "TestPilotCashProcess",
+        "TestPilotCashScreenFlow"
+      ],
+      "package_elapsed_seconds": {
+        "titansystem-backend/cmd/titan-license": 0.037,
+        "titansystem-backend/cmd/titan-online": 0.007,
+        "titansystem-backend/cmd/titan-tax-import": 0.07,
+        "titansystem-backend/cmd/api": 0.731,
+        "titansystem-backend/internal/apicontract": 0.008,
+        "titansystem-backend/cmd/titan-trade": 0.108,
+        "titansystem-backend/cmd/titan-backup": 0.917,
+        "titansystem-backend/cmd/titan-fiscal": 0.858,
+        "titansystem-backend/cmd/titan-access": 1.119,
+        "titansystem-backend/cmd/titan-diagnostics": 1.115,
+        "titansystem-backend/internal/core/database": 0.014,
+        "titansystem-backend/internal/core/modules": 0.008,
+        "titansystem-backend/internal/core/entitlements": 0.013,
+        "titansystem-backend/cmd/titan-receive": 0.749,
+        "titansystem-backend/cmd/titan-sync": 1.373,
+        "titansystem-backend/cmd/titan-local": 5.125,
+        "titansystem-backend/internal/authabuse": 8.074,
+        "titansystem-backend/internal/deployment": 0.015,
+        "titansystem-backend/internal/localdb/cashaccounting": 0.026,
+        "titansystem-backend/internal/localdb/cashcount": 0.073,
+        "titansystem-backend/internal/localdb/dockagenda": 0.007,
+        "titansystem-backend/internal/localdb/cashjournal": 0.089,
+        "titansystem-backend/internal/core/security": 0.121,
+        "titansystem-backend/internal/localdb/fleet": 0.004,
+        "titansystem-backend/internal/localdb/fiscal": 0.088,
+        "titansystem-backend/internal/localdb/companyregistration": 0.594,
+        "titansystem-backend/internal/localdb/inventory": 0.877,
+        "titansystem-backend/cmd/titan-peer": 15.153,
+        "titansystem-backend/internal/localdb/localsetup": 0.608,
+        "titansystem-backend/internal/core/routes": 3.502,
+        "titansystem-backend/internal/localdb/catalog": 4.038,
+        "titansystem-backend/internal/localdb/payables": 0.065,
+        "titansystem-backend/internal/localdb/production": 0.061,
+        "titansystem-backend/internal/localdb/purchases": 0.059,
+        "titansystem-backend/internal/localdb/outgoing": 0.817,
+        "titansystem-backend/internal/fiscalcore": 5.458,
+        "titansystem-backend/internal/localdb/entitlementstore": 5.389,
+        "titansystem-backend/internal/localdb/retail": 0.064,
+        "titansystem-backend/internal/localdb/register": 1.579,
+        "titansystem-backend/internal/localdb/stationfile": 0.507,
+        "titansystem-backend/internal/localdb/stockreservation": 0.005,
+        "titansystem-backend/internal/localdb/stock": 0.948,
+        "titansystem-backend/internal/localdb/supplycycle": 0.075,
+        "titansystem-backend/internal/modules/auth/delivery": 0.223,
+        "titansystem-backend/internal/localdb/sale": 1.658,
+        "titansystem-backend/internal/localdb/replenishment": 2.873,
+        "titansystem-backend/internal/modules/catalog/delivery": 0.064,
+        "titansystem-backend/internal/modules/financial/usecase": 0.004,
+        "titansystem-backend/internal/modules/pos/usecase": 0.013,
+        "titansystem-backend/internal/onlinecatalog": 0.084,
+        "titansystem-backend/internal/secretconfig": 0.002,
+        "titansystem-backend/internal/localdb/management": 4.188,
+        "titansystem-backend/internal/modules/auth/usecase": 0.415,
+        "titansystem-backend/pkg/middleware": 0.06,
+        "titansystem-backend/internal/localdb/identity": 7.523,
+        "titansystem-backend/tests/integration": 0.159,
+        "titansystem-backend/internal/traderelay": 0.513,
+        "titansystem-backend/internal/onlinesessions": 2.842,
+        "titansystem-backend/internal/sqlitewrite": 3.7960000000000003,
+        "titansystem-backend/internal/localdb": 14.808,
+        "titansystem-backend/internal/localdb/localauth": 13.982,
+        "titansystem-backend/internal/localdb/stocktaking": 10.698,
+        "titansystem-backend/internal/fiscalproduction": 31.146,
+        "titansystem-backend/internal/localdb/incoming": 44.382,
+        "titansystem-backend/internal/localdb/backup": 90.83,
+        "titansystem-backend/internal/localapi": 871.762
+      }
+    },
+    "fiscal-core-race": {
+      "passed_top_level": 59,
+      "passed_including_subtests": 420,
+      "skipped_tests": [],
+      "package_elapsed_seconds": {
+        "titansystem-backend/internal/fiscalproduction": 3.737,
+        "titansystem-backend/internal/fiscalcore": 14.579
+      }
+    },
+    "fiscal-api-race": {
+      "passed_top_level": 120,
+      "passed_including_subtests": 313,
+      "skipped_tests": [],
+      "package_elapsed_seconds": {
+        "titansystem-backend/internal/localapi": 1164.458
+      }
+    }
+  },
+  "acceptance_verifier": {
+    "status": "PASS",
+    "required_integrations": 25,
+    "top_level_passed": 1829,
+    "passed_including_subtests": 4179,
+    "skipped": 4,
+    "skipped_tests": [
+      "TestFocusSandboxRealNFCe",
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "pilot_cli_race": {
+    "passed_top_level": 76,
+    "failures": 0,
+    "seconds": 986.763,
+    "raw_log_sha256": "4acbc75e8308d214e37813ebb70ecc640f86efef532962a686c0cf13abe3e961"
+  },
+  "checks": {
+    "api_contracts": {
+      "tests_passed": 10,
+      "routes": 596
+    },
+    "tools_tests": 87,
+    "evidence_sanitizer_tests": 4,
+    "frontend_files_passed": 133,
+    "frontend_failures": 0,
+    "typescript": "PASS",
+    "frontend_build": "PASS",
+    "go_vet": "PASS",
+    "go_build_all": "PASS",
+    "desktop_tests_passed": 61,
+    "desktop_build": "PASS",
+    "linux_deb_build": "PASS"
+  },
+  "backend_fresh_directory_install": {
+    "platform": "linux",
+    "real_binaries": true,
+    "fresh_installation": true,
+    "initialized": true,
+    "second_process_check": true,
+    "server_started": false,
+    "commercial_data": false,
+    "windows_backend_proven": false
+  },
+  "packaged_window_same_host": {
+    "platform": "linux",
+    "installedExecutable": true,
+    "freshProfile": true,
+    "window": "titan://app/desktop-setup/index.html",
+    "textLength": 1011,
+    "controls": 5,
+    "startupMilliseconds": 1028,
+    "backendStarted": false,
+    "commercialData": false,
+    "businessFlowProven": false
+  },
+  "package": {
+    "filename": "titansystem-desktop_1.0.0_amd64.deb",
+    "sha256": "4ac4887a94164ddfa0e4eddcbaa119e3fbdd11ded2bf45251708b8fe25f763ad",
+    "size_bytes": 107095920,
+    "not_installed_over_customer_system": true
+  },
+  "structural_logs": [
+    {
+      "file": "backend-full.jsonl.gz",
+      "sha256": "06df44b3748bd02efb515ab2079eb1e2c4e5ef9f5c3900862864ddfc8f3b0fac",
+      "uncompressed_sha256": "d2eb5d5d453304f4c72d262a5f673dec95484fc77fbfd44ba38ae76fefe2a923",
+      "events": 18115
+    },
+    {
+      "file": "fiscal-api-race.jsonl.gz",
+      "sha256": "ce6d1472fce0eb1b34a27de3bb31ae277138363300030e387d75385da5a35f2b",
+      "uncompressed_sha256": "925298180c00081bf494eb125e73ffb7111c5bc1f05787a373958df2b996eb3b",
+      "events": 1500
+    },
+    {
+      "file": "fiscal-core-race.jsonl.gz",
+      "sha256": "9bf19d50086e73a93b6be35b79370cc7ea5cc90bceab02622bd6ae8e1daab5b1",
+      "uncompressed_sha256": "519aef5c370a55c5c30eb343c9e34c5993cebfee920a16dfd6a1d643929f8eef",
+      "events": 1689
+    },
+    {
+      "file": "fiscal.jsonl.gz",
+      "sha256": "a0e999d03394cf1f38dd3c4af959159e1cd6d9786ea4c8ab2bf5e81f8ff4903f",
+      "uncompressed_sha256": "e16ce26992e919c48abb52df313584565b1d5ac16adf420911d968ff69f69371",
+      "events": 2444
+    }
+  ],
+  "not_proven": [
+    "V1-02: Installed operational checkout UI to configured Focus acceptance",
+    "V1-07: Customer infrastructure acceptance and historical credential revocation",
+    "V1-08: All remote CI jobs, fresh OS installation, Windows and physical printing",
+    "V1-09: Real Focus/SEFAZ homologation acceptance"
+  ],
+  "production_enabled": false,
+  "real_focus_executed": false,
+  "code_changed": false
+}
