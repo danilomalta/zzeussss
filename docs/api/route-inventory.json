@@ -462,7 +462,8 @@
       "method": "POST",
       "path": "/local/v1/checkout/plans/:id/fiscal/reprocess",
       "authentication": "session",
-      "source": "backend/internal/localapi/checkout_plans.go"
+      "source": "backend/internal/localapi/checkout_plans.go",
+      "integrity": "Explicit recovery of failed/recovery_required fiscal attempts for committed sales, using the server-owned original request and identifiers. No client invoice or payment override; Focus consults the same reference without another issuance POST; native recovery reuses its journal. Never automatic on refresh, session change or lost response. Production remains blocked."
     },
     {
       "api": "local",

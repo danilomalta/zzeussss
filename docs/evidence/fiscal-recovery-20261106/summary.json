@@ -1,0 +1,89 @@
+{
+  "base_commit": "0d2421f5df8a674662c530b51e44db3fd8232d46",
+  "execution": "LOCAL, not GitHub Actions",
+  "source_sha256": {
+    "backend/internal/localdb/fiscal/checkout.go": "e6727fc9f941cce98d303ff9af7143ed97bbf7ba98a688bc2c64469cf0a8af8c",
+    "backend/internal/localdb/fiscal/checkout_status_persistence_test.go": "bff828036c8f82342ac01002368be82d2fd1212b2262f7fe31525e9c35512ab7",
+    "frontend-web/src/core/local/checkoutFiscal.mjs": "3e13cc37e0f81e7521ae3e99a726be903d9180b76cb60514d7aa023c45139021",
+    "frontend-web/src/core/local/checkoutFiscal.d.mts": "2dff60f1b51f902b1a7b9be416c679d920539f8d4ce60fe6702f0a55ef27a77b",
+    "frontend-web/src/core/local/checkoutFiscalService.ts": "a61d56e801d20b7e8520fea58c7a99999b713a5554899530c65597dc53f815f4",
+    "frontend-web/src/modules/pos/pages/CheckoutFiscalStatus.tsx": "4e4caffaf24d2515ef74f0931bde98c040ee40085cfd25bf915e559c0b226782",
+    "frontend-web/tests/checkoutFiscalRecovery.test.mjs": "07e78366cba9e2fe187cb4d56094185e6bbb2cb4a12442c2092ccc2a3720a607",
+    "frontend-web/src/i18n/checkout96/pt-BR.json": "8a92f665f58c5606399bd6ead8d0ef12abb30747aa28c2d9fcc42a74fccceff6",
+    "frontend-web/src/i18n/checkout96/en.json": "eed29e29d35647f48c485cf8258a4635c4b5e38cf04c69a7ae62806f6273b0cc",
+    "frontend-web/src/i18n/checkout96/es.json": "724210e794eaf51605babb9ebf0e02f1fc13983663611a2c6a977a83aaa5175e",
+    "frontend-web/src/i18n/checkout96/fr.json": "7a52f6c73677c3fe40da9113ca1b91edc6d4242c2b87c27362765c255132fa6c",
+    "frontend-web/src/i18n/checkout96/zh-CN.json": "453dd696424bffbd498f508b1ecc8c83db561448bec8e5a018825c3874017f0a"
+  },
+  "regression": "SQLite RAISE(IGNORE) silently discarded checkout fiscal status while RecordCheckoutStatus returned nil; new regression failed before code fix. Import path typo in new test corrected before measuring this failure.",
+  "fix": "Require RowsAffected=1. Ignored insert returns ErrConflict and original durable event remains unchanged.",
+  "frontend": {
+    "complete_files_passed": 134,
+    "focused_files_passed": 3,
+    "new_tests": 7,
+    "typescript": "PASS",
+    "build": "PASS",
+    "languages": [
+      "pt-BR",
+      "en",
+      "es",
+      "fr",
+      "zh-CN"
+    ]
+  },
+  "go": {
+    "status-red": {
+      "passed_including_subtests": 1,
+      "failed_tests": [
+        "TestCheckoutFiscalStatusRequiresDurableEvent/IGNORE",
+        "TestCheckoutFiscalStatusRequiresDurableEvent"
+      ],
+      "skipped_tests": [],
+      "package_elapsed_seconds": {
+        "titansystem-backend/internal/localdb/fiscal": 0.626
+      }
+    },
+    "status-green": {
+      "passed_including_subtests": 209,
+      "failed_tests": [],
+      "skipped_tests": [
+        "TestFocusSandboxRealNFCe"
+      ],
+      "package_elapsed_seconds": {
+        "titansystem-backend/internal/localdb/fiscal": 0.642,
+        "titansystem-backend/internal/fiscalproduction": 25.2
+      }
+    },
+    "status-race": {
+      "passed_including_subtests": 4,
+      "failed_tests": [],
+      "skipped_tests": [],
+      "package_elapsed_seconds": {
+        "titansystem-backend/internal/localdb/fiscal": 7.674
+      }
+    },
+    "api-green": {
+      "passed_including_subtests": 1,
+      "failed_tests": [],
+      "skipped_tests": [],
+      "package_elapsed_seconds": {
+        "titansystem-backend/internal/localapi": 1.556
+      }
+    }
+  },
+  "api_contracts": {
+    "routes": 596,
+    "unit_tests": 10
+  },
+  "go_affected_build": "PASS",
+  "existing_tests_modified": false,
+  "production_enabled": false,
+  "real_focus_executed": false,
+  "limits": [
+    "Synthetic/local HTTP and SQLite evidence only; no official Focus/SEFAZ acceptance.",
+    "Full backend gate evidence in fiscal-v1-20261106 belongs to tested commit 0bc771e, before this fix; not claimed as a rerun of this candidate.",
+    "No click-through React/browser to real customer Focus configuration proved.",
+    "No customer installation or running service updated."
+  ],
+  "frontend_behavior": "Explicit ID-only recovery of recovery_required committed sales; read before command, shared lock, session/context validation, no automatic POST and no browser request store."
+}

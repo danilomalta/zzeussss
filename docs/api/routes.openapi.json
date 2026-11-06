@@ -21258,7 +21258,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Uses the original request persisted by the server. No invoice or secrets from the client; no new sale. Production remains blocked.",
+        "description": "Explicit operator action for a committed sale in failed or recovery_required fiscal state; other pending states are not retryable. Uses only the original request persisted by the server. No invoice, credentials, replacement operation or payment overrides from the client; no new sale. Focus recovery consults the same reference and never resubmits issuance; the native provider reuses its durable recovery journal. Authorization and active context are checked by the server. An uncertain client response must be read before another explicit recovery action. Production remains blocked.",
         "requestBody": {
           "required": true,
           "content": {

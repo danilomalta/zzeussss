@@ -89,5 +89,7 @@
   "checkoutFiscalPrint": "Print sandbox NFC-e",
   "checkoutFiscalPaper": "NFC-e paper",
   "checkoutFiscalPrintHelp": "The document uses the archived authorized XML, including QR code and access key. SANDBOX — NO FISCAL VALUE. Select the same paper in the printer driver.",
-  "checkoutFiscalPrintUnavailable": "The fiscal document could not be opened. Check its archive, your session and popup permissions. The sale remains recorded."
+  "checkoutFiscalPrintUnavailable": "The fiscal document could not be opened. Check its archive, your session and popup permissions. The sale remains recorded.",
+  "checkoutFiscalRecover": "Recover original attempt",
+  "checkoutFiscalRecoverHelp": "The server uses the original request and issuance records. Do not create another sale or invoice to resolve an uncertain response."
 }

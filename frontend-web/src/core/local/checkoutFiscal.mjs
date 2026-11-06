@@ -13,7 +13,7 @@ export function checkoutFiscalView(plan,checkout){
  }
  if(f.state==='cancelled_homologation'||f.state==='cancellation_failed')return {state:f.state==='cancelled_homologation'?'cancelled':'cancellationFailed',message:typeof f.message==='string'?f.message:'',plan};
  if(f.state==='failed')return {state:'failed',plan};
- if(['pending','recovery_required','uncertain','reserved','sending','response_received','not_sent','recovery_pending','protocol_received_homologation'].includes(f.state))return {state:'pending',...(f.error_code==='focus_contingency_pending'?{contingencyPending:true}:{}),plan};
+ if(['pending','recovery_required','uncertain','reserved','sending','response_received','not_sent','recovery_pending','protocol_received_homologation'].includes(f.state))return {state:'pending',...(f.state==='recovery_required'&&c.sale_status==='committed'?{canRecover:true}:{}),...(f.error_code==='focus_contingency_pending'?{contingencyPending:true}:{}),plan};
  throw Error('invalidReply');
 }
 
@@ -52,6 +52,14 @@ export function createCheckoutFiscalClient({fetcher=globalThis.fetch,getCurrent}
    if(!view.canRetry)throw Error('missingRequest');
    return request(checkout,{},signal,true);
   });}
+  // Explicit recovery of the server's original attempt, not an automatic retry.
+  // Other pending states are deliberately read-only; the existing route accepts
+  // recovery_required and restores the original request/identifiers itself.
+  async function recover(checkout,signal){return locked(checkout,async()=>{
+   const view=await read(checkout,signal);assertCurrent();
+   if(view.state!=='pending'||view.canRecover!==true)return view;
+   return request(checkout,{},signal,true);
+  });}
   async function document(checkout,options,signal){
    if(!id(checkout)||![58,80].includes(options?.width)||typeof options?.timezone!=='string'||options.timezone.length>100)throw Error('invalidReply');
    assertCurrent();const abort=new AbortController(),onAbort=()=>abort.abort();signal?.addEventListener('abort',onAbort,{once:true});if(signal?.aborted)abort.abort();
@@ -66,6 +74,6 @@ export function createCheckoutFiscalClient({fetcher=globalThis.fetch,getCurrent}
     if(!html||html.length>2000000)throw Error('invalidReply');return html;
    }finally{clearTimeout(timer);signal?.removeEventListener('abort',onAbort);}
   }
-  return {read,finalize,retry,document};
+  return {read,finalize,retry,recover,document};
  }};
 }

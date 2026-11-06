@@ -43,8 +43,14 @@ func RecordCheckoutStatus(ctx context.Context, db *sql.DB, a identity.Scope, d i
 	if err != nil {
 		return err
 	}
-	_, err = db.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,'checkout.fiscal_status',1,?,?)`, id, a.TenantID, a.StoreID, d.DeviceID, "checkout-fiscal-"+id, sale, string(body), time.Now().UTC().Format("2006-01-02T15:04:05.000000000Z07:00"))
-	return err
+	written, err := db.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,'checkout.fiscal_status',1,?,?)`, id, a.TenantID, a.StoreID, d.DeviceID, "checkout-fiscal-"+id, sale, string(body), time.Now().UTC().Format("2006-01-02T15:04:05.000000000Z07:00"))
+	if err != nil {
+		return err
+	}
+	if count, err := written.RowsAffected(); err != nil || count != 1 {
+		return ErrConflict
+	}
+	return nil
 }
 
 // CheckoutHomologationInvoice maps only frozen sale/tax data. The caller supplies

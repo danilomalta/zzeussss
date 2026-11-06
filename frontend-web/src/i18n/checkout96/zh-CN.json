@@ -89,5 +89,7 @@
   "checkoutFiscalPrint": "打印测试 NFC-e",
   "checkoutFiscalPaper": "NFC-e 纸张",
   "checkoutFiscalPrintHelp": "文档来自已归档的授权 XML，包含二维码和访问密钥。测试环境 — 无税务效力。请在打印机驱动中选择相同纸张。",
-  "checkoutFiscalPrintUnavailable": "无法打开税务文档。请检查归档、会话和弹出窗口权限。销售记录仍然保留。"
+  "checkoutFiscalPrintUnavailable": "无法打开税务文档。请检查归档、会话和弹出窗口权限。销售记录仍然保留。",
+  "checkoutFiscalRecover": "恢复原始尝试",
+  "checkoutFiscalRecoverHelp": "服务器使用原始请求和开票记录。请勿通过创建另一笔销售或发票来解决结果不确定的问题。"
 }
