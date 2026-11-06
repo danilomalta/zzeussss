@@ -1,0 +1,82 @@
+{
+  "date": "2026-11-06",
+  "branch": "feat/fiscal-checkout-consulta",
+  "base_commit": "ad84fe2899e5d6eeb97bb9808b93d19c3d502892",
+  "source_sha256": {
+    "backend/internal/localapi/checkout_fiscal_frontend_bridge_test.go": "4fe6948ad2b0099ed76bf73600419be570740455ae578838fc6361ead2fe50a2",
+    "backend/internal/localapi/checkout_fiscal_test.go": "aff8f1beb43d66b19b7a3cd53f3896136717bbc5dd0df888e2676a2e9fbd005d",
+    "frontend-web/src/core/local/checkout96.d.mts": "b00ccc6b109d4f6d06110ebda2c9014049b4303215e95d8b9f02ec1611d4348e",
+    "frontend-web/src/core/local/checkout96.mjs": "e8f3761813b4c81d30dd3c27acd69b4a353707fd4c5710316bc5c14914a6b9aa",
+    "frontend-web/src/core/local/checkoutNFCe.d.mts": "9604dd74f36445694960d6f541835d42c8b210be76d2d8789d7768a2d84b73fa",
+    "frontend-web/src/core/local/checkoutNFCe.mjs": "58346d1436dde0834d4fd0f712355ac7d3ee7336723c9cc2921f920cd8c56386",
+    "frontend-web/src/i18n/checkout96/en.json": "784cff31b63678bb0fabf8678d6f0e02115018092e52b0bc537ff88315d1044a",
+    "frontend-web/src/i18n/checkout96/es.json": "64b26d931ea24b2876e29d4ac023780134bcf2d110045e23b215bae0020fde3f",
+    "frontend-web/src/i18n/checkout96/fr.json": "1f99233e10e8437f897ad8e421d3dba2e700de3e09ba8b3ea375c3b80859bb5d",
+    "frontend-web/src/i18n/checkout96/pt-BR.json": "5e02f27b8d8c2e601dc28b5e82886139993d087407c0c3b3ee0b31310340c038",
+    "frontend-web/src/i18n/checkout96/zh-CN.json": "3078c66430b965c30a0ea0b3ca2fae498e471a9a8495b24e35dbf0ccca0a1940",
+    "frontend-web/src/modules/pos/pages/Checkout96.tsx": "ca548fdc24718331313513c1967631f7ac2f56fbf4643b751406b5bd4ea0c19a",
+    "frontend-web/src/modules/pos/pages/CheckoutNFCeSetup.tsx": "7df20bdb2e25150730254a54d0290320e2df2a4dbe89c2c89ac3f38ee9f86300",
+    "frontend-web/tests/checkoutNFCe.bridge.mjs": "abe4d2a7235a477edb43639dcd4977e26b7bb9c6a051325528e3f1fbb980c9f6",
+    "frontend-web/tests/checkoutNFCe.test.mjs": "919bf87232df2af04bb0c995b47f1701f034b90d84445855608062ec6bd7235a"
+  },
+  "results": {
+    "client_cases": {
+      "passed": 16,
+      "failed": 0,
+      "command": "node tests/checkoutNFCe.test.mjs"
+    },
+    "frontend": {
+      "passed_files": 135,
+      "failed_files": 0,
+      "skipped_files": 0,
+      "command": "node --test tests/*.test.mjs"
+    },
+    "api_http_sqlite": {
+      "passed_top_level_tests": 5,
+      "passed_including_subtests": 10,
+      "failed": 0,
+      "seconds": 5.309,
+      "note": "Exact final timing in local hashed log. Five focused tests; real loopback HTTP, disposable SQLite and synthetic local mTLS authority. Not Focus/SEFAZ acceptance."
+    },
+    "race": {
+      "passed": true,
+      "seconds": 19.354,
+      "command": "TITAN_CHECKOUT_NFCE_BRIDGE=<absolute checkoutNFCe.bridge.mjs> GOFLAGS=-buildvcs=false go test -race ./internal/localapi -run ^TestHTTPCheckoutNFCeHomologationIntegration$ -count=1 -timeout 120s -v",
+      "note": "Go sources identical to final candidate; JavaScript error classification/ID validation subsequently tightened and covered by final client/HTTP runs."
+    },
+    "contracts": {
+      "passed_tests": 10,
+      "routes": 596
+    },
+    "typescript_vite_build": {
+      "passed": true,
+      "seconds": 22.99,
+      "existing_large_chunk_warning": true
+    }
+  },
+  "log_sha256": {
+    "cases": "cc537d16f464252c79e8369f6f6566fe56ec76d8dd3bff869eb35bc9c7443b38",
+    "frontend": "407b99339df6bf880ee4353922dacf586ceed1e8450e1279105c95ee6da28823",
+    "http": "b7225f25c12b0b77170535087796ce88934d9ad697f6c4b931a260ef9e9db365",
+    "race": "0066f091b70d8e2cd46a7763db7188198f30b3a54b3d62298efb524522b5545d",
+    "contracts": "3f0c49af0c31df335ab18f541b70da0fa81c4e41b07c57a2d77080d2f2b9767f",
+    "build": "c1d3877270c88bcf426b4240e2412fabc05dbae2394c53dd2085c3e3566f4f44"
+  },
+  "main_tree_wip": {
+    "branch": "feat/fiscal-tabela-cliente",
+    "head": "8fccfadaf3c155df102a8b9c042b8602a41f02ad",
+    "files": 9,
+    "status_and_sha256_unchanged": true
+  },
+  "not_claimed": [
+    "Focus/SEFAZ official acceptance",
+    "customer credentials configured",
+    "installed application updated",
+    "new remote CI green",
+    "Windows or physical printer acceptance",
+    "full backend suite rerun on this UI unit"
+  ],
+  "production_enabled": false,
+  "new_routes": false,
+  "new_dependencies": false
+}
