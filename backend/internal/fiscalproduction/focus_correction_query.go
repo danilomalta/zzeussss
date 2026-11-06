@@ -204,7 +204,17 @@ func (p *FocusProvider) recordCorrectionReconciliation(ctx context.Context, a Re
 		if err != nil {
 			return err
 		}
-		_, err = tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,'checkout.focus_correction_result',1,?,?)`, id, a.Actor.TenantID, a.Actor.StoreID, a.Device.DeviceID, operation, sale, string(raw), time.Now().UTC().Format(time.RFC3339Nano))
-		return err
+		result, err := tx.ExecContext(ctx, `INSERT INTO outbox(event_id,tenant_id,store_id,device_id,operation_id,aggregate_id,event_type,schema_version,payload_json,created_at) VALUES(?,?,?,?,?,?,'checkout.focus_correction_result',1,?,?)`, id, a.Actor.TenantID, a.Actor.StoreID, a.Device.DeviceID, operation, sale, string(raw), time.Now().UTC().Format(time.RFC3339Nano))
+		if err != nil {
+			return err
+		}
+		count, err := result.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if count != 1 {
+			return fiscal.ErrConflict
+		}
+		return nil
 	})
 }

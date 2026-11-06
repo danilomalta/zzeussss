@@ -552,7 +552,7 @@
             "BearerSession": []
           }
         ],
-        "description": "Owner-only, session and fiscal contract required. Homologation 55/A1 only. GET-only Focus consultation via the existing reference, and restricted XML download. Exact XML correction text must match the original server-side request SHA-256; no text, hash or private path is returned. Missing/mismatched XML or unreconciled sequence remains pending. No POST to Focus, no new sequence, no sale/payment/stock/cash change. Reconciliation status and encrypted XML use the existing database/backup and archive. A result cannot prove official acceptance without the customer real homologation trial.",
+        "description": "Owner-only, session and fiscal contract required. Homologation 55/A1 only. GET-only Focus consultation via the existing reference, and restricted XML download. Exact XML correction text must match the original server-side request SHA-256; no text, hash or private path is returned. Missing/mismatched XML or unreconciled sequence remains pending. No POST to Focus, no new sequence, no sale/payment/stock/cash change. Reconciliation status and encrypted XML use the existing database/backup and archive. A reconciliation result is acknowledged only when its journal row was persisted; an ignored write rolls back and leaves the original attempt pending, without another POST. Journal-only recovery remains idempotent. A result cannot prove official acceptance without the customer real homologation trial.",
         "responses": {
           "200": {
             "description": "Separate correction status; no sale, stock or payment effect",
