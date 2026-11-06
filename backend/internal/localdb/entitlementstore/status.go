@@ -60,7 +60,7 @@ func (s *Store) StatusTx(ctx context.Context, tx *sql.Tx, tenantID string) (Stat
 			result.RemainingDays++
 		}
 	}
-	if _, err = tx.ExecContext(ctx, `UPDATE module_contract_state SET last_observed_unix=? WHERE tenant_id=?`, now, tenantID); err != nil {
+	if err = persistedOne(tx.ExecContext(ctx, `UPDATE module_contract_state SET last_observed_unix=? WHERE tenant_id=?`, now, tenantID)); err != nil {
 		return Status{}, err
 	}
 	return result, nil
