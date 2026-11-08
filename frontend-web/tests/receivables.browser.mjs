@@ -62,4 +62,4 @@ try{
  const delayed={...input,operation_id:'not-sent',id:'never-created',document_reference:'retired-document'};
  assert.equal(await evaluate(`(await fetch('/local/v1/finance/receivables',{method:'POST',headers:{Authorization:'Bearer '+context.token,'Content-Type':'application/json'},body:JSON.stringify(${JSON.stringify(delayed)})})).status`),409);
  console.log(JSON.stringify({explicitReconciliation:true,lateCommandBlocked:true,lostReconciliationRecovered:true,realChromeProcessRestarts:4,realHTTP:true,realIndexedDB:true,onlyIdentifiersPersisted:true,crossTabReservation:true,noDuplicateCash:true,missingReceiptNeverResent:true}));
-}finally{await close();await rm(profile,{recursive:true,force:true});}
+}finally{await close();await rm(profile,{recursive:true,force:true,maxRetries:4,retryDelay:100});}
