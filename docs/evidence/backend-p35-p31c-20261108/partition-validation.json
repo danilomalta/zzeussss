@@ -1,0 +1,47 @@
+{
+  "original_top_level": 120,
+  "partition_top_level": [
+    70,
+    50
+  ],
+  "union_exact": true,
+  "intersection_empty": true,
+  "timeouts_unchanged": true,
+  "no_continue_on_error": true,
+  "combined_verifier": {
+    "status": "PASS",
+    "required_integrations": 25,
+    "top_level_passed": 1831,
+    "passed_including_subtests": 4184,
+    "skipped": 4,
+    "skipped_tests": [
+      "TestFocusSandboxRealNFCe",
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "negative_evidence_rejected": [
+    "events",
+    "sales",
+    "missing_postgres"
+  ],
+  "both_exit_statuses_required": true,
+  "tools_unchanged": true,
+  "verifier_sha256": "23fe7a88d60205008448d5973c01d02fdff4963354bcbbe4f38890e589f0570e",
+  "previous_ci_commit": "18a1d1ede3b0516169618c2c0dfd4bf26a04b2e1",
+  "race_measured": {
+    "exit": 0,
+    "seconds": 597.1265580654144,
+    "groups": [
+      70,
+      50
+    ],
+    "timeout_each": "20m",
+    "both_required": true
+  },
+  "workflow_file": ".github/workflows/backend-pilot.yml",
+  "workflow_sha256": "01b5a24e12896d190aa41d30730a1250cc45db48a91ef3b3d60142d67701bf10",
+  "authorization": "Explicit user approval: exact union, unchanged timeouts, combined 25-integration verifier, no continue-on-error, tools intact",
+  "new_remote_ci_result": "PENDING"
+}
