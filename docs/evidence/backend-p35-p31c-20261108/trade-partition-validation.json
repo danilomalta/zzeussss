@@ -1,0 +1,55 @@
+{
+  "original_top_level": 76,
+  "groups_top_level": [
+    42,
+    34
+  ],
+  "union_exact": true,
+  "intersection_empty": true,
+  "timeouts_unchanged": true,
+  "same_environment_and_cli_flags": true,
+  "tools_unchanged": true,
+  "only_output_format_added": "-json retains -v",
+  "measured": {
+    "exit": 0,
+    "seconds": 548.3493075370789,
+    "source_workflow_sha256": "1ddb9ee7196707654e1d6ab25573896c1cd401b8ed2d8a702f9c854d28fbd267"
+  },
+  "final_combined_verifier": {
+    "status": "PASS",
+    "required_integrations": 25,
+    "top_level_passed": 1831,
+    "passed_including_subtests": 4184,
+    "skipped": 4,
+    "skipped_tests": [
+      "TestFocusSandboxRealNFCe",
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "both_exit_statuses_required": true,
+  "no_continue_on_error": true,
+  "previous_remote_commit": "01a9a97b0eeb62f6e207ff96ab2ece0b47d55a2b",
+  "previous_remote_failure": {
+    "step": "Company trade and cash pilots with real CLI and race detector",
+    "reason": "package aggregate timeout 20m",
+    "test_at_timeout": "TestTradeConstructorRejectsForeignSigningKeyAndReadReceiptsAreActorScoped",
+    "test_running_seconds": 13
+  },
+  "new_remote_result": "PENDING",
+  "artifacts": [
+    {
+      "file": "proposed-trade-race.jsonl.gz",
+      "sha256": "e5653eee889977344cf75a74e4bfed4e692cfe8f5e1160171af2efd1e1c0dfbc",
+      "passed_top_level": 42,
+      "passed_including_subtests": 74
+    },
+    {
+      "file": "proposed-cash-returns-race.jsonl.gz",
+      "sha256": "62db112fec2518c832dbe291f0c01453d5e008dfa58e13468654af65d3911d5d",
+      "passed_top_level": 34,
+      "passed_including_subtests": 76
+    }
+  ]
+}

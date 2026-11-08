@@ -109,12 +109,28 @@ jobs:
       - name: Company trade and cash pilots with real CLI and race detector
         run: |
           set -euo pipefail
-          env -u TITAN_SESSION_TEST_DATABASE_URL -u TITAN_CATALOG_TEST_DATABASE_URL \
-            -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE -u TITAN_FISCAL_CUSTOMER_BRIDGE \
-            go test -race ./internal/localapi \
-            -run '^TestTrade|^TestHTTPCustomerReturn|^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore|CustomerReturnRestartAndRestore)$' \
-            -count=1 -v -timeout=20m -args -pilot-backup-cli="$RUNNER_TEMP/titan-backup" -pilot-trade-cli="$RUNNER_TEMP/titan-trade" -pilot-trade-queue \
-            | tee "$RUNNER_TEMP/pilot-cli-race.log"
+          run_trade_race() {
+            env -u TITAN_SESSION_TEST_DATABASE_URL -u TITAN_CATALOG_TEST_DATABASE_URL \
+              -u TITAN_CASH_JOURNAL_BRIDGE -u TITAN_DELIVERY_BRIDGE -u TITAN_MAINTENANCE_BRIDGE -u TITAN_FISCAL_CUSTOMER_BRIDGE \
+              go test -race ./internal/localapi \
+              -run "$1" -count=1 -v -timeout=20m -json -args \
+              -pilot-backup-cli="$RUNNER_TEMP/titan-backup" -pilot-trade-cli="$RUNNER_TEMP/titan-trade" -pilot-trade-queue \
+              > "$RUNNER_TEMP/$2"
+          }
+          run_trade_race '^TestTrade' 'trade-race.jsonl' &
+          trade_pid=$!
+          run_trade_race '^TestHTTPCustomerReturn|^TestPilotCash(SaleToSupplierFinanceRestartAndRestore|PartialReceiptDiscrepancyRestartAndRestore|AuthenticatedSupplierRestartAndRestore|CustomerReturnRestartAndRestore)$' 'cash-returns-race.jsonl' &
+          cash_pid=$!
+          trade_status=0
+          wait "$trade_pid" || trade_status=$?
+          cash_status=0
+          wait "$cash_pid" || cash_status=$?
+          test "$trade_status" -eq 0
+          test "$cash_status" -eq 0
+          cat "$RUNNER_TEMP/backend-combined.jsonl" \
+            "$RUNNER_TEMP/trade-race.jsonl" "$RUNNER_TEMP/cash-returns-race.jsonl" \
+            > "$RUNNER_TEMP/backend-final-combined.jsonl"
+          python3 ../tools/verify_backend_acceptance.py "$RUNNER_TEMP/backend-final-combined.jsonl" | tee "$RUNNER_TEMP/backend-final-integrations.json"
       - name: Sanitize structural evidence for this commit
         if: always()
         run: python3 ../.github/scripts/ci_evidence.py "$RUNNER_TEMP" "$RUNNER_TEMP/sanitized" "$GITHUB_SHA"
