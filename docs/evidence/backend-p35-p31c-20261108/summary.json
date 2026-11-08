@@ -1,0 +1,393 @@
+{
+  "source_commit": "90c272c7e4fd852c63ed458c3be9b5fa52680d37",
+  "base_commit": "692cf4188241e16f1a53c42b2a743c8261a35b6a",
+  "date": "2026-11-08",
+  "branch": "feat/backend-p35-p31c",
+  "clean_committed_clone": true,
+  "go": "1.26.10",
+  "node": "24.21.0",
+  "postgres": "17.9",
+  "goflags": "-buildvcs=false",
+  "full_suite_timezone": "America/Sao_Paulo",
+  "utc_gate": [
+    "utc-print.jsonl",
+    "utc-checkout.jsonl"
+  ],
+  "workflow_steps": [
+    {
+      "workflow": "backend-pilot.yml",
+      "job": "backend-pilot",
+      "step": "Verify acceptance gate regressions",
+      "exit": 0,
+      "seconds": 0.061,
+      "log": "/tmp/titan-p35-20261108/logs/backend-pilot-Verify_acceptance_gate_regressions.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "backend-pilot.yml",
+      "job": "backend-pilot",
+      "step": "Validate API contracts and complete route map",
+      "exit": 0,
+      "seconds": 0.13,
+      "log": "/tmp/titan-p35-20261108/logs/backend-pilot-Validate_API_contracts_and_complete_route_map.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "backend-pilot.yml",
+      "job": "backend-pilot",
+      "step": "Receivables browser and HTTP prerequisites",
+      "exit": 0,
+      "seconds": 4.372,
+      "log": "/tmp/titan-p35-20261108/logs/backend-pilot-Receivables_browser_and_HTTP_prerequisites.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "backend-pilot.yml",
+      "job": "backend-pilot",
+      "step": "Vet backend",
+      "exit": 0,
+      "seconds": 2.43,
+      "log": "/tmp/titan-p35-20261108/logs/backend-pilot-Vet_backend.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "backend-pilot.yml",
+      "job": "backend-pilot",
+      "step": "Build real executables",
+      "exit": 0,
+      "seconds": 6.752,
+      "log": "/tmp/titan-p35-20261108/logs/backend-pilot-Build_real_executables.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "backend-pilot.yml",
+      "job": "backend-pilot",
+      "step": "Verify required browser",
+      "exit": 0,
+      "seconds": 0.002,
+      "log": "/tmp/titan-p35-20261108/logs/backend-pilot-Verify_required_browser.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "desktop-installers.yml",
+      "job": "desktop",
+      "step": "Runtime regressions",
+      "exit": 0,
+      "seconds": 4.097,
+      "log": "/tmp/titan-p35-20261108/logs/desktop-Runtime_regressions.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "ci.yml",
+      "job": "backend-checks",
+      "step": "Run Backend Lint",
+      "exit": 0,
+      "seconds": 0.603,
+      "log": "/tmp/titan-p35-20261108/logs/backend-checks-Run_Backend_Lint.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "desktop-installers.yml",
+      "job": "linux-backend",
+      "step": "Build actual managed binaries",
+      "exit": 0,
+      "seconds": 5.288,
+      "log": "/tmp/titan-p35-20261108/logs/linux-backend-Build_actual_managed_binaries.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "desktop-installers.yml",
+      "job": "linux-backend",
+      "step": "Install, initialize and recheck discarded installation",
+      "exit": 0,
+      "seconds": 3.741,
+      "log": "/tmp/titan-p35-20261108/logs/linux-backend-Install__initialize_and_recheck_discarded_installation.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "desktop-installers.yml",
+      "job": "desktop",
+      "step": "Build compiled ERP stage without Vite server or env files",
+      "exit": 0,
+      "seconds": 62.585,
+      "log": "/tmp/titan-p35-20261108/logs/desktop-Build_compiled_ERP_stage_without_Vite_server_or_env_files.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "ci.yml",
+      "job": "frontend-checks",
+      "step": "Install Dependencies",
+      "exit": 0,
+      "seconds": 4.909,
+      "log": "/tmp/titan-p35-20261108/logs/frontend-checks-Install_Dependencies.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "ci.yml",
+      "job": "frontend-checks",
+      "step": "Run Frontend Lint / Typecheck",
+      "exit": 0,
+      "seconds": 17.894,
+      "log": "/tmp/titan-p35-20261108/logs/frontend-checks-Run_Frontend_Lint___Typecheck.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "ci.yml",
+      "job": "frontend-checks",
+      "step": "Run Frontend Tests",
+      "exit": 0,
+      "seconds": 46.589,
+      "log": "/tmp/titan-p35-20261108/logs/frontend-checks-Run_Frontend_Tests.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "ci.yml",
+      "job": "frontend-checks",
+      "step": "Evidence sanitizer regressions",
+      "exit": 0,
+      "seconds": 0.058,
+      "log": "/tmp/titan-p35-20261108/logs/frontend-checks-Evidence_sanitizer_regressions.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "ci.yml",
+      "job": "frontend-checks",
+      "step": "Test Isolated Demo Helper",
+      "exit": 0,
+      "seconds": 50.994,
+      "log": "/tmp/titan-p35-20261108/logs/frontend-checks-Test_Isolated_Demo_Helper.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "backend-pilot.yml",
+      "job": "backend-pilot",
+      "step": "Full backend regression suite with mandatory real integrations",
+      "exit": 0,
+      "seconds": 933.874,
+      "log": "/tmp/titan-p35-20261108/logs/backend-pilot-Full_backend_regression_suite_with_mandatory_real_integrations.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "ci.yml",
+      "job": "backend-checks",
+      "step": "Run Backend Tests",
+      "exit": 0,
+      "seconds": 921.297,
+      "log": "/tmp/titan-p35-20261108/logs/backend-checks-Run_Backend_Tests.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "desktop-launcher.yml",
+      "job": "runtime",
+      "step": "Runtime boundaries, compiled integrity and no automatic build",
+      "exit": 0,
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37",
+      "reused_identical_command_from": "desktop-installers.yml / Runtime regressions",
+      "tests": 61,
+      "reason": "same source hash, node runtime, command and scope; tee only records stdout"
+    },
+    {
+      "workflow": "backend-pilot.yml",
+      "job": "backend-pilot",
+      "step": "Fiscal journal, session boundary and mTLS regressions with race detector",
+      "exit": 0,
+      "seconds": 1156.07,
+      "log": "/tmp/titan-p35-20261108/logs/backend-pilot-Fiscal_journal__session_boundary_and_mTLS_regressions_with_race_detector.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "backend-pilot.yml",
+      "job": "backend-pilot",
+      "step": "Company trade and cash pilots with real CLI and race detector",
+      "exit": 0,
+      "seconds": 964.763,
+      "log": "/tmp/titan-p35-20261108/logs/backend-pilot-Company_trade_and_cash_pilots_with_real_CLI_and_race_detector.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    },
+    {
+      "workflow": "backend-pilot.yml",
+      "job": "backend-pilot",
+      "step": "Sanitize structural evidence for this commit",
+      "exit": 0,
+      "seconds": 0.164,
+      "log": "/tmp/titan-p35-20261108/logs/backend-pilot-Sanitize_structural_evidence_for_this_commit.log",
+      "hash": "90c272c7e4fd852c63ed458c3be9b5fa52680d37"
+    }
+  ],
+  "full_backend_acceptance": {
+    "status": "PASS",
+    "required_integrations": 25,
+    "top_level_passed": 1831,
+    "passed_including_subtests": 4184,
+    "skipped": 4,
+    "skipped_tests": [
+      "TestFocusSandboxRealNFCe",
+      "TestMigrationCrashChild",
+      "TestPilotCashProcess",
+      "TestPilotCashScreenFlow"
+    ]
+  },
+  "focused_gates": {
+    "vault-count20.jsonl": {
+      "passed_top_level": 160,
+      "passed_including_subtests": 200
+    },
+    "vault-race.jsonl": {
+      "passed_top_level": 8,
+      "passed_including_subtests": 10
+    },
+    "fiscal-journal-core-race.jsonl": {
+      "passed_top_level": 59,
+      "passed_including_subtests": 420
+    },
+    "fiscal-journal-local-race.jsonl": {
+      "passed_top_level": 120,
+      "passed_including_subtests": 313
+    }
+  },
+  "frontend": {
+    "passed": 2632,
+    "failed": 0,
+    "skipped": 0,
+    "typescript": true,
+    "build": true,
+    "demo_helper_passed": 87,
+    "sanitizer_tests_passed": 4
+  },
+  "desktop_runtime": {
+    "passed": 61,
+    "failed": 0,
+    "skipped": 0,
+    "launcher_evidence_reused_same_hash_scope": true
+  },
+  "desktop_package": {
+    "file": "titansystem-desktop_1.0.0_amd64.deb",
+    "sha256": "4f8c0e13470f2c1e19ba0eea5e31829e36a923c684aabba0433836be651539b7",
+    "packaged": true,
+    "installation_method": "dpkg-deb extraction in temporary directory; not apt install or fresh OS"
+  },
+  "desktop_observed": {
+    "platform": "linux",
+    "installedExecutable": true,
+    "freshProfile": true,
+    "window": "titan://app/desktop-setup/index.html",
+    "textLength": 1011,
+    "controls": 5,
+    "startupMilliseconds": 1270,
+    "backendStarted": false,
+    "commercialData": false,
+    "businessFlowProven": false
+  },
+  "backend_install": {
+    "platform": "linux",
+    "real_binaries": true,
+    "fresh_installation": true,
+    "initialized": true,
+    "second_process_check": true,
+    "server_started": false,
+    "commercial_data": false,
+    "windows_backend_proven": false
+  },
+  "go_build_all": true,
+  "pilot_cli_race": {
+    "passed_top_level": 76,
+    "passed_including_subtests": 150,
+    "failed": 0,
+    "required_cash_pilots": [
+      "TestPilotCashSaleToSupplierFinanceRestartAndRestore",
+      "TestPilotCashPartialReceiptDiscrepancyRestartAndRestore",
+      "TestPilotCashAuthenticatedSupplierRestartAndRestore",
+      "TestPilotCashCustomerReturnRestartAndRestore"
+    ]
+  },
+  "original_wip_files_verified": 9,
+  "initial_failure": {
+    "source_commit": "221ca0d341da2b2ca492caf950a5e2834082e14d",
+    "test": "TestReceivablesBrowserRestartRecovery",
+    "cause": "ENOTEMPTY while removing discarded Chromium profile after all assertions passed",
+    "fix_commit": "90c272c7e4fd852c63ed458c3be9b5fa52680d37",
+    "assertions_or_deadlines_changed": false
+  },
+  "remote_ci_confirmed_green": false,
+  "external_acceptance_pending": [
+    "fresh OS installation",
+    "Windows runner",
+    "physical printer",
+    "client infrastructure and key/backup ownership acceptance",
+    "historical credential revocation evidence from titular",
+    "real Focus/SEFAZ homologation with customer credentials"
+  ],
+  "production_enabled": false,
+  "a3_enabled": false,
+  "real_fiscal_emission": false,
+  "raw_output_or_secrets_published": false,
+  "artifacts": [
+    {
+      "file": "backend-full.jsonl.gz",
+      "sha256": "9d417cc97ab0f5c56f5d5ad66a2275b9a7addc6d0903337581c48b51f8740e51",
+      "uncompressed_sha256": "1643e0a7d04ce7c8c01ed82e74a31b66a936c5287a3ffa870891455a474f6218"
+    },
+    {
+      "file": "receivables-prerequisites.jsonl.gz",
+      "sha256": "77347601ca67c52f4b8fd1fa2f45c187b85f1a460577f1da62b750f1d300f1e9",
+      "uncompressed_sha256": "9f1a55a052b4075d25a2c315e7a7de3f2634c3e293eca0b333cfadc5302ac0bc"
+    },
+    {
+      "file": "fiscal-journal-core-race.jsonl.gz",
+      "sha256": "7a8e6d861b753fb27846ef8a6d4231f836d6ed7c7251bdf3e58a208e2ed9ceed",
+      "uncompressed_sha256": "fedff93cea9bdc1fc0102d9b1704ed18aff81274402a2f2347eee2a8b33ca543"
+    },
+    {
+      "file": "fiscal-journal-local-race.jsonl.gz",
+      "sha256": "a9f30923d4e746a1e634252014eb021754331e9f16ad769033b6bc4e33f4afd3",
+      "uncompressed_sha256": "4a7e2928fdca83861e1b39970ef221e0bc98d041f8ad25c39db3873760361e41"
+    },
+    {
+      "file": "vault-count20.jsonl.gz",
+      "sha256": "b2fdd91188e1dca2191c3d59c9dd2c0241b0c106ec3beeb0f2c9f7ff3bc1dee5",
+      "uncompressed_sha256": "791170f386805d645e96bd3ad342bee7346fcadbea4d2cf9174ac112c4397bb8"
+    },
+    {
+      "file": "vault-race.jsonl.gz",
+      "sha256": "fb1dacbbe2250105aaa134b555ae088018c9c99b8c6a8f99fcf2996d7f1d54f3",
+      "uncompressed_sha256": "bc93004bb59a579b9ada092ce706afa274ed72cd919f0e2af93602ec21b8cad8"
+    },
+    {
+      "file": "utc-print.jsonl.gz",
+      "sha256": "c943a95d3facbfdf7288ac44a783d276d1901a5df0ffc453d3e5a1c597b9fb32",
+      "uncompressed_sha256": "440934a36c5c7aad0cccb778f3f287108daf01baae9315965d713747db360e92"
+    },
+    {
+      "file": "utc-checkout.jsonl.gz",
+      "sha256": "cd66d5ffecf86341dafd8c962014e5de99fa48c8177aee354b09dddad1c2da14",
+      "uncompressed_sha256": "a4126d4dec663ab150910a8270b89a91ac2de8b1660edef99369a329acd5f3a5"
+    }
+  ],
+  "disposable_postgres_stopped": true,
+  "notable_integration_results": [
+    {
+      "Action": "pass",
+      "Package": "titansystem-backend/internal/core/routes",
+      "Test": "TestPostgresCatalogCreationAndDiscountAtomicity",
+      "Elapsed": 3.47
+    },
+    {
+      "Action": "pass",
+      "Package": "titansystem-backend/internal/onlinesessions",
+      "Test": "TestPostgresDurableRotationConcurrencyAndRollback",
+      "Elapsed": 1.25
+    },
+    {
+      "Action": "pass",
+      "Package": "titansystem-backend/internal/localapi",
+      "Test": "TestHTTPCheckoutNFCeHomologationIntegration",
+      "Elapsed": 1.87
+    },
+    {
+      "Action": "pass",
+      "Package": "titansystem-backend/internal/localapi",
+      "Test": "TestHTTPCheckoutFocusRenderedScreenRecoveryAndArchive",
+      "Elapsed": 4.85
+    }
+  ]
+}
