@@ -1732,9 +1732,10 @@
             "description": "Consultar contrato detalhado do dominio; formato legado ou erro negociado conforme header."
           }
         },
-        "x-payload-contract": "pending",
+        "x-payload-contract": "documented",
         "x-source": "backend/internal/core/routes/routes.go",
-        "x-state": "unavailable"
+        "x-state": "implemented",
+        "description": "Mesma decisão humana de approve/reject; corpo estrito com action approve|reject. Não altera preço, caixa nem fiscal."
       }
     },
     "/api/v1/produtos/": {

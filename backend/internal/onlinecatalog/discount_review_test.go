@@ -45,6 +45,19 @@ func TestDiscountReviewStrictInputAndDeniedRoles(t *testing.T) {
 	if _, e := DecodeDiscountReview("application/json", b); e != nil {
 		t.Fatal(e)
 	}
+	unified, _ := json.Marshal(struct {
+		DiscountReviewInput
+		Action string `json:"action"`
+	}{v, "approve"})
+	if got, action, e := DecodeDiscountUnifiedReview("application/json", unified); e != nil || action != "approve" || got != v {
+		t.Fatal(e, action, got)
+	}
+	if _, _, e := DecodeDiscountUnifiedReview("application/json", b); e != ErrInput {
+		t.Fatal("review without action accepted", e)
+	}
+	if _, _, e := DecodeDiscountUnifiedReview("application/json", []byte(`{"operation_id":"`+v.OperationID+`","expected_product_version":1,"expected_discount_bps":1500,"reason":"Conferido","action":"maybe"}`)); e != ErrInput {
+		t.Fatal("unknown action accepted", e)
+	}
 	for _, body := range []string{"{}", string(b) + "{}", strings.Replace(string(b), `"expected_product_version":1`, `"expected_product_version":1.5`, 1), strings.Replace(string(b), `"expected_discount_bps":1500`, `"expected_discount_bps":1500,"expected_discount_bps":1500`, 1), strings.Replace(string(b), `"reason":"Conferido"`, `"reason":null`, 1), strings.Replace(string(b), `"reason":"Conferido"`, `"reason":"   "`, 1), strings.Replace(string(b), "1500", "10001", 1)} {
 		if _, e := DecodeDiscountReview("application/json", []byte(body)); e != ErrInput {
 			t.Fatal("invalid input accepted", e)

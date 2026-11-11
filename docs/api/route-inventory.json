@@ -3844,7 +3844,7 @@
       "path": "/api/v1/discounts/suggestions/:id/review",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
+      "state": "implemented"
     },
     {
       "api": "online",

@@ -34,3 +34,21 @@ func DecodeDiscountReview(content string, body []byte) (DiscountReviewInput, err
 	}
 	return normalizeDiscountReview(v)
 }
+
+// DecodeDiscountUnifiedReview is POST /suggestions/:id/review. Action is explicit; approve/reject paths stay four-field.
+func DecodeDiscountUnifiedReview(content string, body []byte) (DiscountReviewInput, string, error) {
+	var raw struct {
+		DiscountReviewInput
+		Action string `json:"action"`
+	}
+	kind, _, e := mime.ParseMediaType(content)
+	if e != nil || kind != "application/json" || len(body) > 8192 || !utf8.Valid(body) {
+		return DiscountReviewInput{}, "", ErrInput
+	}
+	fields, e := batchObject(body, map[string]bool{"operation_id": true, "expected_product_version": true, "expected_discount_bps": true, "reason": true, "action": true})
+	if e != nil || len(fields) != 5 || json.Unmarshal(body, &raw) != nil || (raw.Action != "approve" && raw.Action != "reject") {
+		return DiscountReviewInput{}, "", ErrInput
+	}
+	v, e := normalizeDiscountReview(raw.DiscountReviewInput)
+	return v, raw.Action, e
+}

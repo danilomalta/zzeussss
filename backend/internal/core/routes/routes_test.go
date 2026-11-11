@@ -36,7 +36,6 @@ func TestUnfinishedBusinessRoutesAreUnavailable(t *testing.T) {
 		{"GET", "/api/v1/recompensas/indicacoes/saldo"},
 		{"POST", "/api/v1/accounting/sped/request"},
 		{"GET", "/api/v1/accounting/sped/status/123"},
-		{"POST", "/api/v1/discounts/suggestions/123/review"},
 		{"GET", "/api/v1/metrics/overview"},
 		{"GET", "/api/v1/pos/sales/recent"},
 		{"GET", "/api/v1/cash/sessions"},

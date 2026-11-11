@@ -223,7 +223,7 @@ func Registrar(app *fiber.App) {
 	descontos.Get("/report/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountReport("all", true))
 	descontos.Post("/suggest", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), posDelivery.SuggestDiscounts)
 	descontos.Get("/suggestions", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), posDelivery.GetSuggestions)
-	descontos.Post("/suggestions/:id/review", Indisponivel)
+	descontos.Post("/suggestions/:id/review", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RevisarSugestaoDescontoUnificada)
 	descontos.Get("/suggestions/:id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarSugestaoDesconto)
 	descontos.Post("/suggestions/:id/approve", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RevisarSugestaoDesconto("approve"))
 	descontos.Post("/suggestions/:id/reject", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RevisarSugestaoDesconto("reject"))
