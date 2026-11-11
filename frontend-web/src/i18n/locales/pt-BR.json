@@ -183,6 +183,7 @@
   "workspace.shortcuts": "Seus 3 atalhos rápidos",
   "workspace.shortcut": "Atalho {{count}}",
   "workspace.logout": "Sair da sessão",
+  "account.logoutUncertain": "Não foi possível confirmar o encerramento remoto da sessão. O acesso local desta tela permanece até o servidor responder.",
   "workspace.pending": "Em preparação",
   "workspace.pendingNotice": "{{name}} está em preparação.",
   "workspace.preference": "Os atalhos foram alterados nesta sessão. Seu navegador não permitiu salvar a preferência.",

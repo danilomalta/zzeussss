@@ -201,5 +201,21 @@
   "taxTableError_refused": "Importação recusada. Confira o arquivo, o contrato e as revisões.",
   "taxTableError_network": "Sem resposta conclusiva. Consulte este arquivo antes de outra ação.",
   "taxTableError_response": "Resposta não comprovada. Consulte o arquivo no servidor.",
-  "taxTableError_not_found": "O servidor não encontrou todas as regras deste arquivo. Consulte os identificadores sem republicar."
+  "taxTableError_not_found": "O servidor não encontrou todas as regras deste arquivo. Consulte os identificadores sem republicar.",
+  "nfeOriginTitle": "Origem imutável (entrada ou devolução)",
+  "nfeOriginHelp": "Congela recebimento físico ou devolução de cliente com chave 55 e cotação já persistida. Venda comum não vira origem. Impostos não são digitados nesta tela.",
+  "nfeOriginBind": "Congelar origem",
+  "nfeOriginOperation": "Identificador da operação",
+  "nfeOriginKind": "Tipo de origem",
+  "nfeOriginInbound": "Recebimento de entrada",
+  "nfeOriginReturn": "Devolução de cliente",
+  "nfeOriginSource": "ID do recebimento ou da devolução",
+  "nfeOriginKey": "Chave de acesso 55 (44 dígitos)",
+  "nfeOriginConfirm": "Confirmo que a origem, a chave e os itens cotados estão corretos. Não converter venda.",
+  "nfeOriginFrozen": "Origem congelada",
+  "nfeOriginEmit": "Emitir a partir da origem",
+  "nfeOriginEmitConfirm": "Confirmo destinatário idêntico à origem e finalidade 1 (entrada) ou 4 (devolução).",
+  "nfeOriginUnit": "Preço unitário (centavos registrados)",
+  "nfeOriginQuote": "Operação da cotação fiscal",
+  "nfeError_referenced_operation_unavailable": "Destinatário ou chave não conferem com a origem congelada. Nada foi convertido de uma venda."
 }

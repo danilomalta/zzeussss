@@ -41,8 +41,7 @@ api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      console.warn('Sessão expirada ou não autorizada. Limpando credenciais locais...');
-      useAuthStore.getState().logout();
+      useAuthStore.getState().forgetSession();
     }
     return Promise.reject(error);
   }

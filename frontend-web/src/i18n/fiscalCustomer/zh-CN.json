@@ -201,5 +201,21 @@
   "taxTableError_refused": "导入被拒绝。请检查文件、合同和版本。",
   "taxTableError_network": "没有确定响应。执行其他操作前请先查询此文件。",
   "taxTableError_response": "响应未经确认。请在服务器上查询文件。",
-  "taxTableError_not_found": "服务器未找到此文件的全部规则。请查询标识，勿重新发布。"
+  "taxTableError_not_found": "服务器未找到此文件的全部规则。请查询标识，勿重新发布。",
+  "nfeOriginTitle": "不可变来源（入库或退货）",
+  "nfeOriginHelp": "用 55 访问密钥和已保存的报价冻结实物入库或客户退货。普通销售不会被转换。本屏幕不录入税额。",
+  "nfeOriginBind": "冻结来源",
+  "nfeOriginOperation": "操作标识",
+  "nfeOriginKind": "来源类型",
+  "nfeOriginInbound": "入库收货",
+  "nfeOriginReturn": "客户退货",
+  "nfeOriginSource": "收货或退货编号",
+  "nfeOriginKey": "55 访问密钥（44 位数字）",
+  "nfeOriginConfirm": "我确认来源、密钥和已报价项目。请勿把销售转换为来源。",
+  "nfeOriginFrozen": "来源已冻结",
+  "nfeOriginEmit": "从来源开具",
+  "nfeOriginEmitConfirm": "我确认收件人与来源一致，且目的为 1（入库）或 4（退货）。",
+  "nfeOriginUnit": "单价（已记录分）",
+  "nfeOriginQuote": "税务报价操作",
+  "nfeError_referenced_operation_unavailable": "收件人或密钥与冻结来源不符。销售未被转换。"
 }

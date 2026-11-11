@@ -183,6 +183,7 @@
   "workspace.shortcuts": "Your 3 shortcuts",
   "workspace.shortcut": "Shortcut {{count}}",
   "workspace.logout": "Sign out",
+  "account.logoutUncertain": "Remote session closure could not be confirmed. This screen still has access until the server responds.",
   "workspace.pending": "Coming soon",
   "workspace.pendingNotice": "{{name}} is being prepared.",
   "workspace.preference": "Shortcuts changed for this session. Your browser could not save the preference.",

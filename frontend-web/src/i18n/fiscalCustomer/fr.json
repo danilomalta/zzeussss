@@ -201,5 +201,21 @@
   "taxTableError_refused": "Import refusé. Vérifiez fichier, contrat et révisions.",
   "taxTableError_network": "Aucune réponse concluante. Consultez ce fichier avant une autre action.",
   "taxTableError_response": "Réponse non confirmée. Consultez le fichier sur le serveur.",
-  "taxTableError_not_found": "Le serveur n’a pas trouvé toutes les règles de ce fichier. Consultez les identifiants sans republier."
+  "taxTableError_not_found": "Le serveur n’a pas trouvé toutes les règles de ce fichier. Consultez les identifiants sans republier.",
+  "nfeOriginTitle": "Origine immuable (entrée ou retour)",
+  "nfeOriginHelp": "Fige un réception physique ou un retour client avec clé 55 et cotation déjà persistée. Une vente ordinaire n’est pas convertie. Les taxes ne sont pas saisies ici.",
+  "nfeOriginBind": "Figer l’origine",
+  "nfeOriginOperation": "Identifiant d’opération",
+  "nfeOriginKind": "Type d’origine",
+  "nfeOriginInbound": "Réception d’entrée",
+  "nfeOriginReturn": "Retour client",
+  "nfeOriginSource": "ID de réception ou de retour",
+  "nfeOriginKey": "Clé d’accès 55 (44 chiffres)",
+  "nfeOriginConfirm": "Je confirme l’origine, la clé et les articles cotés. Ne pas convertir une vente.",
+  "nfeOriginFrozen": "Origine figée",
+  "nfeOriginEmit": "Émettre depuis l’origine",
+  "nfeOriginEmitConfirm": "Je confirme que le destinataire correspond à l’origine et la finalité 1 (entrée) ou 4 (retour).",
+  "nfeOriginUnit": "Prix unitaire (centimes enregistrés)",
+  "nfeOriginQuote": "Opération de cotation fiscale",
+  "nfeError_referenced_operation_unavailable": "Destinataire ou clé non conforme à l’origine figée. Aucune vente n’a été convertie."
 }

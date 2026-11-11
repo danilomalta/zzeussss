@@ -183,6 +183,7 @@
   "workspace.shortcuts": "Tus 3 accesos rápidos",
   "workspace.shortcut": "Acceso {{count}}",
   "workspace.logout": "Cerrar sesión",
+  "account.logoutUncertain": "No se pudo confirmar el cierre remoto de la sesión. El acceso de esta pantalla permanece hasta que el servidor responda.",
   "workspace.pending": "En preparación",
   "workspace.pendingNotice": "{{name}} está en preparación.",
   "workspace.preference": "Los accesos cambiaron en esta sesión. Tu navegador no pudo guardar la preferencia.",

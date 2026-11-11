@@ -183,6 +183,7 @@
   "workspace.shortcuts": "Vos 3 raccourcis",
   "workspace.shortcut": "Raccourci {{count}}",
   "workspace.logout": "Se déconnecter",
+  "account.logoutUncertain": "La fermeture distante de la session n’a pas pu être confirmée. L’accès de cet écran reste jusqu’à la réponse du serveur.",
   "workspace.pending": "En préparation",
   "workspace.pendingNotice": "{{name}} est en préparation.",
   "workspace.preference": "Les raccourcis ont changé pour cette session. Votre navigateur n’a pas enregistré la préférence.",
