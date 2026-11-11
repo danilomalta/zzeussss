@@ -82,7 +82,9 @@ com evidência do mesmo candidato consolidado. Produção continua proibida.
   e token privados, resposta conferida, cupom e XML arquivado recuperáveis.
   `backend/internal/fiscalproduction/focus_sandbox_test.go`, `TestFocusSandboxRealNFCe`, é
   opt-in; sem as variáveis privadas do cliente é pulado e não satisfaz este
-  critério. Não enviar segredos em conversa, log ou relatório. Responsáveis:
+  critério. Procedimento privado por cliente: `FISCAL_HOMOLOGACAO_CLIENTE_P28.md`;
+  requer solicitação revisada, referência estável, consulta sem reenvio e XML/protocolo.
+  Não enviar segredos em conversa, log ou relatório. Responsáveis:
   dono/cliente configura; Focus responde pelo contrato e aceite do serviço.
 
 ## Evidência local do candidato — 06/11/2026

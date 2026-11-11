@@ -2,8 +2,6 @@ package fiscalproduction
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"os"
@@ -16,7 +14,7 @@ import (
 // Manual command (the agent must not execute it):
 // go test -timeout 120s -count=1 ./internal/fiscalproduction -run '^TestFocusSandboxRealNFCe$' -args -focus-sandbox
 // Required private environment: FOCUS_SANDBOX_TOKEN, FOCUS_SANDBOX_CNPJ.
-// This disposable Simples Nacional fixture must match the sandbox issuer's CRT.
+// Customer-reviewed payload and a durable attempt file are required; no fiscal defaults.
 var runFocusSandbox = flag.Bool("focus-sandbox", false, "explicitly allow REAL Focus homologation emission")
 
 func TestFocusSandboxRealNFCe(t *testing.T) {
@@ -43,18 +41,21 @@ func TestFocusSandboxRealNFCe(t *testing.T) {
 		t.Fatal("sandbox provider configuration rejected")
 	}
 	defer clear(p.token)
-	nonce := make([]byte, 16)
-	if _, err = rand.Read(nonce); err != nil {
-		t.Fatal("cannot allocate disposable sale identifier")
+	body, ref, firstAttempt, err := prepareCustomerSandbox(os.Getenv("FOCUS_SANDBOX_PAYLOAD_FILE"), os.Getenv("FOCUS_SANDBOX_ATTEMPT_FILE"), cnpj, os.Getenv("FOCUS_SANDBOX_SALE_ID"))
+	if err != nil {
+		t.Fatal("private customer payload or durable attempt configuration rejected; no emission attempted")
 	}
-	ref := focusReference("explicit-sandbox-tenant", hex.EncodeToString(nonce))
-	// Names and codes are from the official NotaFiscalXML/ItemNotaFiscalXML
-	// schema and its examples (CFOP 5102, NCM 18061000). No inferred tax rates.
-	body, _ := json.Marshal(map[string]any{"cnpj_emitente": cnpj, "data_emissao": time.Now().UTC().Format(time.RFC3339), "natureza_operacao": "VENDA AO CONSUMIDOR", "tipo_documento": "1", "local_destino": "1", "consumidor_final": "1", "presenca_comprador": "1", "indicador_inscricao_estadual_destinatario": "9", "modalidade_frete": "9", "items": []map[string]string{{"numero_item": "1", "codigo_produto": "SANDBOX", "descricao": "TESTE EM HOMOLOGACAO SEM VALOR FISCAL", "codigo_ncm": "18061000", "cfop": "5102", "unidade_comercial": "UN", "quantidade_comercial": "1.000", "valor_unitario_comercial": "1.00", "valor_bruto": "1.00", "icms_origem": "0", "icms_situacao_tributaria": "102", "pis_situacao_tributaria": "07", "cofins_situacao_tributaria": "07"}}, "formas_pagamento": []map[string]string{{"forma_pagamento": "01", "valor_pagamento": "1.00"}}, "valor_total": "1.00"})
+	defer clear(body)
 	ctx, cancel := context.WithTimeout(context.Background(), 80*time.Second)
 	defer cancel()
-	emitted, err := p.exchange(ctx, "POST", ref, cnpj, body)
-	if err != nil { // Consultation is the ONLY recovery, even if POST timed out.
+	// The attempt is durably recorded before POST. Re-running only consults.
+	var emitted DocumentResult
+	if firstAttempt {
+		emitted, err = p.exchange(ctx, "POST", ref, cnpj, body)
+		if err != nil { // Consultation is the ONLY recovery after an uncertain POST.
+			emitted, err = p.exchange(ctx, "GET", ref, cnpj, nil)
+		}
+	} else {
 		emitted, err = p.exchange(ctx, "GET", ref, cnpj, nil)
 	}
 	if err != nil || emitted.State != "authorized_homologation" {
@@ -64,4 +65,17 @@ func TestFocusSandboxRealNFCe(t *testing.T) {
 	if err != nil || consulted.State != "authorized_homologation" || consulted.Key != emitted.Key {
 		t.Fatal("REAL homologation consultation did not confirm the same NFC-e")
 	}
+	var links focusArchiveLinks
+	if json.Unmarshal(consulted.Evidence, &links) != nil || links.Invoice == "" {
+		t.Fatal("REAL authorization lacks retrievable invoice XML; keep acceptance pending")
+	}
+	xml, err := p.downloadArchiveXML(ctx, links.Invoice, consulted.Key, "invoice", 0)
+	if err != nil {
+		t.Fatal("REAL authorized XML could not be obtained or verified; keep acceptance pending")
+	}
+	defer clear(xml)
+	if !sandboxProtocolPresent(xml) {
+		t.Fatal("REAL authorized XML lacks protocol; keep acceptance pending")
+	}
+	t.Log("REAL homologation authorization, same-reference consultation and XML/protocol checks completed; no automatic cancellation")
 }

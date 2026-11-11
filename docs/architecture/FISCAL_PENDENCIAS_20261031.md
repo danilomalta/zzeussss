@@ -102,3 +102,15 @@ O impedimento de concorrência do WIP a426e18 foi corrigido na mesma branch `fea
 ## Atualização CC-e — 03/11/2026
 
 Recuperação da tentativa original entregue em `feat/fiscal-cce-recuperacao`: consulta ID-only, GET da referência/arquivo já documentados, vínculo exato do texto pelo hash original, emitente/chave/ambiente/sequência/protocolo e arquivo cifrado. Tela em cinco idiomas, nenhum reenvio automático. Sem resultado definitivo, uma sequência posterior à primeira continua recusada como evidência da tentativa local; cartas sucessivas/histórico completo ainda exigem contrato inequívoco. Falta de XML ou divergência não vira sucesso. Evidências e limites no registro único. Código escrito; validação real pendente com configuração privada do cliente.
+
+## P28 — 08/11/2026 — V1-09
+
+**FEITO:** procedimento reutilizável em `FISCAL_HOMOLOGACAO_CLIENTE_P28.md`,
+ensaio opt-in sem valores tributários de exemplo, tentativa durável por referência,
+consulta sem segundo POST, obtenção restrita do XML e conferência de protocolo.
+**PENDENTE — validação real pendente:** cliente/contador/Focus devem configurar
+emitente, UF/regime, A1/CSC/token, revisar a solicitação e autorizar/executar o ensaio.
+Eventos somente com autorização explícita própria, pelo fluxo existente.
+Nenhuma emissão real foi executada nesta unidade; testes locais não comprovam aceite.
+
+itens fora do v1: ver o documento
