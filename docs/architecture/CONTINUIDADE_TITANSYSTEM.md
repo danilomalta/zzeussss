@@ -1,5 +1,14 @@
 # Continuidade do TitanSystem
 
+## P00 — VERIFICADO SEM ALTERAÇÃO — 11/11/2026
+
+- **Estado:** VERIFICADO — sem alteração. Branch/hash da unidade: `feat/backend-base-segura` `67db486b8fd5086cb2b109955f0c8365b7d50bd2`. Não sobrescrita.
+- **Checkout isolado (próximos Pxx):** `/home/danillo-malta/Documents/Codex/worktrees/titansystem-backend-p00`. O worktree antigo `.../titansystem-backend-base-segura` está em `feat/backend-p03` `0c71587`, não reutilizado.
+- **Base:** `8fccfadaf3c155df102a8b9c042b8602a41f02ad` + UTC `24fc711` (diff idêntico a `ae61e4e`: três fixtures). `feat/fiscal-fase9` continua ausente no remoto. Árvore principal não foi reset/checkout/stash.
+- **WIP fora desta entrega:** `/home/danillo-malta/projetos/zzeussss` em `wip/tabela-fiscal-cliente-20261111` `83ce033` (limpa). Ancestral `8fccfad`; UTC das três fixtures ainda não está nesta linha — não aplicado para não misturar P00 no fiscal WIP.
+- **Testes (este hash):** `TZ=UTC go test ./internal/fiscalproduction ./internal/localapi -run '^(TestCheckoutEncryptedNFCePrintArchiveIsolationIntegrityAndNoNetwork|TestHTTPCheckoutNFCeHomologationIntegration)$' -timeout 120s -count=1`: ok 0,721s / 1,572s. Contratos: 594 rotas. Produção fiscal não habilitada.
+- **Próximo:** P01 (já existe em `origin/feat/backend-p01` `f166f35`; não iniciado nesta sessão).
+
 ## Recebíveis vinculados a pedidos autenticados — 03/11/2026, 16:01 -03
 
 Repositório `/home/danillo-malta/projetos/zzeussss`; branch inicial/final `feat/lacunas-implementacao`; HEAD inicial/final `05518e9ccb087928e84a620903d6ad697f846e13`. Todas as alterações locais anteriores, inclusive a reconciliação, foram preservadas. **Sem commit/push/merge, troca de branch, reset/clean, pacote, instalação ou deploy.** Esta é uma unidade de integração ao financeiro existente; **A continua PARCIAL e B/C/D continuam pendentes no alcance completo** do pedido atual.
