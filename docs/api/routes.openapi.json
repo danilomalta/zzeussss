@@ -21305,6 +21305,9 @@
     "/local/v1/fiscal/nfe55/sales/{id}/emit": {
       "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfe55~1sales~1{id}~1emit"
     },
+    "/local/v1/fiscal/nfe55/sales/{id}/invalidate": {
+      "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfe55~1sales~1{id}~1invalidate"
+    },
     "/local/v1/fiscal/nfe55/sales/{id}/query": {
       "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfe55~1sales~1{id}~1query"
     },
@@ -21397,6 +21400,9 @@
     },
     "/local/v1/fiscal/nfe55/sales/{id}/correction/query": {
       "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfe55~1sales~1{id}~1correction~1query"
+    },
+    "/local/v1/fiscal/nfse": {
+      "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfse"
     }
   },
   "components": {

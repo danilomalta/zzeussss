@@ -135,7 +135,7 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 		payload["uf_emitente"] = p.State
 		for _, row := range items {
 			if row["valor_frete"] != "0.00" {
-				return nil, fiscalcore.ErrUnsupported
+				return nil, ErrFreightChargeUnavailable
 			}
 		}
 	}

@@ -295,6 +295,92 @@
         }
       }
     },
+    "/local/v1/fiscal/nfe55/sales/{id}/invalidate": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "customerNFe55Invalidate",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner only. Year, series and range must be explicit; the current date is never used. Focus year-ledger reconciliation is not established, so a valid request is refused with invalidation_unavailable and no number is sent.",
+        "responses": {
+          "400": {
+            "description": "Missing year/range/reason/confirmation or inferred fields."
+          },
+          "401": {
+            "description": "Missing, expired or revoked human session."
+          },
+          "403": {
+            "description": "Owner role or fiscal contract denied."
+          },
+          "409": {
+            "description": "invalidation_unavailable, production_blocked or A3 unsupported. No Focus POST."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "year",
+                  "series",
+                  "first",
+                  "last",
+                  "reason",
+                  "confirmed"
+                ],
+                "properties": {
+                  "year": {
+                    "type": "integer",
+                    "minimum": 2006,
+                    "maximum": 2099
+                  },
+                  "series": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 889
+                  },
+                  "first": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "last": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 15,
+                    "maxLength": 255
+                  },
+                  "confirmed": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/local/v1/fiscal/nfe55/sales/{id}/danfe": {
       "parameters": [
         {
@@ -463,6 +549,64 @@
           }
         },
         "summary": "Owner-only homologation CC-e; separate from sale and cancellation; uncertain outcome never retries"
+      }
+    },
+    "/local/v1/fiscal/nfse": {
+      "post": {
+        "operationId": "customerNFSe",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "description": "Owner only. Municipal NFS-e is typed and refused until a municipality contract exists. Goods invoices and national DPS are not converted into a service invoice.",
+        "responses": {
+          "400": {
+            "description": "Invalid municipality, service code or unconfirmed request."
+          },
+          "401": {
+            "description": "Missing, expired or revoked human session."
+          },
+          "403": {
+            "description": "Owner role or fiscal contract denied."
+          },
+          "409": {
+            "description": "nfse_unavailable. No municipal adapter is invoked."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "municipality_ibge",
+                  "service_code",
+                  "confirmed"
+                ],
+                "properties": {
+                  "municipality_ibge": {
+                    "type": "string",
+                    "pattern": "^[0-9]{7}$"
+                  },
+                  "service_code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16
+                  },
+                  "confirmed": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/local/v1/fiscal/accounting-export": {
@@ -791,8 +935,12 @@
           "purpose": {
             "type": "string",
             "enum": [
-              "1"
-            ]
+              "1",
+              "2",
+              "3",
+              "4"
+            ],
+            "description": "1 is the mapped internal consumer sale. 2, 3 and 4 are accepted as typed requests and refused until a referenced origin snapshot exists; a common sale is not converted."
           },
           "freight_mode": {
             "type": "string",

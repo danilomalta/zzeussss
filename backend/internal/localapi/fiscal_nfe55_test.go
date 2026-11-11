@@ -243,3 +243,37 @@ func TestHTTPNFe55UnmappedTaxGroupNeverCallsProvider(t *testing.T) {
 		t.Fatal("unsupported tax group reached provider", code)
 	}
 }
+
+func TestHTTPNFe55RemainingOperationsRefuseWithoutInventingOrigin(t *testing.T) {
+	f := fiscalFixture(t, "55")
+	sale := nfe55MappedSale(t, f)
+	p := &nfe55ContractProvider{state: "authorized_homologation"}
+	nfe55ContractApp(t, f, p, "homologation")
+	base := "/local/v1/fiscal/nfe55/sales/" + sale + "/"
+	body := `{"nature":"DEVOLUCAO","purpose":"4","freight_mode":"9","recipient":{"cpf":"12345678909","name":"Synthetic recipient","address":{"street":"Synthetic street","number":"1","district":"Centro","city":"Sao Paulo","uf":"SP"}}}`
+	code, raw := request(t, f.app, "POST", base+"emit", body, f.token)
+	if code != 409 || !bytes.Contains(raw, []byte("referenced_operation_unavailable")) || p.calls != 0 {
+		t.Fatal("return converted a sale", code, string(raw), p.calls)
+	}
+	freight := `{"nature":"VENDA","purpose":"1","freight_mode":"0","recipient":{"cpf":"12345678909","name":"Synthetic recipient","address":{"street":"Synthetic street","number":"1","district":"Centro","city":"Sao Paulo","uf":"SP"}}}`
+	code, raw = request(t, f.app, "POST", base+"emit", freight, f.token)
+	if code != 409 || !bytes.Contains(raw, []byte("freight_charge_unavailable")) || p.calls != 0 {
+		t.Fatal("charged freight inferred", code, string(raw), p.calls)
+	}
+	code, raw = request(t, f.app, "POST", base+"invalidate", `{"year":2026,"series":1,"first":1,"last":1,"reason":"explicit unused range","confirmed":true}`, f.token)
+	if code != 409 || !bytes.Contains(raw, []byte("invalidation_unavailable")) || p.calls != 0 {
+		t.Fatal("invalidation posted", code, string(raw), p.calls)
+	}
+	code, _ = request(t, f.app, "POST", base+"invalidate", `{"series":1,"first":1,"last":1,"reason":"explicit unused range","confirmed":true}`, f.token)
+	if code != 400 || p.calls != 0 {
+		t.Fatal("year inferred", code)
+	}
+	code, raw = request(t, f.app, "POST", "/local/v1/fiscal/nfse", `{"municipality_ibge":"3550308","service_code":"0101","confirmed":true}`, f.token)
+	if code != 409 || !bytes.Contains(raw, []byte("nfse_unavailable")) || p.calls != 0 {
+		t.Fatal("nfse converted goods", code, string(raw), p.calls)
+	}
+	code, raw = request(t, f.app, "GET", "/local/v1/fiscal/capabilities", "", f.token)
+	if code != 200 || !bytes.Contains(raw, []byte(`"referenced_nfe_available":false`)) || !bytes.Contains(raw, []byte(`"freight_charge_available":false`)) || !bytes.Contains(raw, []byte(`"invalidation_available":false`)) || !bytes.Contains(raw, []byte(`"nfse_available":false`)) {
+		t.Fatal("capabilities claimed unavailable operations", string(raw))
+	}
+}

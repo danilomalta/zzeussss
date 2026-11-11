@@ -43,6 +43,12 @@ func nfe55Failure(c *fiber.Ctx, err error) error {
 		code = "input_missing"
 	case errors.Is(err, fiscalproduction.ErrFocusInvalidationUnavailable):
 		code = "invalidation_unavailable"
+	case errors.Is(err, fiscalproduction.ErrReferencedOperationUnavailable):
+		code = "referenced_operation_unavailable"
+	case errors.Is(err, fiscalproduction.ErrFreightChargeUnavailable):
+		code = "freight_charge_unavailable"
+	case errors.Is(err, fiscalproduction.ErrNFSeUnavailable):
+		code = "nfse_unavailable"
 	case errors.Is(err, fiscalcore.ErrUnsupported):
 		code = "tax_mapping_unsupported"
 	case errors.Is(err, fiscalproduction.ErrUnavailable):
@@ -101,6 +107,12 @@ func (s *Server) fiscalNFe55Action(c *fiber.Ctx, action string) error {
 		}
 		if fiscalcore.DecodeInput(c.Body(), &in) != nil {
 			return fiscalFailure(c, fiscal.ErrInvalid)
+		}
+		if in.Purpose == "2" || in.Purpose == "3" || in.Purpose == "4" {
+			return nfe55Failure(c, fiscalproduction.ErrReferencedOperationUnavailable)
+		}
+		if in.FreightMode == "0" || in.FreightMode == "1" || in.FreightMode == "2" {
+			return nfe55Failure(c, fiscalproduction.ErrFreightChargeUnavailable)
 		}
 		preview, err := s.fiscalProviders.PreviewCustomerNFe55(c.UserContext(), a, req.SaleID)
 		if err != nil {
@@ -219,4 +231,53 @@ func (s *Server) fiscalNFe55CorrectionQuery(c *fiber.Ctx) error {
 	}
 	c.Set("Cache-Control", "no-store")
 	return c.JSON(out)
+}
+
+func (s *Server) fiscalNFe55Invalidate(c *fiber.Ctx) error {
+	if !fiscalWrite(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	var in struct {
+		Year      int    `json:"year"`
+		Series    int    `json:"series"`
+		First     int    `json:"first"`
+		Last      int    `json:"last"`
+		Reason    string `json:"reason"`
+		Confirmed bool   `json:"confirmed"`
+	}
+	if fiscalcore.DecodeInput(c.Body(), &in) != nil || !in.Confirmed || in.Year < 2006 || in.Year > 2099 || in.Series < 0 || in.Series > 889 || in.First < 1 || in.Last < in.First || len(in.Reason) < 15 || len(in.Reason) > 255 {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	if s.fiscalProviders == nil {
+		return nfe55Failure(c, fiscalproduction.ErrUnavailable)
+	}
+	if _, _, err := s.fiscalProviders.CustomerNFe55Provider(c.UserContext(), s.productionContext(c)); err != nil {
+		return nfe55Failure(c, err)
+	}
+	return nfe55Failure(c, fiscalproduction.ErrFocusInvalidationUnavailable)
+}
+
+func (s *Server) fiscalNFSe(c *fiber.Ctx) error {
+	if !fiscalWrite(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	var in struct {
+		MunicipalityIBGE string `json:"municipality_ibge"`
+		ServiceCode      string `json:"service_code"`
+		Confirmed        bool   `json:"confirmed"`
+	}
+	if fiscalcore.DecodeInput(c.Body(), &in) != nil || !in.Confirmed || len(in.MunicipalityIBGE) != 7 || len(in.ServiceCode) < 1 || len(in.ServiceCode) > 16 {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	for _, r := range in.MunicipalityIBGE {
+		if r < '0' || r > '9' {
+			return fiscalFailure(c, fiscal.ErrInvalid)
+		}
+	}
+	if s.fiscalProviders != nil {
+		if _, _, err := s.fiscalProviders.CustomerNFe55Provider(c.UserContext(), s.productionContext(c)); err != nil {
+			return nfe55Failure(c, err)
+		}
+	}
+	return nfe55Failure(c, fiscalproduction.ErrNFSeUnavailable)
 }

@@ -970,6 +970,13 @@
     {
       "api": "local",
       "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/sales/:id/invalidate",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
       "path": "/local/v1/fiscal/nfe55/sales/:id/preview",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
@@ -978,6 +985,13 @@
       "api": "local",
       "method": "POST",
       "path": "/local/v1/fiscal/nfe55/sales/:id/query",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfse",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
     },
