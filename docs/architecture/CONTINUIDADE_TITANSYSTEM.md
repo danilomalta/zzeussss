@@ -1,5 +1,13 @@
 # Continuidade do TitanSystem
 
+## Estacionamento fiscal — 11/11/2026
+
+- **Ponto de parada de código:** `wip/tabela-fiscal-cliente-20261111` `5a5b1a6` (depois de `0d31ec7`). F01/F03 em `0d31ec7`; F02 restante (postcss-selector-parser 6.1.6, source-map-js 1.2.2, follow-redirects 1.16.3, sem `--force`) em `5a5b1a6`.
+- **Escopo:** o trabalho fiscal **desta linha**, sem emitente, foi encerrado por decisão de escopo. Isso não prova que não exista outro código em todo o repositório, nem prova NF-e oficial, Focus/SEFAZ, suíte completa nem CI verde neste hash (consulta GitHub sem check runs em `5a5b1a6`).
+- **Produção/A3:** continuam bloqueadas. Homologação real (P28) continua EXTERNA. Código e testes locais não são nota autorizada.
+- **Retomada (ordem prudente):** (1) titular resolve P04 — revogação histórica externa, ainda não comprovada; **antes** de inserir ou usar credencial nova do cliente; credenciais não vão ao provedor nem ao Codex; (2) cadastro completo + credencial na instalação do cliente (P17) e homologação Focus da conta (P28); (3) contador aprova tabela; só então IBS/CBS, NFS-e, SPED; (4) P22 ledger, F04 Windows, P32–P34, produção só com decisão explícita de produto. Não simular oficial.
+- Canvas local do chat não faz parte deste repositório; este registro é a evidência no GitHub.
+
 ## P04 P19 P20 P21 P24 — 11/11/2026
 
 - **P04:** `docs/architecture/REVOGACAO_CREDENCIAIS_P04.md` nesta linha. Titular confirma revogação; Codex não atesta.
