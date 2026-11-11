@@ -45,7 +45,13 @@ func TestUnfinishedBusinessRoutesAreUnavailable(t *testing.T) {
 				want := fiber.StatusUnauthorized
 				if authenticated {
 					req.Header.Set("Authorization", "Bearer "+token)
-					want = fiber.StatusNotImplemented
+					// The consolidated online contract refuses unsupported operations
+					// explicitly; it never reports a fabricated business success.
+					want = fiber.StatusConflict
+					if tc.path == "/api/v1/discounts/suggestions/123/review" {
+						// Review now has a real handler; this fixture has no store.
+						want = fiber.StatusServiceUnavailable
+					}
 				}
 				resp, err := app.Test(req)
 				if err != nil {
@@ -76,7 +82,7 @@ func TestUnfinishedBusinessRoutesAreUnavailable(t *testing.T) {
 		t.Fatal(err)
 	}
 	resp.Body.Close()
-	if resp.StatusCode != fiber.StatusNotFound {
+	if resp.StatusCode != fiber.StatusUpgradeRequired {
 		t.Fatalf("chat autenticado: esperado 404, recebido %d", resp.StatusCode)
 	}
 }

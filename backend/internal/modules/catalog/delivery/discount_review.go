@@ -24,25 +24,36 @@ func ConsultarSugestaoDesconto(c *fiber.Ctx) error {
 }
 func RevisarSugestaoDesconto(action string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		id, e := onlinecatalog.ProductID(c.Params("id"))
-		if e != nil || !noManagementQuery(c) {
-			return managementError(c, onlinecatalog.ErrInput)
-		}
-		v, e := onlinecatalog.DecodeDiscountReview(c.Get("Content-Type"), c.Body())
-		if e != nil {
-			return managementError(c, e)
-		}
-		ctx, cancel, s, a, e := managementContext(c)
-		defer cancel()
-		if e != nil {
-			return managementError(c, e)
-		}
-		r, e := s.ReviewDiscount(ctx, a, id, action, v)
-		if e != nil {
-			return managementError(c, e)
-		}
-		return c.JSON(r)
+		return reviewDiscount(c, action, false)
 	}
+}
+func RevisarSugestaoDescontoUnificada(c *fiber.Ctx) error {
+	return reviewDiscount(c, "", true)
+}
+func reviewDiscount(c *fiber.Ctx, action string, unified bool) error {
+	id, e := onlinecatalog.ProductID(c.Params("id"))
+	if e != nil || !noManagementQuery(c) {
+		return managementError(c, onlinecatalog.ErrInput)
+	}
+	var v onlinecatalog.DiscountReviewInput
+	if unified {
+		v, action, e = onlinecatalog.DecodeDiscountUnifiedReview(c.Get("Content-Type"), c.Body())
+	} else {
+		v, e = onlinecatalog.DecodeDiscountReview(c.Get("Content-Type"), c.Body())
+	}
+	if e != nil {
+		return managementError(c, e)
+	}
+	ctx, cancel, s, a, e := managementContext(c)
+	defer cancel()
+	if e != nil {
+		return managementError(c, e)
+	}
+	r, e := s.ReviewDiscount(ctx, a, id, action, v)
+	if e != nil {
+		return managementError(c, e)
+	}
+	return c.JSON(r)
 }
 func ConsultarDecisaoDesconto(c *fiber.Ctx) error {
 	op := c.Params("operation_id")

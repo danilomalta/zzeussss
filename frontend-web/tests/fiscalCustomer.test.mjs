@@ -76,7 +76,7 @@ test('five languages have complete nonempty matching keys, including backend blo
 });
 test('fiscal screen literal labels belong to its own complete translation namespace',async()=>{
  const words=JSON.parse(await readFile(new URL('../src/i18n/fiscalCustomer/pt-BR.json',import.meta.url),'utf8'));
- for(const file of ['FiscalCustomer.tsx','FinanceFiscal.tsx']){
+ for(const file of ['FiscalCustomer.tsx','FinanceFiscal.tsx','FiscalTaxTable.tsx']){
   const source=await readFile(new URL('../src/modules/tenant/pages/enterprise89/'+file,import.meta.url),'utf8');
   for(const match of source.matchAll(/\bfw\.([A-Za-z0-9_]+)/g))assert.ok(words[match[1]],file+':'+match[1]);
  }

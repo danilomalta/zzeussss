@@ -19,6 +19,8 @@ func TestDiscountReviewMountedPermissionsAndInput(t *testing.T) {
 		{"accountant", "GET", "/discounts/reviews/11111111-1111-4111-8111-111111111112", "", 403},
 		{"owner", "POST", "/discounts/suggestions/1/approve", "{}", 400},
 		{"owner", "POST", "/discounts/suggestions/1/reject", "{}", 400},
+		{"cashier", "POST", "/discounts/suggestions/1/review", "{}", 403},
+		{"owner", "POST", "/discounts/suggestions/1/review", "{}", 400},
 		{"owner", "GET", "/discounts/suggestions/01", "", 400},
 		{"owner", "GET", "/discounts/suggestions/1?tenant_id=x", "", 400},
 		{"owner", "GET", "/discounts/suggestions/1", "{}", 400},

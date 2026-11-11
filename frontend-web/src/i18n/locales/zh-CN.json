@@ -183,6 +183,7 @@
   "workspace.shortcuts": "您的三个快捷入口",
   "workspace.shortcut": "快捷入口 {{count}}",
   "workspace.logout": "退出登录",
+  "account.logoutUncertain": "无法确认远程会话已结束。在服务器响应之前，本屏幕仍保持访问。",
   "workspace.pending": "即将推出",
   "workspace.pendingNotice": "{{name}} 正在准备中。",
   "workspace.preference": "本次会话已更改快捷入口。浏览器未能保存偏好。",

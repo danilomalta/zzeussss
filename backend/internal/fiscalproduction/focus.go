@@ -143,6 +143,19 @@ func (p *FocusProvider) intent(ctx context.Context, a RequestContext, in Documen
 	if in.Environment != 2 {
 		return fiscal.Intent{}, ErrCheckoutProduction
 	}
+	if in.OriginID != "" {
+		if in.SaleID != "" || in.Model != "55" {
+			return fiscal.Intent{}, fiscal.ErrInvalid
+		}
+		if err := p.validateModel(ctx, a, 2, "55"); err != nil {
+			return fiscal.Intent{}, err
+		}
+		rec, err := fiscal.ReadNFeOrigin(ctx, a.DB, a.Actor, a.Device, in.OriginID)
+		if err != nil {
+			return fiscal.Intent{}, err
+		}
+		return fiscal.Intent{ID: rec.ID, Snapshot: rec.Snapshot}, nil
+	}
 	if (in.Model != "65" && in.Model != "55") || in.SaleID == "" || len(in.SaleID) > 128 {
 		return fiscal.Intent{}, fiscal.ErrInvalid
 	}
@@ -412,17 +425,25 @@ func (p *FocusProvider) save(ctx context.Context, a RequestContext, sale, intent
 	}
 	return out, err
 }
+func documentAggregate(in DocumentRequest) string {
+	if in.OriginID != "" {
+		return in.OriginID
+	}
+	return in.SaleID
+}
+
 func (p *FocusProvider) Emit(ctx context.Context, a RequestContext, in DocumentRequest) (DocumentResult, error) {
 	intent, err := p.intent(ctx, a, in)
 	if err != nil {
 		return DocumentResult{}, err
 	}
-	ref := focusReference(a.Actor.TenantID, in.SaleID)
+	sale := documentAggregate(in)
+	ref := focusReference(a.Actor.TenantID, sale)
 	body, err := focusInvoiceRequest(ctx, a, intent, in)
 	if err != nil {
-		return p.save(ctx, a, in.SaleID, intent.ID, DocumentResult{State: "failed", OperationID: ref, ErrorCode: "focus_request_unsupported"}, err)
+		return p.save(ctx, a, sale, intent.ID, DocumentResult{State: "failed", OperationID: ref, ErrorCode: "focus_request_unsupported"}, err)
 	}
-	return p.submit(ctx, a, in.SaleID, intent, ref, body)
+	return p.submit(ctx, a, sale, intent, ref, body)
 }
 
 // submit is shared by the adapter and its fault-injection tests. Durable claim

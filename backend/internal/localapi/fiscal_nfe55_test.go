@@ -15,6 +15,7 @@ import (
 	"titansystem-backend/internal/fiscalcore"
 	"titansystem-backend/internal/fiscalproduction"
 	"titansystem-backend/internal/localdb/fiscal"
+	"titansystem-backend/internal/localdb/identity"
 )
 
 // API contract fixture only. No Focus/SEFAZ request or acceptance is claimed.
@@ -241,5 +242,259 @@ func TestHTTPNFe55UnmappedTaxGroupNeverCallsProvider(t *testing.T) {
 	code, body = request(t, f.app, "POST", base+"emit", `{"nature":"VENDA","purpose":"1","freight_mode":"9","recipient":{}}`, f.token)
 	if code != 409 || !bytes.Contains(body, []byte("tax_mapping_unsupported")) || provider.calls != 0 {
 		t.Fatal("unsupported tax group reached provider", code)
+	}
+}
+
+func TestHTTPNFe55RemainingOperationsRefuseWithoutInventingOrigin(t *testing.T) {
+	f := fiscalFixture(t, "55")
+	sale := nfe55MappedSale(t, f)
+	p := &nfe55ContractProvider{state: "authorized_homologation"}
+	nfe55ContractApp(t, f, p, "homologation")
+	base := "/local/v1/fiscal/nfe55/sales/" + sale + "/"
+	body := `{"nature":"DEVOLUCAO","purpose":"4","freight_mode":"9","recipient":{"cpf":"12345678909","name":"Synthetic recipient","address":{"street":"Synthetic street","number":"1","district":"Centro","city":"Sao Paulo","uf":"SP"}}}`
+	code, raw := request(t, f.app, "POST", base+"emit", body, f.token)
+	if code != 409 || !bytes.Contains(raw, []byte("referenced_operation_unavailable")) || p.calls != 0 {
+		t.Fatal("return converted a sale", code, string(raw), p.calls)
+	}
+	freight := `{"nature":"VENDA","purpose":"1","freight_mode":"0","recipient":{"cpf":"12345678909","name":"Synthetic recipient","address":{"street":"Synthetic street","number":"1","district":"Centro","city":"Sao Paulo","uf":"SP"}}}`
+	code, raw = request(t, f.app, "POST", base+"emit", freight, f.token)
+	if code != 409 || !bytes.Contains(raw, []byte("freight_charge_unavailable")) || p.calls != 0 {
+		t.Fatal("charged freight inferred", code, string(raw), p.calls)
+	}
+	code, raw = request(t, f.app, "POST", base+"invalidate", `{"year":2026,"series":1,"first":1,"last":1,"reason":"explicit unused range","confirmed":true}`, f.token)
+	if code != 409 || !bytes.Contains(raw, []byte("invalidation_unavailable")) || p.calls != 0 {
+		t.Fatal("invalidation posted", code, string(raw), p.calls)
+	}
+	code, _ = request(t, f.app, "POST", base+"invalidate", `{"series":1,"first":1,"last":1,"reason":"explicit unused range","confirmed":true}`, f.token)
+	if code != 400 || p.calls != 0 {
+		t.Fatal("year inferred", code)
+	}
+	code, raw = request(t, f.app, "POST", "/local/v1/fiscal/nfse", `{"municipality_ibge":"3550308","service_code":"0101","confirmed":true}`, f.token)
+	if code != 409 || !bytes.Contains(raw, []byte("nfse_unavailable")) || p.calls != 0 {
+		t.Fatal("nfse converted goods", code, string(raw), p.calls)
+	}
+	code, raw = request(t, f.app, "GET", "/local/v1/fiscal/capabilities", "", f.token)
+	if code != 200 || !bytes.Contains(raw, []byte(`"referenced_nfe_available":true`)) || !bytes.Contains(raw, []byte(`"freight_charge_available":true`)) || !bytes.Contains(raw, []byte(`"invalidation_available":false`)) || !bytes.Contains(raw, []byte(`"nfse_available":false`)) || !bytes.Contains(raw, []byte(`"ibs_cbs_available":false`)) {
+		t.Fatal("capabilities claimed unavailable operations", string(raw))
+	}
+}
+
+func TestHTTPNFe55OriginBindUnknownReceipt(t *testing.T) {
+	f := fiscalFixture(t, "55")
+	p := &nfe55ContractProvider{state: "authorized_homologation"}
+	nfe55ContractApp(t, f, p, "homologation")
+	key, err := fiscalcore.AccessKey(fiscalcore.KeyInput{UF: "SP", IssuedAt: time.Now(), CNPJ: "12345678000195", Model: "55", Series: 1, Number: 1, Emission: 1, NumericCode: "12345678"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := `{"operation_id":"origin-op","kind":"inbound_receipt","source_id":"missing-receipt","referenced_access_key":"` + key + `","freight_mode":"9","confirmed":true,"recipient":{"cnpj":"12345678000195","name":"Fornecedor","uf":"SP"},"items":[{"product_id":"p","quantity_milli":1000,"unit_price_cents":100,"total_cents":100}]}`
+	code, raw := request(t, f.app, "POST", "/local/v1/fiscal/nfe55/origins", body, f.token)
+	if code != 404 || p.calls != 0 {
+		t.Fatal("missing receipt invented origin", code, string(raw), p.calls)
+	}
+}
+
+func TestHTTPNFe55ChargedFreightQuoteEmitsWhenContractMatchesSale(t *testing.T) {
+	f := fiscalFixture(t, "55")
+	p := &nfe55ContractProvider{state: "authorized_homologation"}
+	nfe55ContractApp(t, f, p, "homologation")
+	code, raw := request(t, f.app, "GET", "/local/v1/fiscal/profiles/issuer-one", "", f.token)
+	var profile fiscal.Profile
+	if code != 200 || json.Unmarshal(raw, &profile) != nil {
+		t.Fatal("profile", code)
+	}
+	input := profile.Input
+	input.OperationID = "nfe55-freight-timezone"
+	input.ExpectedRevision = profile.Revision
+	input.Timezone = "America/Sao_Paulo"
+	taxRequest(t, f, "POST", "/local/v1/fiscal/profiles", input, 201, nil)
+	policy := taxPolicyFixture(f)
+	policy.ProfileRevision = profile.Revision + 1
+	policy.Rule.Model = "55"
+	policy.Rule.BaseRounding = "before_tax"
+	policy.Rule.Goods = &fiscalcore.GoodsTaxClassification{Origin: "0", ICMS: "102", PIS: "07", COFINS: "07", IPIScope: "not_applicable", FCPScope: "not_applicable"}
+	policy.Rule.Components = nil
+	for _, taxCode := range []string{"ICMS", "PIS", "COFINS"} {
+		policy.Rule.Components = append(policy.Rule.Components, fiscalcore.TaxComponent{Code: taxCode, Method: "exempt", Rate: "0", MVA: "0", ReductionPercent: "0"})
+	}
+	taxRequest(t, f, "POST", "/local/v1/fiscal/tax-policies", policy, 201, nil)
+	quote := taxQuoteFixture(policy)
+	quote.Context.Model = "55"
+	quote.Context.Date = time.Now().In(time.FixedZone("fixture", -3*3600)).Format("2006-01-02")
+	quote.Item.UnitPrice = "15.99"
+	quote.Item.Freight = "1.01"
+	quote.Freight = &fiscal.SaleFreightContract{
+		SaleID: "freight-sale", Allocation: fiscalcore.FreightAllocationInput{Method: fiscalcore.FreightLargestRemainderV1, TotalCents: 101, Items: []fiscalcore.FreightWeight{{ItemID: quote.OperationID, Weight: 1}}},
+		FreightMode: "0", RefundPolicy: "proportional_with_item", SourceReference: "synthetic-source", ReviewReference: "synthetic-review",
+	}
+	var priced fiscal.TaxQuote
+	taxRequest(t, f, "POST", "/local/v1/fiscal/tax-quotes", quote, 201, &priced)
+	sale := salesInput(f)
+	total, err := strconv.ParseInt(strings.ReplaceAll(priced.Result.Total, ".", ""), 10, 64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sale.Payments[0].AmountCents = total
+	// Explicit pre-payment freight opt-in required by the consolidated sale contract.
+	sale.Freight = true
+	sale.SaleID = "freight-sale"
+	sale.OperationID = "freight-sale-operation"
+	sale.TaxQuoteOperations = []string{quote.OperationID}
+	salesRequest(t, f, sale, 201)
+	nfe55ContractApp(t, f, p, "homologation")
+	base := "/local/v1/fiscal/nfe55/sales/freight-sale/"
+	recipient := `{"cpf":"12345678909","name":"Synthetic recipient","address":{"street":"Synthetic street","number":"1","district":"Centro","city":"Sao Paulo","uf":"SP"}}`
+	code, raw = request(t, f.app, "POST", base+"emit", `{"nature":"VENDA","purpose":"1","freight_mode":"9","recipient":`+recipient+`}`, f.token)
+	if code != 409 || !bytes.Contains(raw, []byte("freight_charge_unavailable")) || p.calls != 0 {
+		t.Fatal("mode 9 accepted charged freight", code, string(raw), p.calls)
+	}
+	code, raw = request(t, f.app, "POST", base+"emit", `{"nature":"VENDA","purpose":"1","freight_mode":"0","recipient":`+recipient+`}`, f.token)
+	if code != 200 || p.calls != 1 || p.last.FreightMode != "0" {
+		t.Fatal("quoted freight blocked", code, string(raw), p.calls, p.last.FreightMode)
+	}
+}
+
+func TestHTTPNFe55OriginBindReceiptAndEmitHomologation(t *testing.T) {
+	base := receivingFixture(t)
+	receipt := receivedResponse(t, base, receivingBody(), 201)
+	sf := &stockHTTPFixture{httpContractFixture: base, product: receipt.Receipt.ProductID}
+	sf.install(t, signedTestContract(t, sf.private, sf.owner.TenantID, 2, []modules.ID{modules.Core, modules.Inventory, modules.Orders, modules.POS, modules.Fiscal, modules.Staff}), 200)
+	profileBody := strings.Replace(fiscalProfileBody, `"model":"65"`, `"model":"55"`, 1)
+	code, body := request(t, sf.app, "POST", "/local/v1/fiscal/profiles", profileBody, sf.token)
+	if code != 201 {
+		t.Fatal("profile", code, string(body))
+	}
+	code, raw := request(t, sf.app, "GET", "/local/v1/fiscal/profiles/issuer-one", "", sf.token)
+	var profile fiscal.Profile
+	if code != 200 || json.Unmarshal(raw, &profile) != nil {
+		t.Fatal("read profile", code)
+	}
+	input := profile.Input
+	input.OperationID = "origin-timezone"
+	input.ExpectedRevision = profile.Revision
+	input.Timezone = "America/Sao_Paulo"
+	taxRequest(t, sf, "POST", "/local/v1/fiscal/profiles", input, 201, nil)
+	p := &nfe55ContractProvider{state: "authorized_homologation"}
+	nfe55ContractApp(t, sf, p, "homologation")
+	policy := taxPolicyFixture(sf)
+	policy.ProfileRevision = profile.Revision + 1
+	policy.Rule.Model = "55"
+	policy.Rule.ProductID = receipt.Receipt.ProductID
+	policy.Rule.BaseRounding = "before_tax"
+	policy.Rule.Goods = &fiscalcore.GoodsTaxClassification{Origin: "0", ICMS: "102", PIS: "07", COFINS: "07", IPIScope: "not_applicable", FCPScope: "not_applicable"}
+	policy.Rule.Components = nil
+	for _, taxCode := range []string{"ICMS", "PIS", "COFINS"} {
+		policy.Rule.Components = append(policy.Rule.Components, fiscalcore.TaxComponent{Code: taxCode, Method: "exempt", Rate: "0", MVA: "0", ReductionPercent: "0"})
+	}
+	taxRequest(t, sf, "POST", "/local/v1/fiscal/tax-policies", policy, 201, nil)
+	quote := taxQuoteFixture(policy)
+	quote.Context.Model = "55"
+	quote.Context.Date = time.Now().In(time.FixedZone("fixture", -3*3600)).Format("2006-01-02")
+	quote.Item.ProductID = receipt.Receipt.ProductID
+	quote.Item.UnitPrice = "15.99"
+	var priced fiscal.TaxQuote
+	taxRequest(t, sf, "POST", "/local/v1/fiscal/tax-quotes", quote, 201, &priced)
+	key, err := fiscalcore.AccessKey(fiscalcore.KeyInput{UF: "SP", IssuedAt: time.Now(), CNPJ: "12345678000195", Model: "55", Series: 1, Number: 1, Emission: 1, NumericCode: "12345678"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	bind := map[string]any{
+		"operation_id": "origin-receipt-op", "kind": "inbound_receipt", "source_id": receipt.Receipt.ID, "referenced_access_key": key,
+		"freight_mode": "9", "confirmed": true, "recipient": map[string]string{"cnpj": "12345678000195", "name": "Fornecedor", "uf": "SP"},
+		"items": []map[string]any{{"product_id": receipt.Receipt.ProductID, "quantity_milli": 2000, "unit_price_cents": 1599, "total_cents": 3198, "tax": map[string]string{"quote_operation_id": quote.OperationID}}},
+	}
+	rawBind, _ := json.Marshal(bind)
+	code, raw = request(t, sf.app, "POST", "/local/v1/fiscal/nfe55/origins", string(rawBind), sf.token)
+	var bound struct {
+		OriginID string `json:"origin_id"`
+	}
+	if code != 201 || json.Unmarshal(raw, &bound) != nil || bound.OriginID == "" || p.calls != 0 {
+		t.Fatal("bind", code, string(raw), p.calls)
+	}
+	emit := `{"nature":"ENTRADA","purpose":"1","freight_mode":"9","confirmed":true,"recipient":{"cnpj":"12345678000195","name":"Fornecedor","address":{"street":"Synthetic street","number":"1","district":"Centro","city":"Sao Paulo","uf":"SP"}}}`
+	code, raw = request(t, sf.app, "POST", "/local/v1/fiscal/nfe55/origins/"+bound.OriginID+"/emit", emit, sf.token)
+	if code != 200 || p.calls != 1 || p.last.OriginID != bound.OriginID || p.last.Purpose != "1" {
+		t.Fatal("origin emit", code, string(raw), p.calls, p.last)
+	}
+}
+
+func TestHTTPNFe55OriginBindCustomerReturnAndEmitHomologation(t *testing.T) {
+	f := fiscalFixture(t, "55")
+	ret := customerReturnRequest(t, f, customerReturnInput(t, f, "return-nfe55", 1000, 1599, "restock"), 201)
+	if ret.ID == "" || ret.FiscalAuthorized {
+		t.Fatal(ret)
+	}
+	key, err := fiscalcore.AccessKey(fiscalcore.KeyInput{UF: "SP", IssuedAt: time.Now(), CNPJ: "12ABC34501DE35", Model: "55", Series: 1, Number: 1, Emission: 1, NumericCode: "12345678"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	actor := identity.Scope{TenantID: f.owner.TenantID, StoreID: f.owner.StoreID, IdentityID: f.owner.OwnerID}
+	if err = fiscal.RecordCheckoutStatus(context.Background(), f.db, actor, f.device, "sale-one", fiscal.CheckoutStatus{State: "authorized_homologation", OperationID: "sale-one-nfe", Key: key}); err != nil {
+		t.Fatal(err)
+	}
+	code, raw := request(t, f.app, "GET", "/local/v1/fiscal/profiles/issuer-one", "", f.token)
+	var profile fiscal.Profile
+	if code != 200 || json.Unmarshal(raw, &profile) != nil {
+		t.Fatal("profile", code)
+	}
+	input := profile.Input
+	input.OperationID = "return-timezone"
+	input.ExpectedRevision = profile.Revision
+	input.Timezone = "America/Sao_Paulo"
+	taxRequest(t, f, "POST", "/local/v1/fiscal/profiles", input, 201, nil)
+	p := &nfe55ContractProvider{state: "authorized_homologation"}
+	nfe55ContractApp(t, f, p, "homologation")
+	policy := taxPolicyFixture(f)
+	policy.ProfileRevision = profile.Revision + 1
+	policy.Rule.Model = "55"
+	policy.Rule.BaseRounding = "before_tax"
+	policy.Rule.Goods = &fiscalcore.GoodsTaxClassification{Origin: "0", ICMS: "102", PIS: "07", COFINS: "07", IPIScope: "not_applicable", FCPScope: "not_applicable"}
+	policy.Rule.Components = nil
+	for _, taxCode := range []string{"ICMS", "PIS", "COFINS"} {
+		policy.Rule.Components = append(policy.Rule.Components, fiscalcore.TaxComponent{Code: taxCode, Method: "exempt", Rate: "0", MVA: "0", ReductionPercent: "0"})
+	}
+	taxRequest(t, f, "POST", "/local/v1/fiscal/tax-policies", policy, 201, nil)
+	quote := taxQuoteFixture(policy)
+	quote.Context.Model = "55"
+	quote.Context.Date = time.Now().In(time.FixedZone("fixture", -3*3600)).Format("2006-01-02")
+	quote.Item.Quantity = "1"
+	quote.Item.UnitPrice = "15.99"
+	taxRequest(t, f, "POST", "/local/v1/fiscal/tax-quotes", quote, 201, nil)
+	wrong, err := fiscalcore.AccessKey(fiscalcore.KeyInput{UF: "SP", IssuedAt: time.Now(), CNPJ: "12ABC34501DE35", Model: "55", Series: 1, Number: 2, Emission: 1, NumericCode: "12345678"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	item := map[string]any{"product_id": f.product, "quantity_milli": 1000, "unit_price_cents": 1599, "total_cents": 1599, "tax": map[string]string{"quote_operation_id": quote.OperationID}}
+	recipient := map[string]string{"cpf": "12345678909", "name": "Cliente", "uf": "SP"}
+	bindWrong := map[string]any{"operation_id": "origin-return-wrong", "kind": "customer_return", "source_id": ret.ID, "referenced_access_key": wrong, "freight_mode": "9", "confirmed": true, "recipient": recipient, "items": []any{item}}
+	rawBind, _ := json.Marshal(bindWrong)
+	code, raw = request(t, f.app, "POST", "/local/v1/fiscal/nfe55/origins", string(rawBind), f.token)
+	if code != 409 || p.calls != 0 {
+		t.Fatal("wrong key accepted", code, string(raw), p.calls)
+	}
+	bindSale := map[string]any{"operation_id": "origin-return-sale", "kind": "customer_return", "source_id": "sale-one", "referenced_access_key": key, "freight_mode": "9", "confirmed": true, "recipient": recipient, "items": []any{item}}
+	rawBind, _ = json.Marshal(bindSale)
+	code, raw = request(t, f.app, "POST", "/local/v1/fiscal/nfe55/origins", string(rawBind), f.token)
+	if code != 404 || p.calls != 0 {
+		t.Fatal("sale converted to return origin", code, string(raw), p.calls)
+	}
+	bind := map[string]any{"operation_id": "origin-return-op", "kind": "customer_return", "source_id": ret.ID, "referenced_access_key": key, "freight_mode": "9", "confirmed": true, "recipient": recipient, "items": []any{item}}
+	rawBind, _ = json.Marshal(bind)
+	code, raw = request(t, f.app, "POST", "/local/v1/fiscal/nfe55/origins", string(rawBind), f.token)
+	var bound struct {
+		OriginID string `json:"origin_id"`
+	}
+	if code != 201 || json.Unmarshal(raw, &bound) != nil || bound.OriginID == "" {
+		t.Fatal("bind return", code, string(raw))
+	}
+	emitBad := `{"nature":"DEVOLUCAO","purpose":"1","freight_mode":"9","confirmed":true,"recipient":{"cpf":"12345678909","name":"Cliente","address":{"street":"Synthetic street","number":"1","district":"Centro","city":"Sao Paulo","uf":"SP"}}}`
+	code, raw = request(t, f.app, "POST", "/local/v1/fiscal/nfe55/origins/"+bound.OriginID+"/emit", emitBad, f.token)
+	if code != 409 || !bytes.Contains(raw, []byte("referenced_operation_unavailable")) || p.calls != 0 {
+		t.Fatal("purpose 1 on return", code, string(raw), p.calls)
+	}
+	emit := `{"nature":"DEVOLUCAO","purpose":"4","freight_mode":"9","confirmed":true,"recipient":{"cpf":"12345678909","name":"Cliente","address":{"street":"Synthetic street","number":"1","district":"Centro","city":"Sao Paulo","uf":"SP"}}}`
+	code, raw = request(t, f.app, "POST", "/local/v1/fiscal/nfe55/origins/"+bound.OriginID+"/emit", emit, f.token)
+	if code != 200 || p.calls != 1 || p.last.OriginID != bound.OriginID || p.last.Purpose != "4" {
+		t.Fatal("return emit", code, string(raw), p.calls, p.last)
 	}
 }

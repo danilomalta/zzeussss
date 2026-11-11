@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"titansystem-backend/internal/fiscalcore"
 	"titansystem-backend/internal/localdb/fiscal"
@@ -40,5 +41,23 @@ func TestFocusIncomingRejectsSaleDirectionFlagBeforeEffects(t *testing.T) {
 				t.Fatalf("sale direction flag accepted: payload bytes=%d, error=%v", len(payload), err)
 			}
 		})
+	}
+}
+
+func TestApplyOriginReferenceUsesExplicitAccessKey(t *testing.T) {
+	key, err := fiscalcore.AccessKey(fiscalcore.KeyInput{UF: "SP", IssuedAt: time.Now(), CNPJ: "12345678000123", Model: "55", Series: 1, Number: 8, Emission: 1, NumericCode: "87654321"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	payload := map[string]any{}
+	if err := applyOriginReference(payload, &fiscal.NFeOrigin{Kind: "inbound_receipt", ReferencedKey: key}); err != nil {
+		t.Fatal(err)
+	}
+	refs, _ := payload["notas_referenciadas"].([]map[string]string)
+	if len(refs) != 1 || refs[0]["chave_nfe"] != key {
+		t.Fatal(payload)
+	}
+	if err := applyOriginReference(payload, &fiscal.NFeOrigin{Kind: "inbound_receipt", ReferencedKey: "short"}); !errors.Is(err, ErrReferencedOperationUnavailable) {
+		t.Fatal(err)
 	}
 }

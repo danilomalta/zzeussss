@@ -1,5 +1,17 @@
 # Continuidade do TitanSystem
 
+## Consolidação das duas linhas — 11/11/2026
+
+- **Unidade:** branch `feat/backend-consolidacao-20261111`, checkout isolado `/home/danillo-malta/Documents/Codex/worktrees/titansystem-consolidado-20261111`. Base aprovada `bd7502c3a11e298eeb179ee9d6fd3a87fd8ea7aa` + evolução `40958cdfa2848a10d8d6102a9b1dea869d273330`, ancestral comum `8fccfadaf3c155df102a8b9c042b8602a41f02ad`. Merge rastreável com os dois pais, sem rebase/force/main. A árvore principal permanece limpa em `wip/tabela-fiscal-cliente-20261111`/40958cd; nenhum banco ou serviço instalado foi usado. P28/793d086 permanece WIP separado, sem execução real nem incorporação automática.
+- **Preservado:** endurecimento P01/P02/P08, journals cifrados e checkout React/HTTP/SQLite da linha P35; tabela fiscal do cliente, logout online, patches npm, origens imutáveis de entrada/devolução, frete cotado e superfícies online da linha recente. Contratos unidos semanticamente:606 rotas. Cofre/rotação/sqlitewrite, tools e workflows são byte-idênticos a bd7502c. Produção/A3 permanecem recusadas; Focus foi apenas simulada.
+- **Conflitos (9):** routes_test.go; fiscalproduction/focus_incoming_origin_test.go e focus_invoice.go; localdb/fiscal/sale_taxes.go e tax_policy.go; docs/api/route-inventory.json e routes.openapi.json; CONTINUIDADE_TITANSYSTEM.md e REVOGACAO_CREDENCIAIS_P04.md. Mantidas restrições de proprietário, uso único e cotação antes do pagamento; agregadas origens fiscais sem substituir a validação de frete. Nenhum teste foi apagado. O teste antigo de rotas indisponíveis foi preservado e passou a exigir os códigos explícitos409/503/426 da implementação recente, mantendo401 sem autenticação. A nova fixture online usa a chave aleatória sintética existente; a fixture de frete declara o opt-in explícito exigido pelo contrato, sem mudar asserções.
+- **Migrações:** preservadas integralmente as antigas86(auth)/87(contato). O SQL das origens foi numerado88 com bytes e checksum inalterados. Reconhecimento estrito do histórico alternativo completo1..85 +86(origens), exclusivamente pelo fingerprint conhecido; transação IMMEDIATE com retentativa limitada move só esse último registro para88 preservando a data, instala86/87 e confirma tudo junto. Históricos desconhecidos/adulterados/futuros continuam recusados. Nenhum banco existente foi convertido nesta tarefa. Testes descartáveis provam preservação de empresa/origem, repetição/reabertura, rollback DDL/histórico e concorrência50 vezes sem falha. Não substituir esse reconhecimento estrito por bypass de checksum.
+- **Correções de compatibilidade adicionais:** declaração TypeScript de onlineLogout.mjs e remoção de UF duplicada fora de recipient.address no formulário de origem. Sem biblioteca nova. A suíte frontend passou138 arquivos; os dois arquivos afetados foram rechecados após a correção. TypeScript/Vite PASS22,45s, com aviso preexistente do chunk grande da planilha. Build Go PASS com GOFLAGS=-buildvcs=false (erro inicial foi carimbo VCS do worktree).
+- **Verificações:** pacotes fiscalcore/fiscalproduction/localdb-fiscal PASS; roteador online e cmd/api/onlinecatalog/catalog-delivery PASS; localdb/backup PASS; cofre/rotação -count20 PASS. Quinze testes principais HTTP fiscais/checkout PASS em UTC(16,801s) e America/Sao_Paulo(17,113s), nenhum desses pulado, incluindo bridges de checkout/cupom/XML com Focus simulada. Contratos606 e diff-check PASS. A execução race monolítica de fiscalproduction excedeu120s e foi preservada como falha de execução; não aumentei o timeout. localdb e localdb/fiscal passaram com race. Resultado dos grupos fiscais com a mesma união de testes está em docs/evidence/consolidacao-backend-20261111/summary.json.
+- **Limites e retomada:** o CI7/7 anterior pertence somente a bd7502c; não declarar CI verde deste candidato a partir dos resultados locais. Suíte integral/25 integrações com PostgreSQL e novo CI são gate próprio do candidato combinado. Nenhuma homologação Focus/SEFAZ, hardware, instalação comercial ou revogação histórica foi atestada. Próxima unidade independente: gate P35 no novo hash; depois retomar apenas os aceites restantes do checklist v1, sem recomeçar implementações existentes.
+
+itens fora do v1: ver o documento
+
 ## P35 — candidato P31c, checks locais e aceite v1 — 08/11/2026
 
 - **FEITO: gate técnico local; PENDENTE: aceite externo do v1.** Base remota confirmada `692cf4188241e16f1a53c42b2a743c8261a35b6a`; branch isolada `feat/backend-p35-p31c` em `/home/danillo-malta/Documents/Codex/worktrees/titansystem-backend-p04`. Candidato commitado e testado `90c272c7e4fd852c63ed458c3be9b5fa52680d37`, clone somente commitado `/tmp/titan-p35-20261108/clean`; logs temporários `/tmp/titan-p35-20261108`. Este commit posterior registra apenas documentação/evidências; código, testes, dependências e workflows iguais ao candidato testado. Branch/HEAD e SHA-256 dos nove WIPs da árvore principal `feat/fiscal-tabela-cliente`/`8fccfada`: preservados. Branch P35 anterior preservada; sem merge/main/force/deploy.
@@ -436,6 +448,35 @@
 - **Limites:** não repetidas suíte completa, frontend, cofre/rotação, -race, instalação ou ensaios físicos, pois esta unidade só incorpora fixtures já revisadas e seu checkpoint. Nenhum serviço/banco instalado foi alterado; produção/A3 não foram habilitados. O aceite local não é prova de CI remoto verde.
 - **Retomada:** próximo ID elegível **P01**, política de exposição segura de `cmd/api`, no checkout isolado acima e a partir do HEAD desta branch após o checkpoint. P01 não foi iniciada. Antes de qualquer próxima escrita, conferir branch/HEAD/status e ler somente o protocolo e o bloco P01 do plano.
 
+
+## Online /api/v1 lacunas PDV–métricas — 11/11/2026
+
+- Rotas autenticadas recusam com 501: `/metrics/overview`, `/pos/sales/recent`, `/cash/sessions`, `/fiscal/emit`, `/hr/employees`, `/tempo-real/chat`. Não inventam venda, caixa, RH, chat nem emissão. Produção fiscal permanece bloqueada. PDV/caixa/fiscal operacionais continuam em `/local/v1`.
+
+## Estacionamento fiscal — 11/11/2026
+
+- **Ponto de parada de código:** `wip/tabela-fiscal-cliente-20261111` `5a5b1a6` (depois de `0d31ec7`). F01/F03 em `0d31ec7`; F02 restante (postcss-selector-parser 6.1.6, source-map-js 1.2.2, follow-redirects 1.16.3, sem `--force`) em `5a5b1a6`.
+- **Escopo:** o trabalho fiscal **desta linha**, sem emitente, foi encerrado por decisão de escopo. Isso não prova que não exista outro código em todo o repositório, nem prova NF-e oficial, Focus/SEFAZ, suíte completa nem CI verde neste hash (consulta GitHub sem check runs em `5a5b1a6`).
+- **Produção/A3:** continuam bloqueadas. Homologação real (P28) continua EXTERNA. Código e testes locais não são nota autorizada.
+- **Retomada (ordem prudente):** (1) titular resolve P04 — revogação histórica externa, ainda não comprovada; **antes** de inserir ou usar credencial nova do cliente; credenciais não vão ao provedor nem ao Codex; (2) cadastro completo + credencial na instalação do cliente (P17) e homologação Focus da conta (P28); (3) contador aprova tabela; só então IBS/CBS, NFS-e, SPED; (4) P22 ledger, F04 Windows, P32–P34, produção só com decisão explícita de produto. Não simular oficial.
+- Canvas local do chat não faz parte deste repositório; este registro é a evidência no GitHub.
+
+## P04 P19 P20 P21 P24 — 11/11/2026
+
+- **P04:** `docs/architecture/REVOGACAO_CREDENCIAIS_P04.md` nesta linha. Titular confirma revogação; Codex não atesta.
+- **P19/P20:** origem imutável `POST /local/v1/fiscal/nfe55/origins` e emissão `.../origins/:id/emit`. Venda comum com finalidade 2–4 continua recusada. Entrada = recebimento físico + chave 55; devolução = customer_return + chave da nota original.
+- **P21:** rateio `AllocateFreight` e cotação com contrato de frete; modalidade 0/1/2 só com valor cotado. Sem cotação permanece `freight_charge_unavailable`.
+- **P24:** importação versionada já não-aprovada; capabilities declaram cobertura ICMS/PIS/COFINS, IBS/CBS indisponível e aviso de homologação sem aprovação contábil.
+- Produção/A3 não habilitados. Homologação real (P28) continua EXTERNA.
+
+## P00 — VERIFICADO SEM ALTERAÇÃO — 11/11/2026
+
+- **Estado:** VERIFICADO — sem alteração. Branch/hash da unidade: `feat/backend-base-segura` `67db486b8fd5086cb2b109955f0c8365b7d50bd2`. Não sobrescrita.
+- **Checkout isolado (próximos Pxx):** `/home/danillo-malta/Documents/Codex/worktrees/titansystem-backend-p00`. O worktree antigo `.../titansystem-backend-base-segura` está em `feat/backend-p03` `0c71587`, não reutilizado.
+- **Base:** `8fccfadaf3c155df102a8b9c042b8602a41f02ad` + UTC `24fc711` (diff idêntico a `ae61e4e`: três fixtures). `feat/fiscal-fase9` continua ausente no remoto. Árvore principal não foi reset/checkout/stash.
+- **WIP fora desta entrega:** `/home/danillo-malta/projetos/zzeussss` em `wip/tabela-fiscal-cliente-20261111` `83ce033` (limpa). Ancestral `8fccfad`; UTC das três fixtures ainda não está nesta linha — não aplicado para não misturar P00 no fiscal WIP.
+- **Testes (este hash):** `TZ=UTC go test ./internal/fiscalproduction ./internal/localapi -run '^(TestCheckoutEncryptedNFCePrintArchiveIsolationIntegrityAndNoNetwork|TestHTTPCheckoutNFCeHomologationIntegration)$' -timeout 120s -count=1`: ok 0,721s / 1,572s. Contratos: 594 rotas. Produção fiscal não habilitada.
+- **Próximo:** P01 (já existe em `origin/feat/backend-p01` `f166f35`; não iniciado nesta sessão).
 
 ## Recebíveis vinculados a pedidos autenticados — 03/11/2026, 16:01 -03
 

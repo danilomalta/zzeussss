@@ -81,7 +81,7 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 		return nil, fiscalcore.ErrUnsupported
 	}
 	if p.Model == "55" {
-		if err := validateFocusNFeInput(template, in, p); err != nil {
+		if err := validateFocusNFeInput(template, in, p, snapshot); err != nil {
 			return nil, err
 		}
 	}
@@ -110,7 +110,7 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 		if quote.Input.Context.OriginUF != p.State || quote.Input.Context.DestinationUF != p.State {
 			return nil, fiscalcore.ErrUnsupported
 		}
-		if quote.Input.Case.FinalConsumer != "yes" || quote.Input.Case.RecipientStatus != "noncontributor" {
+		if snapshot.Origin == nil && (quote.Input.Case.FinalConsumer != "yes" || quote.Input.Case.RecipientStatus != "noncontributor") {
 			return nil, fiscalcore.ErrUnsupported
 		}
 		if quote.ResultSHA256 != item.Tax.ResultSHA256 || quote.Input.Item.ProductID != item.ProductID || item.Tax.ProfileID != p.ProfileID || item.Tax.ProfileRevision != intent.Snapshot.ProfileRevision {
@@ -173,6 +173,11 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 		// Issuer registration is authoritative; addresses are configured in Focus.
 		payload["nome_emitente"] = p.LegalName
 		payload["uf_emitente"] = p.State
+		if origin := snapshot.Origin; origin != nil {
+			if err := applyOriginReference(payload, origin); err != nil {
+				return nil, err
+			}
+		}
 		if hasFreight {
 			// Official NotaFiscalXML vFrete / ItemNotaFiscalXML vFrete.
 			payload["valor_frete"] = focusMoney(freightTotal)
@@ -182,6 +187,9 @@ func focusInvoiceRequest(ctx context.Context, a RequestContext, intent fiscal.In
 					return nil, fiscalcore.ErrUnsupported
 				}
 			}
+		}
+		if err := applyChargedFreight(payload, items, in, snapshot); err != nil {
+			return nil, err
 		}
 	}
 	return focusRecipientPayload(template, p, payload)
@@ -208,7 +216,53 @@ func focusRecipientPayload(template fiscalcore.Invoice, profile fiscal.ProfileIn
 	return json.Marshal(payload)
 }
 
+func applyOriginReference(payload map[string]any, origin *fiscal.NFeOrigin) error {
+	if origin == nil || !fiscalcore.ValidAccessKey(origin.ReferencedKey) {
+		return ErrReferencedOperationUnavailable
+	}
+	payload["notas_referenciadas"] = []map[string]string{{"chave_nfe": origin.ReferencedKey}}
+	return nil
+}
+
+func applyChargedFreight(payload map[string]any, items []map[string]any, in DocumentRequest, snapshot fiscal.Snapshot) error {
+	charged := false
+	for _, row := range items {
+		if row["valor_frete"] != "0.00" {
+			charged = true
+		}
+	}
+	if !charged {
+		if in.FreightMode != "9" {
+			return ErrFreightChargeUnavailable
+		}
+		return nil
+	}
+	if in.FreightMode != "0" && in.FreightMode != "1" && in.FreightMode != "2" {
+		return ErrFreightChargeUnavailable
+	}
+	if snapshot.Origin != nil {
+		if snapshot.Origin.FreightMode != in.FreightMode {
+			return ErrFreightChargeUnavailable
+		}
+		return nil
+	}
+	var bindings []fiscal.SaleTaxBinding
+	for _, item := range snapshot.Items {
+		if item.Tax == nil {
+			return ErrFreightChargeUnavailable
+		}
+		bindings = append(bindings, *item.Tax)
+	}
+	if err := fiscal.ValidateSaleFreightOrigin(bindings, snapshot.SaleID); err != nil {
+		return ErrFreightChargeUnavailable
+	}
+	return nil
+}
+
 func focusPayments(snapshot fiscal.Snapshot) ([]map[string]string, error) {
+	if snapshot.Origin != nil {
+		return []map[string]string{{"forma_pagamento": "90", "valor_pagamento": focusMoney(snapshot.TotalCents)}}, nil
+	}
 	payments := make([]map[string]string, 0, len(snapshot.Payments))
 	for _, payment := range snapshot.Payments {
 		if payment.Method != "cash" || payment.Status != "confirmed" {

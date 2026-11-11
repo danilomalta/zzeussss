@@ -1,0 +1,4 @@
+export class TaxTableError extends Error {code:string;uncertain:boolean}
+export interface PreparedTaxTable {readonly hash:string;readonly revision:string;readonly regime:string;readonly rows:readonly {readonly id:string;readonly product:string;readonly ncm:string;readonly cfop:string;readonly from:string;readonly until:string;readonly sources:readonly string[];readonly active:boolean}[]}
+export interface TaxTableResult {state:'confirmed'|'unresolved';count:number}
+export function createTaxTableClient(options:{token:string;isCurrent:()=>boolean;profile:{profile_id:string;revision:number;model:string;crt:string;environment:string};fetcher?:typeof fetch;digest?:(bytes:Uint8Array)=>Promise<Uint8Array>}):{dispose:()=>void;prepare:(bytes:Uint8Array)=>Promise<PreparedTaxTable>;importTable:(view:PreparedTaxTable)=>Promise<TaxTableResult>;reconcile:(view:PreparedTaxTable)=>Promise<TaxTableResult>};

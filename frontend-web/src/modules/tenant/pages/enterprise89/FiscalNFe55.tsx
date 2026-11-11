@@ -1,5 +1,6 @@
 import {FiscalAccountingExport} from './FiscalAccountingExport';
 import {FiscalCorrection} from './FiscalCorrection';
+import {FiscalNFeOrigin} from './FiscalNFeOrigin';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {createNFe55Client,NFe55Error} from '../../../../core/fiscalCustomer/nfe55.mjs';
 import type {NFe55Preview,NFe55Status} from '../../../../core/fiscalCustomer/nfe55.mjs';
@@ -30,7 +31,7 @@ export function FiscalNFe55({token,isCurrent,words:fw,locale}:Props){
  const money=(c:number)=>new Intl.NumberFormat(locale,{style:'currency',currency:'BRL'}).format(c/100);
  const states:Record<string,string>={authorized_homologation:'nfeAuthorized',failed:'nfeRejected',cancelled_homologation:'nfeCancelled',cancellation_failed:'nfeCancelError',pending:'nfePending',recovery_required:'nfePending',not_requested:'nfeNotRequested'};
  const disabled=busy||!isCurrent();
- return <section aria-label={fw.nfeTitle} className="fiscal-nfe55"><h3>{fw.nfeTitle}</h3><p role="note" className="nfe55-banner"><strong>{fw.nfeBanner}</strong></p><p>{fw.nfeScope}</p><p>{fw.nfeUnavailable}</p><p>{fw.nfseMunicipalBlocked}</p><FiscalAccountingExport token={token} isCurrent={isCurrent} words={fw} locale={locale}/><p role="note">{fw.taxAccountantUnapproved}</p>
+ return <section aria-label={fw.nfeTitle} className="fiscal-nfe55"><h3>{fw.nfeTitle}</h3><p role="note" className="nfe55-banner"><strong>{fw.nfeBanner}</strong></p><p>{fw.nfeScope}</p><p>{fw.nfeUnavailable}</p><p>{fw.nfseMunicipalBlocked}</p><FiscalAccountingExport token={token} isCurrent={isCurrent} words={fw} locale={locale}/><p role="note">{fw.taxAccountantUnapproved}</p><FiscalNFeOrigin token={token} isCurrent={isCurrent} words={fw}/>
  <form onSubmit={e=>{e.preventDefault();void load();}}><label>{fw.nfeSale}<input required autoComplete="off" value={sale} disabled={busy} maxLength={128} onChange={e=>{setSale(e.target.value);setPaymentChoice('');setPaymentConfirmed(false);setPreview(null);setStatus(null);setInput(empty());setAttempted(false);}}/></label><label>{fw.nfePaymentChoice}<select required value={paymentChoice} disabled={busy} onChange={e=>{setPaymentChoice(e.target.value);setPaymentConfirmed(false);setPreview(null);setStatus(null);setInput(empty());}}><option value="">{fw.choose}</option><option value="recorded">{fw.nfePaymentRecorded}</option><option value="21">{fw.nfePayment21}</option><option value="91">{fw.nfePayment91}</option></select></label>
  {['21','91'].includes(paymentChoice)&&<><p role="note">{fw.nfePaymentWarning}</p><label><input required type="checkbox" checked={paymentConfirmed} disabled={busy} onChange={e=>setPaymentConfirmed(e.target.checked)}/>{fw.nfePaymentConfirm}</label></>}
  <button disabled={disabled} className="brand-secondary">{fw.nfeLoad}</button></form>

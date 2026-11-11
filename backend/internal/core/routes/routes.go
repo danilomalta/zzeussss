@@ -8,6 +8,9 @@ import (
 	catalogDelivery "titansystem-backend/internal/modules/catalog/delivery"
 	posDelivery "titansystem-backend/internal/modules/pos/delivery"
 	"titansystem-backend/pkg/middleware"
+	titanws "titansystem-backend/pkg/websocket"
+
+	ws "github.com/gofiber/websocket/v2"
 )
 
 type RespostaSaude struct {
@@ -17,13 +20,6 @@ type RespostaSaude struct {
 // Saude é o handler de verificação de integridade do backend (inline)
 func Saude(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(RespostaSaude{Status: "ativo"})
-}
-
-// Indisponivel impede a execução de fluxos ainda sem isolamento ou autorização completa.
-func Indisponivel(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusNotImplemented).JSON(fiber.Map{
-		"status": "indisponivel",
-	})
 }
 
 // Registrar registra todas as rotas HTTP do backend sob a nova arquitetura DDD.
@@ -196,18 +192,18 @@ func Registrar(app *fiber.App) {
 
 	// Análises com Inteligência Artificial (Bounded Context: Catalog)
 	analises := negocios.Group("/analises")
-	analises.Get("/produtos-parados", Indisponivel)
+	analises.Get("/produtos-parados", catalogDelivery.RecusarOperacaoExterna("online_sales_absent"))
 
 	// Indicações e Recompensas SaaS (Bounded Context: Tenant)
 	recompensas := negocios.Group("/recompensas")
-	recompensas.Post("/indicacoes", Indisponivel)
-	recompensas.Post("/indicacoes/recompensar", Indisponivel)
-	recompensas.Get("/indicacoes/saldo", Indisponivel)
+	recompensas.Post("/indicacoes", catalogDelivery.RecusarOperacaoExterna("loyalty_unavailable"))
+	recompensas.Post("/indicacoes/recompensar", catalogDelivery.RecusarOperacaoExterna("loyalty_unavailable"))
+	recompensas.Get("/indicacoes/saldo", catalogDelivery.RecusarOperacaoExterna("loyalty_unavailable"))
 
 	// Contábil e Fiscal - SPED (Bounded Context: Financial)
 	contabil := negocios.Group("/accounting")
-	contabil.Post("/sped/request", Indisponivel)
-	contabil.Get("/sped/status/:job_id", Indisponivel)
+	contabil.Post("/sped/request", catalogDelivery.RecusarOperacaoExterna("sped_unavailable"))
+	contabil.Get("/sped/status/:job_id", catalogDelivery.RecusarOperacaoExterna("sped_unavailable"))
 
 	// Frente de Caixa e Motor de Descontos (Bounded Context: POS)
 	descontos := negocios.Group("/discounts")
@@ -223,12 +219,22 @@ func Registrar(app *fiber.App) {
 	descontos.Get("/report/export.csv", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.DiscountReport("all", true))
 	descontos.Post("/suggest", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), posDelivery.SuggestDiscounts)
 	descontos.Get("/suggestions", middleware.CurrentUser(), middleware.RequireRoles("admin", "owner", "manager"), posDelivery.GetSuggestions)
-	descontos.Post("/suggestions/:id/review", Indisponivel)
+	descontos.Post("/suggestions/:id/review", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RevisarSugestaoDescontoUnificada)
 	descontos.Get("/suggestions/:id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarSugestaoDesconto)
 	descontos.Post("/suggestions/:id/approve", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RevisarSugestaoDesconto("approve"))
 	descontos.Post("/suggestions/:id/reject", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.RevisarSugestaoDesconto("reject"))
 	descontos.Get("/suggestions/:id/reviews", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.HistoricoDecisaoDesconto)
 	descontos.Get("/reviews/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarDecisaoDesconto)
 
-	// O chat de demonstração não recebe autenticação; não é exposto nesta fase.
+	negocios.Get("/metrics/overview", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.MetricasVisaoGeral)
+	negocios.Get("/pos/sales/recent", middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.VendasRecentesOnline)
+	negocios.Get("/cash/sessions", middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.SessoesCaixaOnline)
+	negocios.Post("/fiscal/emit", catalogDelivery.RecusarOperacaoExterna("production_blocked"))
+	negocios.Get("/hr/employees", middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.FuncionariosOnline)
+	negocios.Get("/tempo-real/chat", func(c *fiber.Ctx) error {
+		if !ws.IsWebSocketUpgrade(c) {
+			return c.Status(fiber.StatusUpgradeRequired).JSON(fiber.Map{"error": "websocket_upgrade_required"})
+		}
+		return ws.New(titanws.HandlerChat)(c)
+	})
 }

@@ -120,19 +120,24 @@ func TestFocusNFeRequiredDataNoDefaults(t *testing.T) {
 	p := fiscal.ProfileInput{State: "SP"}
 	in := DocumentRequest{Purpose: "1", FreightMode: "9"}
 	inv := fiscalcore.Invoice{Nature: "VENDA", Presence: "1", Direction: "1", Destination: "1", FinalConsumer: "1", Recipient: &fiscalcore.Party{CPF: "12345678909", Name: "Synthetic consumer", IEDestination: "9", Address: fiscalcore.Address{Street: "Rua Teste", Number: "1", District: "Centro", City: "Sao Paulo", UF: "SP"}}}
-	if err := validateFocusNFeInput(inv, in, p); err != nil {
+	if err := validateFocusNFeInput(inv, in, p, fiscal.Snapshot{}); err != nil {
 		t.Fatal(err)
 	}
 	for _, change := range []func(*fiscalcore.Invoice, *DocumentRequest){
-		func(i *fiscalcore.Invoice, d *DocumentRequest) { d.Purpose = "" }, func(i *fiscalcore.Invoice, d *DocumentRequest) { d.FreightMode = "" },
+		func(i *fiscalcore.Invoice, d *DocumentRequest) { d.FreightMode = "" },
 		func(i *fiscalcore.Invoice, d *DocumentRequest) { i.Recipient = nil }, func(i *fiscalcore.Invoice, d *DocumentRequest) { i.Nature = "" },
 		func(i *fiscalcore.Invoice, d *DocumentRequest) { i.Destination = "2" }, func(i *fiscalcore.Invoice, d *DocumentRequest) { i.FinalConsumer = "0" },
 	} {
 		copy, req := inv, in
 		change(&copy, &req)
-		if !errors.Is(validateFocusNFeInput(copy, req, p), ErrFocusNFeIncomplete) {
+		if !errors.Is(validateFocusNFeInput(copy, req, p, fiscal.Snapshot{}), ErrFocusNFeIncomplete) {
 			t.Fatal("missing/unsupported input defaulted")
 		}
+	}
+	emptyPurpose := in
+	emptyPurpose.Purpose = ""
+	if !errors.Is(validateFocusNFeInput(inv, emptyPurpose, p, fiscal.Snapshot{}), ErrReferencedOperationUnavailable) {
+		t.Fatal("empty purpose defaulted")
 	}
 	if safeFocusDANFEPath("https://evil.invalid/note.pdf", "123", "key") || safeFocusDANFEPath("/arquivos/123/../456/key.pdf", "123", "key") || safeFocusDANFEPath("/arquivos/456/key.pdf", "123", "key") {
 		t.Fatal("unsafe download")

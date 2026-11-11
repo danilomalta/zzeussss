@@ -18,6 +18,7 @@ type DocumentRequest struct {
 	Model             string
 	Environment       int
 	SaleID            string
+	OriginID          string
 	Invoice           json.RawMessage
 	OperationID       string
 	Revision          int

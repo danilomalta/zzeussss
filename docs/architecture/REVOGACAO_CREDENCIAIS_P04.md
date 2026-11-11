@@ -1,6 +1,8 @@
 # P04 — revogação histórica sob controle dos titulares
 
-Data: 04/11/2026. Base: `5ac74939c3e5bf0a56426b9d65ea73325ebf687f` (P02).
+Conferido nesta cadeia em 11/11/2026 sem reabrir `.env` nem autenticar com valor antigo. A revogação efetiva permanece EXTERNA.
+
+Data original: 04/11/2026. Base original: `5ac74939c3e5bf0a56426b9d65ea73325ebf687f` (P02).
 Estado: procedimento e checklist disponíveis; **revogação efetiva EXTERNA, não comprovada**.
 Não foram abertos arquivos de ambiente, blobs históricos, bancos ou chaves,
 nem tentada autenticação com qualquer credencial antiga. Nenhuma foi trocada.
@@ -148,6 +150,4 @@ P04 encerra o procedimento/documentação, não as revogações externas. O acei
 de implantação que depende dessas credenciais continua pendente até prova do
 titular; trabalho de código/diagnóstico independente pode continuar. Não se
 reescreve histórico nem se faz force push. Próximo ID independente: **P05**;
-não iniciado nesta unidade. Na entrega original P04, P03 permanecia WIP separado. A conclusão posterior
-de P03/P05 está registrada em CONTINUIDADE_TITANSYSTEM.md; as revogações reais
-deste checklist continuam EXTERNAS, sem comprovação por esta documentação.
+não iniciado nesta unidade. P03 permanece WIP separado, não consolidado aqui.

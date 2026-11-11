@@ -19,6 +19,9 @@ import (
 // Only frozen normal internal consumer sales are mapped. No tax defaults.
 var ErrFocusNFeIncomplete = errors.New("NF-e requires explicit nature, direction, destination, final consumer, purpose, freight mode and recipient identity/address; only normal internal consumer sales with recorded cash or explicit deferred payment are supported; charged freight requires a matching explicit pre-payment contract")
 var ErrFocusInvalidationUnavailable = errors.New("Focus invalidation unavailable: year contract not established")
+var ErrReferencedOperationUnavailable = errors.New("NF-e complementary, adjustment or return requires a typed origin snapshot; a common sale cannot be converted")
+var ErrFreightChargeUnavailable = errors.New("charged freight requires an authoritative quote and settlement; transport identity alone is not a freight charge")
+var ErrNFSeUnavailable = errors.New("municipal NFS-e requires a typed municipality contract; goods DPS is not a service invoice")
 
 func (p *FocusProvider) documentModel() string {
 	if p.configuration.DocumentModel == "" {
@@ -27,8 +30,35 @@ func (p *FocusProvider) documentModel() string {
 	return p.configuration.DocumentModel
 }
 
-func validateFocusNFeInput(t fiscalcore.Invoice, in DocumentRequest, p fiscal.ProfileInput) error {
-	if t.Presence != "1" || in.Purpose != "1" || focusTransportFields(map[string]any{}, in) != nil || t.Direction != "1" || t.Destination != "1" || t.FinalConsumer != "1" || strings.TrimSpace(t.Nature) != t.Nature || utf8.RuneCountInString(t.Nature) < 1 || utf8.RuneCountInString(t.Nature) > 60 {
+func validateFocusNFeInput(t fiscalcore.Invoice, in DocumentRequest, p fiscal.ProfileInput, snap fiscal.Snapshot) error {
+	if snap.Origin != nil && snap.SaleID != "" {
+		return ErrFocusNFeIncomplete
+	}
+	if snap.Origin == nil {
+		if t.Direction != "1" {
+			return ErrFocusNFeIncomplete
+		}
+		if in.Purpose != "1" {
+			return ErrReferencedOperationUnavailable
+		}
+	} else {
+		switch snap.Origin.Kind {
+		case "inbound_receipt":
+			if in.Purpose != "1" || t.Direction != "0" || !fiscalcore.ValidAccessKey(snap.Origin.ReferencedKey) {
+				return ErrReferencedOperationUnavailable
+			}
+		case "customer_return":
+			if in.Purpose != "4" || t.Direction != "1" || !fiscalcore.ValidAccessKey(snap.Origin.ReferencedKey) {
+				return ErrReferencedOperationUnavailable
+			}
+		default:
+			return ErrReferencedOperationUnavailable
+		}
+	}
+	if in.FreightMode != "9" && in.FreightMode != "0" && in.FreightMode != "1" && in.FreightMode != "2" {
+		return ErrFocusNFeIncomplete
+	}
+	if t.Presence != "1" || focusTransportFields(map[string]any{}, in) != nil || t.Destination != "1" || t.FinalConsumer != "1" || strings.TrimSpace(t.Nature) != t.Nature || utf8.RuneCountInString(t.Nature) < 1 || utf8.RuneCountInString(t.Nature) > 60 {
 		return ErrFocusNFeIncomplete
 	}
 	r := t.Recipient

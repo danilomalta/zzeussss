@@ -175,6 +175,7 @@ type Payment struct {
 }
 type Snapshot struct {
 	DeferredPayment *DeferredPayment `json:"deferred_payment,omitempty"`
+	Origin          *NFeOrigin       `json:"origin,omitempty"`
 	Version         int              `json:"version"`
 	Profile         ProfileInput     `json:"profile"`
 	ProfileRevision int              `json:"profile_revision"`

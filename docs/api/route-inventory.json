@@ -859,6 +859,20 @@
     },
     {
       "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/deferred/sales/:id/emit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal_deferred.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/deferred/sales/:id/query",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal_deferred.go"
+    },
+    {
+      "api": "local",
       "method": "GET",
       "path": "/local/v1/fiscal/intents",
       "authentication": "session",
@@ -951,6 +965,20 @@
     {
       "api": "local",
       "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/origins",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/origins/:id/emit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
       "path": "/local/v1/fiscal/nfe55/sales/:id/cancel",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
@@ -986,6 +1014,13 @@
     {
       "api": "local",
       "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/sales/:id/invalidate",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
       "path": "/local/v1/fiscal/nfe55/sales/:id/preview",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
@@ -994,6 +1029,13 @@
       "api": "local",
       "method": "POST",
       "path": "/local/v1/fiscal/nfe55/sales/:id/query",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfse",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
     },
@@ -2777,6 +2819,20 @@
     {
       "api": "local",
       "method": "GET",
+      "path": "/local/v1/purchase-suppliers/:id/contact-alert",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/purchase-suppliers/:id/contact-alert",
+      "authentication": "session",
+      "source": "backend/internal/localapi/supply_cycle.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
       "path": "/local/v1/purchase-suppliers/:id/edit-state",
       "authentication": "session",
       "source": "backend/internal/localapi/purchase_supplier_edit.go"
@@ -2840,6 +2896,13 @@
     {
       "api": "local",
       "method": "GET",
+      "path": "/local/v1/retail/access",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
       "path": "/local/v1/retail/config",
       "authentication": "session",
       "source": "backend/internal/localapi/retail.go"
@@ -2867,8 +2930,36 @@
     },
     {
       "api": "local",
+      "method": "GET",
+      "path": "/local/v1/retail/customers/:id/loyalty",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/customers/:id/loyalty/earn",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/customers/:id/loyalty/redeem",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
       "method": "POST",
       "path": "/local/v1/retail/customers/:id/privacy",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/operations/:id/reconcile",
       "authentication": "session",
       "source": "backend/internal/localapi/retail.go"
     },
@@ -2879,6 +2970,29 @@
       "authentication": "session",
       "source": "backend/internal/localapi/retail.go",
       "integrity": "Compensation allocation/cash/audit commit together; prior financial refund conflicts with cancellation/physical return; no duplicate cash or stock effect."
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/stores",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go",
+      "integrity": "Immediate writer; current HTTP session and scoped permissions before replay/mutation; exact movement/binding/audit/outbox writes or rollback. Inter-store transfer is local only."
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/retail/stores/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/stores/transfer",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go",
+      "integrity": "Immediate writer; current HTTP session and scoped permissions before replay/mutation; exact movement/binding/audit/outbox writes or rollback. Inter-store transfer is local only."
     },
     {
       "api": "local",
@@ -3202,6 +3316,14 @@
       "source": "backend/internal/core/routes/routes.go",
       "state": "implemented",
       "origin_validation": "RefreshOrigin: explicit allowed browser origin; cross-site refused; native still requires active Bearer session"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/cash/sessions",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "implemented"
     },
     {
       "api": "online",
@@ -3792,7 +3914,7 @@
       "path": "/api/v1/discounts/suggestions/:id/review",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
+      "state": "implemented"
     },
     {
       "api": "online",
@@ -3800,6 +3922,38 @@
       "path": "/api/v1/discounts/suggestions/:id/reviews",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go"
+    },
+    {
+      "api": "online",
+      "method": "POST",
+      "path": "/api/v1/fiscal/emit",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/hr/employees",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "implemented"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/metrics/overview",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "implemented"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/pos/sales/recent",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "implemented"
     },
     {
       "api": "online",
@@ -4165,90 +4319,12 @@
       "source": "backend/internal/core/routes/routes.go"
     },
     {
-      "api": "local",
+      "api": "online",
       "method": "GET",
-      "path": "/local/v1/retail/customers/:id/loyalty",
+      "path": "/api/v1/tempo-real/chat",
       "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/retail/customers/:id/loyalty/earn",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/retail/customers/:id/loyalty/redeem",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/retail/stores",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go",
-      "integrity": "Immediate writer; current HTTP session and scoped permissions before replay/mutation; exact movement/binding/audit/outbox writes or rollback. Inter-store transfer is local only."
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/retail/stores/transfer",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go",
-      "integrity": "Immediate writer; current HTTP session and scoped permissions before replay/mutation; exact movement/binding/audit/outbox writes or rollback. Inter-store transfer is local only."
-    },
-    {
-      "api": "local",
-      "method": "GET",
-      "path": "/local/v1/retail/stores/report",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/retail/operations/:id/reconcile",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "GET",
-      "path": "/local/v1/retail/access",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/fiscal/deferred/sales/:id/emit",
-      "authentication": "session",
-      "source": "backend/internal/localapi/fiscal_deferred.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/fiscal/deferred/sales/:id/query",
-      "authentication": "session",
-      "source": "backend/internal/localapi/fiscal_deferred.go"
-    },
-    {
-      "api": "local",
-      "method": "GET",
-      "path": "/local/v1/purchase-suppliers/:id/contact-alert",
-      "authentication": "session",
-      "source": "backend/internal/localapi/supply_cycle.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/purchase-suppliers/:id/contact-alert",
-      "authentication": "session",
-      "source": "backend/internal/localapi/supply_cycle.go"
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "implemented"
     }
   ],
   "framework_error_policy": "local/online: parser and uncaught errors use apicontract.FrameworkError; never echo parser diagnostics or request data"

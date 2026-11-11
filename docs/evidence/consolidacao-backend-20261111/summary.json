@@ -1,0 +1,81 @@
+{
+  "date": "2026-11-11",
+  "branch": "feat/backend-consolidacao-20261111",
+  "parents": [
+    "bd7502c3a11e298eeb179ee9d6fd3a87fd8ea7aa",
+    "40958cdfa2848a10d8d6102a9b1dea869d273330"
+  ],
+  "main_tree_preserved": true,
+  "contracts": 606,
+  "migration": {
+    "canonical_tail": [
+      86,
+      87,
+      88
+    ],
+    "legacy_origins_tail": 86,
+    "sql_bytes_preserved": true,
+    "history_upgrade": "exact-known-fingerprint-only; immediate; atomic; original date retained",
+    "concurrent_count": 50,
+    "concurrent_failures": 0
+  },
+  "tests": {
+    "fiscalcore": "PASS 4.694s",
+    "fiscalproduction": "PASS 25.040s",
+    "localdb_fiscal": "PASS 0.671s",
+    "routes": "PASS 0.595s",
+    "localdb": "PASS 12.583s",
+    "backup": "PASS 75.045s",
+    "vault_rotation_count20": "PASS 24.912s",
+    "http_utc": "15 main tests PASS 16.801s",
+    "http_sao_paulo": "15 main tests PASS 17.113s",
+    "frontend": "138 test files PASS",
+    "frontend_relevant_recheck": "2 files PASS",
+    "typescript_vite": "PASS 22.45s",
+    "go_build": "PASS GOFLAGS=-buildvcs=false"
+  },
+  "race": {
+    "localdb": "PASS 74.406s",
+    "localdb_fiscal": "PASS 8.272s",
+    "fiscalproduction_monolithic": "timeout 120s; not claimed PASS",
+    "partitioned": {
+      "result": "PASS",
+      "selected": 74,
+      "passed": 73,
+      "skipped": 1,
+      "skip_reason": "real Focus requires customer credentials and explicit opt-in",
+      "union_exact": true,
+      "proof": "race-partitions.json"
+    }
+  },
+  "limits": {
+    "new_remote_ci": "not yet checked",
+    "full_suite_postgresql": "not run in this unit",
+    "real_focus": "NOT RUN",
+    "production": "BLOCKED",
+    "a3": "BLOCKED",
+    "installed_customer_data": "NOT ACCESSED"
+  },
+  "protected_files": {
+    ".github/workflows/ci.yml": {
+      "matches_bd7502c": true,
+      "sha256": "c7d2cbd2c70de68d12e10295ea1f6dfa20edf2ef880a6568da5d884186e64537"
+    },
+    ".github/workflows/backend-pilot.yml": {
+      "matches_bd7502c": true,
+      "sha256": "1ddb9ee7196707654e1d6ab25573896c1cd401b8ed2d8a702f9c854d28fbd267"
+    },
+    "backend/internal/fiscalproduction/secret_vault.go": {
+      "matches_bd7502c": true,
+      "sha256": "d58fb9d38b253e17a7ed6a5cc352eb6c80a639af73c475ad26a821587521254e"
+    },
+    "backend/internal/fiscalproduction/vault_lifecycle.go": {
+      "matches_bd7502c": true,
+      "sha256": "9a746cd232f4aab1b7b729aa27c26951a3792c9fdc4fce4b23d2ce07ad564a41"
+    },
+    "backend/internal/sqlitewrite/write.go": {
+      "matches_bd7502c": true,
+      "sha256": "bdf5c870db31efcf60ceeedd1bc9cdce65fa7a4c1b5cefaa252d5bbfcd80aca0"
+    }
+  }
+}
