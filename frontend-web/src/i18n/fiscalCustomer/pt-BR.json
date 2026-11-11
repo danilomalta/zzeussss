@@ -200,5 +200,6 @@
   "taxTableError_denied": "Acesso recusado. É necessário proprietário com sessão e contrato fiscal ativos.",
   "taxTableError_refused": "Importação recusada. Confira o arquivo, o contrato e as revisões.",
   "taxTableError_network": "Sem resposta conclusiva. Consulte este arquivo antes de outra ação.",
-  "taxTableError_response": "Resposta não comprovada. Consulte o arquivo no servidor."
+  "taxTableError_response": "Resposta não comprovada. Consulte o arquivo no servidor.",
+  "taxTableError_not_found": "O servidor não encontrou todas as regras deste arquivo. Consulte os identificadores sem republicar."
 }

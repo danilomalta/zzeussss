@@ -200,5 +200,6 @@
   "taxTableError_denied": "Access denied. An owner with active session and fiscal contract is required.",
   "taxTableError_refused": "Import refused. Check the file, contract and revisions.",
   "taxTableError_network": "No conclusive response. Consult this file before another action.",
-  "taxTableError_response": "Response not confirmed. Consult the file on the server."
+  "taxTableError_response": "Response not confirmed. Consult the file on the server.",
+  "taxTableError_not_found": "The server did not find every rule in this file. Consult the identifiers; do not republish."
 }

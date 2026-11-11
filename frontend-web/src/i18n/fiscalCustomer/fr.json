@@ -200,5 +200,6 @@
   "taxTableError_denied": "Accès refusé. Un propriétaire avec session et contrat fiscal actifs est requis.",
   "taxTableError_refused": "Import refusé. Vérifiez fichier, contrat et révisions.",
   "taxTableError_network": "Aucune réponse concluante. Consultez ce fichier avant une autre action.",
-  "taxTableError_response": "Réponse non confirmée. Consultez le fichier sur le serveur."
+  "taxTableError_response": "Réponse non confirmée. Consultez le fichier sur le serveur.",
+  "taxTableError_not_found": "Le serveur n’a pas trouvé toutes les règles de ce fichier. Consultez les identifiants sans republier."
 }
