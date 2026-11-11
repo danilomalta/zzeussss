@@ -3253,7 +3253,7 @@
       "path": "/api/v1/cash/sessions",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
+      "state": "implemented"
     },
     {
       "api": "online",
@@ -3867,7 +3867,7 @@
       "path": "/api/v1/hr/employees",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
+      "state": "implemented"
     },
     {
       "api": "online",
@@ -3875,7 +3875,7 @@
       "path": "/api/v1/metrics/overview",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
+      "state": "implemented"
     },
     {
       "api": "online",
@@ -3883,7 +3883,7 @@
       "path": "/api/v1/pos/sales/recent",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
+      "state": "implemented"
     },
     {
       "api": "online",
@@ -4254,7 +4254,7 @@
       "path": "/api/v1/tempo-real/chat",
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
-      "state": "unavailable"
+      "state": "implemented"
     }
   ]
 }

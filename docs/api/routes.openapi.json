@@ -21431,7 +21431,7 @@
         },
         "x-payload-contract": "pending",
         "x-source": "backend/internal/core/routes/routes.go",
-        "x-state": "unavailable"
+        "x-state": "implemented"
       }
     },
     "/api/v1/fiscal/emit": {
@@ -21477,7 +21477,7 @@
         },
         "x-payload-contract": "pending",
         "x-source": "backend/internal/core/routes/routes.go",
-        "x-state": "unavailable"
+        "x-state": "implemented"
       }
     },
     "/api/v1/metrics/overview": {
@@ -21500,7 +21500,7 @@
         },
         "x-payload-contract": "pending",
         "x-source": "backend/internal/core/routes/routes.go",
-        "x-state": "unavailable"
+        "x-state": "implemented"
       }
     },
     "/api/v1/pos/sales/recent": {
@@ -21523,7 +21523,7 @@
         },
         "x-payload-contract": "pending",
         "x-source": "backend/internal/core/routes/routes.go",
-        "x-state": "unavailable"
+        "x-state": "implemented"
       }
     },
     "/api/v1/tempo-real/chat": {
@@ -21546,7 +21546,7 @@
         },
         "x-payload-contract": "pending",
         "x-source": "backend/internal/core/routes/routes.go",
-        "x-state": "unavailable"
+        "x-state": "implemented"
       }
     }
   },
