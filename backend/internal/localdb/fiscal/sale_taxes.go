@@ -107,7 +107,7 @@ func ResolveSaleTaxTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d ident
 		return out, ErrConflict
 	}
 	item := q.Input.Item
-	if q.CatalogUnit == "" || q.CatalogUnit != unit || item.ProductID != product || !equalScaled(item.Quantity, quantity, 1000) || !equalScaled(item.UnitPrice, price, 100) || !equalScaled(q.Result.Net, total, 100) {
+	if q.CatalogUnit == "" || q.CatalogUnit != unit || item.ProductID != product || !equalScaled(item.Quantity, quantity, 1000) || !equalScaled(item.UnitPrice, price, 100) || !equalScaled(q.Result.Gross, total, 100) {
 		return out, ErrConflict
 	}
 	for _, v := range []string{item.Discount, item.Insurance, item.Other} {
@@ -174,7 +174,7 @@ func StoredSaleTaxesTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d iden
 		if err = tx.QueryRowContext(ctx, `SELECT product_id,quantity_milli,unit_price_cents,total_cents FROM sale_items WHERE tenant_id=? AND sale_id=? AND id=?`, a.TenantID, sale, r.item).Scan(&product, &quantity, &price, &total); err != nil {
 			return nil, err
 		}
-		if q.Input.Item.ProductID != product || !equalScaled(q.Input.Item.Quantity, quantity, 1000) || !equalScaled(q.Input.Item.UnitPrice, price, 100) || !equalScaled(q.Result.Net, total, 100) {
+		if q.Input.Item.ProductID != product || !equalScaled(q.Input.Item.Quantity, quantity, 1000) || !equalScaled(q.Input.Item.UnitPrice, price, 100) || !equalScaled(q.Result.Gross, total, 100) {
 			return nil, ErrIntegrity
 		}
 		out[r.item] = expected

@@ -43,9 +43,10 @@ type OriginBindInput struct {
 	SourceID        string `json:"source_id"`
 	ReferencedKey   string `json:"referenced_access_key"`
 	FreightMode     string `json:"freight_mode"`
-	ProfileID       string `json:"-"`
-	ProfileRevision int    `json:"-"`
-	Confirmed       bool   `json:"confirmed"`
+	ProfileID          string   `json:"-"`
+	ProfileRevision    int      `json:"-"`
+	TaxQuoteOperations []string `json:"tax_quote_operations,omitempty"`
+	Confirmed          bool     `json:"confirmed"`
 	Recipient      struct {
 		CNPJ string `json:"cnpj"`
 		CPF  string `json:"cpf"`
@@ -66,6 +67,54 @@ func (o NFeOrigin) valid() bool {
 		return false
 	}
 	return true
+}
+
+func bindOriginTaxesTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d identity.DeviceContext, in *OriginBindInput) error {
+	if in == nil {
+		return ErrInvalid
+	}
+	refs := in.TaxQuoteOperations
+	if len(refs) == 0 {
+		refs = make([]string, len(in.Items))
+		resolve := false
+		for i, item := range in.Items {
+			if item.Tax != nil && item.Tax.QuoteOperationID != "" && len(item.Tax.Taxes) == 0 {
+				refs[i] = item.Tax.QuoteOperationID
+				resolve = true
+				continue
+			}
+			if resolve {
+				return ErrInvalid
+			}
+		}
+		if !resolve {
+			return nil
+		}
+	}
+	if len(refs) != len(in.Items) {
+		return ErrInvalid
+	}
+	seen := map[string]bool{}
+	for i, ref := range refs {
+		if seen[ref] || ref == "" || (in.Items[i].Tax != nil && len(in.Items[i].Tax.Taxes) > 0) {
+			return ErrInvalid
+		}
+		seen[ref] = true
+		item := in.Items[i]
+		var unit string
+		if err := tx.QueryRowContext(ctx, `SELECT unit FROM products WHERE tenant_id=? AND id=?`, a.TenantID, item.ProductID).Scan(&unit); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return ErrNotFound
+			}
+			return err
+		}
+		binding, err := ResolveSaleTaxTx(ctx, tx, a, d, ref, item.ProductID, unit, item.QuantityMilli, item.UnitPriceCents, item.TotalCents)
+		if err != nil {
+			return err
+		}
+		in.Items[i].Tax = &binding
+	}
+	return nil
 }
 
 func BindNFeOrigin(ctx context.Context, db *sql.DB, license *entitlementstore.Store, a identity.Scope, d identity.DeviceContext, in OriginBindInput, token string) (OriginRecord, error) {
@@ -129,6 +178,9 @@ func bindNFeOriginTx(ctx context.Context, tx *sql.Tx, license *entitlementstore.
 	}
 	if profile.Input.Model != "55" || profile.Input.Environment != "homologation" {
 		return out, ErrInvalid
+	}
+	if err := bindOriginTaxesTx(ctx, tx, a, d, &in); err != nil {
+		return out, err
 	}
 	snap := Snapshot{Version: 1, SaleID: "", Origin: &origin, Profile: profile.Input, ProfileRevision: profile.Revision, Items: in.Items, Payments: nil}
 	for i := range snap.Items {

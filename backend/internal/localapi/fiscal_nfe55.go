@@ -118,18 +118,29 @@ func (s *Server) fiscalNFe55Action(c *fiber.Ctx, action string) error {
 		if !preview.MappingSupported {
 			return nfe55Failure(c, fiscalcore.ErrUnsupported)
 		}
-		if in.FreightMode == "0" || in.FreightMode == "1" || in.FreightMode == "2" {
-			var bindings []fiscal.SaleTaxBinding
-			matched := false
-			for _, item := range preview.Items {
-				if item.Tax == nil {
+		var bindings []fiscal.SaleTaxBinding
+		charged := false
+		matched := false
+		for _, item := range preview.Items {
+			if item.Tax == nil {
+				if in.FreightMode == "0" || in.FreightMode == "1" || in.FreightMode == "2" {
 					return nfe55Failure(c, fiscalproduction.ErrFreightChargeUnavailable)
 				}
-				bindings = append(bindings, *item.Tax)
-				if item.Tax.Freight != nil && item.Tax.Freight.FreightMode == in.FreightMode {
+				continue
+			}
+			bindings = append(bindings, *item.Tax)
+			if item.Tax.Freight != nil {
+				charged = true
+				if item.Tax.Freight.FreightMode == in.FreightMode {
 					matched = true
 				}
 			}
+		}
+		if charged {
+			if !matched || fiscal.ValidateSaleFreightOrigin(bindings, req.SaleID) != nil {
+				return nfe55Failure(c, fiscalproduction.ErrFreightChargeUnavailable)
+			}
+		} else if in.FreightMode == "0" || in.FreightMode == "1" || in.FreightMode == "2" {
 			if !matched || fiscal.ValidateSaleFreightOrigin(bindings, req.SaleID) != nil {
 				return nfe55Failure(c, fiscalproduction.ErrFreightChargeUnavailable)
 			}
