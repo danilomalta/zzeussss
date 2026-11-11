@@ -12,6 +12,7 @@ import (
 
 // SaleTaxBinding is frozen with the payment, not added after a sale completes.
 type SaleTaxBinding struct {
+	Freight          *SaleFreightContract  `json:"freight,omitempty"`
 	CatalogUnit      string                `json:"catalog_unit"`
 	Context          fiscalcore.TaxContext `json:"context"`
 	Case             fiscalcore.TaxCase    `json:"case"`
@@ -57,7 +58,21 @@ func saleTaxBinding(q TaxQuote, p TaxPolicy) (SaleTaxBinding, error) {
 	if extra != total-net {
 		return out, ErrInvalid
 	}
-	return SaleTaxBinding{CatalogUnit: q.CatalogUnit, Context: q.Input.Context, Case: q.Input.Case, QuoteOperationID: q.Input.OperationID, ResultSHA256: q.ResultSHA256, ProfileID: p.Input.ProfileID, ProfileRevision: p.Input.ProfileRevision, AdditionalCents: extra, Taxes: mapped.Taxes, Totals: mapped.Totals}, nil
+	freight, err := saleFreightCents(q)
+	if err != nil {
+		return out, err
+	}
+	if freight > 9007199254740991-extra {
+		return out, ErrInvalid
+	}
+	if q.Input.Freight != nil {
+		gross, e := taxCents(q.Result.Gross)
+		if e != nil || gross > 9007199254740991-freight || net != gross+freight {
+			return out, ErrInvalid
+		}
+	}
+	extra += freight
+	return SaleTaxBinding{Freight: q.Input.Freight, CatalogUnit: q.CatalogUnit, Context: q.Input.Context, Case: q.Input.Case, QuoteOperationID: q.Input.OperationID, ResultSHA256: q.ResultSHA256, ProfileID: p.Input.ProfileID, ProfileRevision: p.Input.ProfileRevision, AdditionalCents: extra, Taxes: mapped.Taxes, Totals: mapped.Totals}, nil
 }
 
 // ResolveSaleTaxTx checks current policy/profile/date, exact catalogue price and
@@ -95,8 +110,14 @@ func ResolveSaleTaxTx(ctx context.Context, tx *sql.Tx, a identity.Scope, d ident
 	if q.CatalogUnit == "" || q.CatalogUnit != unit || item.ProductID != product || !equalScaled(item.Quantity, quantity, 1000) || !equalScaled(item.UnitPrice, price, 100) || !equalScaled(q.Result.Net, total, 100) {
 		return out, ErrConflict
 	}
-	for _, v := range []string{item.Discount, item.Freight, item.Insurance, item.Other} {
+	for _, v := range []string{item.Discount, item.Insurance, item.Other} {
 		if !equalScaled(v, 0, 1) {
+			return out, ErrInvalid
+		}
+	}
+	if !equalScaled(item.Freight, 0, 1) {
+		n, e := saleFreightCents(q)
+		if e != nil || !equalScaled(item.Freight, n, 100) {
 			return out, ErrInvalid
 		}
 	}

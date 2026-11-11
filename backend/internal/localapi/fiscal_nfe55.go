@@ -111,15 +111,28 @@ func (s *Server) fiscalNFe55Action(c *fiber.Ctx, action string) error {
 		if in.Purpose == "2" || in.Purpose == "3" || in.Purpose == "4" {
 			return nfe55Failure(c, fiscalproduction.ErrReferencedOperationUnavailable)
 		}
-		if in.FreightMode == "0" || in.FreightMode == "1" || in.FreightMode == "2" {
-			return nfe55Failure(c, fiscalproduction.ErrFreightChargeUnavailable)
-		}
 		preview, err := s.fiscalProviders.PreviewCustomerNFe55(c.UserContext(), a, req.SaleID)
 		if err != nil {
 			return nfe55Failure(c, err)
 		}
 		if !preview.MappingSupported {
 			return nfe55Failure(c, fiscalcore.ErrUnsupported)
+		}
+		if in.FreightMode == "0" || in.FreightMode == "1" || in.FreightMode == "2" {
+			var bindings []fiscal.SaleTaxBinding
+			matched := false
+			for _, item := range preview.Items {
+				if item.Tax == nil {
+					return nfe55Failure(c, fiscalproduction.ErrFreightChargeUnavailable)
+				}
+				bindings = append(bindings, *item.Tax)
+				if item.Tax.Freight != nil && item.Tax.Freight.FreightMode == in.FreightMode {
+					matched = true
+				}
+			}
+			if !matched || fiscal.ValidateSaleFreightOrigin(bindings, req.SaleID) != nil {
+				return nfe55Failure(c, fiscalproduction.ErrFreightChargeUnavailable)
+			}
 		}
 		r := in.Recipient
 		d := r.Address
@@ -255,6 +268,78 @@ func (s *Server) fiscalNFe55Invalidate(c *fiber.Ctx) error {
 		return nfe55Failure(c, err)
 	}
 	return nfe55Failure(c, fiscalproduction.ErrFocusInvalidationUnavailable)
+}
+
+func (s *Server) fiscalNFe55BindOrigin(c *fiber.Ctx) error {
+	if !fiscalWrite(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	var in fiscal.OriginBindInput
+	if fiscalcore.DecodeInput(c.Body(), &in) != nil {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	_, b, err := s.fiscalProviders.CustomerNFe55Provider(c.UserContext(), s.productionContext(c))
+	if err != nil {
+		return nfe55Failure(c, err)
+	}
+	in.ProfileID, in.ProfileRevision = b.ProfileID, b.ProfileRevision
+	a := s.productionContext(c)
+	out, err := fiscal.BindNFeOrigin(c.UserContext(), s.DB, s.contracts, a.Actor, a.Device, in, a.Token)
+	if err != nil {
+		return nfe55Failure(c, err)
+	}
+	status := 201
+	if out.Repeated {
+		status = 200
+	}
+	return c.Status(status).JSON(fiber.Map{"origin_id": out.ID, "operation_id": out.OperationID, "kind": out.Snapshot.Origin.Kind, "repeated": out.Repeated})
+}
+
+func (s *Server) fiscalNFe55OriginEmit(c *fiber.Ctx) error {
+	if !fiscalWrite(c) {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	a := s.productionContext(c)
+	p, _, err := s.fiscalProviders.CustomerNFe55Provider(c.UserContext(), a)
+	if err != nil {
+		return nfe55Failure(c, err)
+	}
+	rec, err := fiscal.ReadNFeOrigin(c.UserContext(), s.DB, a.Actor, a.Device, c.Params("id"))
+	if err != nil {
+		return nfe55Failure(c, err)
+	}
+	var in struct {
+		Nature      string                           `json:"nature"`
+		Purpose     string                           `json:"purpose"`
+		FreightMode string                           `json:"freight_mode"`
+		Transport   *fiscalproduction.FocusTransport `json:"transport,omitempty"`
+		Recipient   nfeRecipientInput                `json:"recipient"`
+		Confirmed   bool                             `json:"confirmed"`
+	}
+	if fiscalcore.DecodeInput(c.Body(), &in) != nil || !in.Confirmed {
+		return fiscalFailure(c, fiscal.ErrInvalid)
+	}
+	o := rec.Snapshot.Origin
+	if in.Recipient.Name != o.RecipientName || in.Recipient.Address.UF != o.RecipientUF || in.Recipient.CNPJ != o.RecipientCNPJ || in.Recipient.CPF != o.RecipientCPF {
+		return nfe55Failure(c, fiscalproduction.ErrReferencedOperationUnavailable)
+	}
+	direction := "1"
+	if o.Kind == "inbound_receipt" {
+		direction = "0"
+	}
+	r := in.Recipient
+	d := r.Address
+	invoice := fiscalcore.Invoice{Environment: 2, Nature: in.Nature, Direction: direction, Destination: "1", FinalConsumer: "1", Presence: "1", Recipient: &fiscalcore.Party{CNPJ: r.CNPJ, CPF: r.CPF, Name: r.Name, IE: r.IE, IEDestination: "9", Address: fiscalcore.Address{Street: d.Street, Number: d.Number, District: d.District, CityCode: d.CityCode, City: d.City, UF: d.UF, PostalCode: d.PostalCode}}}
+	raw, err := json.Marshal(invoice)
+	if err != nil {
+		return nfe55Failure(c, err)
+	}
+	req := fiscalproduction.DocumentRequest{OriginID: rec.ID, Model: "55", Environment: 2, Purpose: in.Purpose, FreightMode: in.FreightMode, Transport: in.Transport, Invoice: raw}
+	out, err := p.Emit(c.UserContext(), a, req)
+	if err != nil && out.State == "" {
+		return nfe55Failure(c, err)
+	}
+	return c.JSON(fiber.Map{"archive_state": out.ArchiveState, "state": out.State, "message": out.Message, "error_code": out.ErrorCode, "key": out.Key, "intent_id": out.IntentID})
 }
 
 func (s *Server) fiscalNFSe(c *fiber.Ctx) error {

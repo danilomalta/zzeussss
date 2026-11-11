@@ -1,5 +1,13 @@
 # Continuidade do TitanSystem
 
+## P04 P19 P20 P21 P24 — 11/11/2026
+
+- **P04:** `docs/architecture/REVOGACAO_CREDENCIAIS_P04.md` nesta linha. Titular confirma revogação; Codex não atesta.
+- **P19/P20:** origem imutável `POST /local/v1/fiscal/nfe55/origins` e emissão `.../origins/:id/emit`. Venda comum com finalidade 2–4 continua recusada. Entrada = recebimento físico + chave 55; devolução = customer_return + chave da nota original.
+- **P21:** rateio `AllocateFreight` e cotação com contrato de frete; modalidade 0/1/2 só com valor cotado. Sem cotação permanece `freight_charge_unavailable`.
+- **P24:** importação versionada já não-aprovada; capabilities declaram cobertura ICMS/PIS/COFINS, IBS/CBS indisponível e aviso de homologação sem aprovação contábil.
+- Produção/A3 não habilitados. Homologação real (P28) continua EXTERNA.
+
 ## P00 — VERIFICADO SEM ALTERAÇÃO — 11/11/2026
 
 - **Estado:** VERIFICADO — sem alteração. Branch/hash da unidade: `feat/backend-base-segura` `67db486b8fd5086cb2b109955f0c8365b7d50bd2`. Não sobrescrita.

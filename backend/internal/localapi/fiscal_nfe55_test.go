@@ -273,7 +273,22 @@ func TestHTTPNFe55RemainingOperationsRefuseWithoutInventingOrigin(t *testing.T) 
 		t.Fatal("nfse converted goods", code, string(raw), p.calls)
 	}
 	code, raw = request(t, f.app, "GET", "/local/v1/fiscal/capabilities", "", f.token)
-	if code != 200 || !bytes.Contains(raw, []byte(`"referenced_nfe_available":false`)) || !bytes.Contains(raw, []byte(`"freight_charge_available":false`)) || !bytes.Contains(raw, []byte(`"invalidation_available":false`)) || !bytes.Contains(raw, []byte(`"nfse_available":false`)) {
+	if code != 200 || !bytes.Contains(raw, []byte(`"referenced_nfe_available":true`)) || !bytes.Contains(raw, []byte(`"freight_charge_available":true`)) || !bytes.Contains(raw, []byte(`"invalidation_available":false`)) || !bytes.Contains(raw, []byte(`"nfse_available":false`)) || !bytes.Contains(raw, []byte(`"ibs_cbs_available":false`)) {
 		t.Fatal("capabilities claimed unavailable operations", string(raw))
+	}
+}
+
+func TestHTTPNFe55OriginBindUnknownReceipt(t *testing.T) {
+	f := fiscalFixture(t, "55")
+	p := &nfe55ContractProvider{state: "authorized_homologation"}
+	nfe55ContractApp(t, f, p, "homologation")
+	key, err := fiscalcore.AccessKey(fiscalcore.KeyInput{UF: "SP", IssuedAt: time.Now(), CNPJ: "12345678000195", Model: "55", Series: 1, Number: 1, Emission: 1, NumericCode: "12345678"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := `{"operation_id":"origin-op","kind":"inbound_receipt","source_id":"missing-receipt","referenced_access_key":"` + key + `","freight_mode":"9","confirmed":true,"recipient":{"cnpj":"12345678000195","name":"Fornecedor","uf":"SP"},"items":[{"product_id":"p","quantity_milli":1000,"unit_price_cents":100,"total_cents":100}]}`
+	code, raw := request(t, f.app, "POST", "/local/v1/fiscal/nfe55/origins", body, f.token)
+	if code != 404 || p.calls != 0 {
+		t.Fatal("missing receipt invented origin", code, string(raw), p.calls)
 	}
 }

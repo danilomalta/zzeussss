@@ -23,6 +23,8 @@ func (s *Server) mountFiscal(r fiber.Router) {
 	r.Post("/fiscal/nfe55/sales/:id/correction/query", s.fiscalNFe55CorrectionQuery)
 	r.Post("/fiscal/nfe55/sales/:id/invalidate", s.fiscalNFe55Invalidate)
 	r.Get("/fiscal/nfe55/sales/:id/danfe", s.fiscalNFe55DANFE)
+	r.Post("/fiscal/nfe55/origins", s.fiscalNFe55BindOrigin)
+	r.Post("/fiscal/nfe55/origins/:id/emit", s.fiscalNFe55OriginEmit)
 	r.Post("/fiscal/nfse", s.fiscalNFSe)
 
 	r.Post("/fiscal/tax-tables/import", s.importTaxTable)
@@ -97,7 +99,7 @@ func (s *Server) fiscalCapabilities(c *fiber.Ctx) error {
 	if err != nil {
 		return fiscalFailure(c, err)
 	}
-	out := fiber.Map{"scope": "durable_preparation_and_homologation_archive_print", "homologation_archive_print_available": true, "models": []string{"55", "65"}, "profile_configuration": "active_owner_and_fiscal_contract", "readiness": fiscal.Unavailable(), "nfse_available": false, "sped_generation_available": false, "transmission_available": false, "automatic_retry_available": false, "production_cancellation_available": false, "referenced_nfe_available": false, "freight_charge_available": false, "invalidation_available": false}
+	out := fiber.Map{"scope": "durable_preparation_and_homologation_archive_print", "homologation_archive_print_available": true, "models": []string{"55", "65"}, "profile_configuration": "active_owner_and_fiscal_contract", "readiness": fiscal.Unavailable(), "nfse_available": false, "sped_generation_available": false, "transmission_available": false, "automatic_retry_available": false, "production_cancellation_available": false, "referenced_nfe_available": true, "freight_charge_available": true, "invalidation_available": false, "homologation_warning_without_accountant_approval": true, "tax_coverage": fiber.Map{"versioned_table_import": true, "imported_unapproved_until_accountant": true, "ibs_cbs_available": false, "supported_component_groups": []string{"ICMS", "PIS", "COFINS"}}}
 	if s.production != nil && s.production.Validate() == nil {
 		b := s.production.Binding()
 		if b.TenantID == ss.Actor.TenantID && b.StoreID == ss.Actor.StoreID && b.DeviceID == ss.Device.DeviceID {

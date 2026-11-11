@@ -991,6 +991,20 @@
     {
       "api": "local",
       "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/origins",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/origins/:id/emit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
       "path": "/local/v1/fiscal/nfse",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"

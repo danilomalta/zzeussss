@@ -199,6 +199,7 @@ func ReadTaxPolicy(ctx context.Context, db *sql.DB, a identity.Scope, d identity
 }
 
 type TaxQuoteInput struct {
+	Freight        *SaleFreightContract  `json:"freight,omitempty"`
 	OperationID    string                `json:"operation_id"`
 	PolicyID       string                `json:"policy_id"`
 	PolicyRevision int                   `json:"policy_revision"`
@@ -310,6 +311,11 @@ func CreateTaxQuote(ctx context.Context, db *sql.DB, license *entitlementstore.S
 	}
 	if in.Case != p.Input.Case {
 		return out, ErrInvalid
+	}
+	if in.Freight != nil {
+		if _, err = saleFreightCents(TaxQuote{Input: in}); err != nil {
+			return out, err
+		}
 	}
 	result, err := fiscalcore.Calculate(in.Context, in.Item, []fiscalcore.TaxRule{p.Input.Rule})
 	if err != nil {

@@ -551,6 +551,38 @@
         "summary": "Owner-only homologation CC-e; separate from sale and cancellation; uncertain outcome never retries"
       }
     },
+    "/local/v1/fiscal/nfe55/origins": {
+      "post": {
+        "operationId": "customerNFe55BindOrigin",
+        "security": [{"BearerSession": []}],
+        "description": "Owner only, homologation. Binds an immutable inbound receipt or customer-return origin with an explicit 55 access key and quoted items. A common sale is not converted.",
+        "responses": {
+          "200": {"description": "Idempotent replay."},
+          "201": {"description": "Origin frozen."},
+          "400": {"description": "Invalid origin payload."},
+          "401": {"description": "Missing session."},
+          "403": {"description": "Owner or fiscal contract denied."},
+          "404": {"description": "Receipt or return not in authenticated scope."},
+          "409": {"description": "Conflict, production or A3."}
+        }
+      }
+    },
+    "/local/v1/fiscal/nfe55/origins/{id}/emit": {
+      "parameters": [{"in": "path", "name": "id", "required": true, "schema": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$"}}],
+      "post": {
+        "operationId": "customerNFe55OriginEmit",
+        "security": [{"BearerSession": []}],
+        "description": "Owner only, homologation. Emits from a frozen origin. Recipient and referenced key must match the origin. Purpose 1/direction 0 for inbound; purpose 4 for return.",
+        "responses": {
+          "200": {"description": "Homologation adapter result. SEM VALOR FISCAL."},
+          "400": {"description": "Unconfirmed or invalid."},
+          "401": {"description": "Missing session."},
+          "403": {"description": "Denied."},
+          "404": {"description": "Origin not found."},
+          "409": {"description": "Origin mismatch, unmapped tax, production or A3."}
+        }
+      }
+    },
     "/local/v1/fiscal/nfse": {
       "post": {
         "operationId": "customerNFSe",
