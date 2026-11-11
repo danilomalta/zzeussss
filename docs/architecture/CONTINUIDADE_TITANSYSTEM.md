@@ -1977,6 +1977,12 @@ Nova area `/local/customer-returns` com consulta, cotacao, revisao, reembolso em
 
 Inventario em `docs/frontend/PENDENCIAS_FRONTEND65.md`/json/html e guia `ENTREGA_CONSOLIDADA65.md`.96itens em32frentes incluem aprofundamento, aceite e dependencias externas; nao sao96funcionalidades necessariamente ausentes. Backend/ERP inteiro nao declarado concluido. Relatorios de testes/build/ponteHTTP e limites acompanham o pacote. Aceite visual desta entrega pendente: download do Chromium falhou. A aplicacao no PC executa novamente testes completos/TypeScript/build em candidata isolada antes de gravar; nao usa banco comercial nem promove desktop automaticamente.
 
+## Frontend pedidos66 (frontend-pedidos66-20261026-1)
+
+26/10/2026: acrescenta /local/company-trade e menu por view_orders. Interface para 13 rotas existentes: identidade pública/fingerprint, vínculos do dono e revogação, histórico paginado, exportação/importação de envelopes, decisão do fornecedor e aplicação ao pedido, revisão explícita da geração pós-restauração, recibos e fila por contexto. Sem envio automático, assinatura no frontend, backend/migrações/auth/sessões ou mudanças nos oito arquivos de carrinhos. Patch baseado nos pós-estados do frontend65 aplicado no commit019a94f.
+
+Observado: 23 testes novos, 2465 totais, TypeScript e build; ponte Node→dois servidores Go/Fiber/TCP/SQLite temporários com as 13 rotas e sete ações, também com -race. A recuperação pós-restauração foi exercitada com gate semeado no fixture, não com restauração de arquivo. Sem aceite visual/nativo, Windows ou operação comercial. Inventário atualizado em docs/frontend/PENDENCIAS_FRONTEND66.*; guia em ENTREGA_PEDIDOS66.md. Não conclui todo o ERP.
+
 ## Revisão57 — fila autorizada instalada; backup cifrado em validação remota
 
 26/10/2026. Continuidade do backend na branch `feat/backend-b02a-compat`, sem mudança funcional do frontend nem reinício dos serviços8182/8282.
@@ -2028,6 +2034,12 @@ Portas8182/8282 mantêm os PIDs1362657/3855147 e os executáveis originais das i
 ### Limites reais e próxima unidade
 
 Fila/transporte e recuperação local desta entrega estão concluídos, publicados e instalados. Isso não conclui todo o backend/ERP. Permanecem operação Internet/TLS comercial e coordenação do transporte com o desktop autorizado, contratos de renegociação/cancelamento comunicado entre empresas, provedores reais de fiscal/Pix/TEF, Windows/hardware e demais fluxos sem aceite integral. O binário de transporte compilou para Windows em conferência adicional, mas a operação continua recusada sem lock/publicação equivalentes: não é entrega operacional de Windows. As novas telas de outra frente precisam de seu próprio aceite e não foram homologadas por esta revisão. Nenhuma porcentagem global inferida pelo número de testes, rotas ou linhas.
+
+## Frontend producao e desktop67 (frontend-producao-desktop67-20261026-1)
+
+26/10/2026: mantém os módulos de produção/custos existentes e acrescenta ponte de aceite dos clientes reais contra Go/Fiber/SQLite descartável: versões imutáveis, capacidade compartilhada, estimativa/cenário, ordem, aprovação, reserva/consumo, etapas, resultado, perda, lote/qualidade e recuperação após perda da resposta de resultado. Confere resultado único e saldos finais; não comprova cliques, reinício/restore do servidor ou operação comercial.
+
+Desktop ganha diagnóstico de instância existente, carregamento, renderer e timeout; mostra janela quando o carregamento termina e oferece modo software explícito antes do ready. Sandbox/perfis/dados permanecem preservados. O aviso MESA do proprietário motivou esse modo, mas não houve homologação gráfica no PC. Não altera backend, banco, autenticação, sessões, serviços ou carrinhos. Evidências no pacote; pendências em PENDENCIAS_FRONTEND67.*. Não conclui todo o ERP.
 
 ## Revisão59 — recuperação de recibo com sessão nova e origem desligada
 
@@ -2095,18 +2107,6 @@ Sete executáveis Linux amd64 instalados em `/home/danillo-malta/.local/opt/tita
 Evidência sanitizada: `docs/evidence/backend-refund-next-shift66-20261026/acceptance.json`. [Guia e contratos da unidade](https://github.com/danilomalta/zzeussss/blob/49136eab3e53e57d831ad7aae340ab3b6910629d/docs/architecture/BACKEND_DEVOLUCOES_TURNO66_20261026.md). Laboratório `work/backend-refund-next-shift66-20261026/` mantém preimagens, hashes, logs, overlay e artefatos. Nenhum ZIP, dependência, banco ou chave comercial incluídos.
 
 Unidade backend entregue; nova ação ainda precisa ser ligada ao frontend, incluindo leitura dos campos opcionais. Não entrega devolução entre aparelhos/lojas, estornos eletrônicos/fiscais, transporte integrado ao desktop, Internet/TLS comercial, homologação Windows/hardware ou conclusão de todos os módulos do ERP. Backend inteiro não declarado100%; fonte, instalação, serviço ativo e integração de tela são estados distintos.
-
-## Frontend pedidos66 (frontend-pedidos66-20261026-1)
-
-26/10/2026: acrescenta /local/company-trade e menu por view_orders. Interface para 13 rotas existentes: identidade pública/fingerprint, vínculos do dono e revogação, histórico paginado, exportação/importação de envelopes, decisão do fornecedor e aplicação ao pedido, revisão explícita da geração pós-restauração, recibos e fila por contexto. Sem envio automático, assinatura no frontend, backend/migrações/auth/sessões ou mudanças nos oito arquivos de carrinhos. Patch baseado nos pós-estados do frontend65 aplicado no commit019a94f.
-
-Observado: 23 testes novos, 2465 totais, TypeScript e build; ponte Node→dois servidores Go/Fiber/TCP/SQLite temporários com as 13 rotas e sete ações, também com -race. A recuperação pós-restauração foi exercitada com gate semeado no fixture, não com restauração de arquivo. Sem aceite visual/nativo, Windows ou operação comercial. Inventário atualizado em docs/frontend/PENDENCIAS_FRONTEND66.*; guia em ENTREGA_PEDIDOS66.md. Não conclui todo o ERP.
-
-## Frontend producao e desktop67 (frontend-producao-desktop67-20261026-1)
-
-26/10/2026: mantém os módulos de produção/custos existentes e acrescenta ponte de aceite dos clientes reais contra Go/Fiber/SQLite descartável: versões imutáveis, capacidade compartilhada, estimativa/cenário, ordem, aprovação, reserva/consumo, etapas, resultado, perda, lote/qualidade e recuperação após perda da resposta de resultado. Confere resultado único e saldos finais; não comprova cliques, reinício/restore do servidor ou operação comercial.
-
-Desktop ganha diagnóstico de instância existente, carregamento, renderer e timeout; mostra janela quando o carregamento termina e oferece modo software explícito antes do ready. Sandbox/perfis/dados permanecem preservados. O aviso MESA do proprietário motivou esse modo, mas não houve homologação gráfica no PC. Não altera backend, banco, autenticação, sessões, serviços ou carrinhos. Evidências no pacote; pendências em PENDENCIAS_FRONTEND67.*. Não conclui todo o ERP.
 
 
 ## Revisão61 — worker da fila vinculado ao contexto original — 26/10/2026
