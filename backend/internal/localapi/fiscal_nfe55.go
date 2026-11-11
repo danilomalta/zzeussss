@@ -331,12 +331,25 @@ func (s *Server) fiscalNFe55OriginEmit(c *fiber.Ctx) error {
 		return fiscalFailure(c, fiscal.ErrInvalid)
 	}
 	o := rec.Snapshot.Origin
-	if in.Recipient.Name != o.RecipientName || in.Recipient.Address.UF != o.RecipientUF || in.Recipient.CNPJ != o.RecipientCNPJ || in.Recipient.CPF != o.RecipientCPF {
+	if o == nil || in.Recipient.Name != o.RecipientName || in.Recipient.Address.UF != o.RecipientUF || in.Recipient.CNPJ != o.RecipientCNPJ || in.Recipient.CPF != o.RecipientCPF {
 		return nfe55Failure(c, fiscalproduction.ErrReferencedOperationUnavailable)
 	}
 	direction := "1"
-	if o.Kind == "inbound_receipt" {
+	switch o.Kind {
+	case "inbound_receipt":
+		if in.Purpose != "1" {
+			return nfe55Failure(c, fiscalproduction.ErrReferencedOperationUnavailable)
+		}
 		direction = "0"
+	case "customer_return":
+		if in.Purpose != "4" {
+			return nfe55Failure(c, fiscalproduction.ErrReferencedOperationUnavailable)
+		}
+	default:
+		return nfe55Failure(c, fiscalproduction.ErrReferencedOperationUnavailable)
+	}
+	if in.FreightMode != o.FreightMode {
+		return nfe55Failure(c, fiscalproduction.ErrFreightChargeUnavailable)
 	}
 	r := in.Recipient
 	d := r.Address
