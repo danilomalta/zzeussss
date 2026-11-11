@@ -230,5 +230,12 @@ func Registrar(app *fiber.App) {
 	descontos.Get("/suggestions/:id/reviews", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.HistoricoDecisaoDesconto)
 	descontos.Get("/reviews/:operation_id", middleware.CurrentUser(), middleware.RequireRoles("owner", "admin", "manager"), catalogDelivery.ConsultarDecisaoDesconto)
 
-	// O chat de demonstração não recebe autenticação; não é exposto nesta fase.
+	// PDV, caixa, emissão fiscal, RH, chat e métricas de venda não existem neste processo PostgreSQL.
+	// Recusa autenticada (501); o operacional permanece em /local/v1. Produção fiscal não é simulada.
+	negocios.Get("/metrics/overview", Indisponivel)
+	negocios.Get("/pos/sales/recent", Indisponivel)
+	negocios.Get("/cash/sessions", Indisponivel)
+	negocios.Post("/fiscal/emit", Indisponivel)
+	negocios.Get("/hr/employees", Indisponivel)
+	negocios.Get("/tempo-real/chat", Indisponivel)
 }

@@ -1,5 +1,9 @@
 # Continuidade do TitanSystem
 
+## Online /api/v1 lacunas PDV–métricas — 11/11/2026
+
+- Rotas autenticadas recusam com 501: `/metrics/overview`, `/pos/sales/recent`, `/cash/sessions`, `/fiscal/emit`, `/hr/employees`, `/tempo-real/chat`. Não inventam venda, caixa, RH, chat nem emissão. Produção fiscal permanece bloqueada. PDV/caixa/fiscal operacionais continuam em `/local/v1`.
+
 ## Estacionamento fiscal — 11/11/2026
 
 - **Ponto de parada de código:** `wip/tabela-fiscal-cliente-20261111` `5a5b1a6` (depois de `0d31ec7`). F01/F03 em `0d31ec7`; F02 restante (postcss-selector-parser 6.1.6, source-map-js 1.2.2, follow-redirects 1.16.3, sem `--force`) em `5a5b1a6`.

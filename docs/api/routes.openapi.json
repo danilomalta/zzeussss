@@ -21409,6 +21409,144 @@
     },
     "/local/v1/fiscal/nfse": {
       "$ref": "./fiscal-nfe55.openapi.json#/paths/~1local~1v1~1fiscal~1nfse"
+    },
+    "/api/v1/cash/sessions": {
+      "get": {
+        "operationId": "online_GET__api_v1_cash_sessions",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Este processo PostgreSQL não opera PDV, caixa, emissão fiscal, RH, chat nem métricas de venda. 401 sem sessão; 501 autenticado. Operação local permanece em /local/v1. Produção fiscal não é simulada."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/fiscal/emit": {
+      "post": {
+        "operationId": "online_POST__api_v1_fiscal_emit",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Este processo PostgreSQL não opera PDV, caixa, emissão fiscal, RH, chat nem métricas de venda. 401 sem sessão; 501 autenticado. Operação local permanece em /local/v1. Produção fiscal não é simulada."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/hr/employees": {
+      "get": {
+        "operationId": "online_GET__api_v1_hr_employees",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Este processo PostgreSQL não opera PDV, caixa, emissão fiscal, RH, chat nem métricas de venda. 401 sem sessão; 501 autenticado. Operação local permanece em /local/v1. Produção fiscal não é simulada."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/metrics/overview": {
+      "get": {
+        "operationId": "online_GET__api_v1_metrics_overview",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Este processo PostgreSQL não opera PDV, caixa, emissão fiscal, RH, chat nem métricas de venda. 401 sem sessão; 501 autenticado. Operação local permanece em /local/v1. Produção fiscal não é simulada."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/pos/sales/recent": {
+      "get": {
+        "operationId": "online_GET__api_v1_pos_sales_recent",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Este processo PostgreSQL não opera PDV, caixa, emissão fiscal, RH, chat nem métricas de venda. 401 sem sessão; 501 autenticado. Operação local permanece em /local/v1. Produção fiscal não é simulada."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
+    },
+    "/api/v1/tempo-real/chat": {
+      "get": {
+        "operationId": "online_GET__api_v1_tempo_real_chat",
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "./http-errors.openapi.json#/components/parameters/ErrorFormat"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Este processo PostgreSQL não opera PDV, caixa, emissão fiscal, RH, chat nem métricas de venda. 401 sem sessão; 501 autenticado. Operação local permanece em /local/v1. Produção fiscal não é simulada."
+          }
+        },
+        "x-payload-contract": "pending",
+        "x-source": "backend/internal/core/routes/routes.go",
+        "x-state": "unavailable"
+      }
     }
   },
   "components": {

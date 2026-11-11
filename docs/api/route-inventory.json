@@ -843,6 +843,20 @@
     },
     {
       "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/deferred/sales/:id/emit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal_deferred.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/deferred/sales/:id/query",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal_deferred.go"
+    },
+    {
+      "api": "local",
       "method": "GET",
       "path": "/local/v1/fiscal/intents",
       "authentication": "session",
@@ -935,6 +949,20 @@
     {
       "api": "local",
       "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/origins",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/fiscal/nfe55/origins/:id/emit",
+      "authentication": "session",
+      "source": "backend/internal/localapi/fiscal.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
       "path": "/local/v1/fiscal/nfe55/sales/:id/cancel",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
@@ -985,20 +1013,6 @@
       "api": "local",
       "method": "POST",
       "path": "/local/v1/fiscal/nfe55/sales/:id/query",
-      "authentication": "session",
-      "source": "backend/internal/localapi/fiscal.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/fiscal/nfe55/origins",
-      "authentication": "session",
-      "source": "backend/internal/localapi/fiscal.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/fiscal/nfe55/origins/:id/emit",
       "authentication": "session",
       "source": "backend/internal/localapi/fiscal.go"
     },
@@ -2832,6 +2846,13 @@
     {
       "api": "local",
       "method": "GET",
+      "path": "/local/v1/retail/access",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
       "path": "/local/v1/retail/config",
       "authentication": "session",
       "source": "backend/internal/localapi/retail.go"
@@ -2859,6 +2880,27 @@
     },
     {
       "api": "local",
+      "method": "GET",
+      "path": "/local/v1/retail/customers/:id/loyalty",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/customers/:id/loyalty/earn",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/customers/:id/loyalty/redeem",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
       "method": "POST",
       "path": "/local/v1/retail/customers/:id/privacy",
       "authentication": "session",
@@ -2867,7 +2909,35 @@
     {
       "api": "local",
       "method": "POST",
+      "path": "/local/v1/retail/operations/:id/reconcile",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
       "path": "/local/v1/retail/sales/:id/refund",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/stores",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "GET",
+      "path": "/local/v1/retail/stores/report",
+      "authentication": "session",
+      "source": "backend/internal/localapi/retail.go"
+    },
+    {
+      "api": "local",
+      "method": "POST",
+      "path": "/local/v1/retail/stores/transfer",
       "authentication": "session",
       "source": "backend/internal/localapi/retail.go"
     },
@@ -3176,6 +3246,14 @@
       "authentication": "session",
       "source": "backend/internal/core/routes/routes.go",
       "state": "implemented"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/cash/sessions",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
     },
     {
       "api": "online",
@@ -3777,6 +3855,38 @@
     },
     {
       "api": "online",
+      "method": "POST",
+      "path": "/api/v1/fiscal/emit",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/hr/employees",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/metrics/overview",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
+    },
+    {
+      "api": "online",
+      "method": "GET",
+      "path": "/api/v1/pos/sales/recent",
+      "authentication": "session",
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
+    },
+    {
+      "api": "online",
       "method": "GET",
       "path": "/api/v1/produtos/",
       "authentication": "session",
@@ -4139,74 +4249,12 @@
       "source": "backend/internal/core/routes/routes.go"
     },
     {
-      "api": "local",
+      "api": "online",
       "method": "GET",
-      "path": "/local/v1/retail/customers/:id/loyalty",
+      "path": "/api/v1/tempo-real/chat",
       "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/retail/customers/:id/loyalty/earn",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/retail/customers/:id/loyalty/redeem",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/retail/stores",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/retail/stores/transfer",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "GET",
-      "path": "/local/v1/retail/stores/report",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/retail/operations/:id/reconcile",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "GET",
-      "path": "/local/v1/retail/access",
-      "authentication": "session",
-      "source": "backend/internal/localapi/retail.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/fiscal/deferred/sales/:id/emit",
-      "authentication": "session",
-      "source": "backend/internal/localapi/fiscal_deferred.go"
-    },
-    {
-      "api": "local",
-      "method": "POST",
-      "path": "/local/v1/fiscal/deferred/sales/:id/query",
-      "authentication": "session",
-      "source": "backend/internal/localapi/fiscal_deferred.go"
+      "source": "backend/internal/core/routes/routes.go",
+      "state": "unavailable"
     }
   ]
 }

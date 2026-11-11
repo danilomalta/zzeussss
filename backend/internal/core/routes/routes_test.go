@@ -37,6 +37,12 @@ func TestUnfinishedBusinessRoutesAreUnavailable(t *testing.T) {
 		{"POST", "/api/v1/accounting/sped/request"},
 		{"GET", "/api/v1/accounting/sped/status/123"},
 		{"POST", "/api/v1/discounts/suggestions/123/review"},
+		{"GET", "/api/v1/metrics/overview"},
+		{"GET", "/api/v1/pos/sales/recent"},
+		{"GET", "/api/v1/cash/sessions"},
+		{"POST", "/api/v1/fiscal/emit"},
+		{"GET", "/api/v1/hr/employees"},
+		{"GET", "/api/v1/tempo-real/chat"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.method+" "+tc.path, func(t *testing.T) {
@@ -76,7 +82,7 @@ func TestUnfinishedBusinessRoutesAreUnavailable(t *testing.T) {
 		t.Fatal(err)
 	}
 	resp.Body.Close()
-	if resp.StatusCode != fiber.StatusNotFound {
-		t.Fatalf("chat autenticado: esperado 404, recebido %d", resp.StatusCode)
+	if resp.StatusCode != fiber.StatusNotImplemented {
+		t.Fatalf("chat autenticado: esperado 501, recebido %d", resp.StatusCode)
 	}
 }
