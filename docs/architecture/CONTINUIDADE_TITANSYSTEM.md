@@ -1,5 +1,15 @@
 # Continuidade do TitanSystem
 
+## Instalação inicial descartável — 11/11/2026 (PENDENTE)
+
+- Base c75b2bc2d9a5424ee58f83f472c38be8fae74df7; branch feat/backend-instalacao-limpa-20261111 no checkout consolidado. Código do produto, instalação principal e serviços existentes preservados. Diretórios vazios neste host Linux; não equivale a sistema operacional limpo.
+- Compilados sete CLIs diretamente da base, permissões 0700, instalação pelo gerenciador existente. init/check reais passaram; segundo init recusado. Um proprietário confirmado por leitura do banco descartável. Estação, cofre e chave mestra criados pelos comandos existentes; cópia privada exportada e comparada, permissões 0600 verificadas. Nenhuma chave, senha ou token em evidências.
+- Desktop compilado sem .env/Vite servidor, pacote deb gerado e extraído em /tmp sem substituir aplicativo do usuário. Novos scripts opt-in desktop/scripts/verify-initialization.{py,cjs}, ainda WIP: tentam conexão/login e cadastro mínimo/completo no pacote contra HTTP real.
+- BLOQUEIO DO ENSAIO: RuntimeError: Disposable screen command timed out (60s), repetido duas vezes; interrompido conforme AGENTS.md, sem aumentar timeout. Causa não estabelecida; não atribuir ao produto. Cadastro pela tela, persistência/relogin após reinício e recuperação não comprovados. Dois grupos Electron remanescentes, com executável confirmado como o pacote descartável, encerrados; backend encerrado pelo finally do driver.
+- Retomada exata: diagnosticar driver visual capturando SOMENTE fases sanitizadas também de stdout (xvfb-run pode reunir fluxos), sem repetir cegamente o mesmo comando. Navegação deve usar o roteador SPA: Page.navigate recarrega a página e descarta a sessão local que corretamente existe só em memória. Corrigir o harness antes de novo ensaio, sem alterar autenticação nem persistir tokens. Não há prova desta hipótese como causa do timeout.
+- Evidência parcial: docs/evidence/instalacao-inicial-20261111/partial.json. Sintaxe Node/Python e diff-check passaram; nenhuma suíte completa repetida. V1-07 permanece PENDENTE. Produção bloqueada; sem Focus real ou validação Windows/hardware. Itens fora do v1: ver o documento.
+
+
 ## Consolidação das duas linhas — 11/11/2026
 
 - **Unidade:** branch `feat/backend-consolidacao-20261111`, checkout isolado `/home/danillo-malta/Documents/Codex/worktrees/titansystem-consolidado-20261111`. Base aprovada `bd7502c3a11e298eeb179ee9d6fd3a87fd8ea7aa` + evolução `40958cdfa2848a10d8d6102a9b1dea869d273330`, ancestral comum `8fccfadaf3c155df102a8b9c042b8602a41f02ad`. Merge rastreável com os dois pais, sem rebase/force/main. A árvore principal permanece limpa em `wip/tabela-fiscal-cliente-20261111`/40958cd; nenhum banco ou serviço instalado foi usado. P28/793d086 permanece WIP separado, sem execução real nem incorporação automática.

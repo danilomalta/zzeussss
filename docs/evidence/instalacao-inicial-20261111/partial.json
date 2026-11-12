@@ -1,0 +1,21 @@
+{
+  "source_commit": "c75b2bc2d9a5424ee58f83f472c38be8fae74df7",
+  "branch": "feat/backend-instalacao-limpa-20261111",
+  "scope": "disposable Linux directories on existing host; not a clean OS",
+  "disposable_root": "/tmp/titan-initial-install-iaxdbq6r",
+  "backend_install": true,
+  "initial_owner_count": 1,
+  "registration_revisions": 0,
+  "station_created": true,
+  "vault_created": true,
+  "vault_key_copy_equal": true,
+  "desktop_deb_built": true,
+  "desktop_deb_extracted": true,
+  "desktop_ui_acceptance": "not proven",
+  "error": "RuntimeError: Disposable screen command timed out",
+  "same_timeout_attempts": 2,
+  "stopped_without_further_retry": true,
+  "restart_validation": "not reached",
+  "production_enabled": false,
+  "real_fiscal_emission": false
+}
