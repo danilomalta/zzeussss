@@ -1,0 +1,87 @@
+    pilot_installed_screen_test.go:182: Screen phase: launch
+    pilot_installed_screen_test.go:182: Screen phase: connection
+    pilot_installed_screen_test.go:182: Screen phase: login
+    pilot_installed_screen_test.go:182: Screen phase: authenticate
+    pilot_installed_screen_test.go:182: Screen phase: open cash
+    pilot_installed_screen_test.go:182: Screen phase: cash sale
+    pilot_installed_screen_test.go:182: Screen phase: button Adicionar parcela
+    pilot_installed_screen_test.go:182: Screen phase: button Finalizar compra
+    pilot_installed_screen_test.go:188: Screen phase: launch
+    pilot_installed_screen_test.go:188: Screen phase: login
+    pilot_installed_screen_test.go:188: Screen phase: authenticate
+    pilot_installed_screen_test.go:188: Screen phase: recover sale
+    pilot_installed_screen_test.go:188: Screen phase: button Verificar a mesma operação
+    pilot_installed_screen_test.go:192: Screen phase: launch
+    pilot_installed_screen_test.go:192: Screen phase: login
+    pilot_installed_screen_test.go:192: Screen phase: authenticate
+    pilot_installed_screen_test.go:192: Screen phase: replenishment
+    pilot_installed_screen_test.go:192: Screen phase: button Reposição
+    pilot_installed_screen_test.go:192: Screen phase: button Conferir mínimo e alvo
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar gravação
+    pilot_installed_screen_test.go:192: Screen phase: button Calcular sugestão
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar gravação
+    pilot_installed_screen_test.go:192: Screen phase: button Conferir aprovação
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar gravação
+    pilot_installed_screen_test.go:192: Screen phase: supplier order
+    pilot_installed_screen_test.go:192: Screen phase: button Fornecedores
+    pilot_installed_screen_test.go:192: Screen phase: button Conferir antes de confirmar
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar gravação
+    pilot_installed_screen_test.go:192: Screen phase: button Pedidos
+    pilot_installed_screen_test.go:192: Screen phase: button Conferir antes de confirmar
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar gravação
+    pilot_installed_screen_test.go:192: Screen phase: button Autorizar recebimento local
+    pilot_installed_screen_test.go:192: Screen phase: button Registrar contato / decisão manual
+    pilot_installed_screen_test.go:192: Screen phase: button Revisar registro
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar e registrar
+    pilot_installed_screen_test.go:192: Screen phase: partial receiving
+    pilot_installed_screen_test.go:192: Screen phase: button Planejar entrega identificada
+    pilot_installed_screen_test.go:192: Screen phase: button Revisar registro
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar e registrar
+    pilot_installed_screen_test.go:192: Screen phase: button Conferir carga na saída
+    pilot_installed_screen_test.go:192: Screen phase: button Revisar registro
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar e registrar
+    pilot_installed_screen_test.go:192: Screen phase: button Registrar chegada
+    pilot_installed_screen_test.go:192: Screen phase: button Revisar registro
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar e registrar
+    pilot_installed_screen_test.go:192: Screen phase: button Conferir recebimento vinculado
+    pilot_installed_screen_test.go:192: Screen phase: button Revisar registro
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar e registrar
+    pilot_installed_screen_test.go:192: Screen phase: receiving payable
+    pilot_installed_screen_test.go:192: Screen phase: button Criar obrigação vinculada
+    pilot_installed_screen_test.go:192: Screen phase: button Revisar registro
+    pilot_installed_screen_test.go:192: Screen phase: button Confirmar e registrar
+    pilot_installed_screen_test.go:192: Screen phase: cash withdrawal
+    pilot_installed_screen_test.go:194: Screen phase: launch
+    pilot_installed_screen_test.go:194: Screen phase: login
+    pilot_installed_screen_test.go:194: Screen phase: authenticate
+    pilot_installed_screen_test.go:194: Screen phase: independent finance approval
+    pilot_installed_screen_test.go:194: Screen phase: button Aprovar
+    pilot_installed_screen_test.go:194: Screen phase: button Revisar
+    pilot_installed_screen_test.go:194: Screen phase: button Confirmar registro
+    pilot_installed_screen_test.go:195: Screen phase: launch
+    pilot_installed_screen_test.go:195: Screen phase: login
+    pilot_installed_screen_test.go:195: Screen phase: authenticate
+    pilot_installed_screen_test.go:195: Screen phase: finance origin
+    pilot_installed_screen_test.go:207: BACKUP CLI key-init: expected_success=true observed_success=true
+    pilot_installed_screen_test.go:207: BACKUP CLI create-live: expected_success=true observed_success=true
+    pilot_installed_screen_test.go:207: BACKUP CLI verify: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:98: BACKUP CLI before-restore: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:105: BACKUP REPORT before-restore: {"version":1,"profile":"pilot_cash_v1","schema_version":88,"archive_sha256":"6efcb108947bbd45fa7a0679a378ec49af7ff143513a123990767d9e80764056","business_sha256":"7c075468d164552381b0d1ee45c10b96785c4520ba04678d56d1aabbd6edab6d","records":{"cash_movements":2,"cash_sessions":1,"payable_cash_payments":1,"purchase_deliveries":1,"purchase_order_items":1,"purchase_orders":1,"purchase_receipts":1,"purchase_receiving_cases":0,"purchase_supplier_decisions":1,"sale_payments":1,"sale_tax_bindings":0,"sales":1,"stock_movements":3,"supplier_payable_installments":1,"supplier_payables":1},"unavailable":[]}
+    pilot_installed_screen_test.go:207: BACKUP CLI wrong-key-init: expected_success=true observed_success=true
+    pilot_installed_screen_test.go:207: BACKUP CLI reject-wrong-key: expected_success=false observed_success=false
+    pilot_installed_screen_test.go:207: BACKUP CLI reject-wrong-company: expected_success=false observed_success=false
+    pilot_installed_screen_test.go:207: BACKUP CLI restore-new-path: expected_success=true observed_success=true
+    pilot_installed_screen_test.go:207: BACKUP CLI reject-overwrite: expected_success=false observed_success=false
+    pilot_installed_screen_test.go:207: BACKUP CLI create-from-restored: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:98: BACKUP CLI after-restore: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:105: BACKUP REPORT after-restore: {"version":1,"profile":"pilot_cash_v1","schema_version":88,"archive_sha256":"87f28d7b3e867bf753d2b6f0c17ff1253d6730b0c4966fe4fd4eabb4edfacfbe","business_sha256":"7c075468d164552381b0d1ee45c10b96785c4520ba04678d56d1aabbd6edab6d","records":{"cash_movements":2,"cash_sessions":1,"payable_cash_payments":1,"purchase_deliveries":1,"purchase_order_items":1,"purchase_orders":1,"purchase_receipts":1,"purchase_receiving_cases":0,"purchase_supplier_decisions":1,"sale_payments":1,"sale_tax_bindings":0,"sales":1,"stock_movements":3,"supplier_payable_installments":1,"supplier_payables":1},"unavailable":[]}
+    pilot_installed_screen_test.go:207: BACKUP CLI RESTORATION: pilot table counts and business SHA256 identical; encrypted archive SHA256 distinct; source and restored DBs separate
+    pilot_installed_screen_test.go:234: Authentication budget preserved; observing Retry-After 60s without changing any timeout
+    pilot_installed_screen_test.go:257: Screen phase: launch
+    pilot_installed_screen_test.go:257: Screen phase: login
+    pilot_installed_screen_test.go:257: Screen phase: authenticate
+    pilot_installed_screen_test.go:257: Screen phase: restored screens
+    pilot_installed_screen_test.go:272: PASS: installed React screens -> real native HTTP -> SQLite; lost response recovery once; partial receiving; same IDs after actual encrypted backup CLI restore. No fiscal emission or commercial data.
+--- PASS: TestPilotInstalledCashPartialReceivingRestore (91.93s)
+PASS
+ok  	titansystem-backend/internal/localapi	91.989s

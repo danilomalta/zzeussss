@@ -1,0 +1,147 @@
+{
+  "date": "2026-11-12",
+  "branch": "feat/backend-piloto-instalado-20261112",
+  "base": "755a12d2ff04486711ef7ecbb1f13b72e4a994d9",
+  "test": "TestPilotInstalledCashPartialReceivingRestore",
+  "native_backend_source": "c75b2bc2d9a5424ee58f83f472c38be8fae74df7",
+  "desktop_asar_sha256": "a8cf441a8f99bb7bcc0a4734e4d17abfa1508bf4120c4db823094153bb298123",
+  "native_executable_sha256": "4f8a5e415781f1a59037c0031b3741f5c7aefb3efc00f2c3f18a5298d5e8655a",
+  "invocation": {
+    "env": {
+      "TITAN_INSTALLED_DESKTOP": "/tmp/titan-initial-fixed-extracted/opt/TitanSystem/titansystem-desktop",
+      "TITAN_INSTALLED_LOCAL": "/tmp/titan-clean-acceptance-bin/titan-local",
+      "TITAN_INSTALLED_SCREEN": "/home/danillo-malta/Documents/Codex/worktrees/titansystem-consolidado-20261111/desktop/scripts/verify-initialization.cjs",
+      "GOFLAGS": "-buildvcs=false"
+    },
+    "command": "go test -timeout 120s -count=1 ./internal/localapi -run ^TestPilotInstalledCashPartialReceivingRestore$ -pilot-backup-cli=/tmp/titan-clean-acceptance-bin/titan-backup -v",
+    "working_directory": "/home/danillo-malta/Documents/Codex/worktrees/titansystem-consolidado-20261111/backend"
+  },
+  "results": {
+    "final_run": {
+      "pass": true,
+      "test_seconds": 91.93,
+      "package_seconds": 91.989
+    },
+    "race": {
+      "pass": true,
+      "test_seconds": 96.4,
+      "package_seconds": 98.06
+    },
+    "desktop": {
+      "passed": 62,
+      "failed": 0,
+      "skipped": 0
+    },
+    "initial_registration_regression": {
+      "passed": true,
+      "desktop_launches": 2,
+      "registration_unchanged": true,
+      "exported_key_opens_vault": true,
+      "missing_key_unavailable": true,
+      "explicit_logout_revoked": true
+    }
+  },
+  "business": {
+    "currency": "BRL",
+    "sales_count": 1,
+    "sale_cents": 3198,
+    "cash_tendered_cents": 4000,
+    "opening_cash_cents": 1000,
+    "withdrawal_cents": 1025,
+    "expected_open_drawer_cents": 3173,
+    "stock_initial_milli": 5000,
+    "sold_milli": 2000,
+    "delivered_milli": 2000,
+    "accepted_milli": 1000,
+    "stock_final_milli": 4000,
+    "payable_cents": 1025,
+    "payment_count": 1,
+    "outstanding_cents": 0,
+    "finalization_posts_after_recovery": 1,
+    "supplier_confirmation": "manual, explicitly recorded",
+    "independent_finance_approval": true,
+    "cash_link_moves_money_again": false
+  },
+  "backup_reports": {
+    "before-restore": {
+      "version": 1,
+      "profile": "pilot_cash_v1",
+      "schema_version": 88,
+      "archive_sha256": "6efcb108947bbd45fa7a0679a378ec49af7ff143513a123990767d9e80764056",
+      "business_sha256": "7c075468d164552381b0d1ee45c10b96785c4520ba04678d56d1aabbd6edab6d",
+      "records": {
+        "cash_movements": 2,
+        "cash_sessions": 1,
+        "payable_cash_payments": 1,
+        "purchase_deliveries": 1,
+        "purchase_order_items": 1,
+        "purchase_orders": 1,
+        "purchase_receipts": 1,
+        "purchase_receiving_cases": 0,
+        "purchase_supplier_decisions": 1,
+        "sale_payments": 1,
+        "sale_tax_bindings": 0,
+        "sales": 1,
+        "stock_movements": 3,
+        "supplier_payable_installments": 1,
+        "supplier_payables": 1
+      },
+      "unavailable": []
+    },
+    "after-restore": {
+      "version": 1,
+      "profile": "pilot_cash_v1",
+      "schema_version": 88,
+      "archive_sha256": "87f28d7b3e867bf753d2b6f0c17ff1253d6730b0c4966fe4fd4eabb4edfacfbe",
+      "business_sha256": "7c075468d164552381b0d1ee45c10b96785c4520ba04678d56d1aabbd6edab6d",
+      "records": {
+        "cash_movements": 2,
+        "cash_sessions": 1,
+        "payable_cash_payments": 1,
+        "purchase_deliveries": 1,
+        "purchase_order_items": 1,
+        "purchase_orders": 1,
+        "purchase_receipts": 1,
+        "purchase_receiving_cases": 0,
+        "purchase_supplier_decisions": 1,
+        "sale_payments": 1,
+        "sale_tax_bindings": 0,
+        "sales": 1,
+        "stock_movements": 3,
+        "supplier_payable_installments": 1,
+        "supplier_payables": 1
+      },
+      "unavailable": []
+    }
+  },
+  "scope": {
+    "real_rendered_packaged_app": true,
+    "native_http_sqlite": true,
+    "encrypted_backup_cli": true,
+    "separate_restored_root": true,
+    "old_restored_session_refused": true,
+    "respect_retry_after_seconds": 60,
+    "normal_app_close_reopen": true,
+    "backend_process_restart": true,
+    "commercial_data": false,
+    "production_enabled": false,
+    "real_fiscal_emission": false,
+    "clean_os": false,
+    "windows": false,
+    "physical_hardware": false,
+    "cash_shift_closed": false,
+    "receiving_treatment_case": false,
+    "browser_power_loss_tested": false,
+    "mandatory_ci_wiring_added": false,
+    "remote_ci_claimed": false,
+    "installed_user_services_changed": false
+  },
+  "implementation": "Opt-in acceptance harness only; no product backend/frontend/runtime behavior changed in this unit.",
+  "earlier_driver_failures": [
+    "Language mismatch corrected through actual language menu.",
+    "Missing receiving authorization supplied through owner UI.",
+    "Abrupt browser termination lost pending client journal in one trial; current test requires normal app close. Browser power-loss durability is not proven.",
+    "Restored login initially rate-limited; test now observes the existing Retry-After without resetting policy."
+  ],
+  "next_independent_unit": "Cash closing/counting/custody screen acceptance or clean-OS/Windows/peripheral validation; not automatically started."
+}

@@ -25,20 +25,21 @@ let phase='start',phaseFile;const mark=value=>{phase=value;if(phaseFile)fs.write
    let pages=[],discovery='ok';try{pages=await(await fetch('http://127.0.0.1:'+port+'/json/list',{signal:AbortSignal.timeout(500)})).json()}catch(error){discovery=error.name}
    fs.writeFileSync(phaseFile,JSON.stringify({phase,discovery,exited:child.exitCode!==null,targets:pages.map(p=>({type:p.type,route:String(p.url||'').split('?')[0]}))}),{mode:0o600});
    const page=pages.find(p=>p.type==='page'&&predicate(p.url));
-   if(page){socket?.close();socket=new WebSocket(page.webSocketDebuggerUrl);await new Promise((r,j)=>{const timer=setTimeout(()=>j(Error('debug connection failed')),3000);socket.onopen=()=>{clearTimeout(timer);r()};socket.onerror=()=>{clearTimeout(timer);j(Error('debug connection failed'))}});socket.onmessage=e=>{const v=JSON.parse(e.data),p=pending.get(v.id);if(p){pending.delete(v.id);v.error?p.reject(Error('inspection refused')):p.resolve(v.result)}};return;}
+   if(page){socket?.close();socket=new WebSocket(page.webSocketDebuggerUrl);await new Promise((r,j)=>{const timer=setTimeout(()=>j(Error('debug connection failed')),3000);socket.onopen=()=>{clearTimeout(timer);r()};socket.onerror=()=>{clearTimeout(timer);j(Error('debug connection failed'))}});socket.onmessage=e=>{const v=JSON.parse(e.data);if(v.method==='Page.javascriptDialogOpening'&&finishing&&v.params?.type==='beforeunload'){void send('Page.handleJavaScriptDialog',{accept:true}).catch(()=>{});}const p=pending.get(v.id);if(p){pending.delete(v.id);v.error?p.reject(Error('inspection refused')):p.resolve(v.result)}};return;}
    await sleep(200);
   }throw Error('application page unavailable');
  };
  const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq,t=setTimeout(()=>{pending.delete(id);reject(Error('inspection timeout'))},10000);pending.set(id,{resolve:v=>{clearTimeout(t);resolve(v)},reject:e=>{clearTimeout(t);reject(e)}});socket.send(JSON.stringify({id,method,params}))});
  const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error('screen action failed');return r.result?.value};
  const wait=async(expression,label)=>{for(let n=0;n<120;n++){if(await evaluate(expression))return;await sleep(100)}throw Error('screen missing: '+label)};
- const input=async(selector,value)=>{await wait(`!!document.querySelector(${JSON.stringify(selector)})`,'input');await evaluate(`(()=>{const el=document.querySelector(${JSON.stringify(selector)});Object.getOwnPropertyDescriptor(el.tagName==='SELECT'?HTMLSelectElement.prototype:HTMLInputElement.prototype,'value').set.call(el,${JSON.stringify(value)});el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));})()`);await sleep(60)};
+ const input=async(selector,value)=>{await wait(`!!document.querySelector(${JSON.stringify(selector)})`,'input');await evaluate(`(()=>{const el=document.querySelector(${JSON.stringify(selector)});Object.getOwnPropertyDescriptor(el.tagName==='SELECT'?HTMLSelectElement.prototype:el.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype,'value').set.call(el,${JSON.stringify(value)});el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));})()`);await sleep(60)};
  try{
   if(!b.resume){mark('connection');await connect(u=>u==='titan://app/desktop-setup/index.html');await wait('!document.querySelector("#fields").disabled','connection');
   await input('#operational',b.url+'/local/v1');await evaluate('document.querySelector("#connection").requestSubmit()');}
   mark('login');await connect(u=>u.startsWith('titan://app/local/'));
-  await wait('!!document.querySelector("#brand-credential")','login');if(b.transitionOnly){console.log(JSON.stringify({transitionOnly:true,loginVisible:true}));return;}await input('#brand-credential',b.owner);await input('#brand-password',b.password);await evaluate('document.querySelector("#brand-password").form.requestSubmit()');
+  await wait('!!document.querySelector("#brand-credential")','login');if(b.business&&await evaluate('document.documentElement.lang!=="pt-BR"')){await wait('!!document.querySelector(".brand-contact-trigger")','language menu');await evaluate('document.querySelector(".brand-contact-trigger").click()');const languageButton=JSON.stringify('.language-list button[lang="pt-BR"]');await wait(`!!document.querySelector(${languageButton})`,'language choice');await evaluate(`document.querySelector(${languageButton}).click()`);await evaluate('document.querySelector(".contact-heading button").click()');await wait('document.documentElement.lang==="pt-BR"','Portuguese interface');}if(b.transitionOnly){console.log(JSON.stringify({transitionOnly:true,loginVisible:true}));return;}await input('#brand-credential',b.owner);await input('#brand-password',b.password);await evaluate('document.querySelector("#brand-password").form.requestSubmit()');
   mark('authenticate');await wait('location.pathname==="/local/home"','authenticated home');
+  if(b.business){const result=await require('./verify-business-flow.cjs')({b,send,evaluate,wait,input,mark,sleep});console.log(JSON.stringify(result));return;}
   mark('company form');
   await evaluate(`history.pushState({},'', '/local/settings');dispatchEvent(new PopStateEvent('popstate'))`);
   const companyLink=JSON.stringify('a[href="/local/company"]');
@@ -65,5 +66,13 @@ let phase='start',phaseFile;const mark=value=>{phase=value;if(phaseFile)fs.write
   assert.deepEqual(saved,{revision:2,stage:'company_profile',environment:'homologation'});
   // No screen capture of personal fields or credentials is retained.
   console.log(JSON.stringify({packagedApp:true,freshProfile:!b.resume,reopened:!!b.resume,allProfileFieldsDisplayed:true,connectionSaved:true,ownerLogin:true,preRegistrationRevision:1,completeRegistrationRevision:2,uiSource:'frontend-web',realHTTP:true,commercialData:false,officialFiscalAcceptance:false}));
- }finally{finishing=true;socket?.close();b.password='';b.token='';await stopProcess(child,closed)}
+ }finally{
+  finishing=true;b.password='';b.token='';
+  let graceful=false;
+  if(b.business&&socket?.readyState===WebSocket.OPEN&&child.exitCode===null){
+   try{await send('Page.enable');void send('Runtime.evaluate',{expression:'window.close()'}).catch(()=>{});await Promise.race([closed,sleep(3000)]);graceful=child.exitCode===0;}catch{}
+  }
+  socket?.close();if(child.exitCode===null)await stopProcess(child,closed);
+  if(b.business&&!graceful)throw Error('disposable application did not close gracefully');
+ }
 })().catch(error=>{const detail=/^(screen missing: [a-z -]+|sandbox startup refused|application page unavailable|screen action failed|inspection timeout|desktop [a-z_0-9-]+)$/.test(error.message)?error.message:'assertion or inspection failed';console.error(JSON.stringify({acceptanceFailure:phase,detail}));process.exitCode=1});
