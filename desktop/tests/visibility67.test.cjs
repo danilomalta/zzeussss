@@ -14,3 +14,15 @@ test('destroyed windows never show dialogs or get reopened',()=>{const s=setup()
 test('existing instance is explicitly explained without printing private paths',()=>{const logs=[];existingInstance(s=>logs.push(s));assert.match(logs[0],/outra instância/);assert.match(logs[0],/compilação diferente/);});
 test('direct shortcut argument selects software rendering before app readiness',()=>{let disabled=0;assert.equal(rendering({disableHardwareAcceleration(){disabled++;}},{},()=>{},['/stage','--software-rendering']),'software');assert.equal(disabled,1);});
 test('software shortcut preserves existing launcher and never disables sandbox',t=>{if(process.platform!=='linux'){t.skip('Linux launcher only');return;}const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),{createHash}=require('node:crypto'),{createShortcut}=require('../scripts/shortcut.cjs');const root=fs.mkdtempSync(path.join(os.tmpdir(),'trade67-shortcut-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));const stage=path.join(root,'.build/app-abcd');fs.mkdirSync(stage,{recursive:true});fs.writeFileSync(path.join(stage,'main.cjs'),'fixture');fs.writeFileSync(path.join(stage,'build-manifest.json'),JSON.stringify({files:{'main.cjs':createHash('sha256').update('fixture').digest('hex')}}));fs.writeFileSync(path.join(root,'.build/current.json'),JSON.stringify({stage:'app-abcd'}));const out=path.join(root,'Titan.desktop');fs.writeFileSync(out,'original');const fresh=createShortcut(root,process.execPath,out,'software'),content=fs.readFileSync(fresh,'utf8');assert.equal(fs.readFileSync(out,'utf8'),'original');assert.match(content,/ --software-rendering/);assert.ok(!content.includes('--no-sandbox'));assert.throws(()=>createShortcut(root,process.execPath,out,'unsafe'));});
+test('closing a destroyed Electron window never reads its native webContents getter',()=>{
+ const win=new EventEmitter(),contents=new EventEmitter();let destroyed=false,cleared=0;
+ Object.defineProperty(win,'webContents',{get(){if(destroyed)throw new TypeError('Object has been destroyed');return contents;}});
+ win.isDestroyed=()=>destroyed;win.show=()=>{};
+ const dispose=watchWindow(win,{dialog:{showErrorBox(){assert.fail('no dialog during close');}},log(){},setTimer:()=>({unref(){}}),clearTimer:()=>cleared++});
+ destroyed=true;
+ assert.doesNotThrow(()=>win.emit('closed'));
+ assert.doesNotThrow(dispose);
+ assert.equal(cleared,1);
+ for(const event of ['did-finish-load','did-fail-load','render-process-gone'])assert.equal(contents.listenerCount(event),0);
+ assert.equal(win.listenerCount('ready-to-show'),0);
+});
