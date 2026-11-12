@@ -80,6 +80,17 @@ jobs:
           test -x "$RUNNER_TEMP/installed-pilot/linux-unpacked/titansystem-desktop"
           sudo chown root:root "$RUNNER_TEMP/installed-pilot/linux-unpacked/chrome-sandbox"
           sudo chmod 4755 "$RUNNER_TEMP/installed-pilot/linux-unpacked/chrome-sandbox"
+      - name: Installed closing screen prerequisite
+        env:
+          TITAN_INSTALLED_DESKTOP: ${{ runner.temp }}/installed-pilot/linux-unpacked/titansystem-desktop
+          TITAN_INSTALLED_LOCAL: ${{ runner.temp }}/titan-local
+          TITAN_INSTALLED_SCREEN: ${{ github.workspace }}/desktop/scripts/verify-initialization.cjs
+          TITAN_INSTALLED_BACKUP: ${{ runner.temp }}/titan-backup
+        run: |
+          test_status=0
+          go test ./internal/localapi -run '^TestPilotInstalledCashClosingCustodyRestore$' -timeout 120s -count=1 -json > "$RUNNER_TEMP/installed-closing.jsonl" || test_status=$?
+          python3 ../.github/scripts/installed_diagnostics.py "$RUNNER_TEMP/installed-closing.jsonl"
+          test "$test_status" -eq 0
       - name: Full backend regression suite with mandatory real integrations
         env:
           TITAN_INSTALLED_DESKTOP: ${{ runner.temp }}/installed-pilot/linux-unpacked/titansystem-desktop
@@ -101,7 +112,10 @@ jobs:
           TITAN_CHECKOUT_FOCUS_SCREEN: ${{ github.workspace }}/frontend-web/tests/checkoutFocus.screen.mjs
         run: |
           set -euo pipefail
-          go test ./... -count=1 -timeout=30m -json > "$RUNNER_TEMP/backend-full.jsonl"
+          test_status=0
+          go test ./... -count=1 -timeout=30m -json > "$RUNNER_TEMP/backend-full.jsonl" || test_status=$?
+          python3 ../.github/scripts/installed_diagnostics.py "$RUNNER_TEMP/backend-full.jsonl"
+          test "$test_status" -eq 0
           python3 ../tools/verify_backend_acceptance.py "$RUNNER_TEMP/backend-full.jsonl" | tee "$RUNNER_TEMP/backend-integrations.json"
       - name: Fiscal journal, session boundary and mTLS regressions with race detector
         run: |
