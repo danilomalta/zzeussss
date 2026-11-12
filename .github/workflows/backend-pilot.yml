@@ -69,8 +69,23 @@ jobs:
         run: command -v google-chrome
       - name: Install locked dependencies for rendered checkout acceptance
         run: npm ci --prefix ../frontend-web
+      - name: Package disposable desktop for installed acceptance
+        run: |
+          set -euo pipefail
+          command -v xvfb-run
+          npm ci --prefix ../desktop
+          node ../desktop/scripts/build.mjs
+          stage="$(node -e 'const p=require("node:path"),f=require("node:fs");console.log(p.resolve("../desktop/.build",JSON.parse(f.readFileSync("../desktop/.build/current.json")).stage))')"
+          ../desktop/node_modules/.bin/electron-builder --projectDir "$stage" --config "$GITHUB_WORKSPACE/desktop/electron-builder.yml" --config.directories.output="$RUNNER_TEMP/installed-pilot" --publish never --linux dir
+          test -x "$RUNNER_TEMP/installed-pilot/linux-unpacked/titansystem-desktop"
+          sudo chown root:root "$RUNNER_TEMP/installed-pilot/linux-unpacked/chrome-sandbox"
+          sudo chmod 4755 "$RUNNER_TEMP/installed-pilot/linux-unpacked/chrome-sandbox"
       - name: Full backend regression suite with mandatory real integrations
         env:
+          TITAN_INSTALLED_DESKTOP: ${{ runner.temp }}/installed-pilot/linux-unpacked/titansystem-desktop
+          TITAN_INSTALLED_LOCAL: ${{ runner.temp }}/titan-local
+          TITAN_INSTALLED_SCREEN: ${{ github.workspace }}/desktop/scripts/verify-initialization.cjs
+          TITAN_INSTALLED_BACKUP: ${{ runner.temp }}/titan-backup
           TITAN_TRADE_QUEUE: "1"
           TITAN_TRADE_CLI: ${{ runner.temp }}/titan-trade
           TITAN_SESSION_TEST_DATABASE_URL: postgres://titan_ci:ephemeral-ci-fixture-only@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/titan_integration_test?sslmode=disable

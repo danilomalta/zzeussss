@@ -18,7 +18,7 @@ import (
 	"titansystem-backend/internal/localdb/stationfile"
 )
 
-var pilotBackupCLI = flag.String("pilot-backup-cli", "", "Explicit built titan-backup executable; empty uses library acceptance")
+var pilotBackupCLI = flag.String("pilot-backup-cli", os.Getenv("TITAN_INSTALLED_BACKUP"), "Explicit built titan-backup executable; empty uses library acceptance")
 
 func pilotPrepareCLIStation(t *testing.T, f *stockHTTPFixture) string {
 	t.Helper()

@@ -38,6 +38,12 @@ jobs:
         run: node --test --test-isolation=none desktop/tests/*.test.cjs
       - name: Build compiled ERP stage without Vite server or env files
         run: node desktop/scripts/build.mjs
+      - name: Prepare Linux Electron sandbox helper
+        if: runner.os == 'Linux'
+        run: |
+          node -e 'require("./desktop/node_modules/electron")'
+          sudo chown root:root desktop/node_modules/electron/dist/chrome-sandbox
+          sudo chmod 4755 desktop/node_modules/electron/dist/chrome-sandbox
       - name: Verify real Chromium print output (no physical printer)
         shell: bash
         run: node desktop/scripts/verify-print.cjs "$RUNNER_TEMP/print-evidence"

@@ -198,5 +198,49 @@
     "Fresh directories on local host are not clean OS; clean Windows/Linux evidence comes from the identified hosted jobs.",
     "No Windows full business/restore proof in this unit."
   ],
-  "security": "No customer environment, production DB, credentials, workflow, cofre/rotation or fiscal block changed."
+  "security": "No customer environment, production DB, credentials, workflow, cofre/rotation or fiscal block changed.",
+  "followup": {
+    "ci_base_26f1864": "6/7 jobs succeeded; acceptance verifier refused only two newly skipped installed tests; all25 required integrations present",
+    "windows_print_fe3f76b": {
+      "networkProbeRequests": 0,
+      "realElectron": true,
+      "sourceModule": "frontend-web/src/core/local/print95.ts",
+      "realChromiumPDF": true,
+      "physicalPrinting": false,
+      "fiscalEmission": false,
+      "commercialData": false,
+      "results": [
+        {
+          "paper": "58",
+          "pdfBytes": 22436,
+          "sandbox": true,
+          "javascript": false,
+          "networkRestricted": true
+        },
+        {
+          "paper": "80",
+          "pdfBytes": 22441,
+          "sandbox": true,
+          "javascript": false,
+          "networkRestricted": true
+        },
+        {
+          "paper": "a4",
+          "pdfBytes": 22429,
+          "sandbox": true,
+          "javascript": false,
+          "networkRestricted": true
+        }
+      ]
+    },
+    "linux_print_fe3f76b": "native process exit133 before proof; no PDF acceptance asserted for that run",
+    "ci_fix": "Build disposable packaged desktop and supply all4 TITAN_INSTALLED_* paths; backup flag accepts explicit env path; no verifier change. Prepare root-owned4755 sandbox helper only in Linux runners, keep sandbox enabled.",
+    "local_ci_environment_proof": "TestPilotInstalledCashClosingCustodyRestore PASS83.59s using new package and TITAN_INSTALLED_BACKUP instead of flag",
+    "workflow_changes_announced": [
+      "desktop-installers.yml adds native output proof/artifacts and sandbox preparation",
+      "backend-pilot.yml provisions installed runtime instead of allowing skips"
+    ],
+    "tools_changed": false,
+    "timeouts_changed": false
+  }
 }
