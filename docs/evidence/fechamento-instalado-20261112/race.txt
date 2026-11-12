@@ -1,0 +1,58 @@
+    pilot_installed_screen_test.go:34: Screen phase: launch
+    pilot_installed_screen_test.go:34: Screen phase: connection
+    pilot_installed_screen_test.go:34: Screen phase: login
+    pilot_installed_screen_test.go:34: Screen phase: authenticate
+    pilot_installed_screen_test.go:34: Screen phase: open cash
+    pilot_installed_screen_test.go:34: Screen phase: cash sale
+    pilot_installed_screen_test.go:34: Screen phase: button Adicionar parcela
+    pilot_installed_screen_test.go:34: Screen phase: button Finalizar compra
+    pilot_installed_screen_test.go:34: Screen phase: launch
+    pilot_installed_screen_test.go:34: Screen phase: login
+    pilot_installed_screen_test.go:34: Screen phase: authenticate
+    pilot_installed_screen_test.go:34: Screen phase: recover sale
+    pilot_installed_screen_test.go:34: Screen phase: button Verificar a mesma operação
+    pilot_installed_screen_test.go:34: Screen phase: launch
+    pilot_installed_screen_test.go:34: Screen phase: login
+    pilot_installed_screen_test.go:34: Screen phase: authenticate
+    pilot_installed_screen_test.go:34: Screen phase: withdrawal for custody
+    pilot_installed_screen_test.go:34: Screen phase: blind drawer count
+    pilot_installed_screen_test.go:34: Screen phase: button Revisar contagem
+    pilot_installed_screen_test.go:34: Screen phase: button Confirmar e conferir pagamentos
+    pilot_installed_screen_test.go:34: Screen phase: button Revisar fechamento
+    pilot_installed_screen_test.go:34: Screen phase: sealed bag dispatch
+    pilot_installed_screen_test.go:34: Screen phase: button Revisar
+    pilot_installed_screen_test.go:34: Screen phase: button Confirmar registro oficial
+    pilot_installed_screen_test.go:34: Screen phase: button Registrar saída
+    pilot_installed_screen_test.go:34: Screen phase: button Revisar
+    pilot_installed_screen_test.go:34: Screen phase: button Confirmar registro oficial
+    pilot_installed_screen_test.go:34: Screen phase: launch
+    pilot_installed_screen_test.go:34: Screen phase: login
+    pilot_installed_screen_test.go:34: Screen phase: authenticate
+    pilot_installed_screen_test.go:34: Screen phase: independent blind bag count
+    pilot_installed_screen_test.go:34: Screen phase: button Consultar malotes
+    pilot_installed_screen_test.go:34: Screen phase: button Revisar
+    pilot_installed_screen_test.go:34: Screen phase: button Confirmar registro oficial
+    pilot_installed_screen_test.go:34: BACKUP CLI key-init: expected_success=true observed_success=true
+    pilot_installed_screen_test.go:34: BACKUP CLI create-live: expected_success=true observed_success=true
+    pilot_installed_screen_test.go:34: BACKUP CLI verify: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:98: BACKUP CLI before-restore: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:105: BACKUP REPORT before-restore: {"version":1,"profile":"pilot_cash_v1","schema_version":88,"archive_sha256":"03d435c8b42db86a0b7a0c92241a7c30431d8a2a3d44feec45c6ccc1ee80557c","business_sha256":"3bc6e83c653ddca549a327533d5fb21502fc0d6920f3ace3a70f27ecb3dacc52","records":{"cash_movements":2,"cash_sessions":1,"payable_cash_payments":0,"purchase_deliveries":0,"purchase_order_items":0,"purchase_orders":0,"purchase_receipts":0,"purchase_receiving_cases":0,"purchase_supplier_decisions":0,"sale_payments":1,"sale_tax_bindings":0,"sales":1,"stock_movements":2,"supplier_payable_installments":0,"supplier_payables":0},"unavailable":[]}
+    pilot_installed_screen_test.go:34: BACKUP CLI wrong-key-init: expected_success=true observed_success=true
+    pilot_installed_screen_test.go:34: BACKUP CLI reject-wrong-key: expected_success=false observed_success=false
+    pilot_installed_screen_test.go:34: BACKUP CLI reject-wrong-company: expected_success=false observed_success=false
+    pilot_installed_screen_test.go:34: BACKUP CLI restore-new-path: expected_success=true observed_success=true
+    pilot_installed_screen_test.go:34: BACKUP CLI reject-overwrite: expected_success=false observed_success=false
+    pilot_installed_screen_test.go:34: BACKUP CLI create-from-restored: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:98: BACKUP CLI after-restore: expected_success=true observed_success=true
+    pilot_backup_cli_test.go:105: BACKUP REPORT after-restore: {"version":1,"profile":"pilot_cash_v1","schema_version":88,"archive_sha256":"f09bf4fdbafa02c15f18c6bfde57a6e117f9ab66fcf403cc84fc0de4df52a318","business_sha256":"3bc6e83c653ddca549a327533d5fb21502fc0d6920f3ace3a70f27ecb3dacc52","records":{"cash_movements":2,"cash_sessions":1,"payable_cash_payments":0,"purchase_deliveries":0,"purchase_order_items":0,"purchase_orders":0,"purchase_receipts":0,"purchase_receiving_cases":0,"purchase_supplier_decisions":0,"sale_payments":1,"sale_tax_bindings":0,"sales":1,"stock_movements":2,"supplier_payable_installments":0,"supplier_payables":0},"unavailable":[]}
+    pilot_installed_screen_test.go:34: BACKUP CLI RESTORATION: pilot table counts and business SHA256 identical; encrypted archive SHA256 distinct; source and restored DBs separate
+    pilot_installed_screen_test.go:34: Authentication budget preserved; observing Retry-After 60s without changing any timeout
+    pilot_installed_screen_test.go:34: Screen phase: launch
+    pilot_installed_screen_test.go:34: Screen phase: login
+    pilot_installed_screen_test.go:34: Screen phase: authenticate
+    pilot_installed_screen_test.go:34: Screen phase: restored closing and custody
+    pilot_installed_screen_test.go:34: Screen phase: button Consultar malotes
+    pilot_installed_screen_test.go:34: PASS: installed drawer count and official closure; sealed bag independently received without rebooking cash; records preserved after encrypted CLI restore
+--- PASS: TestPilotInstalledCashClosingCustodyRestore (88.04s)
+PASS
+ok  	titansystem-backend/internal/localapi	89.659s

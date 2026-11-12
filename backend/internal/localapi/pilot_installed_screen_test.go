@@ -29,7 +29,12 @@ import (
 	"titansystem-backend/internal/localdb/stock"
 )
 
-func TestPilotInstalledCashPartialReceivingRestore(t *testing.T) {
+func TestPilotInstalledCashPartialReceivingRestore(t *testing.T) { runInstalledPilot(t, false) }
+
+func TestPilotInstalledCashClosingCustodyRestore(t *testing.T) { runInstalledPilot(t, true) }
+
+func runInstalledPilot(t *testing.T, closing bool) {
+	t.Helper()
 	desktop, local, screen := os.Getenv("TITAN_INSTALLED_DESKTOP"), os.Getenv("TITAN_INSTALLED_LOCAL"), os.Getenv("TITAN_INSTALLED_SCREEN")
 	if desktop == "" && local == "" && screen == "" {
 		t.Skip("opt-in installed application acceptance; supply three TITAN_INSTALLED paths and -pilot-backup-cli")
@@ -73,7 +78,13 @@ func TestPilotInstalledCashPartialReceivingRestore(t *testing.T) {
 	reserve.Close()
 	endpoint := "http://127.0.0.1:" + strconv.Itoa(port)
 	var child *exec.Cmd
+	transport := &http.Transport{Proxy: nil}
+	proxyTransport := &http.Transport{Proxy: nil}
+	defer transport.CloseIdleConnections()
+	defer proxyTransport.CloseIdleConnections()
 	stop := func() {
+		transport.CloseIdleConnections()
+		proxyTransport.CloseIdleConnections()
 		if child != nil {
 			_ = child.Process.Signal(os.Interrupt)
 			done := make(chan error, 1)
@@ -92,7 +103,7 @@ func TestPilotInstalledCashPartialReceivingRestore(t *testing.T) {
 		}
 	}
 	defer stop()
-	client := &http.Client{Transport: &http.Transport{Proxy: nil}, Timeout: 3 * time.Second}
+	client := &http.Client{Transport: transport, Timeout: 3 * time.Second}
 	start := func(path string) {
 		child = exec.Command(local, "serve", "--db", path, "--station", station, "--issuer-keys", trusted, "--port", strconv.Itoa(port))
 		child.Stdout = io.Discard
@@ -117,6 +128,7 @@ func TestPilotInstalledCashPartialReceivingRestore(t *testing.T) {
 	start(dbPath)
 	target, _ := url.Parse(endpoint)
 	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy.Transport = proxyTransport
 	var dropped atomic.Bool
 	var finalPosts atomic.Int64
 	proxy.ModifyResponse = func(r *http.Response) error {
@@ -144,8 +156,24 @@ func TestPilotInstalledCashPartialReceivingRestore(t *testing.T) {
 		payload["business"] = phase
 		payload["resume"] = resume
 		payload["owner"] = f.owner.OwnerID
-		if phase == "approve" {
+		if phase == "approve" || phase == "receive-bag" {
 			payload["owner"] = "pilot-reviewer"
+		}
+		if phase == "receive-bag" {
+			raw, _ := json.Marshal(map[string]string{"identity_id": "pilot-reviewer", "password": "senha-forte-de-teste-1"})
+			r, err := client.Post(endpoint+"/local/v1/login", "application/json", bytes.NewReader(raw))
+			if err != nil {
+				t.Fatal("receiver observation login unavailable")
+			}
+			var auth struct {
+				Token string `json:"token"`
+			}
+			err = json.NewDecoder(r.Body).Decode(&auth)
+			r.Body.Close()
+			if err != nil || r.StatusCode != 200 || auth.Token == "" {
+				t.Fatal("receiver observation login refused")
+			}
+			payload["token"] = auth.Token
 		}
 		body, _ := json.Marshal(payload)
 		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
@@ -189,13 +217,35 @@ func TestPilotInstalledCashPartialReceivingRestore(t *testing.T) {
 	if finalPosts.Load() != 1 {
 		t.Fatal("recovery repeated fiscal/commercial finalization POST")
 	}
-	screenStep("supply", true)
-	// The controller's finance stage must use the original receiving origin.
-	screenStep("approve", true)
-	screenStep("finance", true)
+	var closedCash string
+	if closing {
+		screenStep("close-bag", true)
+		screenStep("receive-bag", true)
+		var page struct {
+			Items []struct {
+				Cash string `json:"cash_session_id"`
+			} `json:"items"`
+		}
+		observer.call("GET", "/local/v1/sales?limit=50&offset=0", nil, 200, &page)
+		if len(page.Items) != 1 || page.Items[0].Cash == "" {
+			t.Fatal("original drawer missing")
+		}
+		closedCash = page.Items[0].Cash
+	} else {
+		screenStep("supply", true)
+		screenStep("approve", true)
+		screenStep("finance", true)
+	}
+
 	snapshot := func() map[string]any {
 		out := map[string]any{}
-		for _, path := range []string{"/local/v1/stock/balance?product_id=" + f.product + "&location_id=" + f.shelf, "/local/v1/sales?limit=50&offset=0", "/local/v1/purchase-orders?limit=50&offset=0", "/local/v1/finance/payables?limit=50&offset=0", "/local/v1/finance/payables/installed-payable", "/local/v1/purchase-deliveries/installed-trip"} {
+		paths := []string{"/local/v1/stock/balance?product_id=" + f.product + "&location_id=" + f.shelf, "/local/v1/sales?limit=50&offset=0", "/local/v1/purchase-orders?limit=50&offset=0", "/local/v1/finance/payables?limit=50&offset=0"}
+		if closing {
+			paths = append(paths, "/local/v1/cash/bags?limit=50&offset=0", "/local/v1/cash/sessions/"+closedCash+"/custody", "/local/v1/cash/sessions/"+closedCash+"/report")
+		} else {
+			paths = append(paths, "/local/v1/finance/payables/installed-payable", "/local/v1/purchase-deliveries/installed-trip")
+		}
+		for _, path := range paths {
 			var v any
 			observer.call("GET", path, nil, 200, &v)
 			out[path] = v
@@ -254,22 +304,46 @@ func TestPilotInstalledCashPartialReceivingRestore(t *testing.T) {
 	if !reflect.DeepEqual(before, snapshot()) {
 		t.Fatal("installed workflow changed after CLI restore")
 	}
-	screenStep("restored", true)
+	if closing {
+		screenStep("closed-restored", true)
+	} else {
+		screenStep("restored", true)
+	}
 	db, err := localdb.Open(context.Background(), restored)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	for _, check := range []struct {
+	checks := []struct {
 		sql  string
 		want int64
-	}{{"SELECT COUNT(*) FROM sales", 1}, {"SELECT SUM(total_cents) FROM sales WHERE status='committed'", 3198}, {"SELECT COUNT(*) FROM purchase_orders", 1}, {"SELECT COUNT(*) FROM purchase_receipts", 1}, {"SELECT SUM(quantity_milli) FROM stock_movements", 4000}, {"SELECT SUM(accepted_milli) FROM purchase_receipts", 1000}, {"SELECT SUM(delivered_milli) FROM purchase_receipts", 2000}, {"SELECT SUM(opening_cents) FROM cash_sessions", 1000}, {"SELECT COUNT(*) FROM payable_cash_payments", 1}, {"SELECT SUM(amount_cents) FROM cash_movements", 2173}, {"SELECT COUNT(*) FROM supplier_payables WHERE state='approved' AND total_cents=1025", 1}} {
+	}{{"SELECT COUNT(*) FROM sales", 1}, {"SELECT SUM(total_cents) FROM sales WHERE status='committed'", 3198}, {"SELECT COUNT(*) FROM purchase_orders", 1}, {"SELECT COUNT(*) FROM purchase_receipts", 1}, {"SELECT SUM(quantity_milli) FROM stock_movements", 4000}, {"SELECT SUM(accepted_milli) FROM purchase_receipts", 1000}, {"SELECT SUM(delivered_milli) FROM purchase_receipts", 2000}, {"SELECT SUM(opening_cents) FROM cash_sessions", 1000}, {"SELECT COUNT(*) FROM payable_cash_payments", 1}, {"SELECT SUM(amount_cents) FROM cash_movements", 2173}, {"SELECT COUNT(*) FROM supplier_payables WHERE state='approved' AND total_cents=1025", 1}}
+	if closing {
+		checks = []struct {
+			sql  string
+			want int64
+		}{
+			{"SELECT COUNT(*) FROM sales WHERE status='committed' AND total_cents=3198", 1},
+			{"SELECT SUM(quantity_milli) FROM stock_movements", 3000},
+			{"SELECT COUNT(*) FROM cash_closures WHERE declared_cents=3198 AND expected_cents=3198 AND declared_cents-expected_cents=0", 1},
+			{"SELECT COUNT(*) FROM cash_sessions WHERE closed_at IS NOT NULL", 1},
+			{"SELECT COUNT(*) FROM cash_adjustments WHERE kind='withdrawal' AND amount_cents=1000", 1},
+			{"SELECT SUM(amount_cents) FROM cash_movements", 2198},
+			{"SELECT COUNT(*) FROM cash_bags WHERE state='received' AND declared_cents=1000 AND counted_cents=1000 AND difference_cents=0 AND sender_id<>receiver_id AND operator_id<>receiver_id", 1},
+			{"SELECT COUNT(*) FROM cash_bag_operations", 3},
+		}
+	}
+	for _, check := range checks {
 		var got int64
 		if err = db.QueryRow(check.sql).Scan(&got); err != nil || got != check.want {
 			t.Fatal("installed outcome mismatch:", check.sql)
 		}
 	}
-	t.Log("PASS: installed React screens -> real native HTTP -> SQLite; lost response recovery once; partial receiving; same IDs after actual encrypted backup CLI restore. No fiscal emission or commercial data.")
+	if closing {
+		t.Log("PASS: installed drawer count and official closure; sealed bag independently received without rebooking cash; records preserved after encrypted CLI restore")
+	} else {
+		t.Log("PASS: installed React screens -> real native HTTP -> SQLite; lost response recovery once; partial receiving; same IDs after actual encrypted backup CLI restore. No fiscal emission or commercial data.")
+	}
 }
 func installedEnvironment() []string {
 	out := []string{}

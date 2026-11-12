@@ -1,0 +1,13 @@
+--- PASS: TestHTTPBagLifecycleBlindCountAndDurableOperationReceipts (0.52s)
+--- PASS: TestHTTPBagFailuresRollbackStateAuditOutboxAndPermitSafeRetry (3.01s)
+    --- PASS: TestHTTPBagFailuresRollbackStateAuditOutboxAndPermitSafeRetry/create_ignore (0.50s)
+    --- PASS: TestHTTPBagFailuresRollbackStateAuditOutboxAndPermitSafeRetry/operation_abort (0.50s)
+    --- PASS: TestHTTPBagFailuresRollbackStateAuditOutboxAndPermitSafeRetry/operation_ignore (0.50s)
+    --- PASS: TestHTTPBagFailuresRollbackStateAuditOutboxAndPermitSafeRetry/outbox_abort (0.50s)
+    --- PASS: TestHTTPBagFailuresRollbackStateAuditOutboxAndPermitSafeRetry/receive_ignore (0.50s)
+    --- PASS: TestHTTPBagFailuresRollbackStateAuditOutboxAndPermitSafeRetry/receive_outbox (0.51s)
+--- PASS: TestHTTPBagRestartBackupAndConcurrentReceiveDoNotDuplicateCustody (0.67s)
+--- PASS: TestHTTPClosedReportUsesOfficialClosureAndExcludesUnsubmittedPlans (0.39s)
+--- PASS: TestHTTPClosedReportRejectsScopeQueryAndRevocationWithoutPOSLicense (0.44s)
+PASS
+ok  	titansystem-backend/internal/localapi	5.093s

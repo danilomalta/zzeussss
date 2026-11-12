@@ -1,0 +1,113 @@
+{
+  "date": "2026-11-12",
+  "branch": "feat/backend-fechamento-instalado-20261112",
+  "base": "279164ef11ab828f990bd8a6807e5a7977776e02",
+  "new_test": "TestPilotInstalledCashClosingCustodyRestore",
+  "tests_seconds": {
+    "closing": 83.59,
+    "race": 88.04,
+    "previous_flow": 91.92
+  },
+  "targeted_regressions_passed": 5,
+  "desktop_tests_passed": 62,
+  "desktop_asar_sha256": "a8cf441a8f99bb7bcc0a4734e4d17abfa1508bf4120c4db823094153bb298123",
+  "scope": {
+    "ui": "actual packaged Electron/React",
+    "service": "built titan-local executable, real HTTP/SQLite",
+    "data": "disposable synthetic",
+    "cash_opening_cents": 1000,
+    "sale_cents": 3198,
+    "withdrawal_cents": 1000,
+    "drawer_counted_cents": 3198,
+    "drawer_expected_cents": 3198,
+    "drawer_difference_cents": 0,
+    "count_method": "individual notes/coins through inputs and explicit confirmation",
+    "bag_seal": "synthetic, unique",
+    "bag_declared_cents": 1000,
+    "bag_counted_cents": 1000,
+    "bag_difference_cents": 0,
+    "bag_operations": 3,
+    "different_sender_operator_and_receiver": true,
+    "receiver_declared_amount_hidden_before_receipt": true,
+    "custody_does_not_rebook_cash": true,
+    "lost_sale_reply_recovered_without_another_post": true,
+    "encrypted_cli_restore_new_root": true,
+    "original_session_revoked_after_restore": true,
+    "entire_http_bag_history_coverage_report_equal_after_restore": true,
+    "cash_received_by_manager_ui": true
+  },
+  "backup_reports": {
+    "before-restore": {
+      "version": 1,
+      "profile": "pilot_cash_v1",
+      "schema_version": 88,
+      "archive_sha256": "03d435c8b42db86a0b7a0c92241a7c30431d8a2a3d44feec45c6ccc1ee80557c",
+      "business_sha256": "3bc6e83c653ddca549a327533d5fb21502fc0d6920f3ace3a70f27ecb3dacc52",
+      "records": {
+        "cash_movements": 2,
+        "cash_sessions": 1,
+        "payable_cash_payments": 0,
+        "purchase_deliveries": 0,
+        "purchase_order_items": 0,
+        "purchase_orders": 0,
+        "purchase_receipts": 0,
+        "purchase_receiving_cases": 0,
+        "purchase_supplier_decisions": 0,
+        "sale_payments": 1,
+        "sale_tax_bindings": 0,
+        "sales": 1,
+        "stock_movements": 2,
+        "supplier_payable_installments": 0,
+        "supplier_payables": 0
+      },
+      "unavailable": []
+    },
+    "after-restore": {
+      "version": 1,
+      "profile": "pilot_cash_v1",
+      "schema_version": 88,
+      "archive_sha256": "f09bf4fdbafa02c15f18c6bfde57a6e117f9ab66fcf403cc84fc0de4df52a318",
+      "business_sha256": "3bc6e83c653ddca549a327533d5fb21502fc0d6920f3ace3a70f27ecb3dacc52",
+      "records": {
+        "cash_movements": 2,
+        "cash_sessions": 1,
+        "payable_cash_payments": 0,
+        "purchase_deliveries": 0,
+        "purchase_order_items": 0,
+        "purchase_orders": 0,
+        "purchase_receipts": 0,
+        "purchase_receiving_cases": 0,
+        "purchase_supplier_decisions": 0,
+        "sale_payments": 1,
+        "sale_tax_bindings": 0,
+        "sales": 1,
+        "stock_movements": 2,
+        "supplier_payable_installments": 0,
+        "supplier_payables": 0
+      },
+      "unavailable": []
+    }
+  },
+  "production_enabled": false,
+  "real_focus_emission": false,
+  "physical_cash_transport_proven": false,
+  "clean_os": false,
+  "windows_validated": false,
+  "physical_printing_validated": false,
+  "remote_ci_claimed": false,
+  "changes": "Only opt-in tests/controllers/evidence; existing product cash, custody, cryptography and permissions unchanged.",
+  "execution_notes": [
+    "First closure run reached restored screens but test SQL incorrectly named nonexistent difference_cents column; corrected to declared_cents-expected_cents without changing product.",
+    "Previous flow failed server drain5s once during overlapping runs. Driver now closes its own private idle transports before shutdown; isolated final run passed, same deadlines.",
+    "Combined race invocation completed five existing regressions but was interrupted before cumulative work could exceed120s; new installed test then rerun alone with same120s timeout.",
+    "The83.59s normal closing run preceded idle-transport cleanup. Final race and previous-flow run include it.",
+    "Existing durable login Retry-After60s observed; no security budget reset or timeout increase."
+  ],
+  "command": "TITAN_INSTALLED_DESKTOP=<packaged-executable> TITAN_INSTALLED_LOCAL=<built-native-server> TITAN_INSTALLED_SCREEN=<absolute-controller> GOFLAGS=-buildvcs=false go test [-race] -timeout 120s -count=1 ./internal/localapi -run ^TestPilotInstalledCashClosingCustodyRestore$ -pilot-backup-cli=<built-backup-cli> -v",
+  "untested_external": [
+    "Windows/clean-OS install",
+    "physical printer and other hardware",
+    "real Focus/SEFAZ issuance with client configuration"
+  ],
+  "next_independent_unit": "Receiving discrepancy treatment or authorized external environment acceptance; not started."
+}
