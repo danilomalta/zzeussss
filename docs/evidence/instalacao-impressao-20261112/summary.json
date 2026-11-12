@@ -257,6 +257,14 @@
       "local_closing_race_seconds": 88.1,
       "local_closing_race": "pass",
       "remote_corrected_commit_result": "pending"
+    },
+    "dom_readiness_fix": {
+      "prior_run": 43188914716,
+      "failure": "screen action failed during connection before login",
+      "change": "require connection fieldset existence before reading disabled; same bounded wait",
+      "local_closing": "pass",
+      "local_closing_seconds": 83.63,
+      "remote_result": "pending"
     }
   }
 }
