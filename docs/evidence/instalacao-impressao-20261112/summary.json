@@ -1,0 +1,202 @@
+{
+  "date": "2026-11-12",
+  "base": "26f18640234b7b09f93c1672cdaea3f6442c32dd",
+  "branch": "feat/backend-validacao-instalacao-impressao-20261112",
+  "fiscal_real_acceptance": "deferred until final system acceptance as requested; not attempted",
+  "remote_jobs_at_observation": [
+    {
+      "id": 131006795294,
+      "name": "Desktop installer (ubuntu-24.04)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/danilomalta/zzeussss/actions/runs/43165652868/job/131006795294"
+    },
+    {
+      "id": 131006795585,
+      "name": "Linux backend installer",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/danilomalta/zzeussss/actions/runs/43165652868/job/131006795585"
+    },
+    {
+      "id": 131006795646,
+      "name": "Desktop installer (windows-2022)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/danilomalta/zzeussss/actions/runs/43165652868/job/131006795646"
+    },
+    {
+      "id": 131006795238,
+      "name": "Frontend CI (React + TypeScript)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/danilomalta/zzeussss/actions/runs/43165652920/job/131006795238"
+    },
+    {
+      "id": 131006795371,
+      "name": "Backend CI (Go)",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/danilomalta/zzeussss/actions/runs/43165652920/job/131006795371"
+    },
+    {
+      "id": 131006795423,
+      "name": "Real HTTP, PostgreSQL, SQLite, frontend bridges and recovery",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/danilomalta/zzeussss/actions/runs/43165652919/job/131006795423"
+    }
+  ],
+  "clean_runner_desktop_startup": {
+    "windows": {
+      "platform": "win32",
+      "installedExecutable": true,
+      "freshProfile": true,
+      "window": "titan://app/desktop-setup/index.html",
+      "textLength": 1011,
+      "controls": 5,
+      "startupMilliseconds": 701,
+      "backendStarted": false,
+      "commercialData": false,
+      "businessFlowProven": false
+    },
+    "linux": {
+      "platform": "linux",
+      "installedExecutable": true,
+      "freshProfile": true,
+      "window": "titan://app/desktop-setup/index.html",
+      "textLength": 1011,
+      "controls": 5,
+      "startupMilliseconds": 2537,
+      "backendStarted": false,
+      "commercialData": false,
+      "businessFlowProven": false
+    }
+  },
+  "remote_scope": "Windows/Linux installer and first connection window; not full Windows business flow or Windows backup restoration",
+  "printing_bug_reproduced_in_previous_stage": {
+    "window_open_result": "popupBlocked",
+    "old_stage": "app-071c181f-eafb-4e7b-8aae-2e4d2d35274d"
+  },
+  "fix": "Only first-party ERP about:blank print surfaces; sandbox, no Node or scripts; navigation/nested windows/download blocked, network guard by child WebContents ID; parent traffic unchanged. Electron blank window inherits session; no separate-session claim.",
+  "native_print": {
+    "networkProbeRequests": 0,
+    "realElectron": true,
+    "sourceModule": "frontend-web/src/core/local/print95.ts",
+    "realChromiumPDF": true,
+    "physicalPrinting": false,
+    "fiscalEmission": false,
+    "commercialData": false,
+    "results": [
+      {
+        "paper": "58",
+        "pdfBytes": 14474,
+        "sandbox": true,
+        "javascript": false,
+        "networkRestricted": true
+      },
+      {
+        "paper": "80",
+        "pdfBytes": 14476,
+        "sandbox": true,
+        "javascript": false,
+        "networkRestricted": true
+      },
+      {
+        "paper": "a4",
+        "pdfBytes": 14477,
+        "sandbox": true,
+        "javascript": false,
+        "networkRestricted": true
+      }
+    ]
+  },
+  "pdf_checks": [
+    {
+      "paper": "58",
+      "width_points": 163.92,
+      "text_verified": true,
+      "escaped_text_verified": true
+    },
+    {
+      "paper": "80",
+      "width_points": 227.04,
+      "text_verified": true,
+      "escaped_text_verified": true
+    },
+    {
+      "paper": "a4",
+      "width_points": 594.96,
+      "text_verified": true,
+      "escaped_text_verified": true
+    }
+  ],
+  "package_sha256": "12d8f2f6446220ca9d5cc45d60a137b1f0751e365a1f204acf8aee01eb1fd443",
+  "new_package_registration": {
+    "packagedApp": true,
+    "freshProfile": true,
+    "reopened": false,
+    "allProfileFieldsDisplayed": true,
+    "connectionSaved": true,
+    "ownerLogin": true,
+    "preRegistrationRevision": 1,
+    "completeRegistrationRevision": 2,
+    "uiSource": "frontend-web",
+    "realHTTP": true,
+    "commercialData": false,
+    "officialFiscalAcceptance": false,
+    "appRestartLoginAndProfile": true,
+    "vaultReopenedAfterRestart": true,
+    "entireRegistrationUnchanged": true,
+    "desktopLaunches": 2,
+    "backendSourceCommit": "c75b2bc2d9a5424ee58f83f472c38be8fae74df7",
+    "sourceBaseCommit": "bd158b67e5ca3839231cba543b02167acc95d871",
+    "desktopArchiveSHA256": "abb756c03efb2f03c6f3ec8083d8b1dd887942505dc0d7b77b107be520ceaddb",
+    "linuxInstalledBackend": true,
+    "customerSelectedDataLocation": true,
+    "loopbackOnly": true,
+    "stationKeyCreated": true,
+    "vaultKeyCreated": true,
+    "privateKeyExportVerified": true,
+    "exportedKeyOpensVault": true,
+    "missingVaultKeyUnavailable": true,
+    "backupKeyCopy": true,
+    "privatePermissions": true,
+    "secondInitRefused": true,
+    "oneOwner": true,
+    "restartPreservedRegistration": true,
+    "explicitLogoutRemainsRevoked": true,
+    "schemaObserved": 88,
+    "cleanOS": false,
+    "windows": false,
+    "servicesStopped": true,
+    "productionEnabled": false,
+    "clientCredentialsRequired": false
+  },
+  "desktop_tests": {
+    "passed": 66,
+    "failed": 0
+  },
+  "fiscal_print_tests": {
+    "passed": 8,
+    "failed": 0
+  },
+  "typescript_build": {
+    "passed": true,
+    "vite_seconds": 20.67,
+    "warning": "preexisting large spreadsheet chunk"
+  },
+  "hardware": {
+    "cups_running": false,
+    "default_printer": false,
+    "configured_pilot_printer_or_scale": false,
+    "physical_print_or_scale_verified": false
+  },
+  "limitations": [
+    "Remote CI of the new print fix has not been inferred from predecessor runs.",
+    "No physical printer/scale configured for an authorized test; PDF is not physical output.",
+    "Fresh directories on local host are not clean OS; clean Windows/Linux evidence comes from the identified hosted jobs.",
+    "No Windows full business/restore proof in this unit."
+  ],
+  "security": "No customer environment, production DB, credentials, workflow, cofre/rotation or fiscal block changed."
+}
