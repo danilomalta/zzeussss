@@ -241,6 +241,22 @@
       "backend-pilot.yml provisions installed runtime instead of allowing skips"
     ],
     "tools_changed": false,
-    "timeouts_changed": false
+    "timeouts_changed": false,
+    "observed_clean_print_run": {
+      "commit": "17d5ecd9ea299cc1bb97b249642c6145c15d00a6",
+      "run": 43168494939,
+      "conclusion": "success",
+      "windows_and_linux_pdf": true,
+      "physical_print": false
+    },
+    "handoff_fix": {
+      "remote_failure_run": 43187054248,
+      "phase": "connection to login, before business commands",
+      "change": "acknowledge inspector before submitting the window-closing connection form; preserve original failure",
+      "local_registration": "pass, two launches",
+      "local_closing_race_seconds": 88.1,
+      "local_closing_race": "pass",
+      "remote_corrected_commit_result": "pending"
+    }
   }
 }

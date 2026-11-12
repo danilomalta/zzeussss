@@ -13,7 +13,7 @@ let phase='start',phaseFile;const mark=value=>{phase=value;if(phaseFile)fs.write
  const env={...process.env,XDG_CONFIG_HOME:path.join(profile,'config'),XDG_CACHE_HOME:path.join(profile,'cache')};delete env.ELECTRON_RUN_AS_NODE;delete env.WAYLAND_DISPLAY;env.XDG_SESSION_TYPE='x11';
  mark('launch');const child=spawn(b.binary,['--user-data-dir='+profile,'--remote-debugging-address=127.0.0.1','--remote-debugging-port='+port,'--software-rendering','--ozone-platform=x11'],{env,detached:true,stdio:['ignore','pipe','pipe']});
  fs.writeFileSync(path.join(b.root,'acceptance-process.json'),JSON.stringify({pid:child.pid,binary:b.binary}),{mode:0o600});
- let finishing=false,appFailure='';const observe=chunk=>{const text=String(chunk);if(finishing)return;const code=text.match(/falha de inicialização \(([a-z_0-9-]+)\)/);if(code){appFailure='desktop '+code[1];fs.writeFileSync(phaseFile,JSON.stringify({phase,appFailure}),{mode:0o600})}};child.stdout.on('data',observe);child.stderr.on('data',observe);
+ let finishing=false,taskFailed=false,appFailure='';const observe=chunk=>{const text=String(chunk);if(finishing)return;const code=text.match(/falha de inicialização \(([a-z_0-9-]+)\)/);if(code){appFailure='desktop '+code[1];fs.writeFileSync(phaseFile,JSON.stringify({phase,appFailure}),{mode:0o600})}};child.stdout.on('data',observe);child.stderr.on('data',observe);
  const closed=new Promise(r=>{child.on('error',()=>r(-1));child.on('close',r)});let socket,seq=0;const pending=new Map();
  const connect=async predicate=>{
   // Detach from the closing settings target before discovering its successor.
@@ -35,7 +35,7 @@ let phase='start',phaseFile;const mark=value=>{phase=value;if(phaseFile)fs.write
  const input=async(selector,value)=>{await wait(`!!document.querySelector(${JSON.stringify(selector)})`,'input');await evaluate(`(()=>{const el=document.querySelector(${JSON.stringify(selector)});Object.getOwnPropertyDescriptor(el.tagName==='SELECT'?HTMLSelectElement.prototype:el.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype,'value').set.call(el,${JSON.stringify(value)});el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));})()`);await sleep(60)};
  try{
   if(!b.resume){mark('connection');await connect(u=>u==='titan://app/desktop-setup/index.html');await wait('!document.querySelector("#fields").disabled','connection');
-  await input('#operational',b.url+'/local/v1');await evaluate('document.querySelector("#connection").requestSubmit()');}
+  await input('#operational',b.url+'/local/v1');await evaluate('setTimeout(()=>document.querySelector("#connection").requestSubmit(),0)');}
   mark('login');await connect(u=>u.startsWith('titan://app/local/'));
   await wait('!!document.querySelector("#brand-credential")','login');if(b.business&&await evaluate('document.documentElement.lang!=="pt-BR"')){await wait('!!document.querySelector(".brand-contact-trigger")','language menu');await evaluate('document.querySelector(".brand-contact-trigger").click()');const languageButton=JSON.stringify('.language-list button[lang="pt-BR"]');await wait(`!!document.querySelector(${languageButton})`,'language choice');await evaluate(`document.querySelector(${languageButton}).click()`);await evaluate('document.querySelector(".contact-heading button").click()');await wait('document.documentElement.lang==="pt-BR"','Portuguese interface');}if(b.transitionOnly){console.log(JSON.stringify({transitionOnly:true,loginVisible:true}));return;}await input('#brand-credential',b.owner);await input('#brand-password',b.password);await evaluate('document.querySelector("#brand-password").form.requestSubmit()');
   mark('authenticate');await wait('location.pathname==="/local/home"','authenticated home');
@@ -66,13 +66,13 @@ let phase='start',phaseFile;const mark=value=>{phase=value;if(phaseFile)fs.write
   assert.deepEqual(saved,{revision:2,stage:'company_profile',environment:'homologation'});
   // No screen capture of personal fields or credentials is retained.
   console.log(JSON.stringify({packagedApp:true,freshProfile:!b.resume,reopened:!!b.resume,allProfileFieldsDisplayed:true,connectionSaved:true,ownerLogin:true,preRegistrationRevision:1,completeRegistrationRevision:2,uiSource:'frontend-web',realHTTP:true,commercialData:false,officialFiscalAcceptance:false}));
- }finally{
+ }catch(error){taskFailed=true;throw error;}finally{
   finishing=true;b.password='';b.token='';
   let graceful=false;
   if(b.business&&socket?.readyState===WebSocket.OPEN&&child.exitCode===null){
    try{await send('Page.enable');void send('Runtime.evaluate',{expression:'window.close()'}).catch(()=>{});await Promise.race([closed,sleep(3000)]);graceful=child.exitCode===0;}catch{}
   }
   socket?.close();if(child.exitCode===null)await stopProcess(child,closed);
-  if(b.business&&!graceful)throw Error('disposable application did not close gracefully');
+  if(b.business&&!graceful&&!taskFailed)throw Error('disposable application did not close gracefully');
  }
-})().catch(error=>{const detail=/^(screen missing: [a-z -]+|sandbox startup refused|application page unavailable|screen action failed|inspection timeout|desktop [a-z_0-9-]+)$/.test(error.message)?error.message:'assertion or inspection failed';console.error(JSON.stringify({acceptanceFailure:phase,detail}));process.exitCode=1});
+})().catch(error=>{const detail=/^(screen missing: [a-z -]+|sandbox startup refused|application page unavailable|screen action failed|inspection timeout|disposable application did not close gracefully|desktop [a-z_0-9-]+)$/.test(error.message)?error.message:'assertion or inspection failed';console.error(JSON.stringify({acceptanceFailure:phase,detail}));process.exitCode=1});

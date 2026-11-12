@@ -1,5 +1,13 @@
 # Continuidade do TitanSystem
 
+## Continuação da prova instalada — 12/11/2026
+
+- No hash17d5ecd, instaladores43168494939 passaram nas três plataformas/jobs: Windows e Linux geraram PDFs58/80/A4 pelo print95 real, sem tráfego das janelas de impressão; primeiras janelas405ms/511ms. Backend Go/frontend43168494934 e launcher43168495250 passaram. Isso não prova papel nem circuito comercial Windows.
+- Aceitação43168494962 falhou somente no ensaio instalado de fechamento; o fluxo comercial instalado passou92,94s. Diagnóstico focal no hashf2744dc/run43187054248 localizou falha na transição conexão→login, antes da venda. Não se declara CI integral verde.
+- Correção restrita ao controlador: responder à inspeção antes de submeter o formulário que destrói a própria janela; preservar erro original se cleanup também falhar. Nenhum timeout, regra comercial ou asserção enfraquecido. Diagnóstico continua somente com fases e rótulos fixos, sem dados.
+- Ensaio do pacote em nova raiz: cadastro/chaves/reinício PASS; TestPilotInstalledCashClosingCustodyRestore com -race/-timeout120s/-count1 PASS88,10s (pacote89,753s), com caixa/malote/restore e sessão revogada. Teste do sanitizador passou (unittest:1 caso). Resultado remoto da correção ainda pendente no momento deste registro.
+- Focus/SEFAZ permanece exclusivamente no aceite final. Próximo passo desta unidade: observar o CI deste commit; nenhum outro módulo iniciado. Itens fora do v1: ver o documento.
+
 ## Instalação remota comprovada e correção da impressão desktop — 12/11/2026
 
 - Decisão reiterada do dono: Focus/SEFAZ REAL somente no teste final, depois do fechamento do sistema; não é pré-requisito para continuar o trabalho independente. Produção permanece bloqueada. Branch `feat/backend-validacao-instalacao-impressao-20261112`, base26f18640234b7b09f93c1672cdaea3f6442c32dd. Árvore principal40958cd preservada; nenhum atalho/serviço instalado substituído.
