@@ -38,6 +38,9 @@ jobs:
         run: node --test --test-isolation=none desktop/tests/*.test.cjs
       - name: Build compiled ERP stage without Vite server or env files
         run: node desktop/scripts/build.mjs
+      - name: Verify real Chromium print output (no physical printer)
+        shell: bash
+        run: node desktop/scripts/verify-print.cjs "$RUNNER_TEMP/print-evidence"
       - name: Package platform installer
         working-directory: desktop
         run: |
@@ -88,6 +91,8 @@ jobs:
             ${{ runner.temp }}/titan-release/*.deb
             ${{ runner.temp }}/installed-evidence/*.json
             ${{ runner.temp }}/installed-evidence/*.png
+            ${{ runner.temp }}/print-evidence/*.json
+            ${{ runner.temp }}/print-evidence/*.pdf
   linux-backend:
     name: Linux backend installer
     runs-on: ubuntu-24.04
