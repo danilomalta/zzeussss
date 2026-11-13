@@ -46,7 +46,7 @@ def diagnostics(path):
               value = phase[1].split(' detail')[0]
               # Stage labels are controller actions, never field values.
               print(json.dumps({'test': name, 'phase': value}, ensure_ascii=True))
-          detail = re.search(r'detail: (screen missing: [a-z -]+|desktop [a-z_0-9-]+|assertion or inspection failed|application page unavailable|inspection timeout|screen action failed|disposable application did not close gracefully)', output)
+          detail = re.search(r'detail: (screen missing: [a-z -]+|desktop [a-z_0-9-]+|assertion or inspection failed|application page unavailable|inspection timeout|screen action failed|disposable application did not close gracefully|controller module URL refused|controller module unavailable)', output)
           if detail:
               print(json.dumps({'test': name, 'diagnostic': detail[1]}))
 

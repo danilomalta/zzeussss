@@ -55,6 +55,16 @@
     "local_private_race_seconds": 1.029,
     "vault_count20_seconds": 21.047,
     "vault_focused_race_seconds": 2.28,
-    "native_result": "pending"
+    "native_result": "PASS owner/key lifecycle steps at 4d4add3, run43452794801"
+  },
+  "controller_portability": {
+    "native_run": 43452794801,
+    "commercial_failure_seconds": 6.62,
+    "observed_stage": "after complete profile, before cash sale",
+    "synthetic_reproduction": "ERR_UNSUPPORTED_ESM_URL_SCHEME for Windows drive import",
+    "fix": "pathToFileURL for three real word modules, existing bounded UI state checks retained",
+    "local_registration_restore_seconds": 93.15,
+    "real_module_import_smoke": "pass",
+    "native_corrected_result": "pending"
   }
 }

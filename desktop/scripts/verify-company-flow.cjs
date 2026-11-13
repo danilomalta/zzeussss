@@ -17,13 +17,18 @@ module.exports=async({b,evaluate,wait,input,mark})=>{
   await input('#company-registration-form select','company_profile');
   mark('complete profile');
   for(let n=0;n<values.length;n++)await input(`#company-registration-form label:has(input):nth-of-type(${n+2}) input`,values[n]);
-  const selects=await evaluate('document.querySelectorAll("#company-registration-form select").length');assert.equal(selects,3);
+  await wait('document.querySelectorAll("#company-registration-form select").length===3','company profile controls');const selects=await evaluate('document.querySelectorAll("#company-registration-form select").length');assert.equal(selects,3);
   await input('#company-registration-form label:nth-last-of-type(2) select','external');await input('#company-registration-form label:last-of-type select','homologation');
   await evaluate('document.querySelector("#company-registration-form").requestSubmit()');
   await wait(`(async()=>{const r=await fetch('/local/v1/company/registration',{headers:{Authorization:'Bearer '+${JSON.stringify(b.token)}}});return r.ok&&(await r.json()).revision===2})()`,'persisted complete profile');}
   await wait('!document.querySelector("#company-registration-form fieldset").disabled','complete profile saved');
-  const displayed=await evaluate(`JSON.stringify([...document.querySelectorAll('#company-registration-form input')].map(e=>e.value))===${JSON.stringify(JSON.stringify(['Synthetic clean company','Synthetic test owner','11222333000181','Synthetic clean legal','SP','123456789','3550308','1']))}`);
+  mark('profile rendered');
+  const expected=['Synthetic clean company','Synthetic test owner','11222333000181','Synthetic clean legal','SP','123456789','3550308','1'];
+  const matches=`JSON.stringify([...document.querySelectorAll('#company-registration-form input')].map(e=>e.value))===${JSON.stringify(JSON.stringify(expected))}`;
+  try{await wait(matches,'company profile fields')}catch(error){const checks=await evaluate(`Array.from(document.querySelectorAll('#company-registration-form input'),(e,i)=>e.value===${JSON.stringify(expected)}[i])`);console.error(JSON.stringify({businessDiagnostic:{companyFieldMatches:checks}}));throw error;}
+  const displayed=await evaluate(matches);
   if(!displayed)throw Error('profile fields mismatch');
+  mark('profile snapshot');
   const saved=await evaluate(`(async()=>{const r=await fetch('/local/v1/company/registration',{headers:{Authorization:'Bearer '+${JSON.stringify(b.token)}}});const d=await r.json();return {revision:d.revision,stage:d.input.stage,environment:d.input.environment}})()`);
   assert.deepEqual(saved,{revision:2,stage:'company_profile',environment:'homologation'});
   // No screen capture of personal fields or credentials is retained.

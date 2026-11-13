@@ -1,8 +1,9 @@
 'use strict';
+const {pathToFileURL}=require('node:url');
 // UI acceptance only. No business POSTs are made by this controller.
 module.exports=async({b,evaluate,wait,input,mark,go,click,field,get,src,q})=>{
  const fs=require('node:fs'),path=require('node:path');
- const bw=(await import(path.join(src,'core/cashBags/words.mjs'))).cashBagWords('pt-BR'),area='.official-cash-bags';
+ const bw=(await import(pathToFileURL(path.join(src,'core/cashBags/words.mjs')).href)).cashBagWords('pt-BR'),area='.official-cash-bags';
  await go('/local/cash/register');
  if(b.business==='close-bag'){
   mark('withdrawal for custody');await wait('!!document.querySelector(".pos-page details.finance116")','cash movement');await evaluate('document.querySelector(".pos-page details.finance116").open=true');await input('.pos-page details.finance116 input[inputmode=decimal]','10,00');await input('.pos-page details.finance116 input[maxlength="500"]','Malote sintetico para conferencia independente');await evaluate('document.querySelector(".pos-page details.finance116 form").requestSubmit()');await wait('!!document.querySelector(".pos-page details.finance116 section[aria-label]")','withdrawal review');await evaluate('document.querySelector(".pos-page details.finance116 section[aria-label] button").click()');await wait('!!document.querySelector(".pos-page details.finance116 section[role=status] code")','withdrawal receipt');const withdrawal=await evaluate('document.querySelector(".pos-page details.finance116 section[role=status] code").textContent');

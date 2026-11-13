@@ -1,9 +1,10 @@
 'use strict';
+const {pathToFileURL}=require('node:url');
 // Commercial mutations originate in the real rendered forms; GETs observe them.
 const path=require('node:path'),fs=require('node:fs');
 module.exports=async({b,evaluate,wait,input,mark,sleep})=>{
  const q=JSON.stringify,src=path.resolve(__dirname,'../../frontend-web/src');
- const w=JSON.parse(fs.readFileSync(path.join(src,'i18n/orders115/pt-BR.json'))),dw=(await import(path.join(src,'core/deliveryCycle/words.mjs'))).deliveryWords('pt-BR'),sw=(await import(path.join(src,'core/supplyDecisions/words.mjs'))).decisionWords('pt-BR');
+ const w=JSON.parse(fs.readFileSync(path.join(src,'i18n/orders115/pt-BR.json'))),dw=(await import(pathToFileURL(path.join(src,'core/deliveryCycle/words.mjs')).href)).deliveryWords('pt-BR'),sw=(await import(pathToFileURL(path.join(src,'core/supplyDecisions/words.mjs')).href)).decisionWords('pt-BR');
  const go=async route=>{await evaluate(`history.pushState({},'',${q(route)});dispatchEvent(new PopStateEvent('popstate'))`);await sleep(100)};
  const btn=(text,area='body')=>`[...document.querySelectorAll(${q(area+' button')})].find(e=>e.textContent.trim()===${q(text)})`;
  const click=async(text,area)=>{mark('button '+text);const e=btn(text,area);await wait(`!!(${e})&&!(${e}).disabled`,'business button');await evaluate(`(${e}).click()`);await sleep(70)};
