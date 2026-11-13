@@ -3,7 +3,7 @@ import json
 import re
 import sys
 
-TESTS = {'TestWindowsCustomerNativeInitialization', 'TestWindowsCustomerKeyLifecycle','TestWindowsPrivacyRejectsBroadGrantsAndFileReplacement', 'TestWindowsDefaultTempAndNoOverwritePublication','TestCreateReopenAndRepeatMigration','TestPilotInstalledCashPartialReceivingRestore', 'TestPilotInstalledCashClosingCustodyRestore'}
+TESTS = {'TestConcurrentPrivatePublication','TestWindowsCustomerNativeInitialization', 'TestWindowsCustomerKeyLifecycle','TestWindowsPrivacyRejectsBroadGrantsAndFileReplacement', 'TestWindowsDefaultTempAndNoOverwritePublication','TestCreateReopenAndRepeatMigration','TestPilotInstalledCashPartialReceivingRestore', 'TestPilotInstalledCashClosingCustodyRestore'}
 FIXED = (
     'production fiscal installation is not provisioned or current', 'explicit user-private temporary directory refused',
     'private customer key directory unavailable', 'native customer initialization/check result mismatch', 'native station proof failed', 'owner duplicated or lost', 'station key ACL is not private', 'not shown exactly once', 'backup overwritten', 'rotation lost secret', 'old backup no longer recoverable', 'missing key accepted',
