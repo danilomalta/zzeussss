@@ -83,11 +83,11 @@ func PublishNew(source, destination string) error {
 	if err != nil || !Regular(source, info) {
 		return ErrPrivate
 	}
-	src, err := windows.UTF16PtrFromString(source)
+	src, err := nativePath(source)
 	if err != nil {
 		return ErrPrivate
 	}
-	dst, err := windows.UTF16PtrFromString(destination)
+	dst, err := nativePath(destination)
 	if err != nil {
 		return ErrPrivate
 	}
@@ -119,7 +119,7 @@ func TempDir(parent, prefix string) (string, error) {
 			return "", ErrPrivate
 		}
 		name := filepath.Join(parent, prefix+hex.EncodeToString(suffix[:]))
-		utf, err := windows.UTF16PtrFromString(name)
+		utf, err := nativePath(name)
 		if err != nil {
 			return "", ErrPrivate
 		}
@@ -133,4 +133,53 @@ func TempDir(parent, prefix string) (string, error) {
 		return name, nil
 	}
 	return "", ErrPrivate
+}
+
+// Windows cannot use a POSIX read-only directory fsync. Reuse the flushed,
+// no-replacement publication already used by customer backup archives.
+func WriteNew(path string, body []byte) error {
+	if !Parent(path) {
+		return ErrPrivate
+	}
+	f, err := os.CreateTemp(filepath.Dir(path), ".private-write-")
+	if err != nil {
+		return err
+	}
+	info, err := f.Stat()
+	defer func() {
+		f.Close()
+		current, e := os.Lstat(f.Name())
+		if e == nil && info != nil && os.SameFile(current, info) {
+			os.Remove(f.Name())
+		}
+	}()
+	if err != nil || !Regular(f.Name(), info) {
+		return ErrPrivate
+	}
+	if _, err = f.Write(body); err != nil {
+		return err
+	}
+	if err = f.Sync(); err != nil {
+		return err
+	}
+	if err = f.Close(); err != nil {
+		return err
+	}
+	return PublishNew(f.Name(), path)
+}
+
+// Direct Win32 calls do not get os.OpenFile's extended-path conversion.
+func nativePath(path string) (*uint16, error) {
+	path = filepath.Clean(path)
+	if !filepath.IsAbs(path) || strings.HasPrefix(path, `\\.\`) {
+		return nil, ErrPrivate
+	}
+	if !strings.HasPrefix(path, `\\?\`) {
+		if strings.HasPrefix(path, `\\`) {
+			path = `\\?\UNC\` + path[2:]
+		} else {
+			path = `\\?\` + path
+		}
+	}
+	return windows.UTF16PtrFromString(path)
 }

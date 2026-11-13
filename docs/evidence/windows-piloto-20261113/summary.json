@@ -45,6 +45,16 @@
       "backup_seconds": 72.724,
       "uri_writer_race": "pass"
     },
+    "native_result": "PASS TestWindowsVaultSQLiteURIIdentity, run43450378700"
+  },
+  "windows_private_write_fix": {
+    "reason": "privateNew still used read-only directory Sync; use existing Windows write-through publication",
+    "posix_sequence": "unchanged",
+    "long_path_test": ">260 characters",
+    "local_count50_seconds": 0.782,
+    "local_private_race_seconds": 1.029,
+    "vault_count20_seconds": 21.047,
+    "vault_focused_race_seconds": 2.28,
     "native_result": "pending"
   }
 }

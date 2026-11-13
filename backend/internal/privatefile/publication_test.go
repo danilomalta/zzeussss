@@ -72,3 +72,46 @@ func TestConcurrentPrivatePublication(t *testing.T) {
 		t.Fatal("published archive is not private")
 	}
 }
+
+func TestConcurrentPrivateWriteNew(t *testing.T) {
+	dir, err := TempDir(t.TempDir(), "write-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(dir, "customer.key")
+	start := make(chan struct{})
+	results := make(chan int, 8)
+	var wg sync.WaitGroup
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			<-start
+			if WriteNew(path, []byte(fmt.Sprint("synthetic-", i))) == nil {
+				results <- i
+			}
+		}(i)
+	}
+	close(start)
+	wg.Wait()
+	close(results)
+	winners := []int{}
+	for i := range results {
+		winners = append(winners, i)
+	}
+	if len(winners) != 1 {
+		t.Fatalf("private write winners=%d; expected exactly one", len(winners))
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil || string(raw) != fmt.Sprint("synthetic-", winners[0]) {
+		t.Fatal("private write mixed or overwritten")
+	}
+	info, err := os.Lstat(path)
+	if err != nil || !Regular(path, info) {
+		t.Fatal("private write permissions changed")
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil || len(entries) != 1 {
+		t.Fatal("private write left a temporary file")
+	}
+}

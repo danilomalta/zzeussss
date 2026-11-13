@@ -34,3 +34,28 @@ func PublishNew(source, destination string) error {
 }
 
 func TempDir(parent, prefix string) (string, error) { return os.MkdirTemp(parent, prefix) }
+
+// Preserve the existing POSIX private key write and parent fsync sequence.
+func WriteNew(path string, body []byte) error {
+	f, err := OpenNew(path, os.O_WRONLY)
+	if err != nil {
+		return err
+	}
+	if _, err = f.Write(body); err != nil {
+		f.Close()
+		return err
+	}
+	if err = f.Sync(); err != nil {
+		f.Close()
+		return err
+	}
+	if err = f.Close(); err != nil {
+		return err
+	}
+	dir, err := os.Open(filepath.Dir(path))
+	if err != nil {
+		return err
+	}
+	defer dir.Close()
+	return dir.Sync()
+}

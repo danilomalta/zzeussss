@@ -4,6 +4,7 @@ import (
 	"golang.org/x/sys/windows"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -108,5 +109,30 @@ func TestWindowsDefaultTempAndNoOverwritePublication(t *testing.T) {
 	raw, err := os.ReadFile(dest)
 	if err != nil || string(raw) != "synthetic" {
 		t.Fatal("original publication changed")
+	}
+}
+
+func TestWindowsPrivateWriteLongPath(t *testing.T) {
+	dir, err := TempDir(t.TempDir(), "long-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	parent := filepath.Join(dir, strings.Repeat("segment", 12), strings.Repeat("segment", 12))
+	if err = os.MkdirAll(parent, 0700); err != nil {
+		t.Fatal("long private directory creation failed")
+	}
+	path := filepath.Join(parent, "synthetic.key")
+	if len(path) <= 260 {
+		t.Fatal("long path fixture too short")
+	}
+	if err = WriteNew(path, []byte("synthetic")); err != nil {
+		t.Fatal("long private write failed")
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil || string(raw) != "synthetic" {
+		t.Fatal("long private file changed")
+	}
+	if WriteNew(path, []byte("replacement")) == nil {
+		t.Fatal("long private file overwritten")
 	}
 }

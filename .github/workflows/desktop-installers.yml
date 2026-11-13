@@ -112,7 +112,7 @@ jobs:
           $result = $LASTEXITCODE
           python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/windows-privacy.jsonl"
           if ($result -ne 0) { exit $result }
-          go test ./internal/privatefile -run '^TestConcurrentPrivatePublication$' -timeout 120s -count=50 -json > "$env:RUNNER_TEMP/windows-publication-concurrency.jsonl"
+          go test ./internal/privatefile -run '^TestConcurrentPrivate(Publication|WriteNew)$' -timeout 120s -count=50 -json > "$env:RUNNER_TEMP/windows-publication-concurrency.jsonl"
           $result = $LASTEXITCODE
           python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/windows-publication-concurrency.jsonl"
           if ($result -ne 0) { exit $result }

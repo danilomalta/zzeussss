@@ -187,32 +187,10 @@ func privateNew(path string, raw []byte) error {
 			break
 		}
 	}
-	f, err := privatefile.OpenNew(path, os.O_WRONLY)
-	if err != nil {
+	if privatefile.WriteNew(path, raw) != nil {
 		return ErrUnavailable
 	}
-	info, err := f.Stat()
-	if err != nil || !privatefile.Regular(path, info) {
-		f.Close()
-		return ErrUnavailable
-	}
-	if _, err = f.Write(raw); err != nil {
-		f.Close()
-		return ErrUnavailable
-	}
-	if err = f.Sync(); err != nil {
-		f.Close()
-		return ErrUnavailable
-	}
-	if err = f.Close(); err != nil {
-		return ErrUnavailable
-	}
-	dir, err := os.Open(filepath.Dir(path))
-	if err != nil {
-		return ErrUnavailable
-	}
-	defer dir.Close()
-	return dir.Sync()
+	return nil
 }
 
 // CreateCustomerFiscalVault is an installation-only operation. display must be

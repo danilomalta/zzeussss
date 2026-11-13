@@ -3,8 +3,9 @@ import json
 import re
 import sys
 
-TESTS = {'TestWindowsVaultSQLiteURIIdentity','TestConcurrentPrivatePublication','TestWindowsCustomerNativeInitialization', 'TestWindowsCustomerKeyLifecycle','TestWindowsPrivacyRejectsBroadGrantsAndFileReplacement', 'TestWindowsDefaultTempAndNoOverwritePublication','TestCreateReopenAndRepeatMigration','TestPilotInstalledCashPartialReceivingRestore', 'TestPilotInstalledCashClosingCustodyRestore'}
+TESTS = {'TestWindowsPrivateWriteLongPath','TestConcurrentPrivateWriteNew','TestWindowsVaultSQLiteURIIdentity','TestConcurrentPrivatePublication','TestWindowsCustomerNativeInitialization', 'TestWindowsCustomerKeyLifecycle','TestWindowsPrivacyRejectsBroadGrantsAndFileReplacement', 'TestWindowsDefaultTempAndNoOverwritePublication','TestCreateReopenAndRepeatMigration','TestPilotInstalledCashPartialReceivingRestore', 'TestPilotInstalledCashClosingCustodyRestore'}
 FIXED = (
+    'long private directory creation failed', 'long path fixture too short', 'long private write failed', 'long private file changed', 'long private file overwritten',
     'production fiscal installation is not provisioned or current', 'explicit user-private temporary directory refused',
     'private customer key directory unavailable', 'native customer initialization/check result mismatch', 'native station proof failed', 'owner duplicated or lost', 'station key ACL is not private', 'not shown exactly once', 'backup overwritten', 'rotation lost secret', 'old backup no longer recoverable', 'missing key accepted',
     'private ACL refused', 'private parent refused', 'default user-private temporary directory refused', 'broad file grant accepted', 'broadly accessible parent accepted', 'existing destination overwritten', 'private file permissions unavailable',
