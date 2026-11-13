@@ -131,7 +131,7 @@ jobs:
           $result = $LASTEXITCODE
           python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/windows-customer-init.jsonl"
           if ($result -ne 0) { exit $result }
-          go test ./internal/fiscalproduction -run '^TestWindowsCustomerKeyLifecycle$' -timeout 120s -count=1 -json > "$env:RUNNER_TEMP/windows-customer-keys.jsonl"
+          go test ./internal/fiscalproduction -run '^TestWindows(CustomerKeyLifecycle|VaultSQLiteURIIdentity)$' -timeout 120s -count=1 -json > "$env:RUNNER_TEMP/windows-customer-keys.jsonl"
           $result = $LASTEXITCODE
           python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/windows-customer-keys.jsonl"
           exit $result

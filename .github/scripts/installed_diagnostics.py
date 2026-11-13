@@ -3,7 +3,7 @@ import json
 import re
 import sys
 
-TESTS = {'TestConcurrentPrivatePublication','TestWindowsCustomerNativeInitialization', 'TestWindowsCustomerKeyLifecycle','TestWindowsPrivacyRejectsBroadGrantsAndFileReplacement', 'TestWindowsDefaultTempAndNoOverwritePublication','TestCreateReopenAndRepeatMigration','TestPilotInstalledCashPartialReceivingRestore', 'TestPilotInstalledCashClosingCustodyRestore'}
+TESTS = {'TestWindowsVaultSQLiteURIIdentity','TestConcurrentPrivatePublication','TestWindowsCustomerNativeInitialization', 'TestWindowsCustomerKeyLifecycle','TestWindowsPrivacyRejectsBroadGrantsAndFileReplacement', 'TestWindowsDefaultTempAndNoOverwritePublication','TestCreateReopenAndRepeatMigration','TestPilotInstalledCashPartialReceivingRestore', 'TestPilotInstalledCashClosingCustodyRestore'}
 FIXED = (
     'production fiscal installation is not provisioned or current', 'explicit user-private temporary directory refused',
     'private customer key directory unavailable', 'native customer initialization/check result mismatch', 'native station proof failed', 'owner duplicated or lost', 'station key ACL is not private', 'not shown exactly once', 'backup overwritten', 'rotation lost secret', 'old backup no longer recoverable', 'missing key accepted',
@@ -31,6 +31,12 @@ def diagnostics(path):
           if event.get('Action') in ('pass', 'skip', 'fail'):
               print(json.dumps({'test': name, 'action': event['Action'], 'elapsed': event.get('Elapsed')}))
           output = event.get('Output', '')
+          location = re.search(r'^\s*([a-z_]+_test\.go):(\d{1,5}):', output)
+          if location and location[1] in {'vault_lifecycle_test.go','customer_keys_windows_test.go','vault_uri_windows_test.go','customer_init_windows_test.go','pilot_installed_screen_test.go','localdb_test.go','privatefile_windows_test.go','publication_test.go'}:
+              print(json.dumps({'test': name, 'source': location[1], 'line': int(location[2])}))
+          code = re.search(r'vault sqlite code: (-?\d{1,5})\b', output)
+          if code:
+              print(json.dumps({'test': name, 'sqliteCode': int(code[1])}))
           for label in FIXED:
               if label in output:
                   print(json.dumps({'test': name, 'diagnostic': label}))
