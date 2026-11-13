@@ -52,7 +52,7 @@ func pilotPrepareCLIStation(t *testing.T, f *stockHTTPFixture) string {
 		t.Fatal(e)
 	}
 	defer clear(raw)
-	path := filepath.Join(t.TempDir(), "station.json")
+	path := filepath.Join(privatePilotDir(t), "station.json")
 	if e = os.WriteFile(path, raw, 0600); e != nil {
 		t.Fatal(e)
 	}
@@ -82,7 +82,7 @@ func pilotRunBackupCLI(t *testing.T, label string, success bool, args ...string)
 
 func pilotCLIBackupRoundTrip(t *testing.T, f *stockHTTPFixture, dbPath, station string) string {
 	t.Helper()
-	dir := t.TempDir()
+	dir := privatePilotDir(t)
 	key := filepath.Join(dir, "backup.key")
 	wrong := filepath.Join(dir, "wrong.key")
 	archive := filepath.Join(dir, "pilot.tytbak")

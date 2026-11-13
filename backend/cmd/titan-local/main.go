@@ -15,6 +15,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"titansystem-backend/internal/privatefile"
 
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
@@ -56,14 +57,14 @@ func openVerified(ctx context.Context, dbPath, stationPath string) (*sql.DB, ide
 	if err != nil {
 		return nil, identity.DeviceContext{}, err
 	}
-	if !stat.Mode().IsRegular() || stat.Mode().Perm() != 0600 {
+	if !privatefile.Regular(dbPath, stat) {
 		return nil, identity.DeviceContext{}, errors.New("banco não é arquivo regular 0600")
 	}
 	stat, err = os.Lstat(stationPath)
 	if err != nil {
 		return nil, identity.DeviceContext{}, err
 	}
-	if !stat.Mode().IsRegular() || stat.Mode().Perm() != 0600 {
+	if !privatefile.Regular(stationPath, stat) {
 		return nil, identity.DeviceContext{}, errors.New("arquivo privado não é regular 0600")
 	}
 	bytes, err := os.ReadFile(stationPath)
@@ -133,7 +134,7 @@ func initStation(args []string, passwordReader io.Reader, output io.Writer) erro
 	if err = os.MkdirAll(filepath.Dir(*stationPath), 0700); err != nil {
 		return err
 	}
-	station, err := os.OpenFile(*stationPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	station, err := privatefile.OpenNew(*stationPath, os.O_WRONLY)
 	if err != nil {
 		return err
 	}

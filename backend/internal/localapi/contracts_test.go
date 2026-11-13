@@ -76,7 +76,7 @@ type httpContractFixture struct {
 
 func httpContractSetup(t *testing.T) *httpContractFixture {
 	t.Helper()
-	db, err := localdb.Open(context.Background(), filepath.Join(t.TempDir(), "http-contract.sqlite"))
+	db, err := localdb.Open(context.Background(), filepath.Join(privatePilotDir(t), "http-contract.sqlite"))
 	if err != nil {
 		t.Fatal(err)
 	}

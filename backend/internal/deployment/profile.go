@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"titansystem-backend/internal/privatefile"
 )
 
 var ErrProfile = errors.New("configuração de operação inválida")
@@ -88,7 +89,7 @@ func PrivateRead(path string, limit int64) ([]byte, error) {
 		}
 	}
 	info, err := os.Lstat(path)
-	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 || info.Size() > limit {
+	if err != nil || !privatefile.Regular(path, info) || info.Size() > limit {
 		return nil, ErrProfile
 	}
 	f, err := os.Open(path)

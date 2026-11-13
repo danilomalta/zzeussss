@@ -5,11 +5,16 @@ import (
 	"database/sql"
 	"path/filepath"
 	"testing"
+	"titansystem-backend/internal/privatefile"
 )
 
 func temporaryDB(t *testing.T) (*sql.DB, string) {
 	t.Helper()
-	path := filepath.Join(t.TempDir(), "device.sqlite")
+	dir, e := privatefile.TempDir(t.TempDir(), "private-")
+	if e != nil {
+		t.Fatal(e)
+	}
+	path := filepath.Join(dir, "device.sqlite")
 	db, err := Open(context.Background(), path)
 	if err != nil {
 		t.Fatalf("abrir banco local: %v", err)

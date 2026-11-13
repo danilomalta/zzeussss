@@ -13,6 +13,7 @@ import (
 	"strings"
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/privatefile"
 )
 
 var errConfiguration = errors.New("arquivo ou aparelho local invalido")
@@ -61,7 +62,7 @@ func openVerified(ctx context.Context, path string, station Station, key ed25519
 		return nil, identity.DeviceContext{}, errConfiguration
 	}
 	info, err := os.Lstat(path)
-	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 {
+	if err != nil || !privatefile.Regular(path, info) {
 		return nil, identity.DeviceContext{}, errConfiguration
 	}
 	db, err := localdb.Open(ctx, path)
@@ -86,7 +87,7 @@ func validID(value string) bool {
 
 func readPrivate(path string) ([]byte, error) {
 	info, err := os.Lstat(path)
-	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 || info.Size() > 16*1024 {
+	if err != nil || !privatefile.Regular(path, info) || info.Size() > 16*1024 {
 		return nil, errConfiguration
 	}
 	file, err := os.Open(path)
@@ -95,7 +96,7 @@ func readPrivate(path string) ([]byte, error) {
 	}
 	defer file.Close()
 	opened, err := file.Stat()
-	if err != nil || !os.SameFile(info, opened) || !opened.Mode().IsRegular() || opened.Mode().Perm() != 0600 {
+	if err != nil || !os.SameFile(info, opened) || !privatefile.Regular(path, opened) {
 		return nil, errConfiguration
 	}
 	body, err := io.ReadAll(io.LimitReader(file, 16*1024+1))

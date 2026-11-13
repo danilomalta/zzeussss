@@ -40,33 +40,8 @@ let phase='start',phaseFile;const mark=value=>{phase=value;if(phaseFile)fs.write
   mark('login');await connect(u=>u.startsWith('titan://app/local/'));
   await wait('!!document.querySelector("#brand-credential")','login');if(b.business&&await evaluate('document.documentElement.lang!=="pt-BR"')){await wait('!!document.querySelector(".brand-contact-trigger")','language menu');await evaluate('document.querySelector(".brand-contact-trigger").click()');const languageButton=JSON.stringify('.language-list button[lang="pt-BR"]');await wait(`!!document.querySelector(${languageButton})`,'language choice');await evaluate(`document.querySelector(${languageButton}).click()`);await evaluate('document.querySelector(".contact-heading button").click()');await wait('document.documentElement.lang==="pt-BR"','Portuguese interface');}if(b.transitionOnly){console.log(JSON.stringify({transitionOnly:true,loginVisible:true}));return;}await input('#brand-credential',b.owner);await input('#brand-password',b.password);await evaluate('document.querySelector("#brand-password").form.requestSubmit()');
   mark('authenticate');await wait('location.pathname==="/local/home"','authenticated home');
-  if(b.business){const result=await require('./verify-business-flow.cjs')({b,send,evaluate,wait,input,mark,sleep});console.log(JSON.stringify(result));return;}
-  mark('company form');
-  await evaluate(`history.pushState({},'', '/local/settings');dispatchEvent(new PopStateEvent('popstate'))`);
-  const companyLink=JSON.stringify('a[href="/local/company"]');
-  await wait(`!!document.querySelector(${companyLink})`,'company link');
-  await evaluate(`document.querySelector(${companyLink}).click()`);
-  await wait('!!document.querySelector("#company-registration-form")','company form');
-  const values=['Synthetic clean company','Synthetic test owner','11222333000181','Synthetic clean legal','SP','123456789','3550308','1'];
-  if(!b.resume){await input('#company-registration-form input:nth-of-type(1)', 'Synthetic clean company');
-  await evaluate('document.querySelector("#company-registration-form").requestSubmit()');
-  await wait('document.querySelector("#company-registration-form fieldset")&&!document.querySelector("#company-registration-form fieldset").disabled','pre-registration saved');
-  // Observe authoritative persisted revision, not just a transient UI message.
-  await wait(`(async()=>{const r=await fetch('/local/v1/company/registration',{headers:{Authorization:'Bearer '+${JSON.stringify(b.token)}}});return r.ok&&(await r.json()).revision===1})()`,'persisted pre-registration');
-  await input('#company-registration-form select','company_profile');
-  mark('complete profile');
-  for(let n=0;n<values.length;n++)await input(`#company-registration-form label:has(input):nth-of-type(${n+2}) input`,values[n]);
-  const selects=await evaluate('document.querySelectorAll("#company-registration-form select").length');assert.equal(selects,3);
-  await input('#company-registration-form label:nth-last-of-type(2) select','external');await input('#company-registration-form label:last-of-type select','homologation');
-  await evaluate('document.querySelector("#company-registration-form").requestSubmit()');
-  await wait(`(async()=>{const r=await fetch('/local/v1/company/registration',{headers:{Authorization:'Bearer '+${JSON.stringify(b.token)}}});return r.ok&&(await r.json()).revision===2})()`,'persisted complete profile');}
-  await wait('!document.querySelector("#company-registration-form fieldset").disabled','complete profile saved');
-  const displayed=await evaluate(`JSON.stringify([...document.querySelectorAll('#company-registration-form input')].map(e=>e.value))===${JSON.stringify(JSON.stringify(['Synthetic clean company','Synthetic test owner','11222333000181','Synthetic clean legal','SP','123456789','3550308','1']))}`);
-  if(!displayed)throw Error('profile fields mismatch');
-  const saved=await evaluate(`(async()=>{const r=await fetch('/local/v1/company/registration',{headers:{Authorization:'Bearer '+${JSON.stringify(b.token)}}});const d=await r.json();return {revision:d.revision,stage:d.input.stage,environment:d.input.environment}})()`);
-  assert.deepEqual(saved,{revision:2,stage:'company_profile',environment:'homologation'});
-  // No screen capture of personal fields or credentials is retained.
-  console.log(JSON.stringify({packagedApp:true,freshProfile:!b.resume,reopened:!!b.resume,allProfileFieldsDisplayed:true,connectionSaved:true,ownerLogin:true,preRegistrationRevision:1,completeRegistrationRevision:2,uiSource:'frontend-web',realHTTP:true,commercialData:false,officialFiscalAcceptance:false}));
+  if(b.business){if(b.registration&&(b.business==='sale'||b.business==='restored'||b.business==='closed-restored'))await require('./verify-company-flow.cjs')({b,evaluate,wait,input,mark});const result=await require('./verify-business-flow.cjs')({b,send,evaluate,wait,input,mark,sleep});console.log(JSON.stringify(result));return;}
+  console.log(JSON.stringify(await require('./verify-company-flow.cjs')({b,evaluate,wait,input,mark})));
  }catch(error){taskFailed=true;throw error;}finally{
   finishing=true;b.password='';b.token='';
   let graceful=false;

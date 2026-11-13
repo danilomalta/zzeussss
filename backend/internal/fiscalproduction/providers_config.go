@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"titansystem-backend/internal/fiscalcore"
 	"titansystem-backend/internal/localdb/fiscal"
+	"titansystem-backend/internal/privatefile"
 )
 
 // Trusted process configuration. Secret references are rejected; secrets live in the vault.
@@ -43,7 +44,7 @@ func privateReference(path string) bool {
 		return true
 	}
 	st, err := os.Lstat(path)
-	return filepath.IsAbs(path) && err == nil && st.Mode().IsRegular() && st.Mode().Perm() == 0600
+	return filepath.IsAbs(path) && err == nil && privatefile.Regular(path, st)
 }
 func NewProviderRegistry(entries []ProviderRegistration) (*ProviderRegistry, error) {
 	r := &ProviderRegistry{entries: map[string]ProviderRegistration{}}

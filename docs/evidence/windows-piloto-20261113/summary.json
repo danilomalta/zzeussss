@@ -1,0 +1,26 @@
+{
+  "base": "6d7629d2a8fc83a0d610531f493dacf73d551948",
+  "branch": "feat/backend-windows-piloto-20261113",
+  "native_defect": {
+    "run": 43442574148,
+    "test": "TestCreateReopenAndRepeatMigration",
+    "error": "existing SQLite refused by POSIX 0600 comparison",
+    "elapsed": 0.62
+  },
+  "correction": "real handle-based Windows owner/DACL validation; protected new fixture directories; no ACL rewriting; no crypto/rotation or production change",
+  "local": {
+    "desktop_passed": 66,
+    "contracts_passed": 10,
+    "routes": 606,
+    "installed_registration_commercial_restore_seconds": 93.77,
+    "vault_count20_seconds": 25.337,
+    "vault_package_seconds": 27.58,
+    "vault_focused_race_seconds": 2.648
+  },
+  "not_claimed": [
+    "Windows native corrected result pending",
+    "physical hardware",
+    "real Focus/SEFAZ"
+  ],
+  "full_fiscal_race": "aggregate 120s exceeded; focused affected paths passed; deadline unchanged"
+}

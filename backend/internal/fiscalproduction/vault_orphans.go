@@ -16,6 +16,7 @@ import (
 	"time"
 	"titansystem-backend/internal/deployment"
 	"titansystem-backend/internal/localdb/fiscal"
+	"titansystem-backend/internal/privatefile"
 	"titansystem-backend/internal/sqlitewrite"
 )
 
@@ -77,7 +78,7 @@ func recordKeyCandidateState(vault, file string, encoded []byte, pending bool) (
 		return "", ErrUnavailable
 	}
 	info, err := os.Lstat(dir)
-	if err != nil || !info.IsDir() || info.Mode().Perm() != 0700 || info.Mode()&os.ModeSymlink != 0 {
+	if err != nil || !privatefile.Directory(dir, info) {
 		return "", ErrUnavailable
 	}
 	id := sha256.Sum256(body)
@@ -101,7 +102,7 @@ func scanKeyDirectory(vault, directory string) ([]orphanCandidate, error) {
 	if os.IsNotExist(err) {
 		return []orphanCandidate{}, nil
 	}
-	if err != nil || !info.IsDir() || info.Mode().Perm() != 0700 || info.Mode()&os.ModeSymlink != 0 {
+	if err != nil || !privatefile.Directory(journal, info) {
 		return nil, ErrUnavailable
 	}
 	entries, err := os.ReadDir(journal)
@@ -123,7 +124,7 @@ func scanKeyDirectory(vault, directory string) ([]orphanCandidate, error) {
 		}
 		file := candidate.Path
 		info, err := os.Lstat(file)
-		if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 || info.Size() > 256 {
+		if err != nil || !privatefile.Regular(file, info) || info.Size() > 256 {
 			continue
 		}
 		key, err := readMasterKey(file)

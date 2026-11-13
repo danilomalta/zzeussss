@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"titansystem-backend/internal/privatefile"
 )
 
 var ErrKey = errors.New("private archive key unavailable")
@@ -26,7 +27,7 @@ func NewCipher(key []byte) (cipher.AEAD, error) {
 // ReadKey accepts only a private regular 32-byte key, never a symlink.
 func ReadKey(path string) ([]byte, error) {
 	info, err := os.Lstat(path)
-	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 || info.Size() != 32 {
+	if err != nil || !privatefile.Regular(path, info) || info.Size() != 32 {
 		return nil, ErrKey
 	}
 	f, err := os.Open(path)

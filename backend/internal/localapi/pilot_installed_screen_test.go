@@ -28,6 +28,7 @@ import (
 	"titansystem-backend/internal/core/modules"
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/stock"
+	"titansystem-backend/internal/privatefile"
 )
 
 func TestPilotInstalledCashPartialReceivingRestore(t *testing.T) { runInstalledPilot(t, false) }
@@ -67,7 +68,7 @@ func runInstalledPilot(t *testing.T, closing bool) {
 	if e := f.db.Close(); e != nil {
 		t.Fatal(e)
 	}
-	root := t.TempDir()
+	root := privatePilotDir(t)
 	os.Chmod(root, 0700)
 	keys, _ := json.Marshal(map[string]string{"test-issuer": base64.StdEncoding.EncodeToString(f.private.Public().(ed25519.PublicKey))})
 	trusted := filepath.Join(root, "issuer-public.json")
@@ -162,7 +163,7 @@ func runInstalledPilot(t *testing.T, closing bool) {
 	network := httptest.NewServer(proxy)
 	defer network.Close()
 	observer := &pilotHTTP{t: t, service: &pilotService{url: endpoint}, client: client, token: f.token}
-	payload := map[string]any{"binary": desktop, "root": root, "url": network.URL, "owner": f.owner.OwnerID, "password": "senha-forte-de-teste-1", "token": f.token, "product": f.product, "location": f.shelf, "sku": sku}
+	payload := map[string]any{"binary": desktop, "root": root, "url": network.URL, "owner": f.owner.OwnerID, "password": "senha-forte-de-teste-1", "token": f.token, "product": f.product, "location": f.shelf, "sku": sku, "registration": true}
 	screenStep := func(phase string, resume bool) {
 		t.Helper()
 		payload["business"] = phase
@@ -254,7 +255,7 @@ func runInstalledPilot(t *testing.T, closing bool) {
 
 	snapshot := func() map[string]any {
 		out := map[string]any{}
-		paths := []string{"/local/v1/stock/balance?product_id=" + f.product + "&location_id=" + f.shelf, "/local/v1/sales?limit=50&offset=0", "/local/v1/purchase-orders?limit=50&offset=0", "/local/v1/finance/payables?limit=50&offset=0"}
+		paths := []string{"/local/v1/company/registration", "/local/v1/stock/balance?product_id=" + f.product + "&location_id=" + f.shelf, "/local/v1/sales?limit=50&offset=0", "/local/v1/purchase-orders?limit=50&offset=0", "/local/v1/finance/payables?limit=50&offset=0"}
 		if closing {
 			paths = append(paths, "/local/v1/cash/bags?limit=50&offset=0", "/local/v1/cash/sessions/"+closedCash+"/custody", "/local/v1/cash/sessions/"+closedCash+"/report")
 		} else {
@@ -368,4 +369,15 @@ func installedEnvironment() []string {
 		}
 	}
 	return out
+}
+
+// The caller owns this new fixture directory; Windows permissions are created
+// atomically, rather than pretending that POSIX mode bits establish an ACL.
+func privatePilotDir(t *testing.T) string {
+	t.Helper()
+	dir, err := privatefile.TempDir(t.TempDir(), "private-")
+	if err != nil {
+		t.Fatal("private disposable directory unavailable")
+	}
+	return dir
 }

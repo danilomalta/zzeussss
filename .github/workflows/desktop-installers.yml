@@ -108,10 +108,29 @@ jobs:
         working-directory: backend
         shell: pwsh
         run: |
+          go test ./internal/privatefile -timeout 120s -count=1 -json > "$env:RUNNER_TEMP/windows-privacy.jsonl"
+          $result = $LASTEXITCODE
+          python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/windows-privacy.jsonl"
+          if ($result -ne 0) { exit $result }
           go test ./internal/localdb -run '^TestCreateReopenAndRepeatMigration$' -timeout 120s -count=1 -json > "$env:RUNNER_TEMP/windows-sqlite.jsonl"
           $result = $LASTEXITCODE
           python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/windows-sqlite.jsonl"
           if ($result -ne 0) { exit $result }
+      - name: Windows customer owner and private key lifecycle
+        if: runner.os == 'Windows'
+        working-directory: backend
+        shell: pwsh
+        env:
+          TITAN_INSTALLED_LOCAL: ${{ runner.temp }}/business-bin/titan-local.exe
+        run: |
+          go test ./cmd/titan-local -run '^TestWindowsCustomerNativeInitialization$' -timeout 120s -count=1 -json > "$env:RUNNER_TEMP/windows-customer-init.jsonl"
+          $result = $LASTEXITCODE
+          python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/windows-customer-init.jsonl"
+          if ($result -ne 0) { exit $result }
+          go test ./internal/fiscalproduction -run '^TestWindowsCustomerKeyLifecycle$' -timeout 120s -count=1 -json > "$env:RUNNER_TEMP/windows-customer-keys.jsonl"
+          $result = $LASTEXITCODE
+          python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/windows-customer-keys.jsonl"
+          exit $result
       - name: Installed Windows business recovery and encrypted restore
         if: runner.os == 'Windows'
         working-directory: backend

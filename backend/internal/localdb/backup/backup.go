@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"titansystem-backend/internal/privatefile"
 
 	"titansystem-backend/internal/archivecrypto"
 	"titansystem-backend/internal/localdb"
@@ -272,7 +273,7 @@ func publish(path string, body []byte) error {
 	}
 	dir := filepath.Dir(absolute)
 	info, err := os.Lstat(dir)
-	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 || !privatefile.Parent(absolute) {
 		return ErrBackup
 	}
 	file, err := os.CreateTemp(dir, ".titan-publish-")
@@ -290,15 +291,7 @@ func publish(path string, body []byte) error {
 	if closeErr != nil {
 		return closeErr
 	}
-	if err := os.Link(file.Name(), absolute); err != nil {
-		return err
-	}
-	parent, err := os.Open(dir)
-	if err != nil {
-		return err
-	}
-	defer parent.Close()
-	return parent.Sync()
+	return privatefile.PublishNew(file.Name(), absolute)
 }
 
 func cleanup(path, dir string) {

@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"titansystem-backend/internal/privatefile"
 
 	_ "modernc.org/sqlite"
 )
@@ -29,9 +30,12 @@ func Open(ctx context.Context, path string) (*sql.DB, error) {
 	if err := os.MkdirAll(filepath.Dir(absolute), 0700); err != nil {
 		return nil, fmt.Errorf("diretório SQLite: %w", err)
 	}
+	if !privatefile.Parent(absolute) {
+		return nil, privatefile.ErrPrivate
+	}
 	info, err := os.Lstat(absolute)
 	if errors.Is(err, os.ErrNotExist) {
-		file, createErr := os.OpenFile(absolute, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+		file, createErr := privatefile.OpenNew(absolute, os.O_RDWR)
 		if createErr != nil {
 			return nil, fmt.Errorf("criar SQLite: %w", createErr)
 		}
@@ -40,7 +44,7 @@ func Open(ctx context.Context, path string) (*sql.DB, error) {
 		}
 	} else if err != nil {
 		return nil, fmt.Errorf("inspecionar SQLite: %w", err)
-	} else if !info.Mode().IsRegular() || info.Mode().Perm() != 0600 {
+	} else if !privatefile.Regular(absolute, info) {
 		return nil, errors.New("SQLite existente deve ser arquivo regular privado (0600)")
 	}
 

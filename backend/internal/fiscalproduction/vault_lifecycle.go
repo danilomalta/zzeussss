@@ -14,6 +14,7 @@ import (
 	"strings"
 	"titansystem-backend/internal/deployment"
 	"titansystem-backend/internal/localdb/fiscal"
+	"titansystem-backend/internal/privatefile"
 	"titansystem-backend/internal/sqlitewrite"
 )
 
@@ -163,7 +164,7 @@ func OpenCustomerFiscalVault(path, keyFile string) (*FiscalSecretVault, error) {
 }
 func openCustomerFiscalVaultMode(path, keyFile string, immediate bool) (*FiscalSecretVault, error) {
 	info, err := os.Lstat(path)
-	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 {
+	if err != nil || !privatefile.Regular(path, info) {
 		return nil, ErrUnavailable
 	}
 	key, err := readMasterKey(keyFile)
@@ -186,12 +187,12 @@ func privateNew(path string, raw []byte) error {
 			break
 		}
 	}
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	f, err := privatefile.OpenNew(path, os.O_WRONLY)
 	if err != nil {
 		return ErrUnavailable
 	}
 	info, err := f.Stat()
-	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 {
+	if err != nil || !privatefile.Regular(path, info) {
 		f.Close()
 		return ErrUnavailable
 	}
@@ -225,7 +226,7 @@ func CreateCustomerFiscalVault(path, keyFile string, display io.Writer) error {
 			return ErrUnavailable
 		}
 	}
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	file, err := privatefile.OpenNew(path, os.O_RDWR)
 	if err != nil {
 		return fiscal.ErrConflict
 	}

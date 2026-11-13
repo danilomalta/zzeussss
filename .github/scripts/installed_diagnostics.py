@@ -3,8 +3,11 @@ import json
 import re
 import sys
 
-TESTS = {'TestCreateReopenAndRepeatMigration','TestPilotInstalledCashPartialReceivingRestore', 'TestPilotInstalledCashClosingCustodyRestore'}
+TESTS = {'TestWindowsCustomerNativeInitialization', 'TestWindowsCustomerKeyLifecycle','TestWindowsPrivacyRejectsBroadGrantsAndFileReplacement', 'TestWindowsDefaultTempAndNoOverwritePublication','TestCreateReopenAndRepeatMigration','TestPilotInstalledCashPartialReceivingRestore', 'TestPilotInstalledCashClosingCustodyRestore'}
 FIXED = (
+    'production fiscal installation is not provisioned or current', 'explicit user-private temporary directory refused',
+    'private customer key directory unavailable', 'native customer initialization/check result mismatch', 'native station proof failed', 'owner duplicated or lost', 'station key ACL is not private', 'not shown exactly once', 'backup overwritten', 'rotation lost secret', 'old backup no longer recoverable', 'missing key accepted',
+    'private ACL refused', 'private parent refused', 'default user-private temporary directory refused', 'broad file grant accepted', 'broadly accessible parent accepted', 'existing destination overwritten', 'private file permissions unavailable',
     'sqlite failure', 'opening SQLite', 'reabrir banco', 'abrir banco local',
     'SQLite existente deve ser arquivo regular privado (0600)', 'banco não é arquivo regular 0600',
     'arquivo privado não é regular 0600',

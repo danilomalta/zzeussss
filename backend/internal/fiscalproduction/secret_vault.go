@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 	"titansystem-backend/internal/localdb/fiscal"
+	"titansystem-backend/internal/privatefile"
 	"titansystem-backend/internal/sqlitewrite"
 	"unicode/utf8"
 
@@ -72,7 +73,7 @@ func openVaultKeyMode(path string, key []byte, immediate bool) (*FiscalSecretVau
 		return nil, ErrUnavailable
 	}
 	// Create privately without changing permissions of an existing database.
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600)
+	f, err := privatefile.OpenNew(path, os.O_RDWR)
 	if err == nil {
 		f.Close()
 	} else if !os.IsExist(err) {
