@@ -10,8 +10,9 @@ let phase='start',phaseFile;const mark=value=>{phase=value;if(phaseFile)fs.write
  phaseFile=path.join(b.root,'acceptance-phase.json');
  const profile=path.join(b.root,'desktop-profile');if(b.resume)assert.ok(fs.statSync(profile).isDirectory());else fs.mkdirSync(profile,{mode:0o700});
  const reserve=http.createServer();await new Promise(r=>reserve.listen(0,'127.0.0.1',r));const port=reserve.address().port;await new Promise(r=>reserve.close(r));
- const env={...process.env,XDG_CONFIG_HOME:path.join(profile,'config'),XDG_CACHE_HOME:path.join(profile,'cache')};delete env.ELECTRON_RUN_AS_NODE;delete env.WAYLAND_DISPLAY;env.XDG_SESSION_TYPE='x11';
- mark('launch');const child=spawn(b.binary,['--user-data-dir='+profile,'--remote-debugging-address=127.0.0.1','--remote-debugging-port='+port,'--software-rendering','--ozone-platform=x11'],{env,detached:true,stdio:['ignore','pipe','pipe']});
+ const env={...process.env,XDG_CONFIG_HOME:path.join(profile,'config'),XDG_CACHE_HOME:path.join(profile,'cache'),APPDATA:path.join(profile,'appdata'),LOCALAPPDATA:path.join(profile,'localappdata')};delete env.ELECTRON_RUN_AS_NODE;delete env.WAYLAND_DISPLAY;env.XDG_SESSION_TYPE='x11';
+ for(const name of ['config','cache','appdata','localappdata'])fs.mkdirSync(path.join(profile,name),{recursive:true,mode:0o700});
+ mark('launch');const child=spawn(b.binary,['--user-data-dir='+profile,'--remote-debugging-address=127.0.0.1','--remote-debugging-port='+port,'--software-rendering','--ozone-platform=x11'],{env,detached:process.platform!=='win32',stdio:['ignore','pipe','pipe']});
  fs.writeFileSync(path.join(b.root,'acceptance-process.json'),JSON.stringify({pid:child.pid,binary:b.binary}),{mode:0o600});
  let finishing=false,taskFailed=false,appFailure='';const observe=chunk=>{const text=String(chunk);if(finishing)return;const code=text.match(/falha de inicialização \(([a-z_0-9-]+)\)/);if(code){appFailure='desktop '+code[1];fs.writeFileSync(phaseFile,JSON.stringify({phase,appFailure}),{mode:0o600})}};child.stdout.on('data',observe);child.stderr.on('data',observe);
  const closed=new Promise(r=>{child.on('error',()=>r(-1));child.on('close',r)});let socket,seq=0;const pending=new Map();

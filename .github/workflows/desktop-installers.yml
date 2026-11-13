@@ -86,6 +86,41 @@ jobs:
           }
           node desktop/scripts/verify-installed.cjs "$binary" "$env:RUNNER_TEMP/installed-evidence"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        if: runner.os == 'Windows'
+        with:
+          go-version-file: backend/go.mod
+          cache: false
+      - name: Build Windows native business and backup executables
+        if: runner.os == 'Windows'
+        working-directory: backend
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory "$env:RUNNER_TEMP/business-bin" | Out-Null
+          foreach ($tool in @('titan-local', 'titan-backup')) {
+            $env:CGO_ENABLED = '0'
+            go build -trimpath -o "$env:RUNNER_TEMP/business-bin/$tool.exe" "./cmd/$tool"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+      - name: Installed Windows business recovery and encrypted restore
+        if: runner.os == 'Windows'
+        working-directory: backend
+        shell: pwsh
+        env:
+          TITAN_INSTALLED_DESKTOP: ${{ runner.temp }}/titan-clean-install/TitanSystem.exe
+          TITAN_INSTALLED_LOCAL: ${{ runner.temp }}/business-bin/titan-local.exe
+          TITAN_INSTALLED_BACKUP: ${{ runner.temp }}/business-bin/titan-backup.exe
+          TITAN_INSTALLED_SCREEN: ${{ github.workspace }}/desktop/scripts/verify-initialization.cjs
+        run: |
+          go test ./internal/localapi -run '^TestPilotInstalledCashPartialReceivingRestore$' -timeout 120s -count=1 -json > "$env:RUNNER_TEMP/installed-windows-business.jsonl"
+          $result = $LASTEXITCODE
+          python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/installed-windows-business.jsonl"
+          if ($result -ne 0) { exit $result }
+          go test ./internal/localapi -run '^TestPilotInstalledCashClosingCustodyRestore$' -timeout 120s -count=1 -json > "$env:RUNNER_TEMP/installed-windows-closing.jsonl"
+          $result = $LASTEXITCODE
+          python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/installed-windows-closing.jsonl"
+          exit $result
       - name: Upload installers and observed startup evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

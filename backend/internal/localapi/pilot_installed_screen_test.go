@@ -19,6 +19,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -86,12 +87,19 @@ func runInstalledPilot(t *testing.T, closing bool) {
 		transport.CloseIdleConnections()
 		proxyTransport.CloseIdleConnections()
 		if child != nil {
-			_ = child.Process.Signal(os.Interrupt)
+			if runtime.GOOS == "windows" {
+				// Explicit crash/restart injection; Windows cannot send os.Interrupt.
+				if err := child.Process.Kill(); err != nil {
+					t.Error("installed crash injection failed")
+				}
+			} else {
+				_ = child.Process.Signal(os.Interrupt)
+			}
 			done := make(chan error, 1)
 			go func() { done <- child.Wait() }()
 			select {
 			case err := <-done:
-				if err != nil {
+				if err != nil && runtime.GOOS != "windows" {
 					t.Error("installed server exit failed")
 				}
 			case <-time.After(5 * time.Second):
@@ -178,7 +186,10 @@ func runInstalledPilot(t *testing.T, closing bool) {
 		body, _ := json.Marshal(payload)
 		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 		defer cancel()
-		cmd := exec.CommandContext(ctx, "xvfb-run", "-a", "node", screen)
+		cmd := exec.CommandContext(ctx, "node", screen)
+		if runtime.GOOS == "linux" {
+			cmd = exec.CommandContext(ctx, "xvfb-run", "-a", "node", screen)
+		}
 		cmd.Env = installedEnvironment()
 		cmd.Stdin = bytes.NewReader(body)
 		out, err := cmd.CombinedOutput()
@@ -347,7 +358,7 @@ func runInstalledPilot(t *testing.T, closing bool) {
 }
 func installedEnvironment() []string {
 	out := []string{}
-	for _, k := range []string{"PATH", "HOME", "TMPDIR", "SYSTEMROOT"} {
+	for _, k := range []string{"PATH", "HOME", "TMPDIR", "SYSTEMROOT", "TEMP", "TMP", "USERPROFILE", "APPDATA", "LOCALAPPDATA"} {
 		if v, ok := os.LookupEnv(k); ok {
 			out = append(out, k+"="+v)
 		}

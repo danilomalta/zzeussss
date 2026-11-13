@@ -1,5 +1,13 @@
 # Continuidade do TitanSystem
 
+## Prova Windows do circuito instalado — 13/11/2026
+
+- Base aprovada6d7629d:7/7 checks remotos PASS, aceitação43190005413 com4200 testes/subtestes e25 integrações obrigatórias; suíte completa, grupos-race e verificador combinado PASS. Não inclui hardware físico ou Focus/SEFAZ real.
+- Branch feat/backend-windows-piloto-20261113, checkout isolado preservado. Árvore principal40958cd limpa. Unidade atual: reutilizar os dois pilotos UI→HTTP nativo→SQLite→backup CLI na instalação NSIS descartável do runner Windows; registro completo/chaves fiscais ainda não comprovados nesse SO.
+- Alterações anunciadas: desktop-installers.yml adiciona build dos CLIs Windows e os pilotos exatos, cada um com-timeout120s/count1. Controlador usa Node diretamente no Windows e perfis APPDATA/LOCALAPPDATA próprios; Linux mantém Xvfb. Windows injeta término forçado do servidor para provar recuperação após crash (não se alega encerramento gracioso do servidor); Linux mantém sinal e exigência de exit0. Sem alteração em produção, criptografia, regras comerciais ou tools.
+- Compilação cruzada Windows do pacote localapi PASS com cache autorizado. Primeira tentativa restrita falhou por acesso ao cache; primeira execução local faltou binário de /tmp removido desde ontem, antes do fluxo. Auxiliares e pacote refeitos em /tmp. Resultados reais posteriores e runner devem ser registrados antes de declarar a unidade concluída. Sem emissão real; hardware depende de configuração/equipamento autorizado. Itens fora do v1: ver o documento.
+
+
 ## Continuação da prova instalada — 12/11/2026
 
 - No hash17d5ecd, instaladores43168494939 passaram nas três plataformas/jobs: Windows e Linux geraram PDFs58/80/A4 pelo print95 real, sem tráfego das janelas de impressão; primeiras janelas405ms/511ms. Backend Go/frontend43168494934 e launcher43168495250 passaram. Isso não prova papel nem circuito comercial Windows.

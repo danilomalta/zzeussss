@@ -5,6 +5,8 @@ import sys
 
 TESTS = {'TestPilotInstalledCashPartialReceivingRestore', 'TestPilotInstalledCashClosingCustodyRestore'}
 FIXED = (
+    'SQLite existente deve ser arquivo regular privado (0600)', 'banco não é arquivo regular 0600',
+    'arquivo privado não é regular 0600',
     'explicit absolute installed binaries/controller required', 'installed acceptance input unavailable',
     'installed server spawn failed', 'installed server readiness failed', 'installed server exit failed',
     'installed server drain failed', 'lost final response was not exercised',
