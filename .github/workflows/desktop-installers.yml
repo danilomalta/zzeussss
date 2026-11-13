@@ -103,6 +103,15 @@ jobs:
             go build -trimpath -o "$env:RUNNER_TEMP/business-bin/$tool.exe" "./cmd/$tool"
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
+      - name: Windows existing SQLite reopen regression
+        if: runner.os == 'Windows'
+        working-directory: backend
+        shell: pwsh
+        run: |
+          go test ./internal/localdb -run '^TestCreateReopenAndRepeatMigration$' -timeout 120s -count=1 -json > "$env:RUNNER_TEMP/windows-sqlite.jsonl"
+          $result = $LASTEXITCODE
+          python ../.github/scripts/installed_diagnostics.py "$env:RUNNER_TEMP/windows-sqlite.jsonl"
+          if ($result -ne 0) { exit $result }
       - name: Installed Windows business recovery and encrypted restore
         if: runner.os == 'Windows'
         working-directory: backend

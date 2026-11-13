@@ -48,10 +48,13 @@ func runInstalledPilot(t *testing.T, closing bool) {
 			t.Fatal("installed acceptance input unavailable")
 		}
 	}
+	t.Log("Screen phase: fixture creation")
 	f := stockHTTPSetup(t)
+	t.Log("Screen phase: fixture stock")
 	f.install(t, signedTestContract(t, f.private, f.owner.TenantID, 100, []modules.ID{modules.Core, modules.Inventory, modules.POS, modules.Orders, modules.Logistics, modules.Finance}), 200)
 	policyPerson(t, f.db, f.owner, "pilot-reviewer", "manager")
 	stockRequest(t, f, stock.Input{OperationID: "installed-initial-stock", Kind: "entry", ProductID: f.product, ToLocationID: f.shelf, QuantityMilli: 5000, Reason: "Disposable opening balance"}, 201)
+	t.Log("Screen phase: fixture station")
 	station := pilotPrepareCLIStation(t, f)
 	var seq int
 	var name, dbPath, sku string
@@ -133,6 +136,7 @@ func runInstalledPilot(t *testing.T, closing bool) {
 		}
 		t.Fatal("installed server readiness failed")
 	}
+	t.Log("Screen phase: native server")
 	start(dbPath)
 	target, _ := url.Parse(endpoint)
 	proxy := httputil.NewSingleHostReverseProxy(target)
