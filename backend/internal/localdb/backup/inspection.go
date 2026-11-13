@@ -6,8 +6,8 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
-	"net/url"
 	"strings"
+	"titansystem-backend/internal/sqlitepath"
 
 	"titansystem-backend/internal/localdb/identity"
 )
@@ -50,7 +50,10 @@ func inspectSnapshot(ctx context.Context, path string, sealed []byte) (Inspectio
 
 func inspectTables(ctx context.Context, path string, sealed []byte, tables []string) (Inspection, error) {
 	var out Inspection
-	u := url.URL{Scheme: "file", Path: path}
+	u, err := sqlitepath.URL(path)
+	if err != nil {
+		return out, ErrBackup
+	}
 	db, err := sql.Open("sqlite", u.String()+"?mode=ro")
 	if err != nil {
 		return out, ErrBackup

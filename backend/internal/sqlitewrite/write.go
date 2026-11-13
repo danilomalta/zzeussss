@@ -6,8 +6,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net/url"
 	"time"
+	"titansystem-backend/internal/sqlitepath"
 
 	sqlite "modernc.org/sqlite"
 )
@@ -55,7 +55,10 @@ func runAttempt(ctx context.Context, source *sql.DB, fn func(*sql.Tx) (func(bool
 	if file == "" {
 		return errors.New("immediate fiscal writes require the existing file-backed SQLite database")
 	}
-	u := url.URL{Scheme: "file", Path: file}
+	u, err := sqlitepath.URL(file)
+	if err != nil {
+		return err
+	}
 	q := u.Query()
 	q.Set("mode", "rw")
 	q.Set("_txlock", "immediate")

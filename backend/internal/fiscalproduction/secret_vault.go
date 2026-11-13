@@ -12,13 +12,13 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 	"titansystem-backend/internal/localdb/fiscal"
 	"titansystem-backend/internal/privatefile"
+	"titansystem-backend/internal/sqlitepath"
 	"titansystem-backend/internal/sqlitewrite"
 	"unicode/utf8"
 
@@ -82,7 +82,10 @@ func openVaultKeyMode(path string, key []byte, immediate bool) (*FiscalSecretVau
 	if !privateReference(path) {
 		return nil, ErrUnavailable
 	}
-	u := url.URL{Scheme: "file", Path: path}
+	u, err := sqlitepath.URL(path)
+	if err != nil {
+		return nil, ErrUnavailable
+	}
 	q := u.Query()
 	q.Set("_pragma", "busy_timeout(1000)")
 	if immediate {

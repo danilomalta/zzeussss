@@ -11,11 +11,11 @@ import (
 	"database/sql"
 	"errors"
 	"io"
-	"net/url"
 	"os"
 	"path/filepath"
 	"time"
 	"titansystem-backend/internal/privatefile"
+	"titansystem-backend/internal/sqlitepath"
 
 	"titansystem-backend/internal/archivecrypto"
 	"titansystem-backend/internal/localdb"
@@ -196,7 +196,10 @@ func validate(ctx context.Context, path string, device identity.DeviceContext) e
 	if device.TenantID == "" || device.StoreID == "" || device.DeviceID == "" {
 		return ErrBackup
 	}
-	u := url.URL{Scheme: "file", Path: path}
+	u, err := sqlitepath.URL(path)
+	if err != nil {
+		return ErrBackup
+	}
 	db, err := sql.Open("sqlite", u.String()+"?mode=ro")
 	if err != nil {
 		return ErrBackup

@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"modernc.org/sqlite"
-	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
 	"titansystem-backend/internal/privatefile"
+	"titansystem-backend/internal/sqlitepath"
 )
 
 // Separate OS-path proof: never include a DSN, path or credential in diagnostics.
@@ -23,7 +23,10 @@ func TestWindowsVaultSQLiteURIIdentity(t *testing.T) {
 		t.Fatal("private vault URI file unavailable")
 	}
 	f.Close()
-	u := url.URL{Scheme: "file", Path: path}
+	u, err := sqlitepath.URL(path)
+	if err != nil {
+		t.Fatal("vault URI construction refused")
+	}
 	db, err := sql.Open("sqlite", u.String())
 	if err == nil {
 		defer db.Close()

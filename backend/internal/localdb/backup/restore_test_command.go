@@ -3,12 +3,12 @@ package backup
 import (
 	"context"
 	"database/sql"
-	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
 	"titansystem-backend/internal/localdb"
 	"titansystem-backend/internal/localdb/identity"
+	"titansystem-backend/internal/sqlitepath"
 )
 
 type RestoreTestReport struct {
@@ -52,7 +52,10 @@ func TestRestore(ctx context.Context, archive, root string, d identity.DeviceCon
 	if err != nil || before.BusinessSHA256 != after.BusinessSHA256 || !reflect.DeepEqual(before.Records, after.Records) {
 		return report, ErrBackup
 	}
-	u := url.URL{Scheme: "file", Path: path}
+	u, err := sqlitepath.URL(path)
+	if err != nil {
+		return report, ErrBackup
+	}
 	db, err := sql.Open("sqlite", u.String()+"?mode=ro")
 	if err != nil {
 		return report, ErrBackup
@@ -72,7 +75,10 @@ func TestRestore(ctx context.Context, archive, root string, d identity.DeviceCon
 }
 
 func inspectBusinessSnapshot(ctx context.Context, path string) (Inspection, error) {
-	u := url.URL{Scheme: "file", Path: path}
+	u, err := sqlitepath.URL(path)
+	if err != nil {
+		return Inspection{}, ErrBackup
+	}
 	db, err := sql.Open("sqlite", u.String()+"?mode=ro")
 	if err != nil {
 		return Inspection{}, ErrBackup

@@ -22,5 +22,29 @@
     "physical hardware",
     "real Focus/SEFAZ"
   ],
-  "full_fiscal_race": "aggregate 120s exceeded; focused affected paths passed; deadline unchanged"
+  "full_fiscal_race": "aggregate 120s exceeded; focused affected paths passed; deadline unchanged",
+  "native_positive_before_uri": {
+    "run": 43448036233,
+    "acl_and_reopen": "pass",
+    "concurrent_publication": "50/50 pass",
+    "owner_native_init": "pass 1.18s",
+    "keys": "failed at creation; SQLite URI code1 reproduced independently"
+  },
+  "uri_fix": {
+    "source": "https://www.sqlite.org/uri.html",
+    "cause": "Windows drive encoded as file URI authority",
+    "consumers": [
+      "vault",
+      "immediate writer",
+      "backup validation and snapshots"
+    ],
+    "local_gate": {
+      "vault_count20_seconds": 23.576,
+      "vault_race_seconds": 2.417,
+      "fiscal_package_seconds": 24.449,
+      "backup_seconds": 72.724,
+      "uri_writer_race": "pass"
+    },
+    "native_result": "pending"
+  }
 }
