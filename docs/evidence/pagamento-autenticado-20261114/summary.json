@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-14",
+  "branch": "feat/backend-pagamento-autenticado-20261114",
+  "base_commit": "5ed7b3b63e45f76ecf09db31809081baa90c8b96",
+  "scope": {
+    "supplier_receiving_precondition": "existing signed-company and partial-receiving operations through real HTTP; installed precondition proof remains in the base test",
+    "new_installed_screens": [
+      "independent manager approval",
+      "owner cash opening and explicit withdrawal",
+      "explicit payable cash linkage",
+      "original operation recovery after response loss and native process restart",
+      "paid balance and original reference after CLI restoration"
+    ],
+    "backend": "actual compiled titan-local executable; three process lifecycles over original and restored disposable SQLite",
+    "backup": "actual compiled titan-backup: create/verify/inspect/restore/recreate; wrong key, tenant and overwrite refused",
+    "customer_installation_used": false,
+    "commercial_data_used": false,
+    "fiscal_issuance": false,
+    "windows_this_unit": "not executed"
+  },
+  "verification": {
+    "TestTradeInstalledPaymentApprovalRecoveryRestartRestore": {
+      "status": "PASS",
+      "test_seconds": 79.39,
+      "package_seconds": 79.452,
+      "race_status": "PASS",
+      "race_test_seconds": 91.72,
+      "race_package_seconds": 93.38,
+      "timeout_seconds": 120,
+      "count": 1,
+      "reviewer": "distinct manager identity; actor retained in immutable history",
+      "approval_denied_roles": [
+        "accountant",
+        "cashier",
+        "creator-owner"
+      ],
+      "denied_status": 403,
+      "payable_cents": 3150,
+      "applied_cents": 3150,
+      "outstanding_cents": 0,
+      "opening_cents": 10000,
+      "cash_movement_cents": -3150,
+      "remaining_cash_cents": 6850,
+      "withdrawal_count": 1,
+      "payment_count": 1,
+      "payment_posts_through_UI_proxy": 1,
+      "recovery_additional_posts": 0,
+      "explicit_HTTP_replay": "200 repeated=true; same original payment; final counts unchanged",
+      "stock_milli_preserved": 2500,
+      "old_session_after_restore": 401,
+      "login_policy": "bounded Retry-After60s observed; durable budget retained; no counter reset or larger timeout"
+    },
+    "backup": {
+      "profile": "pilot_cash_v1",
+      "observed_schema": 88,
+      "business_sha256_equal": true,
+      "records_equal": true,
+      "archives_distinct": true,
+      "records": {
+        "cash_movements": 1,
+        "cash_sessions": 1,
+        "payable_cash_payments": 1,
+        "purchase_deliveries": 1,
+        "purchase_order_items": 1,
+        "purchase_orders": 1,
+        "purchase_receipts": 1,
+        "purchase_receiving_cases": 0,
+        "purchase_supplier_decisions": 1,
+        "sale_payments": 0,
+        "sale_tax_bindings": 0,
+        "sales": 0,
+        "stock_movements": 1,
+        "supplier_payable_installments": 1,
+        "supplier_payables": 1
+      }
+    },
+    "existing_API_regressions": {
+      "status": "PASS",
+      "tests": 6,
+      "seconds": 4.161,
+      "coverage": [
+        "partial/exact/no duplicate cash",
+        "actor/role/license",
+        "concurrent overpayment/source reuse",
+        "transaction rollback",
+        "backup/restart original receipts",
+        "finance read/original actor"
+      ]
+    },
+    "desktop": {
+      "status": "PASS",
+      "tests": 66,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 4.101049198
+    },
+    "contracts": {
+      "status": "PASS",
+      "routes": 606,
+      "new_routes": 0
+    },
+    "syntax_and_diff": "PASS"
+  },
+  "initial_failure": "First new test reached restored authentication and received429; changed only new harness to observe existing Retry-After, not product policy. Normal and race passed afterward. Final normal run additionally requires rendered exact applied/balance amounts and payment reference, preventing loading/empty UI from satisfying restoration.",
+  "predecessor_CI": {
+    "run_id": 43554933430,
+    "initial_failure": "TestReceivablesBrowserRestartRecovery: Chrome startup timeout in sanitized artifact",
+    "exact_local_prerequisites": "3 tests PASS3.635s, including real Chrome process restarts; cause not reproduced",
+    "remote_failed_job_retry": "prerequisites and installed closing passed; full regression still running at last observation; not declared green"
+  },
+  "limits": [
+    "No product source, permission, vault, cryptography, fiscal production block, tools or workflows changed.",
+    "Full frontend/TypeScript/build and full Go suite not repeated locally: product sources unchanged. The new opt-in acceptance uses the same installed environment already supplied by the full CI job.",
+    "Prior race run passed before the final stronger rendered-balance assertions; final normal run exercised those assertions.",
+    "Customer first-run credentials remain customer-entered at the PC; physical payment/hardware and official fiscal acceptance are not claimed."
+  ]
+}

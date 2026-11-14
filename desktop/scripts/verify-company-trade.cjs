@@ -1,6 +1,7 @@
 "use strict";
 // Disposable acceptance only. Every business write is made by the actual form.
 module.exports=async function({b,evaluate,wait,input,mark}){
+ if(b.tradePhase.startsWith('payment-'))return require('./verify-company-payment.cjs')({b,evaluate,wait,input,mark});
  if(b.tradePhase==='receive')return require('./verify-company-receiving.cjs')({b,evaluate,wait,input,mark});
  const path=require('node:path'),fs=require('node:fs');
  const w=JSON.parse(fs.readFileSync(path.join(__dirname,'../../frontend-web/src/i18n/companyTrade66/pt-BR.json')));
