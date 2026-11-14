@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-14",
+  "branch": "feat/backend-fornecedor-instalado-20261114",
+  "base_commit": "3a96d5998b5736a1cf62a71c46f129d239caafca",
+  "scope": {
+    "application": "packaged Electron/React on Linux, disposable profiles",
+    "http": "two real TCP Go API listeners in test process, separate SQLite databases and signing keys",
+    "transport": "explicit signed envelope export/import through existing forms; not automatic relay or legal identity verification",
+    "customer_installation_used": false,
+    "commercial_data_used": false,
+    "official_fiscal_request": false,
+    "windows_this_unit": "not executed",
+    "backend_process_restart_this_unit": false,
+    "application_restart": "pending operation survives closing and reopening the buyer application"
+  },
+  "verification": {
+    "TestTradeInstalledScreenAuthenticatedPartialDecisionRecovery": {
+      "status": "PASS",
+      "seconds": 19.86,
+      "race_status": "PASS",
+      "race_test_seconds": 31.31,
+      "race_package_seconds": 32.963,
+      "supplier_accepted_milli": 3000,
+      "buyer_decision_post_count": 1,
+      "foreign_company_token_http_status": 401
+    },
+    "related_api_regressions": {
+      "status": "PASS",
+      "tests": 4,
+      "seconds": 3.604
+    },
+    "desktop_regressions": {
+      "status": "PASS",
+      "tests": 66,
+      "failed": 0,
+      "skipped": 0
+    },
+    "syntax_and_diff_check": "PASS"
+  },
+  "limits": [
+    "Initial approved purchase, identities, catalogue and licences are disposable fixtures; trade business writes originate in actual rendered forms.",
+    "No new endpoint or commercial rule; no changes to vault, production block, workflows or verifier.",
+    "Full backend/frontend suites, TypeScript and builds were not repeated: no product source changed. Remote CI for this delivery was not observed yet.",
+    "Customer first-run remains a separate pending action requiring customer-entered data and password."
+  ],
+  "initial_failures": [
+    "New test initially referenced a nonexistent Decision.ID; changed to exact deep comparison of the existing persisted decision.",
+    "Controller initially selected last section, which became the receipt; selector corrected to target the action form without weakening checks."
+  ]
+}
