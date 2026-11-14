@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-14",
+  "branch": "feat/backend-recebimento-autenticado-20261114",
+  "base_commit": "fc2c8b6026507164d450f8189bf3ba545e5019db",
+  "scope": {
+    "application": "new packaged Electron/React Linux build, disposable profiles",
+    "build_source_hash": "d1c9fb41c6e06d885f9ec2414dcb968eb6eefbb672e077fb7067b19d489d9ffb",
+    "http": "two actual TCP Go APIs in the test process, separate SQLite databases and Ed25519 authorities",
+    "supplier_transport": "explicit signed-envelope exchange through existing forms, not automatic relay or legal identity verification",
+    "customer_installation_used": false,
+    "commercial_data_used": false,
+    "official_fiscal_request": false,
+    "windows_this_unit": "not executed",
+    "server_restart_this_unit": false,
+    "application_restart": true
+  },
+  "verification": {
+    "TestTradeInstalledScreenAuthenticatedReceivingFinance": {
+      "status": "PASS",
+      "seconds": 26.39,
+      "race_status": "PASS",
+      "race_test_seconds": 39.87,
+      "race_package_seconds": 41.527,
+      "delivered_milli": 3000,
+      "accepted_milli": 2500,
+      "refused_milli": 500,
+      "stock_movement_delta": 1,
+      "stock_quantity_delta_milli": 2500,
+      "payable_count_delta": 1,
+      "payable_cents": 3150,
+      "payable_state": "pending",
+      "cash_movement_delta": 0,
+      "authenticated_decision_posts": 1,
+      "foreign_company_token_status": 401
+    },
+    "TestTradeInstalledScreenAuthenticatedPartialDecisionRecovery": {
+      "race_status": "PASS",
+      "race_seconds": 32.34
+    },
+    "related_API_regressions": {
+      "tests": 6,
+      "status": "PASS",
+      "package_seconds": 4.268,
+      "covers": [
+        "authenticated delivery authorization",
+        "trade audit rollback",
+        "partial receiving/payment/return",
+        "receive/finance audit rollback",
+        "competing receiving and finance",
+        "backup/restore/restart original receipt"
+      ]
+    },
+    "frontend": {
+      "tests": 2651,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 3.241902523
+    },
+    "desktop": {
+      "tests": 66,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 4.090608921
+    },
+    "contracts": {
+      "status": "PASS",
+      "routes": 606,
+      "new_routes": 0
+    },
+    "typescript": "PASS (desktop build runs tsc --noEmit)",
+    "vite_build_seconds": 20.64,
+    "syntax_and_diff": "PASS"
+  },
+  "changes": [
+    "Existing official contract already supported authenticated_company; frontend read snapshots, types and parser were stale. Aligned reads and reject inconsistent evidence pairs.",
+    "Manual command/result validation remains manual-only. An authenticated decision cannot be overwritten through the manual form.",
+    "Explicit authenticated-source explanation in five languages. Backend cryptographic verification and permissions unchanged."
+  ],
+  "initial_failures": [
+    "Installed receiving originally failed because the frontend parser rejected authenticated decisions.",
+    "New controller initially waited for all forms to disappear, but the permanent origin query form remains; now waits for draft/review closure.",
+    "New controller initially expected a link absent from the origin query; now requires actual persisted origin fields rendered by that screen.",
+    "New test initially expected 3000 allocated after partial receiving; existing allocatedTx commits accepted units only. Assertion now requires 2500 allocated and 3000 originally planned, preserving refused capacity.",
+    "First combined race run: original supplier recovery passed32.34s; receiving failed49.84s while the controller selected the async location before the option loaded. Controller now waits for an enabled field and matching option; focused race passed39.87s."
+  ],
+  "limits": [
+    "Pending obligation is not approval, payment, cash movement or fiscal authorization. Amount is explicitly entered by the operator, not inferred from accepted quantity.",
+    "No production backend, vault, rotation, workflow or verifier changes. No full backend rerun: only acceptance tests changed in Go.",
+    "New unit remote CI not observed yet; predecessor general CI, installers and launcher passed, full backend acceptance still running at last observation.",
+    "Customer first-run credentials remain a separate pending action at the PC."
+  ]
+}

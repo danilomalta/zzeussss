@@ -25,6 +25,15 @@ import (
 // Only the initial approved purchase, identities and licences are fixtures.
 // Envelopes travel explicitly through the existing public import/export forms.
 func TestTradeInstalledScreenAuthenticatedPartialDecisionRecovery(t *testing.T) {
+	runTradeInstalledPilot(t, false)
+}
+
+func TestTradeInstalledScreenAuthenticatedReceivingFinance(t *testing.T) {
+	runTradeInstalledPilot(t, true)
+}
+
+func runTradeInstalledPilot(t *testing.T, receiving bool) {
+	t.Helper()
 	desktop, screen := os.Getenv("TITAN_INSTALLED_DESKTOP"), os.Getenv("TITAN_INSTALLED_SCREEN")
 	if desktop == "" && screen == "" {
 		t.Skip("opt-in installed application acceptance; supply TITAN_INSTALLED_DESKTOP and TITAN_INSTALLED_SCREEN")
@@ -134,6 +143,45 @@ func TestTradeInstalledScreenAuthenticatedPartialDecisionRecovery(t *testing.T) 
 	b.p.call("GET", cycleOrder+"/supply-cycle", nil, 200, &after)
 	if decisionPosts.Load() != 1 || after.Decision == nil || !reflect.DeepEqual(before.Decision, after.Decision) {
 		t.Fatal("recovery duplicated or replaced original decision")
+	}
+	if receiving {
+		count := func(table string) int64 {
+			t.Helper()
+			var n int64
+			if err := b.f.db.QueryRow("SELECT count(*) FROM " + table).Scan(&n); err != nil {
+				t.Fatal("disposable observation unavailable")
+			}
+			return n
+		}
+		stockBefore, cashBefore, payableBefore := count("stock_movements"), count("cash_movements"), count("supplier_payables")
+		stockTotal := func() int64 {
+			t.Helper()
+			var n int64
+			if err := b.f.db.QueryRow("SELECT COALESCE(SUM(quantity_milli),0) FROM stock_movements").Scan(&n); err != nil {
+				t.Fatal("disposable stock total unavailable")
+			}
+			return n
+		}
+		quantityBefore := stockTotal()
+		run(b, buyerRoot, gate.URL, "receive", true, nil)
+		var received supplycycle.Cycle
+		b.p.call("GET", cycleOrder+"/supply-cycle", nil, 200, &received)
+		// Received deliveries commit only accepted units, preserving refused capacity.
+		if received.Decision == nil || !reflect.DeepEqual(received.Decision, after.Decision) || !received.Decision.ExternalVerified || received.EffectiveAcceptedMilli != 2500 || received.AllocatedMilli != 2500 || received.Total != 1 || len(received.Deliveries) != 1 || received.Deliveries[0].PlannedMilli != 3000 || received.Deliveries[0].State != "received" {
+			t.Fatal("receipt lost authenticated source or partial quantities")
+		}
+		var payable struct {
+			TotalCents int64  `json:"total_cents"`
+			State      string `json:"state"`
+		}
+		b.p.call("GET", "/local/v1/finance/payables/authenticated-payable", nil, 200, &payable)
+		if payable.TotalCents != 3150 || payable.State != "pending" {
+			t.Fatal("obligation must keep explicit amount and await independent review")
+		}
+		if count("stock_movements") != stockBefore+1 || stockTotal() != quantityBefore+2500 || count("cash_movements") != cashBefore || count("supplier_payables") != payableBefore+1 || decisionPosts.Load() != 1 {
+			t.Fatal("receiving duplicated stock, obligation or supplier decision, or booked money")
+		}
+		t.Log("PASS: authenticated supplier -> installed receiving 3000 delivered/2500 accepted/500 refused -> pending payable3150; one stock entry/obligation and no cash movement")
 	}
 	original := b.p.token
 	b.p.token = s.p.token
