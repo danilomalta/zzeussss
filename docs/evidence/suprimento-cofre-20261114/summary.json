@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-14",
+  "branch": "feat/backend-suprimento-cofre-20261114",
+  "base": "000ea4927dac1369f23aa3503d787ac9d05fe6f6",
+  "scope": "Prove existing atomic vault-to-open-drawer supply; production implementation reused unchanged",
+  "results": {
+    "installed_ui_race": {
+      "test": "TestTradeInstalledVaultSupplyRecoveryRestartRestore",
+      "seconds": 24.29,
+      "package_seconds": 25.94,
+      "result": "passed"
+    },
+    "new_api_sqlite": {
+      "normal_package_seconds": 0.847,
+      "race_package_seconds": 11.171,
+      "result": "passed"
+    },
+    "concurrent_spend": {
+      "runs": 50,
+      "winners_per_round": 1,
+      "negative_balance": false,
+      "package_seconds": 26.296,
+      "result": "passed"
+    },
+    "rollback_and_invalid_sources": {
+      "package_seconds": 3.769,
+      "rollback_injected_stages": [
+        "entry_ignore",
+        "header_abort",
+        "balance_ignore",
+        "vault_event",
+        "cash_event",
+        "cash_journal"
+      ],
+      "result": "passed"
+    },
+    "desktop": {
+      "passed": 66,
+      "failed": 0,
+      "skipped": 0
+    },
+    "contracts": {
+      "routes": 608,
+      "result": "passed"
+    },
+    "diff_and_syntax": "passed"
+  },
+  "installed_scenario": {
+    "environment": "disposable Linux Electron -> real HTTP -> native Go server/SQLite",
+    "original_vault_cents": 6800,
+    "supply_cents": 2000,
+    "remaining_vault_cents": 4800,
+    "target_drawer_cents": 2000,
+    "original_bag_variance_cents": -50,
+    "supply_movements": 1,
+    "postcommit_response_loss": true,
+    "ui_post_count": 1,
+    "automatic_recovery_posts": 0,
+    "explicit_replay_keeps_movement_id": true,
+    "insufficient_balance_status": 409,
+    "revoked_session_get_status": 401,
+    "revoked_session_supply_status": 401,
+    "encrypted_cli_restore_preserves_original_snapshot": true
+  },
+  "permissions": "Existing ManageCash: owners and authorized store managers; cashier/accountant and crossed context rejected in focused test",
+  "reused_product_source_hash": "81aba18fc7bd9b0ed15aa88fbe8ad2d6d001104dbbf3b395bce27c6c305471e1",
+  "not_repeated": [
+    "Frontend/TypeScript/build: no product frontend changes; tested package from base reused",
+    "Whole backend suite",
+    "Cryptographic vault/rotation: unchanged"
+  ],
+  "limitations": [
+    "No physical hardware/cash validation",
+    "No Windows execution of new scenario",
+    "Remote CI for new commit not yet observed",
+    "Commercial/receiving/deposit preconditions use real APIs; only current supply/recovery/restored queries clicked in this unit"
+  ],
+  "production_fiscal": "blocked"
+}

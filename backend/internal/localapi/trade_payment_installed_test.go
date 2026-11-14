@@ -241,6 +241,10 @@ func runTradeFinancialInstalled(t *testing.T, closing bool, vault ...bool) {
 			t.Fatalf("installed payment %s failed; private output omitted (%v)", phase, err)
 		}
 	}
+	if len(vault) > 1 && vault[1] {
+		runStandaloneVaultSupply(t, b, observer, run, func(v string) { screenEndpoint = v }, stop, start, dbPath, station, ownerRoot)
+		return
+	}
 	if len(vault) > 0 && vault[0] {
 		runStandaloneVaultCustody(t, b, observer, run, func(v string) { screenEndpoint = v }, stop, start, dbPath, station, ownerRoot, reviewerRoot)
 		return

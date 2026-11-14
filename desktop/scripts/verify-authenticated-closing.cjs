@@ -1,5 +1,6 @@
 'use strict';
 module.exports=async({b,evaluate,wait,input,mark,go,click,field,src,q})=>{
+ if(b.tradePhase.startsWith('payment-closing-supply'))return require('./verify-vault-supply.cjs')({b,evaluate,wait,input,mark,go,click,field,src,q});
  if(b.tradePhase.startsWith('payment-closing-vault'))return require('./verify-vault-custody.cjs')({b,evaluate,wait,input,mark,go,click,field,src,q});
  const fs=require('node:fs'),path=require('node:path'),{pathToFileURL}=require('node:url');
  const bw=(await import(pathToFileURL(path.join(src,'core/cashBags/words.mjs')).href)).cashBagWords('pt-BR'),area='.official-cash-bags';
