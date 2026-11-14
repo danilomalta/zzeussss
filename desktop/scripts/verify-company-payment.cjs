@@ -19,6 +19,7 @@ module.exports=async({b,evaluate,wait,input,mark})=>{
   await wait(`!!(${e})&&!(${e}).disabled`,'payment field');const id=String(++seq);
   await evaluate(`(${e}).setAttribute('data-payment-field',${q(id)})`);await input('[data-payment-field="'+id+'"]',value);
  };
+ if(b.tradePhase.startsWith('payment-closing'))return require('./verify-authenticated-closing.cjs')({b,evaluate,wait,input,mark,go,click,field,src,q});
  if(b.tradePhase==='payment-approve'){
   mark('independent authenticated payable approval');await go('/local/payables');
   await wait('!!document.querySelector(".payable-documents")','payable approval screen');await evaluate('document.querySelector(".payable-documents").open=true');

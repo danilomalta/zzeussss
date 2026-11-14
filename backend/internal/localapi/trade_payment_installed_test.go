@@ -34,6 +34,13 @@ import (
 // installed-screen proof is TestTradeInstalledScreenAuthenticatedReceivingFinance.
 // Approval, withdrawal, payment and recovery below originate in installed forms.
 func TestTradeInstalledPaymentApprovalRecoveryRestartRestore(t *testing.T) {
+	runTradeFinancialInstalled(t, false)
+}
+func TestTradeInstalledClosingCustodyRestartRestore(t *testing.T) {
+	runTradeFinancialInstalled(t, true)
+}
+func runTradeFinancialInstalled(t *testing.T, closing bool) {
+	t.Helper()
 	desktop, local, screen := os.Getenv("TITAN_INSTALLED_DESKTOP"), os.Getenv("TITAN_INSTALLED_LOCAL"), os.Getenv("TITAN_INSTALLED_SCREEN")
 	if desktop == "" && local == "" && screen == "" {
 		t.Skip("opt-in installed payment acceptance; supply installed paths and backup CLI")
@@ -59,16 +66,18 @@ func TestTradeInstalledPaymentApprovalRecoveryRestartRestore(t *testing.T) {
 	finance.TotalCents = 3150
 	finance.Installments = []payables.Installment{{ID: "accepted-part", DueOn: time.Now().UTC().Format("2006-01-02"), AmountCents: 3150}}
 	cycleCall(t, b.f, "POST", cycleDelivery+"/payable", finance, 200)
-	for _, role := range []string{"accountant", "cashier"} {
-		id := "payment-" + role
-		policyPerson(t, b.f.db, b.f.owner, id, role)
-		token := b.p.login(id)
-		original := b.p.token
-		b.p.token = token
-		b.p.call("POST", payablesPath+"/authenticated-payable/approve", map[string]string{"operation_id": "denied-" + role, "reason": "Must be independently authorized"}, 403, nil)
-		b.p.token = original
+	if !closing {
+		for _, role := range []string{"accountant", "cashier"} {
+			id := "payment-" + role
+			policyPerson(t, b.f.db, b.f.owner, id, role)
+			token := b.p.login(id)
+			original := b.p.token
+			b.p.token = token
+			b.p.call("POST", payablesPath+"/authenticated-payable/approve", map[string]string{"operation_id": "denied-" + role, "reason": "Must be independently authorized"}, 403, nil)
+			b.p.token = original
+		}
+		b.p.call("POST", payablesPath+"/authenticated-payable/approve", map[string]string{"operation_id": "denied-creator", "reason": "Creator cannot approve own obligation"}, 403, nil)
 	}
-	b.p.call("POST", payablesPath+"/authenticated-payable/approve", map[string]string{"operation_id": "denied-creator", "reason": "Creator cannot approve own obligation"}, 403, nil)
 	root := privatePilotDir(t)
 	station := filepath.Join(root, "station.json")
 	raw, e := json.Marshal(stationfile.Station{TenantID: b.f.device.TenantID, StoreID: b.f.device.StoreID, DeviceID: b.f.device.DeviceID, PrivateKey: base64.RawURLEncoding.EncodeToString(b.key)})
@@ -195,9 +204,10 @@ func TestTradeInstalledPaymentApprovalRecoveryRestartRestore(t *testing.T) {
 	gate := httptest.NewServer(proxy)
 	defer gate.Close()
 	ownerRoot, reviewerRoot := privatePilotDir(t), privatePilotDir(t)
+	screenEndpoint := gate.URL
 	run := func(phase, actor, profile string, resume bool) {
 		t.Helper()
-		body, _ := json.Marshal(map[string]any{"binary": desktop, "root": profile, "url": gate.URL, "owner": actor, "password": "senha-forte-de-teste-1", "business": "trade", "tradePhase": phase, "resume": resume})
+		body, _ := json.Marshal(map[string]any{"binary": desktop, "root": profile, "url": screenEndpoint, "owner": actor, "password": "senha-forte-de-teste-1", "business": "trade", "tradePhase": phase, "resume": resume})
 		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 		defer cancel()
 		cmd := exec.CommandContext(ctx, "node", screen)
@@ -227,6 +237,10 @@ func TestTradeInstalledPaymentApprovalRecoveryRestartRestore(t *testing.T) {
 		if err != nil || !passed {
 			t.Fatalf("installed payment %s failed; private output omitted (%v)", phase, err)
 		}
+	}
+	if closing {
+		runTradeClosingCustody(t, b, observer, run, func(v string) { screenEndpoint = v }, stop, start, dbPath, station, ownerRoot, reviewerRoot)
+		return
 	}
 	run("payment-approve", "cycle-reviewer", reviewerRoot, false)
 	var approved payables.Payable

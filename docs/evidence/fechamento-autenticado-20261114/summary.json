@@ -1,0 +1,148 @@
+{
+  "date": "2026-11-14",
+  "branch": "feat/backend-fechamento-autenticado-20261114",
+  "base_commit": "38e4c9c8a7d8bf7d97e2b6e6936421860888cedd",
+  "scope": {
+    "preconditions": "existing real HTTP supplier decision, partial receiving, independent approval and paid payable; installed proofs retained in base tests",
+    "new_UI_mutations": [
+      "distinct remaining-cash withdrawal",
+      "blind drawer count and explicit closure",
+      "bag preparation and dispatch",
+      "independent blind receiving with count-review explanation",
+      "explicit receipt recovery after lost response and native restart"
+    ],
+    "runtime": "new packaged Electron Linux frontend and actual compiled titan-local; actual titan-backup CLI; independent disposable SQLite authorities",
+    "customer_data_or_services_used": false,
+    "official_fiscal_emission": false,
+    "windows_this_unit": "not executed"
+  },
+  "accounting": {
+    "opening_cents": 10000,
+    "supplier_paid_cents": 3150,
+    "remaining_before_custody_cents": 6850,
+    "distinct_custody_withdrawal_cents": 6850,
+    "final_drawer_expected_cents": 0,
+    "final_drawer_declared_cents": 0,
+    "bag_declared_cents": 6850,
+    "bag_counted_cents": 6800,
+    "bag_variance_cents": -50,
+    "cash_movements_count": 2,
+    "cash_movements_sum_cents": -10000,
+    "supplier_payment_count": 1,
+    "bag_count": 1,
+    "bag_event_count": 3,
+    "cash_closure_count": 1,
+    "stock_milli_preserved": 2500,
+    "automatic_variance_adjustment": false,
+    "supplier_payment_source_cannot_be_reused_for_bag": "409",
+    "sender_cannot_receive_own_bag": "403",
+    "blind_receiver_declared_amount": null
+  },
+  "verification": {
+    "TestTradeInstalledClosingCustodyRestartRestore": {
+      "status": "PASS",
+      "seconds": 19.58,
+      "package_seconds": 19.645,
+      "race_status": "PASS",
+      "race_seconds": 28.86,
+      "race_group_package_seconds": 42.409,
+      "native_process_lifecycles": 3,
+      "UI_receive_posts": 1,
+      "automatic_recovery_posts": 0,
+      "explicit_replay": "same original receipt; repeated=true",
+      "old_session_after_restore": "401",
+      "restored_UI": "original receiving explanation visible after real UI login; that disposable token observed only in RAM for read-only verification, never logged or saved by the harness"
+    },
+    "TestHTTPBagReceiveExplanationIsAtomicScopedAndImmutable": {
+      "status": "PASS",
+      "cases": [
+        "persist",
+        "rollback"
+      ],
+      "race_status": "PASS",
+      "race_seconds": 11.74,
+      "guards": [
+        "self receiver denied",
+        "blank-only reason rejected",
+        "outbox failure rolls back state/history",
+        "same operation exact replay",
+        "changed reason conflicts"
+      ]
+    },
+    "prior_installed_payment_test": {
+      "status": "PASS",
+      "seconds": 79.42,
+      "package_seconds": 79.48,
+      "original_assertions_preserved": true,
+      "authentication_window": "observed existing Retry-After60s"
+    },
+    "cash_and_bag_regressions": {
+      "status": "PASS",
+      "seconds": 11.555,
+      "scope": "TestHTTPCashBlindClosingAndIdempotency and TestHTTPBag*"
+    },
+    "frontend": {
+      "passed": 2697,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 3.66615983,
+      "note": "includes test registrations imported from the existing reusable fixture module"
+    },
+    "desktop": {
+      "passed": 66,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 4.087454871
+    },
+    "typescript": "PASS",
+    "build_seconds": 23.96,
+    "source_hash": "f83077c87b7c0aeacf6eca876e4d9235f7e4cee8b301e334e7dfd2fa3c25620f",
+    "contracts": {
+      "status": "PASS",
+      "routes": 606,
+      "new_routes": 0
+    },
+    "backup": {
+      "profile": "pilot_cash_v1",
+      "observed_schema": 88,
+      "business_digest_equal": true,
+      "record_counts_equal": true,
+      "records": {
+        "cash_movements": 2,
+        "cash_sessions": 1,
+        "payable_cash_payments": 1,
+        "purchase_deliveries": 1,
+        "purchase_order_items": 1,
+        "purchase_orders": 1,
+        "purchase_receipts": 1,
+        "purchase_receiving_cases": 0,
+        "purchase_supplier_decisions": 1,
+        "sale_payments": 0,
+        "sale_tax_bindings": 0,
+        "sales": 0,
+        "stock_movements": 1,
+        "supplier_payable_installments": 1,
+        "supplier_payables": 1
+      },
+      "wrong_key_wrong_tenant_and_overwrite": "refused"
+    }
+  },
+  "changes": [
+    "Optional reason in the existing receive operation; persisted atomically by the existing history/outbox/request hash. No new ledger or migration.",
+    "Existing role, independent-receiver, seal, scope and source-exclusivity checks remain intact; old clients may still omit reason.",
+    "Five-language optional explanation field and history display; matching OpenAPI request contract.",
+    "Common installed harness extracted without removing any prior payment assertion."
+  ],
+  "initial_failures": [
+    "New Node test initially used the wrong client result wrapper; corrected only the new test.",
+    "First installed controller exited while receive POST was still in flight; now requires recovery controls enabled after request completion.",
+    "One restored screen login exceeded the durable budget because the harness authenticated twice. Removed the redundant login and observes only the actual disposable screen login response in RAM; no rate policy or timeout change."
+  ],
+  "limits": [
+    "The recorded variance/explanation is the independent BAG count; drawer closes at zero after explicit transfer. The older Final108 local review is not relabelled as a server accounting approval.",
+    "The50-cent custody variance is preserved, not repaired or automatically posted as loss.",
+    "No physical transport/cash/printer proof, Windows execution or customer installation changes in this unit.",
+    "Production fiscal remains blocked. Vault, rotation, tools and workflows unchanged.",
+    "Base general/backend CI still running at last observation, installers and launcher succeeded; current unit remote CI not observed yet."
+  ]
+}

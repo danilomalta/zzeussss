@@ -18,7 +18,7 @@ export function bagRecord(v,actor){
   const e=v.history[i];
   if(!keys(e,['operation_id','actor_id','from_state','to_state','reason','created_at','action'])||!pathID(e.operation_id)||seen.has(e.operation_id)||!text(e.actor_id)||!time(e.created_at)||Date.parse(e.created_at)<Date.parse(previous)||e.from_state!==state||typeof e.reason!=='string'||e.reason!==''&&!reason(e.reason))bagFail();
   const sender=e.actor_id===v.sender_id,independent=!sender&&e.actor_id!==v.operator_id;
-  const valid=e.action==='create'?i===0&&state===''&&e.to_state==='prepared'&&sender&&e.created_at===v.created_at&&e.reason==='':e.action==='dispatch'?state==='prepared'&&e.to_state==='in_transit'&&sender&&e.reason==='':e.action==='cancel'?state==='prepared'&&e.to_state==='cancelled'&&sender&&!!e.reason:e.action==='reject'?state==='in_transit'&&e.to_state==='rejected'&&independent&&!!e.reason:e.action==='receive'?state==='in_transit'&&e.to_state==='received'&&independent&&v.receiver_id===e.actor_id&&v.received_at===e.created_at&&e.reason==='':false;
+  const valid=e.action==='create'?i===0&&state===''&&e.to_state==='prepared'&&sender&&e.created_at===v.created_at&&e.reason==='':e.action==='dispatch'?state==='prepared'&&e.to_state==='in_transit'&&sender&&e.reason==='':e.action==='cancel'?state==='prepared'&&e.to_state==='cancelled'&&sender&&!!e.reason:e.action==='reject'?state==='in_transit'&&e.to_state==='rejected'&&independent&&!!e.reason:e.action==='receive'?state==='in_transit'&&e.to_state==='received'&&independent&&v.receiver_id===e.actor_id&&v.received_at===e.created_at :false;
   if(!valid)bagFail();seen.add(e.operation_id);state=e.to_state;previous=e.created_at;
  }
  if(state!==v.state||previous!==v.updated_at)bagFail();return v;
@@ -34,7 +34,8 @@ export function bagCoverage(v,cash){
 }
 export function bagBody(action,b){
  const fields=action==='create'?['operation_id','bag_id','withdrawal_operation_id','seal_id']:action==='receive'?['operation_id','seal_id','counted_cents']:['cancel','reject'].includes(action)?['operation_id','reason']:action==='dispatch'?['operation_id']:null;
+ if(action==='receive'&&Object.hasOwn(b,'reason'))fields.push('reason');
  if(!fields||!keys(b,fields)||!pathID(b.operation_id))bagFail();
- if(action==='create'&&(!pathID(b.bag_id)||!text(b.withdrawal_operation_id)||!text(b.seal_id))||action==='receive'&&(!text(b.seal_id)||!integer(b.counted_cents))||['cancel','reject'].includes(action)&&!reason(b.reason))bagFail();return b;
+ if(action==='create'&&(!pathID(b.bag_id)||!text(b.withdrawal_operation_id)||!text(b.seal_id))||action==='receive'&&(!text(b.seal_id)||!integer(b.counted_cents)||Object.hasOwn(b,'reason')&&b.reason!==''&&!reason(b.reason))||['cancel','reject'].includes(action)&&!reason(b.reason))bagFail();return b;
 }
 export function allowedBagActions(b,actor){bagRecord(b,actor);return b.state==='prepared'&&b.sender_id===actor?['dispatch','cancel']:b.state==='in_transit'&&actor!==b.sender_id&&actor!==b.operator_id?['receive','reject']:[];}

@@ -165,7 +165,7 @@ func Transition(ctx context.Context, db *sql.DB, contracts *entitlementstore.Sto
 			return Result{}, ErrInvalid
 		}
 	case "receive":
-		if !validID(in.SealID) || in.Reason != "" || in.CountedCents < 0 || in.CountedCents > maxSafe {
+		if !validID(in.SealID) || (in.Reason != "" && !validReason(in.Reason)) || in.CountedCents < 0 || in.CountedCents > maxSafe {
 			return Result{}, ErrInvalid
 		}
 	default:

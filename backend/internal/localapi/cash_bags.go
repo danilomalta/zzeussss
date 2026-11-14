@@ -1,6 +1,7 @@
 package localapi
 
 import (
+	"encoding/json"
 	"errors"
 	"strconv"
 
@@ -76,6 +77,12 @@ func (s *Server) transitionCashBag(c *fiber.Ctx, action string) error {
 	fields := []string{"operation_id"}
 	if action == "receive" {
 		fields = append(fields, "seal_id", "counted_cents")
+		var optional map[string]json.RawMessage
+		if json.Unmarshal(c.Body(), &optional) == nil {
+			if _, ok := optional["reason"]; ok {
+				fields = append(fields, "reason")
+			}
+		}
 	}
 	if action == "cancel" || action == "reject" {
 		fields = append(fields, "reason")
