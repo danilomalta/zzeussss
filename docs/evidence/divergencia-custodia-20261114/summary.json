@@ -1,0 +1,65 @@
+{
+  "date": "2026-11-14",
+  "branch": "feat/backend-divergencia-custodia-20261114",
+  "base": "8be403f0e0349e5e569b81737aeb2848784da4ab",
+  "scope": "append-only custody investigation, not financial loss posting",
+  "test_environment": "disposable SQLite, real loopback HTTP, packaged Linux Electron; no customer installation",
+  "results": {
+    "focused_http": "4 passed",
+    "concurrency": {
+      "repetitions": 50,
+      "writers_each": 5,
+      "failures": 0,
+      "single_winner": true,
+      "seconds": 28.542
+    },
+    "race_focused_seconds": 35.89,
+    "installed_ui_race_seconds": 29.62,
+    "bag_vault_regressions_seconds": 37.283,
+    "localdb_seconds": 12.201,
+    "backup_seconds": 72.626,
+    "frontend": {
+      "passed": 2701,
+      "failed": 0,
+      "skipped": 0
+    },
+    "desktop": {
+      "passed": 66,
+      "failed": 0
+    },
+    "contracts": {
+      "routes": 608,
+      "tests": 10
+    },
+    "typescript": "passed",
+    "frontend_build_seconds": 20.79,
+    "native_builds": "titan-local and titan-backup passed"
+  },
+  "installed_scenario": {
+    "original_counted_cents": 6800,
+    "original_difference_cents": -50,
+    "recounted_cents": 6850,
+    "compensating_evidence_delta_cents": 50,
+    "review_revision": 3,
+    "review_state": "resolved",
+    "original_money_and_stock_unchanged": true
+  },
+  "base_ci": {
+    "successful": [
+      "43568509232",
+      "43568509240",
+      "43568509234"
+    ],
+    "failed": "43568509345",
+    "failure": "final verifier rejected four installed pilot skips in race step; installed paths absent in that step",
+    "fix": "reuse same four installed paths; no tests, timeouts or verifier changed"
+  },
+  "limitations": [
+    "Remote CI of this commit not yet observed",
+    "Installed test records investigation after its restore; separate HTTP test proves backup/restore of review entries",
+    "No automatic financial loss or reimbursement; no physical cash or hardware proof",
+    "Windows not exercised for new screen",
+    "No full backend suite or cryptographic vault rerun locally; untouched"
+  ],
+  "production_fiscal": "blocked"
+}

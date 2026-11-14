@@ -21551,6 +21551,9 @@
         "x-source": "backend/internal/core/routes/routes.go",
         "x-state": "implemented"
       }
+    },
+    "/local/v1/cash/bags/{id}/review": {
+      "$ref": "./cash-bags.openapi.json#/paths/~1local~1v1~1cash~1bags~1{id}~1review"
     }
   },
   "components": {

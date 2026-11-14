@@ -26,6 +26,16 @@ module.exports=async({b,evaluate,wait,input,mark,go,click,field,src,q})=>{
    await wait(`!!document.querySelector('${area} > aside[role=status] button')&&!document.querySelector('${area} > aside[role=status] button').disabled`,'uncertain custody retained');
   }else{
    await wait(`document.querySelector('${area} article h3')?.textContent.includes(${q(bw.received)})&&document.querySelector('${area} article').textContent.includes('Independent physical count: fifty cents missing; discrepancy retained, not repaired')`,'restored custody explanation');
+   mark('owner investigation and compensating recount through installed forms');
+   const iw=(await import(pathToFileURL(path.join(src,'core/cashBags/reviewWords.mjs')).href)).reviewWords('pt-BR'),investigation=area+' section[aria-label="'+iw.title+'"]';
+   await click(iw.query,investigation);await wait(`document.querySelector(${q(investigation+' [role=status]')})?.textContent===${q(iw.pending)}`,'pending custody investigation');
+   await field(investigation,iw.reason,'Independent evidence reviewed by owner');await click(iw.submit,investigation);
+   await wait(`document.querySelector(${q(investigation+' [role=status]')})?.textContent===${q(iw.investigating)}`,'investigation persisted');
+   await input(investigation+' select','recount');await field(investigation,iw.count,'68,50');await field(investigation,iw.reason,'Disposable controlled recount: original record retained');await click(iw.submit,investigation);
+   await wait(`document.querySelectorAll(${q(investigation+' ol li')}).length===2`,'compensating recount persisted');
+   await input(investigation+' select','resolve');await field(investigation,iw.reason,'Owner explicitly acknowledges reviewed custody evidence');await click(iw.submit,investigation);
+   await wait(`document.querySelector(${q(investigation+' [role=status]')})?.textContent===${q(iw.resolved)}&&document.querySelectorAll(${q(investigation+' ol li')}).length===3`,'investigation closed without rewriting original cash');
+
   }
  }
  return {businessPhase:'trade',passed:true,packagedApp:true,commercialData:false};

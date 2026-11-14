@@ -171,6 +171,12 @@ func runTradeClosingCustody(t *testing.T, b *tradeHTTPFixture, p *pilotHTTP, run
 	if p.token == "" {
 		t.Fatal("restored UI did not authenticate a fresh session")
 	}
+
+	var investigation cashcustody.Review
+	p.call("GET", bagsPath+"/"+id+"/review", nil, 200, &investigation)
+	if investigation.State != "resolved" || investigation.Revision != 3 || investigation.OriginalCountedCents != 6800 || investigation.CountedCents != 6850 || investigation.DifferenceCents != 0 || investigation.History[1].DeltaCents != 50 {
+		t.Fatal("installed investigation lost original or compensation")
+	}
 	if !reflect.DeepEqual(saved, snapshot()) {
 		t.Fatal("restore changed closure, variance, explanation or commercial origin")
 	}
@@ -190,6 +196,9 @@ func runTradeClosingCustody(t *testing.T, b *tradeHTTPFixture, p *pilotHTTP, run
 		{"SELECT count(*) FROM payable_cash_payments", 1},
 		{"SELECT count(*) FROM cash_bags WHERE state='received' AND declared_cents=6850 AND counted_cents=6800 AND difference_cents=-50 AND sender_id<>receiver_id AND operator_id<>receiver_id", 1},
 		{"SELECT count(*) FROM cash_bag_operations", 3},
+		{"SELECT count(*) FROM cash_bag_reviews", 3},
+		{"SELECT count(*) FROM cash_bag_review_events", 3},
+		{"SELECT sum(delta_cents) FROM cash_bag_reviews", 50},
 		{"SELECT count(*) FROM cash_bag_operations WHERE action='receive' AND reason<>'' AND actor_id='cycle-reviewer'", 1},
 		{"SELECT sum(quantity_milli) FROM stock_movements", 2500},
 	} {

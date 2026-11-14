@@ -15,6 +15,8 @@ func (s *Server) mountCashBags(r fiber.Router) {
 	r.Get("/cash/bags", s.listCashBags)
 	r.Get("/cash/bags/operations/:id", s.cashBagReceipt)
 	r.Get("/cash/bags/:id", s.readCashBag)
+	r.Get("/cash/bags/:id/review", s.readCashBagReview)
+	r.Post("/cash/bags/:id/review", s.writeCashBagReview)
 	for _, action := range []string{"dispatch", "cancel", "receive", "reject"} {
 		action := action
 		r.Post("/cash/bags/:id/"+action, func(c *fiber.Ctx) error { return s.transitionCashBag(c, action) })

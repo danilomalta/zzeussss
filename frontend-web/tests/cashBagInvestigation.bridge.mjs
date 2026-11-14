@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {createCashBags} from '../src/core/cashBags/source.mjs';
+const session=JSON.parse(process.env.TITAN_BRIDGE_SESSION),capabilities={...session,role:'owner',permissions:['manage_cash'],license:{state:'active',modules:['core','inventory','pos']}};
+let posts=0,loss=true,current=true;
+const api=createCashBags({token:process.env.TITAN_BRIDGE_TOKEN,session,capabilities,isCurrent:()=>current,fetcher:async(path,options)=>{const response=await fetch(new URL(path,process.env.TITAN_BRIDGE_URL),options);if(options.method==='POST'){posts++;if(loss&&response.ok){loss=false;await response.arrayBuffer();throw Error('synthetic response loss after real commit');}}return response;}});
+let record=await api.readReview('bag-one');assert.equal(record.state,'pending');
+const body={operation_id:'bridge-investigate',expected_revision:0,action:'investigate',counted_cents:290,reason:'Local investigation evidence'};
+await assert.rejects(api.writeReview('bag-one',body));record=await api.readReview('bag-one');assert.equal(record.revision,1);assert.equal(record.history[0].operation_id,body.operation_id);assert.equal(posts,1);
+const replay=await api.writeReview('bag-one',body);assert.equal(replay.revision,1);
+record=await api.writeReview('bag-one',{...body,operation_id:'bridge-close',expected_revision:1,action:'resolve'});assert.equal(record.state,'resolved');assert.equal(record.difference_cents,-10);
+current=false;await assert.rejects(api.writeReview('bag-one',{...body,operation_id:'stale'}));assert.equal(posts,3);api.dispose();
+console.log('custody frontend -> real HTTP -> SQLite: recovery, original receipt, explicit variance and stale context passed');

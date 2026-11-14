@@ -136,6 +136,11 @@ jobs:
             "$RUNNER_TEMP/fiscal-journal-local-race-sales.jsonl" > "$RUNNER_TEMP/backend-combined.jsonl"
           python3 ../tools/verify_backend_acceptance.py "$RUNNER_TEMP/backend-combined.jsonl" | tee "$RUNNER_TEMP/backend-combined-integrations.json"
       - name: Company trade and cash pilots with real CLI and race detector
+        env:
+          TITAN_INSTALLED_DESKTOP: ${{ runner.temp }}/installed-pilot/linux-unpacked/titansystem-desktop
+          TITAN_INSTALLED_LOCAL: ${{ runner.temp }}/titan-local
+          TITAN_INSTALLED_SCREEN: ${{ github.workspace }}/desktop/scripts/verify-initialization.cjs
+          TITAN_INSTALLED_BACKUP: ${{ runner.temp }}/titan-backup
         run: |
           set -euo pipefail
           run_trade_race() {

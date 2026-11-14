@@ -1,3 +1,4 @@
+import {reviewRecord,reviewBody} from './review.mjs';
 import {contextOf,contextKey} from '../context74/model.mjs';
 import {LocalAPIError} from '../local/localClient.mjs';
 import {bagFail,keys,pathID,text,equal,bagRecord,bagPage,bagCoverage,bagBody,allowedBagActions,states} from './model.mjs';
@@ -28,7 +29,10 @@ export function createCashBags({token,session,capabilities,isCurrent,storage,loc
   try{receipt(await request('cash/bags'+(c.action==='create'?'':'/'+c.id+'/'+c.action),c.body),c);}catch(e){if(!wasUncertain&&e instanceof LocalAPIError&&e.serverRefusal&&[400,403,404,409,413,422].includes(e.status))save({...c,uncertain:false});throw e;}
   result=receipt(await request('cash/bags/operations/'+c.body.operation_id),c);clear(c);return {state:'confirmed',result};
  }
- return {scope,key,actor,assertCurrent:()=>current(),get canWrite(){try{current(true);return !!locks?.request;}catch{return false;}},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},dispose(){disposed=true;for(const c of controllers)c.abort();listeners.clear();},pending,
+ return {scope,key,actor,get canReview(){return capabilities.role==='owner'&&this.canWrite;},
+ async readReview(id){current();if(!pathID(id))bagFail();return reviewRecord(await request('cash/bags/'+id+'/review'),id);},
+ async writeReview(id,body){current(true);if(capabilities.role!=='owner')throw new LocalAPIError(403,'cash-bags');if(!pathID(id))bagFail();reviewBody(body);const r=await request('cash/bags/'+id+'/review',body);if(!keys(r,['operation_id','repeated','review'])||r.operation_id!==body.operation_id||typeof r.repeated!=='boolean')bagFail();reviewRecord(r.review,id);const e=r.review.history.at(-1);if(!e||e.operation_id!==body.operation_id||e.actor_id!==actor||e.reason!==body.reason||e.action!==body.action||e.counted_cents!==body.counted_cents||e.revision!==body.expected_revision+1)bagFail();return r.review;},
+ assertCurrent:()=>current(),get canWrite(){try{current(true);return !!locks?.request;}catch{return false;}},subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},dispose(){disposed=true;for(const c of controllers)c.abort();listeners.clear();},pending,
   prepare(action,id,body,before=null){current(true);return validate(structuredClone({version:1,scope,action,id,body,before,uncertain:false}));},
   submit(c){c=validate(structuredClone(c));current(true);if(c.uncertain)bagFail();return locked(async()=>{if(pending())throw Error('cashBagPending');save(c);return resolve(true);});},
   recover(send=false,discard=false){if(typeof send!=='boolean'||typeof discard!=='boolean'||send&&discard)bagFail();return locked(()=>resolve(send,discard));},
