@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-14",
+  "branch": "feat/backend-deposito-cofre-20261114",
+  "base": "629c1994d08ccec7e3ba234b8a18bda81077e519",
+  "implementation": "Reused existing cashvault deposit; added explicit five-language notice and combined integration/installed proofs",
+  "results": {
+    "focused_initial_seconds": 1.156,
+    "concurrency": {
+      "runs": 50,
+      "writers": 5,
+      "failures": 0,
+      "single_credit": true,
+      "seconds": 27.813
+    },
+    "race_focused_seconds": 14.494,
+    "vault_regressions_seconds": 23.637,
+    "installed_ui_race_seconds": 28.79,
+    "installed_package_seconds": 30.438,
+    "frontend": {
+      "passed": 2701,
+      "failed": 0,
+      "skipped": 0
+    },
+    "desktop": {
+      "passed": 66,
+      "failed": 0
+    },
+    "typescript_and_desktop_stage_build_seconds": 21.26,
+    "contract_routes": 608
+  },
+  "installed_scenario": {
+    "environment": "disposable Linux Electron, real HTTP/native server/SQLite, no customer DB",
+    "original_received_cents": 6800,
+    "investigation_recount_cents": 6850,
+    "vault_credit_cents": 6800,
+    "original_bag_difference_cents": -50,
+    "vault_deposits": 1,
+    "cash_movements_sum_cents": -10000,
+    "supplier_payment_cents": 3150,
+    "stock_milli": 2500,
+    "postcommit_response_loss": true,
+    "recovery_ui_posts": 0,
+    "cli_encrypted_restore": true,
+    "old_session_status": 401,
+    "other_actor_receipt_status": 404,
+    "physical_hardware_proof": false
+  },
+  "source_hash": "81aba18fc7bd9b0ed15aa88fbe8ad2d6d001104dbbf3b395bce27c6c305471e1",
+  "incomplete_validation": [
+    {
+      "command": "go test -race ./internal/localapi -run ^TestHTTPVault -timeout 120s -count=1",
+      "result": "cumulative package timeout120s; not passed; focused race and normal regressions subsequently passed without increasing timeout"
+    }
+  ],
+  "initial_harness_failures": [
+    "Redundant previous-unit UI sequence stopped at login; original HTTP status not captured; no definitive product auth cause claimed",
+    "Discardable dispatch body included unaccepted fields; corrected fixture serialization to exact contract",
+    "Controller assumed automatic selection after creation; corrected to query and select existing record"
+  ],
+  "limitations": [
+    "No entire Go suite rerun",
+    "No cryptographic vault/rotation changes",
+    "No physical hardware or Windows execution in this unit",
+    "No automatic financial loss/reimbursement; custody evidence stays separate from money"
+  ],
+  "production_fiscal": "blocked"
+}

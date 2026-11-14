@@ -39,7 +39,10 @@ func TestTradeInstalledPaymentApprovalRecoveryRestartRestore(t *testing.T) {
 func TestTradeInstalledClosingCustodyRestartRestore(t *testing.T) {
 	runTradeFinancialInstalled(t, true)
 }
-func runTradeFinancialInstalled(t *testing.T, closing bool) {
+func TestTradeInstalledVaultDepositRecoveryRestartRestore(t *testing.T) {
+	runTradeFinancialInstalled(t, true, true)
+}
+func runTradeFinancialInstalled(t *testing.T, closing bool, vault ...bool) {
 	t.Helper()
 	desktop, local, screen := os.Getenv("TITAN_INSTALLED_DESKTOP"), os.Getenv("TITAN_INSTALLED_LOCAL"), os.Getenv("TITAN_INSTALLED_SCREEN")
 	if desktop == "" && local == "" && screen == "" {
@@ -237,6 +240,10 @@ func runTradeFinancialInstalled(t *testing.T, closing bool) {
 		if err != nil || !passed {
 			t.Fatalf("installed payment %s failed; private output omitted (%v)", phase, err)
 		}
+	}
+	if len(vault) > 0 && vault[0] {
+		runStandaloneVaultCustody(t, b, observer, run, func(v string) { screenEndpoint = v }, stop, start, dbPath, station, ownerRoot, reviewerRoot)
+		return
 	}
 	if closing {
 		runTradeClosingCustody(t, b, observer, run, func(v string) { screenEndpoint = v }, stop, start, dbPath, station, ownerRoot, reviewerRoot)
